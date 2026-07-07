@@ -81,50 +81,62 @@
 
   /* ---------- Vue 2 : choix de langue ---------- */
 
+  /* Une seule image (Keb et Bek qui présentent), le menu de langues est
+     superposé en position absolue exactement dans l'espace vide entre
+     les deux personnages, repéré en pourcentage de la taille de l'image
+     (1380 x 752 px d'origine) pour rester aligné à toutes les tailles. */
+
   .scene-langues {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: clamp(4px, 2vw, 24px);
-    width: min(96vw, 900px);
+    position: relative;
+    width: min(92vw, 640px);
+    aspect-ratio: 1380 / 752;
   }
 
-  .perso {
-    height: min(46vh, 340px);
-    width: auto;
-    object-fit: contain;
-    flex-shrink: 0;
+  .image-langues {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
   }
-
-  .perso-gauche { transform: translateY(2%); }
-  .perso-droite { transform: translateY(2%); }
 
   .menu-langues-conteneur {
-    position: relative;
-    width: min(46vw, 240px);
-    height: min(50vh, 320px);
+    position: absolute;
+    left: 36.88%;
+    width: 27.83%;
+    top: 10.77%;
+    height: 82.45%;
   }
 
   .menu-langues {
     list-style: none;
     margin: 0;
-    padding: calc(min(50vh, 320px) / 2 - 24px) 0;
+    padding: 0; /* ajusté dynamiquement en JS pour centrer le premier/dernier item */
     height: 100%;
     overflow-y: auto;
     scroll-snap-type: y mandatory;
     scrollbar-width: none;
     -ms-overflow-style: none;
+    cursor: grab;
   }
 
   .menu-langues::-webkit-scrollbar { display: none; }
 
+  .menu-langues.glissement {
+    cursor: grabbing;
+  }
+
+  .menu-langues.sans-magnetisme {
+    scroll-snap-type: none; /* désactivé pendant le glisser-déposer et l'auto-scroll ; le magnétisme reprend une fois relâché/arrêté */
+  }
+
   .menu-langues li {
     scroll-snap-align: center;
     text-align: center;
-    padding: 8px 10px;
-    margin: 4px 12px;
+    padding: 6px 6px;
+    margin: 3px 6px;
     border-radius: 999px;
-    font-size: 1.05rem;
+    font-size: clamp(0.68rem, 2.6vw, 1.05rem);
     font-weight: 500;
     color: var(--brun);
     opacity: 0.35;
@@ -148,7 +160,7 @@
     position: absolute;
     left: 0;
     right: 0;
-    height: 25%;
+    height: 22%;
     pointer-events: none;
     z-index: 2;
   }
@@ -189,9 +201,7 @@
   }
 
   @media (max-width: 560px) {
-    .perso { height: 26vh; }
-    .menu-langues-conteneur { width: 50vw; height: 44vh; }
-    .menu-langues { padding: calc(44vh / 2 - 20px) 0; }
+    .scene-langues { width: 96vw; }
   }
 </style>
 </head>
@@ -209,7 +219,7 @@
     <section id="choix-langue" class="vue">
       <a class="retour" href="#accueil" aria-label="Retour">‹</a>
       <div class="scene-langues">
-        <img class="perso perso-gauche" src="images/bonomes_keb_presente_sans_fond_01.png" alt="Keb">
+        <img class="image-langues" src="images/bonomes_keb_bek_principal_presentent_langues_sans_fond_01.png" alt="Keb et Bek qui présentent le choix des langues">
 
         <div class="menu-langues-conteneur">
           <div class="fondu fondu-haut"></div>
@@ -236,8 +246,6 @@
           </ul>
           <div class="fondu fondu-bas"></div>
         </div>
-
-        <img class="perso perso-droite" src="images/bonomes_bek_presente_sans_fond_01.png" alt="Bek">
       </div>
     </section>
 
@@ -251,14 +259,19 @@
       const cible = window.location.hash === '#choix-langue' ? 'choix-langue' : 'accueil';
       vues.forEach(v => v.classList.toggle('actif', v.id === cible));
       if (cible === 'choix-langue') {
-        requestAnimationFrame(centrerMenu);
+        requestAnimationFrame(() => {
+          ajusterEspaceur();
+          centrerMenu();
+        });
       }
     }
 
     window.addEventListener('hashchange', afficherVue);
     afficherVue();
 
-    // Effet "roue" du menu de langues : l'item le plus proche du centre grossit
+    // ---------- Effet "roue" : l'item le plus proche du centre grossit ----------
+
+    const conteneurMenu = document.querySelector('.menu-langues-conteneur');
     const menu = document.getElementById('menuLangues');
     const items = Array.from(menu.querySelectorAll('li'));
     let repositionnement = false;
@@ -282,6 +295,21 @@
       items.forEach(item => item.classList.toggle('au-centre', item === plusProche));
     }
 
+    // Espaceur haut/bas recalculé selon la hauteur réelle du conteneur,
+    // pour que le premier et le dernier item puissent aussi se centrer.
+    function ajusterEspaceur() {
+      const hauteurConteneur = conteneurMenu.clientHeight;
+      const hauteurItem = items[0] ? items[0].offsetHeight : 40;
+      const padding = Math.max(0, hauteurConteneur / 2 - hauteurItem / 2);
+      menu.style.paddingTop = padding + 'px';
+      menu.style.paddingBottom = padding + 'px';
+    }
+
+    window.addEventListener('resize', () => {
+      ajusterEspaceur();
+      centrerMenu();
+    });
+
     menu.addEventListener('scroll', () => {
       if (!repositionnement) {
         repositionnement = true;
@@ -292,11 +320,95 @@
       }
     });
 
+    // ---------- Défilement automatique au survol des bords ----------
+
+    const ZONE_BORD = 0.3;   // fraction de la hauteur du menu qui déclenche l'auto-scroll
+    const VITESSE_MAX = 12;  // px par frame tout au bord
+
+    let vitesseAutoScroll = 0;
+
+    function boucleAutoScroll() {
+      if (vitesseAutoScroll !== 0 && !enTrainDeGlisser) {
+        menu.scrollTop += vitesseAutoScroll;
+      }
+      requestAnimationFrame(boucleAutoScroll);
+    }
+    boucleAutoScroll();
+
+    conteneurMenu.addEventListener('mousemove', (e) => {
+      if (enTrainDeGlisser) return;
+      const rect = menu.getBoundingClientRect();
+      const y = e.clientY - rect.top;
+      const ratio = y / rect.height;
+
+      let nouvelleVitesse = 0;
+      if (ratio < ZONE_BORD) {
+        const intensite = 1 - Math.max(0, ratio) / ZONE_BORD;
+        nouvelleVitesse = -intensite * VITESSE_MAX;
+      } else if (ratio > 1 - ZONE_BORD) {
+        const intensite = (Math.min(1, ratio) - (1 - ZONE_BORD)) / ZONE_BORD;
+        nouvelleVitesse = intensite * VITESSE_MAX;
+      }
+
+      // Le scroll-snap CSS annule sinon chaque petit incrément programmatique :
+      // on le désactive pendant l'auto-scroll et on le rétablit à l'arrêt.
+      if (nouvelleVitesse !== 0 && vitesseAutoScroll === 0) {
+        menu.classList.add('sans-magnetisme');
+      } else if (nouvelleVitesse === 0 && vitesseAutoScroll !== 0) {
+        menu.classList.remove('sans-magnetisme');
+        requestAnimationFrame(centrerMenu);
+      }
+      vitesseAutoScroll = nouvelleVitesse;
+    });
+
+    conteneurMenu.addEventListener('mouseleave', () => {
+      if (vitesseAutoScroll !== 0) {
+        vitesseAutoScroll = 0;
+        menu.classList.remove('sans-magnetisme');
+        requestAnimationFrame(centrerMenu);
+      }
+    });
+
+    // ---------- Glisser-déposer à la souris (souhaité pour la version en ligne) ----------
+
+    let enTrainDeGlisser = false;
+    let aBouge = false;
+    let departY = 0;
+    let departScroll = 0;
+
+    menu.addEventListener('mousedown', (e) => {
+      enTrainDeGlisser = true;
+      aBouge = false;
+      vitesseAutoScroll = 0;
+      departY = e.clientY;
+      departScroll = menu.scrollTop;
+      menu.classList.add('glissement', 'sans-magnetisme');
+      e.preventDefault();
+    });
+
+    window.addEventListener('mousemove', (e) => {
+      if (!enTrainDeGlisser) return;
+      const delta = e.clientY - departY;
+      if (Math.abs(delta) > 4) aBouge = true;
+      menu.scrollTop = departScroll - delta;
+    });
+
+    window.addEventListener('mouseup', () => {
+      if (enTrainDeGlisser) {
+        enTrainDeGlisser = false;
+        menu.classList.remove('glissement', 'sans-magnetisme');
+        requestAnimationFrame(centrerMenu);
+      }
+    });
+
+    // ---------- Sélection d'une langue ----------
+
     items.forEach(item => {
       item.addEventListener('click', () => {
+        if (aBouge) return; // c'était un glisser-déposer, pas un clic
         item.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        // La sélection de langue et la redirection vers le site
-        // traduit seront branchées une fois ces pages construites.
+        // La redirection vers le site traduit sera branchée une fois
+        // ces pages construites.
       });
     });
   </script>

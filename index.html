@@ -335,6 +335,153 @@
       font-size: clamp(0.82rem, 3.5vw, 1.25rem);
     }
   }
+
+  /* ---------- Vue 4 : tutoriel (dialogue Keb & Bek après "Yes") ---------- */
+
+  /* Diaporama à cadre fixe : les images fournies alternent entre un format
+     paysage (duo debout, 1408x768) et un format portrait (Bek seule pendant
+     le flash-back du réveil, 848x1264). Le cadre garde une taille stable,
+     chaque image s'y ajuste par object-fit: contain plutôt que d'imposer
+     un aspect-ratio unique qui écraserait l'un des deux formats. */
+
+  .scene-tutoriel {
+    position: relative;
+    width: min(92vw, 560px);
+    height: min(76vh, 680px);
+  }
+
+  .diapo-conteneur {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    border-radius: 26px;
+    overflow: hidden;
+    background: #FFFFFF;
+    box-shadow: 0 10px 32px rgba(102, 80, 69, 0.2);
+    cursor: pointer;
+    touch-action: pan-y;
+  }
+
+  .diapo {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transform: translateX(3%);
+    transition: opacity 0.35s ease, transform 0.35s ease;
+    pointer-events: none;
+  }
+
+  .diapo.actif {
+    opacity: 1;
+    transform: translateX(0);
+    pointer-events: auto;
+    z-index: 2;
+  }
+
+  .diapo img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    display: block;
+    user-select: none;
+    -webkit-user-drag: none;
+  }
+
+  .bande-legende {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: 22px 22px 20px;
+    background: linear-gradient(transparent, rgba(74, 59, 51, 0.85) 45%);
+    z-index: 3;
+  }
+
+  .bande-legende p {
+    margin: 0;
+    color: #FFFFFF;
+    font-family: 'Fuzzy Bubbles', cursive;
+    font-weight: 700;
+    font-size: clamp(1rem, 3.6vw, 1.3rem);
+    line-height: 1.32;
+    text-align: center;
+  }
+
+  /* La seule réplique volontairement non traduite du cours : signalée par
+     un léger accent péche plutôt que par une explication textuelle. */
+  .bande-legende.non-traduit p {
+    color: var(--peche);
+  }
+
+  .points-diapo {
+    position: absolute;
+    top: 16px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 7px;
+    z-index: 4;
+  }
+
+  .points-diapo .point {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.55);
+    box-shadow: 0 0 3px rgba(74, 59, 51, 0.4);
+    transition: background 0.2s ease, transform 0.2s ease;
+  }
+
+  .points-diapo .point.actif {
+    background: #FFFFFF;
+    transform: scale(1.35);
+  }
+
+  .nav-diapo {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    border: none;
+    background: #FFFFFF;
+    color: var(--brun);
+    font-size: 1.3rem;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(102, 80, 69, 0.2);
+    opacity: 0.9;
+    z-index: 4;
+    transition: opacity 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  .nav-diapo:hover {
+    opacity: 1;
+    transform: translateY(-50%) translateY(1px);
+    box-shadow: 0 1px 4px rgba(102, 80, 69, 0.25);
+  }
+
+  .nav-diapo:disabled {
+    opacity: 0.2;
+    cursor: default;
+    transform: translateY(-50%);
+    box-shadow: 0 2px 8px rgba(102, 80, 69, 0.2);
+  }
+
+  .nav-diapo.precedent { left: 12px; }
+  .nav-diapo.suivant { right: 12px; }
+
+  @media (max-width: 560px) {
+    .scene-tutoriel { width: 96vw; height: 70vh; }
+    .nav-diapo { width: 34px; height: 34px; font-size: 1.15rem; }
+  }
 </style>
 </head>
 <body>
@@ -389,6 +536,65 @@
         <div class="boite-reponse">
           <button type="button" class="bouton-reponse oui" data-reponse="oui">Yes</button>
           <button type="button" class="bouton-reponse non" data-reponse="non">No</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="tutoriel-en" class="vue">
+      <a class="retour" href="#premiere-fois-en" aria-label="Retour">‹</a>
+      <div class="scene-tutoriel">
+        <div class="diapo-conteneur" id="diapoConteneurEn">
+
+          <div class="points-diapo" id="pointsDiapoEn">
+            <span class="point"></span>
+            <span class="point"></span>
+            <span class="point"></span>
+            <span class="point"></span>
+            <span class="point"></span>
+            <span class="point"></span>
+          </div>
+
+          <div class="diapo" data-index="0">
+            <img src="images/bonomes_keb_bek_oui_01.png" alt="Bek parle à Keb">
+            <div class="bande-legende">
+              <p>This morning, when I woke up, a thought crossed my mind:</p>
+            </div>
+          </div>
+
+          <div class="diapo" data-index="1">
+            <img src="images/bonomes_keb_bek_oui_reveil_01.png" alt="Bek se réveille">
+          </div>
+
+          <div class="diapo" data-index="2">
+            <img src="images/bonomes_keb_bek_oui_reveil_02.png" alt="Bek se relève et parle">
+            <div class="bande-legende non-traduit">
+              <p>Je veux aider toute la planète à apprendre le français.</p>
+            </div>
+          </div>
+
+          <div class="diapo" data-index="3">
+            <img src="images/bonomes_keb_bek_oui_02.png" alt="Keb traduit ce que Bek a dit">
+            <div class="bande-legende">
+              <p>I want to help the whole world learn French.</p>
+            </div>
+          </div>
+
+          <div class="diapo" data-index="4">
+            <img src="images/bonomes_keb_bek_oui_03.png" alt="Bek continue de parler">
+            <div class="bande-legende">
+              <p>So I asked my friend Keb to help me. He always has good ideas.</p>
+            </div>
+          </div>
+
+          <div class="diapo" data-index="5">
+            <img src="images/bonomes_keb_bek_oui_04.png" alt="Keb répond avec son idée">
+            <div class="bande-legende">
+              <p>Great! Let's make a website with points, achievements, trophies, cards to collect! You do the drawings, I'll organize.</p>
+            </div>
+          </div>
+
+          <button type="button" class="nav-diapo precedent" id="precedentDiapoEn" aria-label="Diapositive précédente">‹</button>
+          <button type="button" class="nav-diapo suivant" id="suivantDiapoEn" aria-label="Diapositive suivante">›</button>
         </div>
       </div>
     </section>
@@ -614,7 +820,7 @@
   <script>
     // Navigation entre les vues via le hash de l'URL
     const vues = document.querySelectorAll('.vue');
-    const VUES_VALIDES = new Set(['accueil', 'choix-langue', 'premiere-fois-en', 'premiere-fois-es', 'premiere-fois-pt', 'premiere-fois-it', 'premiere-fois-zh', 'premiere-fois-ko', 'premiere-fois-ja', 'premiere-fois-vi', 'premiere-fois-tl', 'premiere-fois-de', 'premiere-fois-nl', 'premiere-fois-ca', 'premiere-fois-ht', 'premiere-fois-id', 'premiere-fois-fa', 'premiere-fois-ru', 'premiere-fois-no', 'premiere-fois-sv', 'premiere-fois-eo']);
+    const VUES_VALIDES = new Set(['accueil', 'choix-langue', 'premiere-fois-en', 'tutoriel-en', 'premiere-fois-es', 'premiere-fois-pt', 'premiere-fois-it', 'premiere-fois-zh', 'premiere-fois-ko', 'premiere-fois-ja', 'premiere-fois-vi', 'premiere-fois-tl', 'premiere-fois-de', 'premiere-fois-nl', 'premiere-fois-ca', 'premiere-fois-ht', 'premiere-fois-id', 'premiere-fois-fa', 'premiere-fois-ru', 'premiere-fois-no', 'premiere-fois-sv', 'premiere-fois-eo']);
 
     function afficherVue() {
       const brut = window.location.hash.replace('#', '');
@@ -625,6 +831,9 @@
           ajusterEspaceur();
           centrerMenu();
         });
+      }
+      if (cible === 'tutoriel-en') {
+        requestAnimationFrame(() => afficherDiapoEn(0));
       }
     }
 
@@ -807,13 +1016,83 @@
 
     // ---------- Vue "première fois" : boutons Yes / No ----------
 
+    // Le "oui" mène désormais au tutoriel pour les langues déjà construites ;
+    // les autres langues et le "non" restent à brancher plus tard.
+    const DESTINATION_OUI = {
+      en: 'tutoriel-en'
+    };
+
     document.querySelectorAll('.bouton-reponse').forEach(bouton => {
       bouton.addEventListener('click', () => {
-        // Branchement du tutoriel (Yes) et du menu simple (No) à venir
-        // une fois ces deux écrans construits.
-        console.log('Réponse choisie :', bouton.dataset.reponse);
+        const section = bouton.closest('section.vue');
+        const codeLangue = section ? section.id.replace('premiere-fois-', '') : null;
+
+        if (bouton.dataset.reponse === 'oui' && DESTINATION_OUI[codeLangue]) {
+          window.location.hash = '#' + DESTINATION_OUI[codeLangue];
+          return;
+        }
+
+        console.log('Réponse choisie :', bouton.dataset.reponse, codeLangue);
       });
     });
+
+    // ---------- Vue "tutoriel" : diaporama Keb & Bek ----------
+
+    const diapoConteneurEn = document.getElementById('diapoConteneurEn');
+    const diapositivesEn = Array.from(diapoConteneurEn.querySelectorAll('.diapo'));
+    const pointsEn = Array.from(document.querySelectorAll('#pointsDiapoEn .point'));
+    const boutonPrecedentEn = document.getElementById('precedentDiapoEn');
+    const boutonSuivantEn = document.getElementById('suivantDiapoEn');
+    let indexDiapoEn = 0;
+
+    function afficherDiapoEn(nouvelIndex) {
+      indexDiapoEn = Math.max(0, Math.min(diapositivesEn.length - 1, nouvelIndex));
+      diapositivesEn.forEach((diapo, i) => diapo.classList.toggle('actif', i === indexDiapoEn));
+      pointsEn.forEach((point, i) => point.classList.toggle('actif', i === indexDiapoEn));
+      boutonPrecedentEn.disabled = indexDiapoEn === 0;
+      boutonSuivantEn.disabled = indexDiapoEn === diapositivesEn.length - 1;
+    }
+
+    function diapoSuivanteEn() {
+      if (indexDiapoEn < diapositivesEn.length - 1) afficherDiapoEn(indexDiapoEn + 1);
+    }
+
+    function diapoPrecedenteEn() {
+      if (indexDiapoEn > 0) afficherDiapoEn(indexDiapoEn - 1);
+    }
+
+    // Boutons précédent/suivant (stopPropagation pour ne pas déclencher
+    // aussi le clic sur l'image, qui avance également le diaporama).
+    boutonSuivantEn.addEventListener('click', (e) => { e.stopPropagation(); diapoSuivanteEn(); });
+    boutonPrecedentEn.addEventListener('click', (e) => { e.stopPropagation(); diapoPrecedenteEn(); });
+
+    // Clic sur l'image : avance d'une diapositive.
+    diapoConteneurEn.addEventListener('click', () => diapoSuivanteEn());
+
+    // Flèches du clavier, actives seulement quand cette vue est affichée.
+    window.addEventListener('keydown', (e) => {
+      if (!document.getElementById('tutoriel-en').classList.contains('actif')) return;
+      if (e.key === 'ArrowRight') diapoSuivanteEn();
+      if (e.key === 'ArrowLeft') diapoPrecedenteEn();
+    });
+
+    // Glisser tactile (mobile) : gauche = suivant, droite = précédent.
+    let departXTactileEn = null;
+
+    diapoConteneurEn.addEventListener('touchstart', (e) => {
+      departXTactileEn = e.touches[0].clientX;
+    }, { passive: true });
+
+    diapoConteneurEn.addEventListener('touchend', (e) => {
+      if (departXTactileEn === null) return;
+      const delta = e.changedTouches[0].clientX - departXTactileEn;
+      if (Math.abs(delta) > 40) {
+        if (delta < 0) diapoSuivanteEn(); else diapoPrecedenteEn();
+      }
+      departXTactileEn = null;
+    }, { passive: true });
+
+    afficherDiapoEn(0);
   </script>
 
 </body>

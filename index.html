@@ -303,6 +303,16 @@
     font-size: clamp(1.1rem, 4.3vw, 1.78rem);
   }
 
+  /* Mandarin, coréen, japonais : idéogrammes/hangeul plus compacts que le
+     texte latin ES/PT, donc un décalage aussi prononcé (-16%) laissait un
+     vide inutile avant les cheveux de Keb. Décalage réduit pour rapprocher
+     un peu la bulle du personnage, sans toucher au réglage ES/PT/VI. */
+  #premiere-fois-zh .bulle-first-time.une-ligne,
+  #premiere-fois-ko .bulle-first-time.une-ligne,
+  #premiere-fois-ja .bulle-first-time.une-ligne {
+    left: -8%;
+  }
+
   @media (max-width: 560px) {
     .scene-premiere-fois { width: 96vw; }
 
@@ -421,12 +431,60 @@
       </div>
     </section>
 
+    <section id="premiere-fois-ko" class="vue">
+      <a class="retour" href="#choix-langue" aria-label="Retour">‹</a>
+      <div class="scene-premiere-fois">
+        <img class="image-premiere-fois" src="images/bonomes_keb_bek_principal_premiere_fois_sans_fond_01.png" alt="Keb et Bek qui demandent si c'est la première fois">
+        <p class="bulle-first-time une-ligne">처음이세요?</p>
+        <div class="boite-reponse">
+          <button type="button" class="bouton-reponse oui" data-reponse="oui">네</button>
+          <button type="button" class="bouton-reponse non" data-reponse="non">아니요</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="premiere-fois-ja" class="vue">
+      <a class="retour" href="#choix-langue" aria-label="Retour">‹</a>
+      <div class="scene-premiere-fois">
+        <img class="image-premiere-fois" src="images/bonomes_keb_bek_principal_premiere_fois_sans_fond_01.png" alt="Keb et Bek qui demandent si c'est la première fois">
+        <p class="bulle-first-time une-ligne">初めてですか？</p>
+        <div class="boite-reponse">
+          <button type="button" class="bouton-reponse oui" data-reponse="oui">はい</button>
+          <button type="button" class="bouton-reponse non" data-reponse="non">いいえ</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="premiere-fois-vi" class="vue">
+      <a class="retour" href="#choix-langue" aria-label="Retour">‹</a>
+      <div class="scene-premiere-fois">
+        <img class="image-premiere-fois" src="images/bonomes_keb_bek_principal_premiere_fois_sans_fond_01.png" alt="Keb et Bek qui demandent si c'est la première fois">
+        <p class="bulle-first-time une-ligne">Lần đầu tiên?</p>
+        <div class="boite-reponse">
+          <button type="button" class="bouton-reponse oui" data-reponse="oui">Có</button>
+          <button type="button" class="bouton-reponse non" data-reponse="non">Không</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="premiere-fois-tl" class="vue">
+      <a class="retour" href="#choix-langue" aria-label="Retour">‹</a>
+      <div class="scene-premiere-fois">
+        <img class="image-premiere-fois" src="images/bonomes_keb_bek_principal_premiere_fois_sans_fond_01.png" alt="Keb et Bek qui demandent si c'est la première fois">
+        <p class="bulle-first-time">Unang<br>beses?</p>
+        <div class="boite-reponse">
+          <button type="button" class="bouton-reponse oui" data-reponse="oui">Oo</button>
+          <button type="button" class="bouton-reponse non" data-reponse="non">Hindi</button>
+        </div>
+      </div>
+    </section>
+
   </main>
 
   <script>
     // Navigation entre les vues via le hash de l'URL
     const vues = document.querySelectorAll('.vue');
-    const VUES_VALIDES = new Set(['accueil', 'choix-langue', 'premiere-fois-en', 'premiere-fois-es', 'premiere-fois-pt', 'premiere-fois-it', 'premiere-fois-zh']);
+    const VUES_VALIDES = new Set(['accueil', 'choix-langue', 'premiere-fois-en', 'premiere-fois-es', 'premiere-fois-pt', 'premiere-fois-it', 'premiere-fois-zh', 'premiere-fois-ko', 'premiere-fois-ja', 'premiere-fois-vi', 'premiere-fois-tl']);
 
     function afficherVue() {
       const brut = window.location.hash.replace('#', '');
@@ -577,15 +635,20 @@
 
     // ---------- Sélection d'une langue ----------
 
-    // Anglais, espagnol, portugais (européen), italien et mandarin mènent à
-    // leur écran "première fois" respectif ; les autres langues se
-    // contentent de se centrer dans le menu (pages pas encore construites).
+    // Anglais, espagnol, portugais (européen), italien, mandarin, coréen,
+    // japonais, vietnamien et tagalog mènent à leur écran "première fois"
+    // respectif ; les autres langues se contentent de se centrer dans le
+    // menu (pages pas encore construites).
     const DESTINATIONS_LANGUES = {
       en: 'premiere-fois-en',
       es: 'premiere-fois-es',
       pt: 'premiere-fois-pt',
       it: 'premiere-fois-it',
-      zh: 'premiere-fois-zh'
+      zh: 'premiere-fois-zh',
+      ko: 'premiere-fois-ko',
+      ja: 'premiere-fois-ja',
+      vi: 'premiere-fois-vi',
+      tl: 'premiere-fois-tl'
     };
 
     items.forEach(item => {

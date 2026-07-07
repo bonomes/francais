@@ -229,9 +229,9 @@
 
   .bulle-first-time {
     position: absolute;
-    left: 6%;
-    top: 2%;
-    width: 38%;
+    left: 2%;
+    top: 4%;
+    width: 34%;
     font-family: 'Fuzzy Bubbles', cursive;
     font-weight: 700;
     font-size: clamp(1.3rem, 5.2vw, 2.15rem);
@@ -247,15 +247,14 @@
 
   .boite-reponse {
     position: absolute;
-    left: 50%;
-    top: 1%;
-    width: min(60%, 320px);
-    transform: translateX(-50%);
+    right: 3%;
+    top: 4%;
+    width: fit-content;
     background: #FFFFFF;
     border-radius: 28px;
-    padding: 14px 16px;
+    padding: 10px 14px;
     display: flex;
-    gap: 12px;
+    gap: 10px;
     justify-content: center;
     box-shadow: 0 4px 14px rgba(102, 80, 69, 0.18);
     z-index: 3;
@@ -266,7 +265,8 @@
     font-size: clamp(1.2rem, 4.4vw, 1.7rem);
     border: none;
     border-radius: 999px;
-    padding: 8px 26px;
+    padding: 8px 20px;
+    white-space: nowrap;
     cursor: pointer;
     transition: transform 0.12s ease, box-shadow 0.12s ease;
   }

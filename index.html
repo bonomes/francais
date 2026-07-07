@@ -351,12 +351,48 @@
       </div>
     </section>
 
+    <section id="premiere-fois-es" class="vue">
+      <a class="retour" href="#choix-langue" aria-label="Retour">‹</a>
+      <div class="scene-premiere-fois">
+        <img class="image-premiere-fois" src="images/bonomes_keb_bek_principal_premiere_fois_sans_fond_01.png" alt="Keb et Bek qui demandent si c'est la première fois">
+        <p class="bulle-first-time">¿Primera<br>vez?</p>
+        <div class="boite-reponse">
+          <button type="button" class="bouton-reponse oui" data-reponse="oui">Sí</button>
+          <button type="button" class="bouton-reponse non" data-reponse="non">No</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="premiere-fois-pt" class="vue">
+      <a class="retour" href="#choix-langue" aria-label="Retour">‹</a>
+      <div class="scene-premiere-fois">
+        <img class="image-premiere-fois" src="images/bonomes_keb_bek_principal_premiere_fois_sans_fond_01.png" alt="Keb et Bek qui demandent si c'est la première fois">
+        <p class="bulle-first-time">Primeira<br>vez?</p>
+        <div class="boite-reponse">
+          <button type="button" class="bouton-reponse oui" data-reponse="oui">Sim</button>
+          <button type="button" class="bouton-reponse non" data-reponse="non">Não</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="premiere-fois-it" class="vue">
+      <a class="retour" href="#choix-langue" aria-label="Retour">‹</a>
+      <div class="scene-premiere-fois">
+        <img class="image-premiere-fois" src="images/bonomes_keb_bek_principal_premiere_fois_sans_fond_01.png" alt="Keb et Bek qui demandent si c'est la première fois">
+        <p class="bulle-first-time">Prima<br>volta?</p>
+        <div class="boite-reponse">
+          <button type="button" class="bouton-reponse oui" data-reponse="oui">Sì</button>
+          <button type="button" class="bouton-reponse non" data-reponse="non">No</button>
+        </div>
+      </div>
+    </section>
+
   </main>
 
   <script>
     // Navigation entre les vues via le hash de l'URL
     const vues = document.querySelectorAll('.vue');
-    const VUES_VALIDES = new Set(['accueil', 'choix-langue', 'premiere-fois-en']);
+    const VUES_VALIDES = new Set(['accueil', 'choix-langue', 'premiere-fois-en', 'premiere-fois-es', 'premiere-fois-pt', 'premiere-fois-it']);
 
     function afficherVue() {
       const brut = window.location.hash.replace('#', '');
@@ -507,10 +543,14 @@
 
     // ---------- Sélection d'une langue ----------
 
-    // Seul l'anglais mène quelque part pour l'instant ; les autres langues
-    // se contentent de se centrer dans le menu (pages pas encore construites).
+    // Anglais, espagnol, portugais (européen) et italien mènent à leur écran
+    // "première fois" respectif ; les autres langues se contentent de se
+    // centrer dans le menu (pages pas encore construites).
     const DESTINATIONS_LANGUES = {
-      en: 'premiere-fois-en'
+      en: 'premiere-fois-en',
+      es: 'premiere-fois-es',
+      pt: 'premiere-fois-pt',
+      it: 'premiere-fois-it'
     };
 
     items.forEach(item => {

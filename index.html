@@ -6,11 +6,12 @@
 <title>Le français avec Keb &amp; Bek</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700&family=Fuzzy+Bubbles:wght@400;700&family=Caveat+Brush&display=swap" rel="stylesheet">
 <style>
   :root {
     --fond: #F2EDE3;
     --brun: #665045;
+    --brun-fonce: #4A3B33;
     --blonde: #F1DC99;
     --peche: #F0A98B;
     --peche-fonce: #E08867;
@@ -203,6 +204,94 @@
   @media (max-width: 560px) {
     .scene-langues { width: 96vw; }
   }
+
+  /* ---------- Vue 3 : première fois (anglais) ---------- */
+
+  /* Cadre plus haut que l'image seule : l'image des personnages est ancrée
+     en bas, l'espace libéré au-dessus accueille la bulle "First time?"
+     et la boîte de réponse Yes/No. Ratio choisi à partir de la maquette
+     (image 1408x768 + environ 182px d'espace supplémentaire en haut). */
+
+  .scene-premiere-fois {
+    position: relative;
+    width: min(90vw, 520px);
+    aspect-ratio: 1408 / 950;
+  }
+
+  .image-premiere-fois {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  .bulle-first-time {
+    position: absolute;
+    left: 6%;
+    top: 2%;
+    width: 38%;
+    font-family: 'Fuzzy Bubbles', cursive;
+    font-weight: 700;
+    font-size: clamp(1.3rem, 5.2vw, 2.15rem);
+    line-height: 1.05;
+    text-align: center;
+    color: var(--peche-fonce);
+    -webkit-text-stroke: 2.5px var(--brun-fonce);
+    paint-order: stroke fill;
+    transform: rotate(-4deg);
+    pointer-events: none;
+    z-index: 2;
+  }
+
+  .boite-reponse {
+    position: absolute;
+    left: 50%;
+    top: 1%;
+    width: min(60%, 320px);
+    transform: translateX(-50%);
+    background: #FFFFFF;
+    border-radius: 28px;
+    padding: 14px 16px;
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    box-shadow: 0 4px 14px rgba(102, 80, 69, 0.18);
+    z-index: 3;
+  }
+
+  .bouton-reponse {
+    font-family: 'Caveat Brush', cursive;
+    font-size: clamp(1.2rem, 4.4vw, 1.7rem);
+    border: none;
+    border-radius: 999px;
+    padding: 8px 26px;
+    cursor: pointer;
+    transition: transform 0.12s ease, box-shadow 0.12s ease;
+  }
+
+  .bouton-reponse.oui {
+    background: var(--peche-fonce);
+    color: #FFFFFF;
+    box-shadow: 0 4px 0 #B5623F;
+  }
+
+  .bouton-reponse.non {
+    background: #FFFFFF;
+    color: var(--peche-fonce);
+    border: 2px solid var(--peche-fonce);
+    box-shadow: 0 4px 0 #D9C9BC;
+  }
+
+  .bouton-reponse:active {
+    transform: translateY(3px);
+    box-shadow: 0 1px 0 rgba(102, 80, 69, 0.3);
+  }
+
+  @media (max-width: 560px) {
+    .scene-premiere-fois { width: 96vw; }
+  }
 </style>
 </head>
 <body>
@@ -249,14 +338,28 @@
       </div>
     </section>
 
+    <section id="premiere-fois-en" class="vue">
+      <a class="retour" href="#choix-langue" aria-label="Retour">‹</a>
+      <div class="scene-premiere-fois">
+        <img class="image-premiere-fois" src="images/bonomes_keb_bek_principal_premiere_fois_sans_fond_01.png" alt="Keb et Bek qui demandent si c'est la première fois">
+        <p class="bulle-first-time">First<br>time?</p>
+        <div class="boite-reponse">
+          <button type="button" class="bouton-reponse oui" data-reponse="oui">Yes</button>
+          <button type="button" class="bouton-reponse non" data-reponse="non">No</button>
+        </div>
+      </div>
+    </section>
+
   </main>
 
   <script>
-    // Navigation entre les deux vues via le hash de l'URL
+    // Navigation entre les vues via le hash de l'URL
     const vues = document.querySelectorAll('.vue');
+    const VUES_VALIDES = new Set(['accueil', 'choix-langue', 'premiere-fois-en']);
 
     function afficherVue() {
-      const cible = window.location.hash === '#choix-langue' ? 'choix-langue' : 'accueil';
+      const brut = window.location.hash.replace('#', '');
+      const cible = VUES_VALIDES.has(brut) ? brut : 'accueil';
       vues.forEach(v => v.classList.toggle('actif', v.id === cible));
       if (cible === 'choix-langue') {
         requestAnimationFrame(() => {
@@ -403,12 +506,35 @@
 
     // ---------- Sélection d'une langue ----------
 
+    // Seul l'anglais mène quelque part pour l'instant ; les autres langues
+    // se contentent de se centrer dans le menu (pages pas encore construites).
+    const DESTINATIONS_LANGUES = {
+      en: 'premiere-fois-en'
+    };
+
     items.forEach(item => {
       item.addEventListener('click', () => {
         if (aBouge) return; // c'était un glisser-déposer, pas un clic
+
+        const dejaAuCentre = item.classList.contains('au-centre');
+        const destination = DESTINATIONS_LANGUES[item.dataset.lang];
+
+        if (dejaAuCentre && destination) {
+          window.location.hash = '#' + destination;
+          return;
+        }
+
         item.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        // La redirection vers le site traduit sera branchée une fois
-        // ces pages construites.
+      });
+    });
+
+    // ---------- Vue "première fois" : boutons Yes / No ----------
+
+    document.querySelectorAll('.bouton-reponse').forEach(bouton => {
+      bouton.addEventListener('click', () => {
+        // Branchement du tutoriel (Yes) et du menu simple (No) à venir
+        // une fois ces deux écrans construits.
+        console.log('Réponse choisie :', bouton.dataset.reponse);
       });
     });
   </script>

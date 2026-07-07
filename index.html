@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Le français avec Keb &amp; Bek</title>
+<style>
+  :root {
+    --fond: #F2EDE3;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    background: var(--fond);
+  }
+
+  body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+  }
+
+  /* Conteneur de survol : deux images superposées, la seconde en fondu au survol */
+  .survol {
+    position: relative;
+    width: min(90vw, 520px);
+    aspect-ratio: 1408 / 768;
+    display: block;
+  }
+
+  .survol img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    transition: opacity 0.35s ease;
+  }
+
+  .survol img.image-base {
+    opacity: 1;
+  }
+
+  .survol img.image-survol {
+    opacity: 0;
+  }
+
+  .survol:hover img.image-base {
+    opacity: 0;
+  }
+
+  .survol:hover img.image-survol {
+    opacity: 1;
+  }
+</style>
+</head>
+<body>
+
+  <a class="survol" href="#choix-langue">
+    <img class="image-base" src="images/bonomes_keb_bek_principal_sans_fond_01.png" alt="Keb et Bek">
+    <img class="image-survol" src="images/bonomes_keb_bek_principal_saluent_sans_fond_01.png" alt="Keb et Bek qui saluent">
+  </a>
+
+</body>
+</html>

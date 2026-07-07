@@ -4,9 +4,16 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Le français avec Keb &amp; Bek</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700&display=swap" rel="stylesheet">
 <style>
   :root {
     --fond: #F2EDE3;
+    --brun: #665045;
+    --blonde: #F1DC99;
+    --peche: #F0A98B;
+    --peche-fonce: #E08867;
   }
 
   * { box-sizing: border-box; }
@@ -16,16 +23,40 @@
     padding: 0;
     height: 100%;
     background: var(--fond);
+    overflow: hidden;
   }
 
   body {
+    font-family: 'Baloo 2', 'Noto Sans', sans-serif;
     display: flex;
     align-items: center;
     justify-content: center;
     min-height: 100vh;
   }
 
-  /* Conteneur de survol : deux images superposées, la seconde en fondu au survol */
+  #app {
+    width: 100%;
+    height: 100vh;
+    position: relative;
+  }
+
+  .vue {
+    display: none;
+    position: absolute;
+    inset: 0;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+  }
+
+  .vue.actif {
+    display: flex;
+    opacity: 1;
+  }
+
+  /* ---------- Vue 1 : accueil ---------- */
+
   .survol {
     position: relative;
     width: min(90vw, 520px);
@@ -43,29 +74,232 @@
     transition: opacity 0.35s ease;
   }
 
-  .survol img.image-base {
+  .survol img.image-base { opacity: 1; }
+  .survol img.image-survol { opacity: 0; }
+  .survol:hover img.image-base { opacity: 0; }
+  .survol:hover img.image-survol { opacity: 1; }
+
+  /* ---------- Vue 2 : choix de langue ---------- */
+
+  .scene-langues {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(4px, 2vw, 24px);
+    width: min(96vw, 900px);
+  }
+
+  .perso {
+    height: min(46vh, 340px);
+    width: auto;
+    object-fit: contain;
+    flex-shrink: 0;
+  }
+
+  .perso-gauche { transform: translateY(2%); }
+  .perso-droite { transform: translateY(2%); }
+
+  .menu-langues-conteneur {
+    position: relative;
+    width: min(46vw, 240px);
+    height: min(50vh, 320px);
+  }
+
+  .menu-langues {
+    list-style: none;
+    margin: 0;
+    padding: calc(min(50vh, 320px) / 2 - 24px) 0;
+    height: 100%;
+    overflow-y: auto;
+    scroll-snap-type: y mandatory;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .menu-langues::-webkit-scrollbar { display: none; }
+
+  .menu-langues li {
+    scroll-snap-align: center;
+    text-align: center;
+    padding: 8px 10px;
+    margin: 4px 12px;
+    border-radius: 999px;
+    font-size: 1.05rem;
+    font-weight: 500;
+    color: var(--brun);
+    opacity: 0.35;
+    transform: scale(0.82);
+    transition: opacity 0.15s ease, transform 0.15s ease, background 0.15s ease, color 0.15s ease;
+    cursor: pointer;
+    user-select: none;
+    white-space: nowrap;
+  }
+
+  .menu-langues li.au-centre {
     opacity: 1;
+    transform: scale(1.18);
+    font-weight: 700;
+    color: var(--peche-fonce);
+    background: #FFFFFF;
+    box-shadow: 0 2px 10px rgba(102, 80, 69, 0.12);
   }
 
-  .survol img.image-survol {
-    opacity: 0;
+  .fondu {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 25%;
+    pointer-events: none;
+    z-index: 2;
   }
 
-  .survol:hover img.image-base {
-    opacity: 0;
+  .fondu-haut {
+    top: 0;
+    background: linear-gradient(var(--fond), transparent);
   }
 
-  .survol:hover img.image-survol {
+  .fondu-bas {
+    bottom: 0;
+    background: linear-gradient(transparent, var(--fond));
+  }
+
+  .retour {
+    position: absolute;
+    top: 24px;
+    left: 24px;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #FFFFFF;
+    color: var(--brun);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    text-decoration: none;
+    box-shadow: 0 2px 8px rgba(102, 80, 69, 0.15);
+    opacity: 0.85;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    z-index: 3;
+  }
+
+  .retour:hover {
     opacity: 1;
+    transform: scale(1.08);
+  }
+
+  @media (max-width: 560px) {
+    .perso { height: 26vh; }
+    .menu-langues-conteneur { width: 50vw; height: 44vh; }
+    .menu-langues { padding: calc(44vh / 2 - 20px) 0; }
   }
 </style>
 </head>
 <body>
 
-  <a class="survol" href="#choix-langue">
-    <img class="image-base" src="images/bonomes_keb_bek_principal_sans_fond_01.png" alt="Keb et Bek">
-    <img class="image-survol" src="images/bonomes_keb_bek_principal_saluent_sans_fond_01.png" alt="Keb et Bek qui saluent">
-  </a>
+  <main id="app">
+
+    <section id="accueil" class="vue">
+      <a class="survol" href="#choix-langue">
+        <img class="image-base" src="images/bonomes_keb_bek_principal_sans_fond_01.png" alt="Keb et Bek">
+        <img class="image-survol" src="images/bonomes_keb_bek_principal_saluent_sans_fond_01.png" alt="Keb et Bek qui saluent">
+      </a>
+    </section>
+
+    <section id="choix-langue" class="vue">
+      <a class="retour" href="#accueil" aria-label="Retour">‹</a>
+      <div class="scene-langues">
+        <img class="perso perso-gauche" src="images/bonomes_keb_presente_sans_fond_01.png" alt="Keb">
+
+        <div class="menu-langues-conteneur">
+          <div class="fondu fondu-haut"></div>
+          <ul class="menu-langues" id="menuLangues">
+            <li data-lang="en">English</li>
+            <li data-lang="es">Español</li>
+            <li data-lang="pt">Português</li>
+            <li data-lang="it">Italiano</li>
+            <li data-lang="zh">中文</li>
+            <li data-lang="ko">한국어</li>
+            <li data-lang="vi">Tiếng Việt</li>
+            <li data-lang="ja">日本語</li>
+            <li data-lang="tl">Tagalog</li>
+            <li data-lang="de">Deutsch</li>
+            <li data-lang="nl">Nederlands</li>
+            <li data-lang="ca">Català</li>
+            <li data-lang="ht">Kreyòl</li>
+            <li data-lang="id">Bahasa Indonesia</li>
+            <li data-lang="fa">فارسی</li>
+            <li data-lang="ru">Русский</li>
+            <li data-lang="no">Norsk</li>
+            <li data-lang="sv">Svenska</li>
+            <li data-lang="eo">Esperanto</li>
+          </ul>
+          <div class="fondu fondu-bas"></div>
+        </div>
+
+        <img class="perso perso-droite" src="images/bonomes_bek_presente_sans_fond_01.png" alt="Bek">
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    // Navigation entre les deux vues via le hash de l'URL
+    const vues = document.querySelectorAll('.vue');
+
+    function afficherVue() {
+      const cible = window.location.hash === '#choix-langue' ? 'choix-langue' : 'accueil';
+      vues.forEach(v => v.classList.toggle('actif', v.id === cible));
+      if (cible === 'choix-langue') {
+        requestAnimationFrame(centrerMenu);
+      }
+    }
+
+    window.addEventListener('hashchange', afficherVue);
+    afficherVue();
+
+    // Effet "roue" du menu de langues : l'item le plus proche du centre grossit
+    const menu = document.getElementById('menuLangues');
+    const items = Array.from(menu.querySelectorAll('li'));
+    let repositionnement = false;
+
+    function centrerMenu() {
+      const rectMenu = menu.getBoundingClientRect();
+      const centreMenu = rectMenu.top + rectMenu.height / 2;
+      let plusProche = null;
+      let plusPetiteDistance = Infinity;
+
+      items.forEach(item => {
+        const rect = item.getBoundingClientRect();
+        const centreItem = rect.top + rect.height / 2;
+        const distance = Math.abs(centreItem - centreMenu);
+        if (distance < plusPetiteDistance) {
+          plusPetiteDistance = distance;
+          plusProche = item;
+        }
+      });
+
+      items.forEach(item => item.classList.toggle('au-centre', item === plusProche));
+    }
+
+    menu.addEventListener('scroll', () => {
+      if (!repositionnement) {
+        repositionnement = true;
+        requestAnimationFrame(() => {
+          centrerMenu();
+          repositionnement = false;
+        });
+      }
+    });
+
+    items.forEach(item => {
+      item.addEventListener('click', () => {
+        item.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        // La sélection de langue et la redirection vers le site
+        // traduit seront branchées une fois ces pages construites.
+      });
+    });
+  </script>
 
 </body>
 </html>

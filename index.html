@@ -403,10 +403,13 @@
     display: block;
   }
 
+  /* Comme .scene-premiere-fois : boîte plus haute que l'image seule, image
+     ancrée en bas, espace libéré au-dessus réservé à la bulle "non-traduit"
+     pour qu'elle ne chevauche plus les cheveux de Bek. */
   .scene-tutoriel-reveil {
     position: relative;
     width: min(60vw, 300px);
-    aspect-ratio: 848 / 1264;
+    aspect-ratio: 848 / 1580;
   }
 
   .etape-reveil {
@@ -423,9 +426,11 @@
   }
 
   .etape-reveil img {
+    position: absolute;
+    bottom: 0;
+    left: 0;
     width: 100%;
-    height: 100%;
-    object-fit: contain;
+    height: auto;
     display: block;
     border-radius: 18px;
   }
@@ -438,7 +443,7 @@
   .bulle-tuto {
     position: absolute;
     bottom: 82%;
-    max-width: 62%;
+    max-width: 80%;
     font-family: 'Fuzzy Bubbles', cursive;
     font-weight: 700;
     font-size: clamp(1rem, 3.6vw, 1.5rem);
@@ -447,6 +452,14 @@
     -webkit-text-stroke: 2px var(--brun-fonce);
     paint-order: stroke fill;
     pointer-events: none;
+  }
+
+  /* Répliques plus longues (ex. l'idée du site chez Keb) : police réduite
+     pour tenir sur moins de lignes et rester dans l'espace disponible
+     au-dessus des personnages. */
+  .bulle-tuto.longue {
+    font-size: clamp(0.82rem, 2.8vw, 1.12rem);
+    line-height: 1.2;
   }
 
   .bulle-tuto.cote-keb {
@@ -537,7 +550,8 @@
     .nav-tuto { width: 32px; height: 32px; font-size: 1.1rem; }
     .nav-tuto.precedent { left: 2%; }
     .nav-tuto.suivant { right: 2%; }
-    .bulle-tuto { font-size: clamp(0.88rem, 4vw, 1.2rem); max-width: 68%; }
+    .bulle-tuto { font-size: clamp(0.88rem, 4vw, 1.2rem); max-width: 85%; }
+    .bulle-tuto.longue { font-size: clamp(0.76rem, 3.2vw, 0.98rem); }
   }
 </style>
 </head>
@@ -635,7 +649,7 @@
 
               <div class="etape-duo" data-step="5">
                 <img src="images/bonomes_keb_bek_oui_04.png" alt="Keb répond avec son idée">
-                <p class="bulle-tuto cote-keb">Great! Let's make a website with points, achievements, trophies, cards to collect! You do the drawings, I'll organize.</p>
+                <p class="bulle-tuto cote-keb longue">So I answered: "Great! Let's make a website with points, achievements, trophies, cards to collect! You do the drawings, I'll organize."</p>
               </div>
 
             </div>
@@ -1115,8 +1129,16 @@
     const boutonSuivantTutoEn = document.getElementById('suivantTutoEn');
     const fenetreTutorielEn = document.getElementById('fenetreTutorielEn');
     let indexTutoEn = 0;
+    let minuteurReveilEn = null;
+
+    // Étape 1 (Bek endormie) n'a pas de réplique : elle avance seule vers
+    // l'étape 2 après une courte pause, plutôt que d'attendre un clic dans
+    // le vide. Toute navigation manuelle entre-temps annule le minuteur.
+    const DELAI_AUTO_REVEIL = 2000;
 
     function afficherEtapeTutoEn(nouvelIndex, instantane) {
+      clearTimeout(minuteurReveilEn);
+
       indexTutoEn = Math.max(0, Math.min(NB_ETAPES - 1, nouvelIndex));
 
       etapesTutoEn.forEach(etape => {
@@ -1136,6 +1158,12 @@
         glissiereTutorielEn.style.transition = '';
       } else {
         glissiereTutorielEn.classList.toggle('vers-reveil', versReveil);
+      }
+
+      if (indexTutoEn === 1) {
+        minuteurReveilEn = setTimeout(() => {
+          if (indexTutoEn === 1) etapeSuivanteEn();
+        }, DELAI_AUTO_REVEIL);
       }
     }
 

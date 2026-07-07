@@ -338,109 +338,166 @@
 
   /* ---------- Vue 4 : tutoriel (dialogue Keb & Bek après "Yes") ---------- */
 
-  /* Diaporama à cadre fixe : les images fournies alternent entre un format
-     paysage (duo debout, 1408x768) et un format portrait (Bek seule pendant
-     le flash-back du réveil, 848x1264). Le cadre garde une taille stable,
-     chaque image s'y ajuste par object-fit: contain plutôt que d'imposer
-     un aspect-ratio unique qui écraserait l'un des deux formats. */
+  /* Pas de cadre, pas de bande de légende : Keb et Bek continuent à parler
+     exactement là où ils se trouvaient sur l'écran "première fois" (bulles
+     au-dessus de leur tête, même police que partout ailleurs). Le duo
+     réutilise donc très exactement la même boîte que .scene-premiere-fois
+     (même largeur, même aspect-ratio, image ancrée en bas) pour que le
+     point de départ soit pixel pour pixel identique — aucun sursaut visuel
+     à l'arrivée sur cette vue.
 
-  .scene-tutoriel {
-    position: relative;
-    width: min(92vw, 560px);
-    height: min(76vh, 680px);
-  }
+     Deux "panneaux" plein écran empilés verticalement (duo en haut, réveil
+     en bas) dans une fenêtre qui coulisse par transform : quand Bek évoque
+     sa pensée du matin, on descend au panneau du réveil ; une fois la
+     réplique de Bek relevée dite, on remonte au panneau du duo pour la
+     suite de l'échange. */
 
-  .diapo-conteneur {
+  .fenetre-tutoriel {
     position: relative;
     width: 100%;
     height: 100%;
-    border-radius: 26px;
     overflow: hidden;
-    background: #FFFFFF;
-    box-shadow: 0 10px 32px rgba(102, 80, 69, 0.2);
-    cursor: pointer;
-    touch-action: pan-y;
   }
 
-  .diapo {
-    position: absolute;
-    inset: 0;
+  .glissiere-verticale {
+    width: 100%;
+    height: 200%;
+    transition: transform 0.75s cubic-bezier(0.65, 0, 0.35, 1);
+  }
+
+  .glissiere-verticale.vers-reveil {
+    transform: translateY(-50%);
+  }
+
+  .panneau-tuto {
+    width: 100%;
+    height: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
+  }
+
+  /* Le panneau duo réutilise .scene-premiere-fois telle quelle (voir Vue 3)
+     pour la boîte ; chaque réplique est une couche indépendante empilée en
+     absolu à l'intérieur, qu'on fait apparaître/disparaître en fondu. */
+
+  .etape-duo {
+    position: absolute;
+    inset: 0;
     opacity: 0;
-    transform: translateX(3%);
-    transition: opacity 0.35s ease, transform 0.35s ease;
+    transition: opacity 0.4s ease;
     pointer-events: none;
   }
 
-  .diapo.actif {
+  .etape-duo.actif {
     opacity: 1;
-    transform: translateX(0);
     pointer-events: auto;
-    z-index: 2;
   }
 
-  .diapo img {
-    max-width: 100%;
-    max-height: 100%;
+  .etape-duo img {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  .scene-tutoriel-reveil {
+    position: relative;
+    width: min(60vw, 300px);
+    aspect-ratio: 848 / 1264;
+  }
+
+  .etape-reveil {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    pointer-events: none;
+  }
+
+  .etape-reveil.actif {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .etape-reveil img {
+    width: 100%;
+    height: 100%;
     object-fit: contain;
     display: block;
-    user-select: none;
-    -webkit-user-drag: none;
+    border-radius: 18px;
   }
 
-  .bande-legende {
+  /* Bulles de dialogue : même famille que .bulle-first-time, mais libres de
+     s'étendre davantage puisqu'il n'y a plus de cadre pour les contenir.
+     Ancrées par "bottom" (et non "top") pour qu'un texte plus long pousse
+     vers le haut, loin des personnages, plutôt que d'empiéter sur eux. */
+
+  .bulle-tuto {
     position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    padding: 22px 22px 20px;
-    background: linear-gradient(transparent, rgba(74, 59, 51, 0.85) 45%);
-    z-index: 3;
-  }
-
-  .bande-legende p {
-    margin: 0;
-    color: #FFFFFF;
+    bottom: 82%;
+    max-width: 62%;
     font-family: 'Fuzzy Bubbles', cursive;
     font-weight: 700;
-    font-size: clamp(1rem, 3.6vw, 1.3rem);
-    line-height: 1.32;
-    text-align: center;
+    font-size: clamp(1rem, 3.6vw, 1.5rem);
+    line-height: 1.25;
+    color: var(--peche-fonce);
+    -webkit-text-stroke: 2px var(--brun-fonce);
+    paint-order: stroke fill;
+    pointer-events: none;
   }
 
-  /* La seule réplique volontairement non traduite du cours : signalée par
-     un léger accent péche plutôt que par une explication textuelle. */
-  .bande-legende.non-traduit p {
+  .bulle-tuto.cote-keb {
+    left: 2%;
+    text-align: left;
+    transform: rotate(-3deg);
+  }
+
+  .bulle-tuto.cote-bek {
+    right: 2%;
+    text-align: right;
+    transform: rotate(2deg);
+  }
+
+  /* La réplique volontairement non traduite de Bek : accent péche plus
+     doux plutôt qu'une explication textuelle. */
+  .bulle-tuto.non-traduit {
     color: var(--peche);
+    bottom: auto;
+    top: 4%;
+    left: 50%;
+    right: auto;
+    max-width: 80%;
+    text-align: center;
+    transform: translateX(-50%) rotate(-2deg);
   }
 
-  .points-diapo {
+  .points-tuto {
     position: absolute;
-    top: 16px;
+    top: 18px;
     left: 50%;
     transform: translateX(-50%);
     display: flex;
     gap: 7px;
-    z-index: 4;
+    z-index: 5;
   }
 
-  .points-diapo .point {
+  .points-tuto .point {
     width: 7px;
     height: 7px;
     border-radius: 50%;
-    background: rgba(255, 255, 255, 0.55);
-    box-shadow: 0 0 3px rgba(74, 59, 51, 0.4);
+    background: rgba(102, 80, 69, 0.25);
     transition: background 0.2s ease, transform 0.2s ease;
   }
 
-  .points-diapo .point.actif {
-    background: #FFFFFF;
+  .points-tuto .point.actif {
+    background: var(--peche-fonce);
     transform: scale(1.35);
   }
 
-  .nav-diapo {
+  .nav-tuto {
     position: absolute;
     top: 50%;
     transform: translateY(-50%);
@@ -457,30 +514,30 @@
     justify-content: center;
     cursor: pointer;
     box-shadow: 0 2px 8px rgba(102, 80, 69, 0.2);
-    opacity: 0.9;
-    z-index: 4;
+    opacity: 0.85;
+    z-index: 5;
     transition: opacity 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
   }
 
-  .nav-diapo:hover {
+  .nav-tuto:hover {
     opacity: 1;
     transform: translateY(-50%) translateY(1px);
-    box-shadow: 0 1px 4px rgba(102, 80, 69, 0.25);
   }
 
-  .nav-diapo:disabled {
+  .nav-tuto:disabled {
     opacity: 0.2;
     cursor: default;
     transform: translateY(-50%);
-    box-shadow: 0 2px 8px rgba(102, 80, 69, 0.2);
   }
 
-  .nav-diapo.precedent { left: 12px; }
-  .nav-diapo.suivant { right: 12px; }
+  .nav-tuto.precedent { left: 4%; }
+  .nav-tuto.suivant { right: 4%; }
 
   @media (max-width: 560px) {
-    .scene-tutoriel { width: 96vw; height: 70vh; }
-    .nav-diapo { width: 34px; height: 34px; font-size: 1.15rem; }
+    .nav-tuto { width: 32px; height: 32px; font-size: 1.1rem; }
+    .nav-tuto.precedent { left: 2%; }
+    .nav-tuto.suivant { right: 2%; }
+    .bulle-tuto { font-size: clamp(0.88rem, 4vw, 1.2rem); max-width: 68%; }
   }
 </style>
 </head>
@@ -542,59 +599,64 @@
 
     <section id="tutoriel-en" class="vue">
       <a class="retour" href="#premiere-fois-en" aria-label="Retour">‹</a>
-      <div class="scene-tutoriel">
-        <div class="diapo-conteneur" id="diapoConteneurEn">
 
-          <div class="points-diapo" id="pointsDiapoEn">
-            <span class="point"></span>
-            <span class="point"></span>
-            <span class="point"></span>
-            <span class="point"></span>
-            <span class="point"></span>
-            <span class="point"></span>
-          </div>
+      <div class="points-tuto" id="pointsTutoEn">
+        <span class="point"></span>
+        <span class="point"></span>
+        <span class="point"></span>
+        <span class="point"></span>
+        <span class="point"></span>
+        <span class="point"></span>
+      </div>
+      <button type="button" class="nav-tuto precedent" id="precedentTutoEn" aria-label="Précédent">‹</button>
+      <button type="button" class="nav-tuto suivant" id="suivantTutoEn" aria-label="Suivant">›</button>
 
-          <div class="diapo" data-index="0">
-            <img src="images/bonomes_keb_bek_oui_01.png" alt="Bek parle à Keb">
-            <div class="bande-legende">
-              <p>This morning, when I woke up, a thought crossed my mind:</p>
+      <div class="fenetre-tutoriel" id="fenetreTutorielEn">
+        <div class="glissiere-verticale" id="glissiereTutorielEn">
+
+          <!-- Panneau du haut : Keb et Bek, même boîte que #premiere-fois-en -->
+          <div class="panneau-tuto">
+            <div class="scene-premiere-fois">
+
+              <div class="etape-duo" data-step="0">
+                <img src="images/bonomes_keb_bek_oui_01.png" alt="Bek parle à Keb">
+                <p class="bulle-tuto cote-bek">This morning, when I woke up, a thought crossed my mind:</p>
+              </div>
+
+              <div class="etape-duo" data-step="3">
+                <img src="images/bonomes_keb_bek_oui_02.png" alt="Keb traduit ce que Bek a dit">
+                <p class="bulle-tuto cote-keb">I want to help the whole world learn French.</p>
+              </div>
+
+              <div class="etape-duo" data-step="4">
+                <img src="images/bonomes_keb_bek_oui_03.png" alt="Bek continue de parler">
+                <p class="bulle-tuto cote-bek">So I asked my friend Keb to help me. He always has good ideas.</p>
+              </div>
+
+              <div class="etape-duo" data-step="5">
+                <img src="images/bonomes_keb_bek_oui_04.png" alt="Keb répond avec son idée">
+                <p class="bulle-tuto cote-keb">Great! Let's make a website with points, achievements, trophies, cards to collect! You do the drawings, I'll organize.</p>
+              </div>
+
             </div>
           </div>
 
-          <div class="diapo" data-index="1">
-            <img src="images/bonomes_keb_bek_oui_reveil_01.png" alt="Bek se réveille">
-          </div>
+          <!-- Panneau du bas : flash-back, Bek se réveille -->
+          <div class="panneau-tuto">
+            <div class="scene-tutoriel-reveil">
 
-          <div class="diapo" data-index="2">
-            <img src="images/bonomes_keb_bek_oui_reveil_02.png" alt="Bek se relève et parle">
-            <div class="bande-legende non-traduit">
-              <p>Je veux aider toute la planète à apprendre le français.</p>
+              <div class="etape-reveil" data-step="1">
+                <img src="images/bonomes_keb_bek_oui_reveil_01.png" alt="Bek se réveille">
+              </div>
+
+              <div class="etape-reveil" data-step="2">
+                <img src="images/bonomes_keb_bek_oui_reveil_02.png" alt="Bek se relève et parle">
+                <p class="bulle-tuto non-traduit">Je veux aider toute la planète à apprendre le français.</p>
+              </div>
+
             </div>
           </div>
 
-          <div class="diapo" data-index="3">
-            <img src="images/bonomes_keb_bek_oui_02.png" alt="Keb traduit ce que Bek a dit">
-            <div class="bande-legende">
-              <p>I want to help the whole world learn French.</p>
-            </div>
-          </div>
-
-          <div class="diapo" data-index="4">
-            <img src="images/bonomes_keb_bek_oui_03.png" alt="Bek continue de parler">
-            <div class="bande-legende">
-              <p>So I asked my friend Keb to help me. He always has good ideas.</p>
-            </div>
-          </div>
-
-          <div class="diapo" data-index="5">
-            <img src="images/bonomes_keb_bek_oui_04.png" alt="Keb répond avec son idée">
-            <div class="bande-legende">
-              <p>Great! Let's make a website with points, achievements, trophies, cards to collect! You do the drawings, I'll organize.</p>
-            </div>
-          </div>
-
-          <button type="button" class="nav-diapo precedent" id="precedentDiapoEn" aria-label="Diapositive précédente">‹</button>
-          <button type="button" class="nav-diapo suivant" id="suivantDiapoEn" aria-label="Diapositive suivante">›</button>
         </div>
       </div>
     </section>
@@ -833,7 +895,7 @@
         });
       }
       if (cible === 'tutoriel-en') {
-        requestAnimationFrame(() => afficherDiapoEn(0));
+        requestAnimationFrame(() => afficherEtapeTutoEn(0, true));
       }
     }
 
@@ -1036,63 +1098,85 @@
       });
     });
 
-    // ---------- Vue "tutoriel" : diaporama Keb & Bek ----------
+    // ---------- Vue "tutoriel" : Keb & Bek continuent de parler ----------
 
-    const diapoConteneurEn = document.getElementById('diapoConteneurEn');
-    const diapositivesEn = Array.from(diapoConteneurEn.querySelectorAll('.diapo'));
-    const pointsEn = Array.from(document.querySelectorAll('#pointsDiapoEn .point'));
-    const boutonPrecedentEn = document.getElementById('precedentDiapoEn');
-    const boutonSuivantEn = document.getElementById('suivantDiapoEn');
-    let indexDiapoEn = 0;
+    // Six étapes narratives. Les étapes 0/3/4/5 vivent dans le panneau du
+    // haut (duo, même position que l'écran "Yes/No") ; les étapes 1/2 dans
+    // le panneau du bas (flash-back du réveil). On ne déplace la fenêtre
+    // que lorsqu'on change de panneau — jamais entre deux étapes du même
+    // panneau, où seule la réplique change en fondu.
+    const PANNEAU_PAR_ETAPE = ['duo', 'reveil', 'reveil', 'duo', 'duo', 'duo'];
+    const NB_ETAPES = PANNEAU_PAR_ETAPE.length;
 
-    function afficherDiapoEn(nouvelIndex) {
-      indexDiapoEn = Math.max(0, Math.min(diapositivesEn.length - 1, nouvelIndex));
-      diapositivesEn.forEach((diapo, i) => diapo.classList.toggle('actif', i === indexDiapoEn));
-      pointsEn.forEach((point, i) => point.classList.toggle('actif', i === indexDiapoEn));
-      boutonPrecedentEn.disabled = indexDiapoEn === 0;
-      boutonSuivantEn.disabled = indexDiapoEn === diapositivesEn.length - 1;
+    const glissiereTutorielEn = document.getElementById('glissiereTutorielEn');
+    const etapesTutoEn = Array.from(document.querySelectorAll('#tutoriel-en [data-step]'));
+    const pointsTutoEn = Array.from(document.querySelectorAll('#pointsTutoEn .point'));
+    const boutonPrecedentTutoEn = document.getElementById('precedentTutoEn');
+    const boutonSuivantTutoEn = document.getElementById('suivantTutoEn');
+    const fenetreTutorielEn = document.getElementById('fenetreTutorielEn');
+    let indexTutoEn = 0;
+
+    function afficherEtapeTutoEn(nouvelIndex, instantane) {
+      indexTutoEn = Math.max(0, Math.min(NB_ETAPES - 1, nouvelIndex));
+
+      etapesTutoEn.forEach(etape => {
+        etape.classList.toggle('actif', Number(etape.dataset.step) === indexTutoEn);
+      });
+      pointsTutoEn.forEach((point, i) => point.classList.toggle('actif', i === indexTutoEn));
+      boutonPrecedentTutoEn.disabled = indexTutoEn === 0;
+      boutonSuivantTutoEn.disabled = indexTutoEn === NB_ETAPES - 1;
+
+      const versReveil = PANNEAU_PAR_ETAPE[indexTutoEn] === 'reveil';
+
+      if (instantane) {
+        glissiereTutorielEn.style.transition = 'none';
+        glissiereTutorielEn.classList.toggle('vers-reveil', versReveil);
+        // force le reflow pour appliquer le changement sans transition, puis on la restaure
+        void glissiereTutorielEn.offsetHeight;
+        glissiereTutorielEn.style.transition = '';
+      } else {
+        glissiereTutorielEn.classList.toggle('vers-reveil', versReveil);
+      }
     }
 
-    function diapoSuivanteEn() {
-      if (indexDiapoEn < diapositivesEn.length - 1) afficherDiapoEn(indexDiapoEn + 1);
+    function etapeSuivanteEn() {
+      if (indexTutoEn < NB_ETAPES - 1) afficherEtapeTutoEn(indexTutoEn + 1);
     }
 
-    function diapoPrecedenteEn() {
-      if (indexDiapoEn > 0) afficherDiapoEn(indexDiapoEn - 1);
+    function etapePrecedenteEn() {
+      if (indexTutoEn > 0) afficherEtapeTutoEn(indexTutoEn - 1);
     }
 
-    // Boutons précédent/suivant (stopPropagation pour ne pas déclencher
-    // aussi le clic sur l'image, qui avance également le diaporama).
-    boutonSuivantEn.addEventListener('click', (e) => { e.stopPropagation(); diapoSuivanteEn(); });
-    boutonPrecedentEn.addEventListener('click', (e) => { e.stopPropagation(); diapoPrecedenteEn(); });
+    boutonSuivantTutoEn.addEventListener('click', (e) => { e.stopPropagation(); etapeSuivanteEn(); });
+    boutonPrecedentTutoEn.addEventListener('click', (e) => { e.stopPropagation(); etapePrecedenteEn(); });
 
-    // Clic sur l'image : avance d'une diapositive.
-    diapoConteneurEn.addEventListener('click', () => diapoSuivanteEn());
+    // Clic n'importe où dans la scène : avance d'une étape.
+    fenetreTutorielEn.addEventListener('click', () => etapeSuivanteEn());
 
     // Flèches du clavier, actives seulement quand cette vue est affichée.
     window.addEventListener('keydown', (e) => {
       if (!document.getElementById('tutoriel-en').classList.contains('actif')) return;
-      if (e.key === 'ArrowRight') diapoSuivanteEn();
-      if (e.key === 'ArrowLeft') diapoPrecedenteEn();
+      if (e.key === 'ArrowRight') etapeSuivanteEn();
+      if (e.key === 'ArrowLeft') etapePrecedenteEn();
     });
 
     // Glisser tactile (mobile) : gauche = suivant, droite = précédent.
-    let departXTactileEn = null;
+    let departXTactileTutoEn = null;
 
-    diapoConteneurEn.addEventListener('touchstart', (e) => {
-      departXTactileEn = e.touches[0].clientX;
+    fenetreTutorielEn.addEventListener('touchstart', (e) => {
+      departXTactileTutoEn = e.touches[0].clientX;
     }, { passive: true });
 
-    diapoConteneurEn.addEventListener('touchend', (e) => {
-      if (departXTactileEn === null) return;
-      const delta = e.changedTouches[0].clientX - departXTactileEn;
+    fenetreTutorielEn.addEventListener('touchend', (e) => {
+      if (departXTactileTutoEn === null) return;
+      const delta = e.changedTouches[0].clientX - departXTactileTutoEn;
       if (Math.abs(delta) > 40) {
-        if (delta < 0) diapoSuivanteEn(); else diapoPrecedenteEn();
+        if (delta < 0) etapeSuivanteEn(); else etapePrecedenteEn();
       }
-      departXTactileEn = null;
+      departXTactileTutoEn = null;
     }, { passive: true });
 
-    afficherDiapoEn(0);
+    afficherEtapeTutoEn(0, true);
   </script>
 
 </body>

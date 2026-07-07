@@ -290,8 +290,30 @@
     box-shadow: 0 1px 0 rgba(102, 80, 69, 0.3);
   }
 
+  /* Variante « une-ligne » : pour les traductions dont le premier mot est
+     long et le second court (ex. « Primeira vez? », « ¿Primera vez? »),
+     le texte sur deux lignes empiétait sur les cheveux de Keb. On passe
+     alors sur une seule ligne, décalée davantage vers la gauche et
+     légèrement réduite, pour dégager une marge nette avec le personnage. */
+  .bulle-first-time.une-ligne {
+    left: -16%;
+    width: max-content;
+    max-width: 60%;
+    white-space: nowrap;
+    font-size: clamp(1.1rem, 4.3vw, 1.78rem);
+  }
+
   @media (max-width: 560px) {
     .scene-premiere-fois { width: 96vw; }
+
+    /* Sur mobile, la scène occupe presque toute la largeur de l'écran :
+       un décalage de -10% pousserait le texte hors du viewport. On réduit
+       le décalage et la taille de police pour rester à l'écran tout en
+       gardant le dégagement par rapport aux cheveux de Keb. */
+    .bulle-first-time.une-ligne {
+      left: -1%;
+      font-size: clamp(0.82rem, 3.5vw, 1.25rem);
+    }
   }
 </style>
 </head>
@@ -355,7 +377,7 @@
       <a class="retour" href="#choix-langue" aria-label="Retour">‹</a>
       <div class="scene-premiere-fois">
         <img class="image-premiere-fois" src="images/bonomes_keb_bek_principal_premiere_fois_sans_fond_01.png" alt="Keb et Bek qui demandent si c'est la première fois">
-        <p class="bulle-first-time">¿Primera<br>vez?</p>
+        <p class="bulle-first-time une-ligne">¿Primera vez?</p>
         <div class="boite-reponse">
           <button type="button" class="bouton-reponse oui" data-reponse="oui">Sí</button>
           <button type="button" class="bouton-reponse non" data-reponse="non">No</button>
@@ -367,7 +389,7 @@
       <a class="retour" href="#choix-langue" aria-label="Retour">‹</a>
       <div class="scene-premiere-fois">
         <img class="image-premiere-fois" src="images/bonomes_keb_bek_principal_premiere_fois_sans_fond_01.png" alt="Keb et Bek qui demandent si c'est la première fois">
-        <p class="bulle-first-time">Primeira<br>vez?</p>
+        <p class="bulle-first-time une-ligne">Primeira vez?</p>
         <div class="boite-reponse">
           <button type="button" class="bouton-reponse oui" data-reponse="oui">Sim</button>
           <button type="button" class="bouton-reponse non" data-reponse="non">Não</button>
@@ -387,12 +409,24 @@
       </div>
     </section>
 
+    <section id="premiere-fois-zh" class="vue">
+      <a class="retour" href="#choix-langue" aria-label="Retour">‹</a>
+      <div class="scene-premiere-fois">
+        <img class="image-premiere-fois" src="images/bonomes_keb_bek_principal_premiere_fois_sans_fond_01.png" alt="Keb et Bek qui demandent si c'est la première fois">
+        <p class="bulle-first-time une-ligne">第一次吗？</p>
+        <div class="boite-reponse">
+          <button type="button" class="bouton-reponse oui" data-reponse="oui">是</button>
+          <button type="button" class="bouton-reponse non" data-reponse="non">不是</button>
+        </div>
+      </div>
+    </section>
+
   </main>
 
   <script>
     // Navigation entre les vues via le hash de l'URL
     const vues = document.querySelectorAll('.vue');
-    const VUES_VALIDES = new Set(['accueil', 'choix-langue', 'premiere-fois-en', 'premiere-fois-es', 'premiere-fois-pt', 'premiere-fois-it']);
+    const VUES_VALIDES = new Set(['accueil', 'choix-langue', 'premiere-fois-en', 'premiere-fois-es', 'premiere-fois-pt', 'premiere-fois-it', 'premiere-fois-zh']);
 
     function afficherVue() {
       const brut = window.location.hash.replace('#', '');
@@ -543,14 +577,15 @@
 
     // ---------- Sélection d'une langue ----------
 
-    // Anglais, espagnol, portugais (européen) et italien mènent à leur écran
-    // "première fois" respectif ; les autres langues se contentent de se
-    // centrer dans le menu (pages pas encore construites).
+    // Anglais, espagnol, portugais (européen), italien et mandarin mènent à
+    // leur écran "première fois" respectif ; les autres langues se
+    // contentent de se centrer dans le menu (pages pas encore construites).
     const DESTINATIONS_LANGUES = {
       en: 'premiere-fois-en',
       es: 'premiere-fois-es',
       pt: 'premiere-fois-pt',
-      it: 'premiere-fois-it'
+      it: 'premiere-fois-it',
+      zh: 'premiere-fois-zh'
     };
 
     items.forEach(item => {

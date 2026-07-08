@@ -524,6 +524,54 @@
     box-shadow: 0 1px 0 rgba(102, 80, 69, 0.3);
   }
 
+  /* ---------- Vue "célébration" : après "Let's start!" ---------- */
+  /* Écran bref (auto-avance, voir DUREE_CELEBRATION dans le script) entre
+     la fin du tutoriel et connexion/menu-principal. L'image contient déjà
+     ses confettis peints ; l'effet CSS amplifie juste l'entrée (rebond) et
+     ajoute un mouvement continu léger + une lueur pulsée derrière. */
+
+  .scene-celebration {
+    position: relative;
+    width: min(88vw, 560px);
+    aspect-ratio: 1408 / 768;
+    cursor: pointer;
+  }
+
+  .scene-celebration::before {
+    content: '';
+    position: absolute;
+    inset: -12%;
+    z-index: -1;
+    background: radial-gradient(circle, rgba(240, 169, 139, 0.4), transparent 70%);
+    animation: lueurCelebration 2.4s ease-in-out infinite;
+  }
+
+  .image-celebration {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: contain;
+    animation:
+      rebondCelebration 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both,
+      flotteCelebration 2.4s ease-in-out 0.6s infinite;
+  }
+
+  @keyframes rebondCelebration {
+    0%   { opacity: 0; transform: scale(0.7) translateY(14px); }
+    60%  { opacity: 1; transform: scale(1.06) translateY(-4px); }
+    100% { opacity: 1; transform: scale(1) translateY(0); }
+  }
+
+  @keyframes flotteCelebration {
+    0%, 100% { transform: translateY(0); }
+    50%      { transform: translateY(-10px); }
+  }
+
+  @keyframes lueurCelebration {
+    0%, 100% { opacity: 0.5; transform: scale(0.92); }
+    50%      { opacity: 1; transform: scale(1.05); }
+  }
+
   .points-tuto {
     position: absolute;
     top: 18px;
@@ -2894,6 +2942,17 @@
       </div>
     </section>
 
+    <!-- ============ Vue "célébration" : après "Let's start!" ============ -->
+    <!-- Écran bref entre la fin du tutoriel et connexion/menu-principal,
+         auto-avance après DUREE_CELEBRATION (voir script) ; clic n'importe
+         où saute directement à la suite. Commune à toutes les langues du
+         tutoriel — la langue n'a pas d'incidence sur cette vue. -->
+    <section id="celebration" class="vue">
+      <div class="scene-celebration">
+        <img class="image-celebration" src="images/bonomes_keb_bek_oui_06a.png" alt="Keb et Bek qui sautent de joie">
+      </div>
+    </section>
+
     <!-- ============ Vue "connexion" : compte ou invité ============ -->
     <!-- Atteinte après le tutoriel ("Let's start!") ou après "No" sur
          l'écran "First time?" — mais seulement si personne n'est déjà
@@ -3072,9 +3131,22 @@
       return 'connexion';
     }
 
+    // Écran de célébration après "Let's start!" : auto-avance après un
+    // délai, ou immédiatement si on clique n'importe où dans la scène
+    // (même convention que le "clic pour avancer" du tutoriel).
+    const DUREE_CELEBRATION = 2600;
+    let minuteurCelebration = null;
+
+    function quitterCelebration() {
+      clearTimeout(minuteurCelebration);
+      window.location.hash = '#' + destinationPostOnboarding();
+    }
+
+    document.querySelector('#celebration .scene-celebration').addEventListener('click', quitterCelebration);
+
     // Navigation entre les vues via le hash de l'URL
     const vues = document.querySelectorAll('.vue');
-    const VUES_VALIDES = new Set(['accueil', 'choix-langue', 'connexion', 'menu-principal', 'premiere-fois-en', 'tutoriel-en', 'premiere-fois-es', 'tutoriel-es', 'premiere-fois-pt', 'tutoriel-pt', 'premiere-fois-it', 'tutoriel-it', 'premiere-fois-zh', 'tutoriel-zh', 'premiere-fois-ko', 'tutoriel-ko', 'premiere-fois-ja', 'tutoriel-ja', 'premiere-fois-vi', 'tutoriel-vi', 'premiere-fois-tl', 'tutoriel-tl', 'premiere-fois-de', 'tutoriel-de', 'premiere-fois-nl', 'tutoriel-nl', 'premiere-fois-ca', 'tutoriel-ca', 'premiere-fois-ht', 'tutoriel-ht', 'premiere-fois-id', 'tutoriel-id', 'premiere-fois-fa', 'tutoriel-fa', 'premiere-fois-ru', 'tutoriel-ru', 'premiere-fois-no', 'tutoriel-no', 'premiere-fois-sv', 'tutoriel-sv', 'premiere-fois-eo', 'tutoriel-eo']);
+    const VUES_VALIDES = new Set(['accueil', 'choix-langue', 'celebration', 'connexion', 'menu-principal', 'premiere-fois-en', 'tutoriel-en', 'premiere-fois-es', 'tutoriel-es', 'premiere-fois-pt', 'tutoriel-pt', 'premiere-fois-it', 'tutoriel-it', 'premiere-fois-zh', 'tutoriel-zh', 'premiere-fois-ko', 'tutoriel-ko', 'premiere-fois-ja', 'tutoriel-ja', 'premiere-fois-vi', 'tutoriel-vi', 'premiere-fois-tl', 'tutoriel-tl', 'premiere-fois-de', 'tutoriel-de', 'premiere-fois-nl', 'tutoriel-nl', 'premiere-fois-ca', 'tutoriel-ca', 'premiere-fois-ht', 'tutoriel-ht', 'premiere-fois-id', 'tutoriel-id', 'premiere-fois-fa', 'tutoriel-fa', 'premiere-fois-ru', 'tutoriel-ru', 'premiere-fois-no', 'tutoriel-no', 'premiere-fois-sv', 'tutoriel-sv', 'premiere-fois-eo', 'tutoriel-eo']);
 
     function afficherVue() {
       const brut = window.location.hash.replace('#', '');
@@ -3094,6 +3166,10 @@
       }
       if (cible === 'menu-principal') {
         rafraichirFiche();
+      }
+      if (cible === 'celebration') {
+        clearTimeout(minuteurCelebration);
+        minuteurCelebration = setTimeout(quitterCelebration, DUREE_CELEBRATION);
       }
     }
 
@@ -3422,12 +3498,13 @@
       boutonSuivant.addEventListener('click', (e) => { e.stopPropagation(); etapeSuivante(); });
       boutonPrecedent.addEventListener('click', (e) => { e.stopPropagation(); etapePrecedente(); });
 
-      // Bouton de fin de tutoriel : connexion si la personne est nouvelle,
-      // menu principal directement sinon (même logique que le "non" de
-      // l'écran "First time?" — voir destinationPostOnboarding() plus haut).
+      // Bouton de fin de tutoriel : passe d'abord par l'écran de célébration
+      // (confettis), qui enchaîne ensuite lui-même vers connexion ou menu
+      // principal (voir quitterCelebration() / destinationPostOnboarding()
+      // plus haut).
       boutonDemarrer.addEventListener('click', (e) => {
         e.stopPropagation();
-        window.location.hash = '#' + destinationPostOnboarding();
+        window.location.hash = '#celebration';
       });
 
       // Clic n'importe où dans la scène : avance d'une étape.

@@ -454,12 +454,15 @@
     pointer-events: none;
   }
 
-  /* Répliques plus longues (ex. l'idée du site chez Keb) : police réduite
-     pour tenir sur moins de lignes et rester dans l'espace disponible
-     au-dessus des personnages. */
+  /* Répliques plus longues (ex. l'idée du site chez Keb) : la police était
+     réduite pour éviter tout débordement, mais laissait une bande vide
+     au-dessus du texte (l'ancre "bottom" fixe le bas de la bulle juste
+     au-dessus des personnages ; le texte pousse vers le haut en grandissant,
+     donc l'agrandir ici ne fait que combler cet espace déjà réservé et
+     inutilisé — aucun risque de chevauchement avec Keb/Bek). */
   .bulle-tuto.longue {
-    font-size: clamp(0.82rem, 2.8vw, 1.12rem);
-    line-height: 1.2;
+    font-size: clamp(0.95rem, 3.2vw, 1.32rem);
+    line-height: 1.22;
   }
 
   .bulle-tuto.cote-keb {
@@ -584,7 +587,7 @@
     .nav-tuto.precedent { left: 2%; }
     .nav-tuto.suivant { right: 2%; }
     .bulle-tuto { font-size: clamp(0.88rem, 4vw, 1.2rem); max-width: 85%; }
-    .bulle-tuto.longue { font-size: clamp(0.76rem, 3.2vw, 0.98rem); }
+    .bulle-tuto.longue { font-size: clamp(0.88rem, 3.6vw, 1.1rem); }
   }
 </style>
 </head>

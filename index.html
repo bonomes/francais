@@ -487,6 +487,39 @@
     transform: translateX(-50%) rotate(-2deg);
   }
 
+  /* Bouton de fin de tutoriel : réutilise le même langage visuel que
+     .bouton-reponse (mêmes teintes, même police), mais positionné sous la
+     scène plutôt qu'en haut, dans l'espace libre laissé par le centrage
+     flex de .panneau-tuto. */
+  .bouton-demarrer {
+    position: absolute;
+    left: 50%;
+    bottom: -18%;
+    transform: translateX(-50%);
+    font-family: 'Caveat Brush', cursive;
+    font-size: clamp(1.2rem, 4.4vw, 1.7rem);
+    border: none;
+    border-radius: 999px;
+    padding: 10px 28px;
+    white-space: nowrap;
+    background: var(--peche-fonce);
+    color: #FFFFFF;
+    box-shadow: 0 4px 0 #B5623F;
+    cursor: pointer;
+    pointer-events: auto;
+    transition: transform 0.12s ease, box-shadow 0.12s ease;
+  }
+
+  .bouton-demarrer:hover {
+    transform: translateX(-50%) translateY(2px);
+    box-shadow: 0 2px 0 #B5623F;
+  }
+
+  .bouton-demarrer:active {
+    transform: translateX(-50%) translateY(3px);
+    box-shadow: 0 1px 0 rgba(102, 80, 69, 0.3);
+  }
+
   .points-tuto {
     position: absolute;
     top: 18px;
@@ -621,6 +654,9 @@
         <span class="point"></span>
         <span class="point"></span>
         <span class="point"></span>
+        <span class="point"></span>
+        <span class="point"></span>
+        <span class="point"></span>
       </div>
       <button type="button" class="nav-tuto precedent" id="precedentTutoEn" aria-label="Précédent">‹</button>
       <button type="button" class="nav-tuto suivant" id="suivantTutoEn" aria-label="Suivant">›</button>
@@ -648,8 +684,24 @@
               </div>
 
               <div class="etape-duo" data-step="5">
-                <img src="images/bonomes_keb_bek_oui_04.png" alt="Keb répond avec son idée">
-                <p class="bulle-tuto cote-keb longue">So I answered: "Great! Let's make a website with points, achievements, trophies, cards to collect! You do the drawings, I'll organize."</p>
+                <img src="images/bonomes_keb_bek_oui_04.png" alt="Keb parle avec entrain de leur idée de site">
+                <p class="bulle-tuto cote-keb longue">So, we decided to build a really fun, creative website — exciting rewards, awesome cards to collect...</p>
+              </div>
+
+              <div class="etape-duo" data-step="6">
+                <img src="images/bonomes_keb_bek_oui_05.png" alt="Bek complète l'idée de Keb, enthousiaste">
+                <p class="bulle-tuto cote-bek longue">...and teach our beautiful language through fun illustrated stories — drawn by me!</p>
+              </div>
+
+              <div class="etape-duo" data-step="7">
+                <img src="images/bonomes_keb_bek_oui_05a.png" alt="Bek, un peu fière d'elle">
+                <p class="bulle-tuto cote-bek longue">...and teach our beautiful language through fun illustrated stories — drawn by me!</p>
+              </div>
+
+              <div class="etape-duo" data-step="8">
+                <img src="images/bonomes_keb_bek_oui_06.png" alt="Keb demande si on commence">
+                <p class="bulle-tuto cote-keb">So? What do you say — ready to start?</p>
+                <button type="button" class="bouton-demarrer" id="demarrerTutoEn">Let's start!</button>
               </div>
 
             </div>
@@ -1093,10 +1145,15 @@
     // ---------- Vue "première fois" : boutons Yes / No ----------
 
     // Le "oui" mène désormais au tutoriel pour les langues déjà construites ;
-    // les autres langues et le "non" restent à brancher plus tard.
+    // le "non" (déjà là la première fois) mène directement au menu
+    // principal — comme le fait aussi le bouton de fin de tutoriel plus bas.
+    // NB : la vue "menu-principal" n'existe pas encore dans ce fichier ; en
+    // son absence le routeur retombe sur #accueil (voir VUES_VALIDES) sans
+    // casser la navigation. À brancher sur le vrai menu dès qu'il existe.
     const DESTINATION_OUI = {
       en: 'tutoriel-en'
     };
+    const DESTINATION_MENU_PRINCIPAL = 'menu-principal';
 
     document.querySelectorAll('.bouton-reponse').forEach(bouton => {
       bouton.addEventListener('click', () => {
@@ -1108,18 +1165,23 @@
           return;
         }
 
+        if (bouton.dataset.reponse === 'non') {
+          window.location.hash = '#' + DESTINATION_MENU_PRINCIPAL;
+          return;
+        }
+
         console.log('Réponse choisie :', bouton.dataset.reponse, codeLangue);
       });
     });
 
     // ---------- Vue "tutoriel" : Keb & Bek continuent de parler ----------
 
-    // Six étapes narratives. Les étapes 0/3/4/5 vivent dans le panneau du
-    // haut (duo, même position que l'écran "Yes/No") ; les étapes 1/2 dans
-    // le panneau du bas (flash-back du réveil). On ne déplace la fenêtre
-    // que lorsqu'on change de panneau — jamais entre deux étapes du même
-    // panneau, où seule la réplique change en fondu.
-    const PANNEAU_PAR_ETAPE = ['duo', 'reveil', 'reveil', 'duo', 'duo', 'duo'];
+    // Neuf étapes narratives. Les étapes 0/3/4/5/6/7/8 vivent dans le
+    // panneau du haut (duo, même position que l'écran "Yes/No") ; les
+    // étapes 1/2 dans le panneau du bas (flash-back du réveil). On ne
+    // déplace la fenêtre que lorsqu'on change de panneau — jamais entre
+    // deux étapes du même panneau, où seule la réplique change en fondu.
+    const PANNEAU_PAR_ETAPE = ['duo', 'reveil', 'reveil', 'duo', 'duo', 'duo', 'duo', 'duo', 'duo'];
     const NB_ETAPES = PANNEAU_PAR_ETAPE.length;
 
     const glissiereTutorielEn = document.getElementById('glissiereTutorielEn');
@@ -1129,15 +1191,17 @@
     const boutonSuivantTutoEn = document.getElementById('suivantTutoEn');
     const fenetreTutorielEn = document.getElementById('fenetreTutorielEn');
     let indexTutoEn = 0;
-    let minuteurReveilEn = null;
+    let minuteurAutoTutoEn = null;
 
-    // Étape 1 (Bek endormie) n'a pas de réplique : elle avance seule vers
-    // l'étape 2 après une courte pause, plutôt que d'attendre un clic dans
-    // le vide. Toute navigation manuelle entre-temps annule le minuteur.
-    const DELAI_AUTO_REVEIL = 2000;
+    // Certaines étapes avancent seules après une pause, plutôt que d'attendre
+    // un clic : l'étape 1 (Bek endormie) n'a pas de réplique à lire ; l'étape
+    // 6 (Bek qui se vante d'avoir dessiné les histoires) laisse le temps de
+    // lire la réplique avant de basculer sur son air fier à l'étape 7. Toute
+    // navigation manuelle entre-temps annule le minuteur en cours.
+    const AUTO_AVANCE_APRES = { 1: 2000, 6: 5000 };
 
     function afficherEtapeTutoEn(nouvelIndex, instantane) {
-      clearTimeout(minuteurReveilEn);
+      clearTimeout(minuteurAutoTutoEn);
 
       indexTutoEn = Math.max(0, Math.min(NB_ETAPES - 1, nouvelIndex));
 
@@ -1160,10 +1224,11 @@
         glissiereTutorielEn.classList.toggle('vers-reveil', versReveil);
       }
 
-      if (indexTutoEn === 1) {
-        minuteurReveilEn = setTimeout(() => {
-          if (indexTutoEn === 1) etapeSuivanteEn();
-        }, DELAI_AUTO_REVEIL);
+      if (AUTO_AVANCE_APRES.hasOwnProperty(indexTutoEn)) {
+        const indexDepart = indexTutoEn;
+        minuteurAutoTutoEn = setTimeout(() => {
+          if (indexTutoEn === indexDepart) etapeSuivanteEn();
+        }, AUTO_AVANCE_APRES[indexDepart]);
       }
     }
 
@@ -1177,6 +1242,14 @@
 
     boutonSuivantTutoEn.addEventListener('click', (e) => { e.stopPropagation(); etapeSuivanteEn(); });
     boutonPrecedentTutoEn.addEventListener('click', (e) => { e.stopPropagation(); etapePrecedenteEn(); });
+
+    // Bouton de fin de tutoriel : direction le menu principal (même
+    // destination provisoire que le "non" de l'écran "First time?" —
+    // voir DESTINATION_MENU_PRINCIPAL plus haut).
+    document.getElementById('demarrerTutoEn').addEventListener('click', (e) => {
+      e.stopPropagation();
+      window.location.hash = '#' + DESTINATION_MENU_PRINCIPAL;
+    });
 
     // Clic n'importe où dans la scène : avance d'une étape.
     fenetreTutorielEn.addEventListener('click', () => etapeSuivanteEn());

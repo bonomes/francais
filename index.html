@@ -1195,10 +1195,13 @@
 
     // Certaines étapes avancent seules après une pause, plutôt que d'attendre
     // un clic : l'étape 1 (Bek endormie) n'a pas de réplique à lire ; l'étape
-    // 6 (Bek qui se vante d'avoir dessiné les histoires) laisse le temps de
-    // lire la réplique avant de basculer sur son air fier à l'étape 7. Toute
-    // navigation manuelle entre-temps annule le minuteur en cours.
-    const AUTO_AVANCE_APRES = { 1: 2000, 6: 5000 };
+    // 2 (Bek qui parle en français, non traduit) avance seule après 7 s — un
+    // débutant n'aura de toute façon pas le temps de la déchiffrer, inutile
+    // de le laisser bloqué dessus ; l'étape 6 (Bek qui se vante d'avoir
+    // dessiné les histoires) laisse le temps de lire la réplique avant de
+    // basculer sur son air fier à l'étape 7. Toute navigation manuelle
+    // entre-temps annule le minuteur en cours.
+    const AUTO_AVANCE_APRES = { 1: 2000, 2: 7000, 6: 5000 };
 
     function afficherEtapeTutoEn(nouvelIndex, instantane) {
       clearTimeout(minuteurAutoTutoEn);

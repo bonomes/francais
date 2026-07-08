@@ -1940,7 +1940,7 @@
 
               <div class="etape-duo" data-step="3">
                 <img src="images/bonomes_keb_bek_oui_02.png" alt="Keb traduit ce que Bek a dit">
-                <p class="bulle-tuto cote-keb">Ang ibig sabihin niya: «Gusto kong tulungan ang buong mundo na matuto ng French.»</p>
+                <p class="bulle-tuto cote-keb">Ang ibig sabihin niya: «Gusto kong tulungan ang buong mundo na matuto ng Pranses.»</p>
               </div>
 
               <div class="etape-duo" data-step="4">
@@ -1950,7 +1950,7 @@
 
               <div class="etape-duo" data-step="5">
                 <img src="images/bonomes_keb_bek_oui_04.png" alt="Keb parle avec entrain de leur idée de site">
-                <p class="bulle-tuto cote-keb longue">Kaya nagdesisyon kaming gumawa ng talagang masaya at malikhaing website — kahanga-hangang mga gantimpala, mga cool na cards na pwedeng koleksyunin...</p>
+                <p class="bulle-tuto cote-keb longue">Kaya nagdesisyon kaming gumawa ng talagang masaya at malikhaing website — kahanga-hangang mga gantimpala, mga magagandang kard na pwedeng koleksyunin...</p>
               </div>
 
               <div class="etape-duo" data-step="6">
@@ -3020,13 +3020,13 @@
 
       <div id="sacPanneau">
         <div class="sac-entete">
-          My backpack
+          <span id="sacTitre">My backpack</span>
           <div class="sac-sous-titre" id="sacSousTitre">nothing yet</div>
         </div>
 
         <div class="sac-corps" id="sacCorps"><!-- rempli par JS --></div>
 
-        <div class="sac-avertissement">
+        <div class="sac-avertissement" id="sacAvertissement">
           This backpack is saved on this device only. Sign in to keep it for good, even if you switch devices.
         </div>
 
@@ -3042,13 +3042,13 @@
         <div class="carte-menu">
           <button type="button" class="bouton-menu" data-menu="histoires">
             <svg class="icone-menu" viewBox="0 0 24 24"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H12v18H6.5A2.5 2.5 0 0 1 4 18.5v-13Z"/><path d="M20 5.5A2.5 2.5 0 0 0 17.5 3H12v18h5.5a2.5 2.5 0 0 0 2.5-2.5v-13Z"/></svg>
-            Stories &amp; lessons
+            <span id="libelleMenuHistoires">Stories &amp; lessons</span>
             <span class="badge-bientot">Soon</span>
           </button>
 
           <button type="button" class="bouton-menu" data-menu="bravo">
             <svg class="icone-menu" viewBox="0 0 24 24"><path d="M6 6h15l-1.5 9h-12Z"/><path d="M6 6 5 3H2"/><circle cx="9.5" cy="19" r="1.4"/><circle cx="17.5" cy="19" r="1.4"/></svg>
-            Bravo &amp; cart
+            <span id="libelleMenuBravo">Bravo &amp; cart</span>
             <span class="badge-bientot">Soon</span>
           </button>
 
@@ -3060,13 +3060,13 @@
 
           <button type="button" class="bouton-menu" data-menu="prives">
             <svg class="icone-menu" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
-            Private lessons
+            <span id="libelleMenuPrives">Private lessons</span>
             <span class="badge-bientot">Soon</span>
           </button>
 
           <button type="button" class="bouton-menu" data-menu="contact">
             <svg class="icone-menu" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>
-            Contact
+            <span id="libelleMenuContact">Contact</span>
             <span class="badge-bientot">Soon</span>
           </button>
         </div>
@@ -3144,6 +3144,261 @@
 
     document.querySelector('#celebration .scene-celebration').addEventListener('click', quitterCelebration);
 
+    // ==================================================================
+    // Internationalisation — connexion, menu principal, sac à dos.
+    // Placé ici (avant afficherVue()) et pas plus bas dans le script pour
+    // la même raison que libelleMaFiche en v09 : une const référencée
+    // avant sa ligne d'exécution lève une erreur si afficherVue() tourne
+    // de façon synchrone dès le chargement (lien direct vers #connexion
+    // ou #menu-principal).
+    //
+    // Seules les 5 premières langues (en/es/pt/it/zh) sont traduites pour
+    // l'instant ; les 14 autres retombent sur l'anglais via t() ci-dessous
+    // jusqu'à ce qu'elles soient ajoutées ici. CLE_LANGUE est posée au clic
+    // sur une langue dans #choix-langue (voir plus bas) — un visiteur qui
+    // arrive directement sur #connexion sans être passé par ce menu (rare)
+    // récupère donc l'anglais par défaut.
+    const CLE_LANGUE = 'kebbek_langue';
+
+    function langueActuelle() {
+      return localStorage.getItem(CLE_LANGUE) || 'en';
+    }
+
+    const TRADUCTIONS = {
+      en: {
+        connexionTitre: 'Save your progress?',
+        connexionSousTitre: 'Enter your email — we\'ll send you a code, no password needed.',
+        connexionEnvoyerCode: 'Send my code',
+        connexionPlaceholderCode: 'Code from your email',
+        connexionConfirmer: 'Confirm & continue',
+        connexionOu: 'or',
+        connexionInvite: 'Continue without an account',
+        connexionAideInvite: 'You can always create an account later from "My profile".',
+        connexionErreurIndisponible: 'Account sign-in isn\'t available right now — please continue without an account below.',
+        connexionErreurCourrielVide: 'Please enter your email first.',
+        connexionEnvoiEnCours: 'Sending your code…',
+        connexionCodeEnvoye: 'Code sent — check your inbox!',
+        connexionErreurCodeVide: 'Please enter the code from your email.',
+        connexionVerificationEnCours: 'Checking your code…',
+        sacTitre: 'My backpack',
+        sacVide: 'nothing yet',
+        sacUnItem: '{n} item saved',
+        sacPlusieursItems: '{n} items saved',
+        sacAvertissement: 'This backpack is saved on this device only. Sign in to keep it for good, even if you switch devices.',
+        sacConnexion: 'Sign in',
+        sacTestItem: '+ test item',
+        sacRienIci: 'Nothing here yet.',
+        catMots: 'Words learned',
+        catCodes: 'Codes',
+        catSucces: 'Achievements',
+        catTrophees: 'Trophies',
+        catCartes: 'Cards',
+        menuHistoires: 'Stories & lessons',
+        menuBientot: 'Soon',
+        menuBravo: 'Bravo & cart',
+        menuPrives: 'Private lessons',
+        menuContact: 'Contact',
+        ficheMonProfil: 'My profile',
+        ficheCreerCompte: 'Create an account',
+        ficheInvite: 'Guest',
+        ficheConfirmDeconnexion: 'Signed in as {email}.\n\nLog out?'
+      },
+      es: {
+        connexionTitre: '¿Guardamos tu progreso?',
+        connexionSousTitre: 'Escribe tu correo y te enviamos un código — sin contraseña.',
+        connexionEnvoyerCode: 'Enviar mi código',
+        connexionPlaceholderCode: 'Código de tu correo',
+        connexionConfirmer: 'Confirmar y continuar',
+        connexionOu: 'o',
+        connexionInvite: 'Continuar sin cuenta',
+        connexionAideInvite: 'Siempre puedes crear una cuenta luego desde "Mi perfil".',
+        connexionErreurIndisponible: 'El inicio de sesión no está disponible ahora — continúa sin cuenta más abajo.',
+        connexionErreurCourrielVide: 'Escribe primero tu correo.',
+        connexionEnvoiEnCours: 'Enviando tu código…',
+        connexionCodeEnvoye: '¡Código enviado — revisa tu correo!',
+        connexionErreurCodeVide: 'Escribe el código que recibiste por correo.',
+        connexionVerificationEnCours: 'Verificando tu código…',
+        sacTitre: 'Mi mochila',
+        sacVide: 'nada todavía',
+        sacUnItem: '{n} elemento guardado',
+        sacPlusieursItems: '{n} elementos guardados',
+        sacAvertissement: 'Esta mochila se guarda solo en este dispositivo. Inicia sesión para conservarla siempre, incluso si cambias de dispositivo.',
+        sacConnexion: 'Iniciar sesión',
+        sacTestItem: '+ elemento de prueba',
+        sacRienIci: 'Todavía no hay nada aquí.',
+        catMots: 'Palabras aprendidas',
+        catCodes: 'Códigos',
+        catSucces: 'Logros',
+        catTrophees: 'Trofeos',
+        catCartes: 'Cartas',
+        menuHistoires: 'Historias y lecciones',
+        menuBientot: 'Pronto',
+        menuBravo: 'Bravo y carrito',
+        menuPrives: 'Clases privadas',
+        menuContact: 'Contacto',
+        ficheMonProfil: 'Mi perfil',
+        ficheCreerCompte: 'Crear una cuenta',
+        ficheInvite: 'Invitado',
+        ficheConfirmDeconnexion: 'Sesión iniciada como {email}.\n\n¿Cerrar sesión?'
+      },
+      pt: {
+        connexionTitre: 'Salvar seu progresso?',
+        connexionSousTitre: 'Digite seu e-mail e enviamos um código — sem senha.',
+        connexionEnvoyerCode: 'Enviar meu código',
+        connexionPlaceholderCode: 'Código do seu e-mail',
+        connexionConfirmer: 'Confirmar e continuar',
+        connexionOu: 'ou',
+        connexionInvite: 'Continuar sem conta',
+        connexionAideInvite: 'Você pode criar uma conta depois em "Meu perfil".',
+        connexionErreurIndisponible: 'O login por conta não está disponível agora — continue sem conta abaixo.',
+        connexionErreurCourrielVide: 'Digite seu e-mail primeiro.',
+        connexionEnvoiEnCours: 'Enviando seu código…',
+        connexionCodeEnvoye: 'Código enviado — confira seu e-mail!',
+        connexionErreurCodeVide: 'Digite o código que você recebeu por e-mail.',
+        connexionVerificationEnCours: 'Verificando seu código…',
+        sacTitre: 'Minha mochila',
+        sacVide: 'nada ainda',
+        sacUnItem: '{n} item guardado',
+        sacPlusieursItems: '{n} itens guardados',
+        sacAvertissement: 'Esta mochila é salva só neste aparelho. Faça login para guardá-la para sempre, mesmo trocando de aparelho.',
+        sacConnexion: 'Entrar',
+        sacTestItem: '+ item de teste',
+        sacRienIci: 'Ainda não há nada aqui.',
+        catMots: 'Palavras aprendidas',
+        catCodes: 'Códigos',
+        catSucces: 'Conquistas',
+        catTrophees: 'Troféus',
+        catCartes: 'Cartas',
+        menuHistoires: 'Histórias e lições',
+        menuBientot: 'Em breve',
+        menuBravo: 'Bravo e carrinho',
+        menuPrives: 'Aulas particulares',
+        menuContact: 'Contato',
+        ficheMonProfil: 'Meu perfil',
+        ficheCreerCompte: 'Criar uma conta',
+        ficheInvite: 'Convidado',
+        ficheConfirmDeconnexion: 'Conectado como {email}.\n\nSair?'
+      },
+      it: {
+        connexionTitre: 'Salviamo i tuoi progressi?',
+        connexionSousTitre: 'Inserisci la tua email e ti mandiamo un codice — niente password.',
+        connexionEnvoyerCode: 'Invia il mio codice',
+        connexionPlaceholderCode: 'Codice ricevuto via email',
+        connexionConfirmer: 'Conferma e continua',
+        connexionOu: 'oppure',
+        connexionInvite: 'Continua senza account',
+        connexionAideInvite: 'Puoi sempre creare un account più tardi da "Il mio profilo".',
+        connexionErreurIndisponible: 'L\'accesso con account non è disponibile ora — continua senza account qui sotto.',
+        connexionErreurCourrielVide: 'Inserisci prima la tua email.',
+        connexionEnvoiEnCours: 'Invio del codice in corso…',
+        connexionCodeEnvoye: 'Codice inviato — controlla la posta!',
+        connexionErreurCodeVide: 'Inserisci il codice ricevuto via email.',
+        connexionVerificationEnCours: 'Verifica del codice in corso…',
+        sacTitre: 'Il mio zaino',
+        sacVide: 'ancora niente',
+        sacUnItem: '{n} elemento salvato',
+        sacPlusieursItems: '{n} elementi salvati',
+        sacAvertissement: 'Questo zaino è salvato solo su questo dispositivo. Accedi per conservarlo per sempre, anche cambiando dispositivo.',
+        sacConnexion: 'Accedi',
+        sacTestItem: '+ elemento di prova',
+        sacRienIci: 'Ancora niente qui.',
+        catMots: 'Parole imparate',
+        catCodes: 'Codici',
+        catSucces: 'Traguardi',
+        catTrophees: 'Trofei',
+        catCartes: 'Carte',
+        menuHistoires: 'Storie e lezioni',
+        menuBientot: 'Presto',
+        menuBravo: 'Bravo e carrello',
+        menuPrives: 'Lezioni private',
+        menuContact: 'Contatto',
+        ficheMonProfil: 'Il mio profilo',
+        ficheCreerCompte: 'Crea un account',
+        ficheInvite: 'Ospite',
+        ficheConfirmDeconnexion: 'Accesso effettuato come {email}.\n\nUscire?'
+      },
+      zh: {
+        connexionTitre: '保存你的进度？',
+        connexionSousTitre: '输入邮箱，我们会发一个验证码给你，不需要密码。',
+        connexionEnvoyerCode: '发送验证码',
+        connexionPlaceholderCode: '邮箱收到的验证码',
+        connexionConfirmer: '确认并继续',
+        connexionOu: '或者',
+        connexionInvite: '不注册，直接继续',
+        connexionAideInvite: '以后也可以在「我的资料」里创建账号。',
+        connexionErreurIndisponible: '现在无法登录账号，请在下方选择不注册继续。',
+        connexionErreurCourrielVide: '请先输入你的邮箱。',
+        connexionEnvoiEnCours: '正在发送验证码……',
+        connexionCodeEnvoye: '验证码已发送，请查收邮箱！',
+        connexionErreurCodeVide: '请输入邮箱收到的验证码。',
+        connexionVerificationEnCours: '正在验证……',
+        sacTitre: '我的背包',
+        sacVide: '还没有内容',
+        sacUnItem: '已保存 {n} 项',
+        sacPlusieursItems: '已保存 {n} 项',
+        sacAvertissement: '背包内容只保存在这台设备上。登录后可永久保存，换设备也不会丢失。',
+        sacConnexion: '登录',
+        sacTestItem: '+ 测试项目',
+        sacRienIci: '这里还没有内容。',
+        catMots: '学会的单词',
+        catCodes: '兑换码',
+        catSucces: '成就',
+        catTrophees: '奖杯',
+        catCartes: '卡片',
+        menuHistoires: '故事与课程',
+        menuBientot: '即将推出',
+        menuBravo: '奖励与购物车',
+        menuPrives: '私人课程',
+        menuContact: '联系我们',
+        ficheMonProfil: '我的资料',
+        ficheCreerCompte: '创建账号',
+        ficheInvite: '访客',
+        ficheConfirmDeconnexion: '当前登录账号：{email}。\n\n要登出吗？'
+      }
+    };
+
+    function t(cle) {
+      const dict = TRADUCTIONS[langueActuelle()] || TRADUCTIONS.en;
+      const valeur = dict[cle];
+      return valeur !== undefined ? valeur : TRADUCTIONS.en[cle];
+    }
+
+    function tAvecVariables(cle, variables) {
+      let texte = t(cle);
+      Object.keys(variables).forEach(nomVar => {
+        texte = texte.replace('{' + nomVar + '}', variables[nomVar]);
+      });
+      return texte;
+    }
+
+    // Applique les traductions aux vues #connexion et #menu-principal (y
+    // compris le sac à dos). Appelée à l'affichage de ces deux vues (voir
+    // afficherVue() plus bas) ainsi qu'une fois au chargement.
+    function appliquerTraductions() {
+      document.querySelector('.titre-connexion').textContent = t('connexionTitre');
+      document.querySelector('.sous-titre-connexion').textContent = t('connexionSousTitre');
+      document.getElementById('btnEnvoyerCodeConnexion').textContent = t('connexionEnvoyerCode');
+      document.getElementById('champCodeConnexion').placeholder = t('connexionPlaceholderCode');
+      document.getElementById('btnVerifierCodeConnexion').textContent = t('connexionConfirmer');
+      document.querySelector('.separateur-ou').textContent = t('connexionOu');
+      document.getElementById('btnContinuerSansCompte').textContent = t('connexionInvite');
+      document.querySelector('.aide-invite').textContent = t('connexionAideInvite');
+
+      document.getElementById('sacTitre').textContent = t('sacTitre');
+      document.getElementById('sacAvertissement').textContent = t('sacAvertissement');
+      document.getElementById('btnConnexionDepuisSac').textContent = t('sacConnexion');
+      document.getElementById('btnAjouterTest').textContent = t('sacTestItem');
+
+      document.getElementById('libelleMenuHistoires').textContent = t('menuHistoires');
+      document.getElementById('libelleMenuBravo').textContent = t('menuBravo');
+      document.getElementById('libelleMenuPrives').textContent = t('menuPrives');
+      document.getElementById('libelleMenuContact').textContent = t('menuContact');
+      document.querySelectorAll('.badge-bientot').forEach(el => el.textContent = t('menuBientot'));
+
+      rafraichirAffichageSac();
+      rafraichirFiche();
+    }
+
     // Navigation entre les vues via le hash de l'URL
     const vues = document.querySelectorAll('.vue');
     const VUES_VALIDES = new Set(['accueil', 'choix-langue', 'celebration', 'connexion', 'menu-principal', 'premiere-fois-en', 'tutoriel-en', 'premiere-fois-es', 'tutoriel-es', 'premiere-fois-pt', 'tutoriel-pt', 'premiere-fois-it', 'tutoriel-it', 'premiere-fois-zh', 'tutoriel-zh', 'premiere-fois-ko', 'tutoriel-ko', 'premiere-fois-ja', 'tutoriel-ja', 'premiere-fois-vi', 'tutoriel-vi', 'premiere-fois-tl', 'tutoriel-tl', 'premiere-fois-de', 'tutoriel-de', 'premiere-fois-nl', 'tutoriel-nl', 'premiere-fois-ca', 'tutoriel-ca', 'premiere-fois-ht', 'tutoriel-ht', 'premiere-fois-id', 'tutoriel-id', 'premiere-fois-fa', 'tutoriel-fa', 'premiere-fois-ru', 'tutoriel-ru', 'premiere-fois-no', 'tutoriel-no', 'premiere-fois-sv', 'tutoriel-sv', 'premiere-fois-eo', 'tutoriel-eo']);
@@ -3164,8 +3419,11 @@
           if (controleursTutoriel[codeLangueTuto]) controleursTutoriel[codeLangueTuto].afficherEtape(0, true);
         });
       }
+      if (cible === 'connexion') {
+        appliquerTraductions();
+      }
       if (cible === 'menu-principal') {
-        rafraichirFiche();
+        appliquerTraductions();
       }
       if (cible === 'celebration') {
         clearTimeout(minuteurCelebration);
@@ -3362,6 +3620,7 @@
         const destination = DESTINATIONS_LANGUES[item.dataset.lang];
 
         if (dejaAuCentre && destination) {
+          localStorage.setItem(CLE_LANGUE, item.dataset.lang);
           window.location.hash = '#' + destination;
           return;
         }
@@ -3569,16 +3828,16 @@
 
     btnEnvoyerCodeConnexion.addEventListener('click', async () => {
       if (!clientSupabase) {
-        afficherMsgConnexion('Account sign-in isn\'t available right now — please continue without an account below.', 'erreur');
+        afficherMsgConnexion(t('connexionErreurIndisponible'), 'erreur');
         return;
       }
       const email = champCourrielConnexion.value.trim();
       if (!email) {
-        afficherMsgConnexion('Please enter your email first.', 'erreur');
+        afficherMsgConnexion(t('connexionErreurCourrielVide'), 'erreur');
         return;
       }
       btnEnvoyerCodeConnexion.disabled = true;
-      afficherMsgConnexion('Sending your code…');
+      afficherMsgConnexion(t('connexionEnvoiEnCours'));
 
       const { error } = await clientSupabase.auth.signInWithOtp({
         email,
@@ -3594,7 +3853,7 @@
 
       etapeEnvoyerCode.classList.add('etape-code-cachee');
       etapeVerifierCode.classList.remove('etape-code-cachee');
-      afficherMsgConnexion('Code sent — check your inbox!', 'succes');
+      afficherMsgConnexion(t('connexionCodeEnvoye'), 'succes');
       champCodeConnexion.focus();
     });
 
@@ -3602,11 +3861,11 @@
       const email = champCourrielConnexion.value.trim();
       const token = champCodeConnexion.value.trim();
       if (!token) {
-        afficherMsgConnexion('Please enter the code from your email.', 'erreur');
+        afficherMsgConnexion(t('connexionErreurCodeVide'), 'erreur');
         return;
       }
       btnVerifierCodeConnexion.disabled = true;
-      afficherMsgConnexion('Checking your code…');
+      afficherMsgConnexion(t('connexionVerificationEnCours'));
 
       const { data, error } = await clientSupabase.auth.verifyOtp({ email, token, type: 'email' });
 
@@ -3648,11 +3907,11 @@
       }
 
       if (sessionActuelle) {
-        libelleMaFiche.textContent = 'My profile';
+        libelleMaFiche.textContent = t('ficheMonProfil');
         infoMaFiche.textContent = sessionActuelle.user.email;
       } else {
-        libelleMaFiche.textContent = 'Create an account';
-        infoMaFiche.textContent = 'Guest';
+        libelleMaFiche.textContent = t('ficheCreerCompte');
+        infoMaFiche.textContent = t('ficheInvite');
       }
     }
 
@@ -3662,7 +3921,7 @@
         // construite — pour l'instant ce bouton permet au moins de se
         // déconnecter, ce qui est la seule action de compte disponible ici.
         const seDeconnecter = window.confirm(
-          'Signed in as ' + sessionActuelle.user.email + '.\n\nLog out?'
+          tAvecVariables('ficheConfirmDeconnexion', { email: sessionActuelle.user.email })
         );
         if (seDeconnecter) {
           await clientSupabase.auth.signOut();
@@ -3701,11 +3960,11 @@
     const CLE_SAC = 'keb_bek_sac_a_dos';
 
     const CATEGORIES_SAC = [
-      { id: 'mots',     nom: 'Words learned', icone: iconeSacLivre() },
-      { id: 'codes',    nom: 'Codes',         icone: iconeSacCle() },
-      { id: 'succes',   nom: 'Achievements',  icone: iconeSacEtoile() },
-      { id: 'trophees', nom: 'Trophies',      icone: iconeSacTrophee() },
-      { id: 'cartes',   nom: 'Cards',         icone: iconeSacCarte() }
+      { id: 'mots',     cle: 'catMots',     icone: iconeSacLivre() },
+      { id: 'codes',    cle: 'catCodes',    icone: iconeSacCle() },
+      { id: 'succes',   cle: 'catSucces',   icone: iconeSacEtoile() },
+      { id: 'trophees', cle: 'catTrophees', icone: iconeSacTrophee() },
+      { id: 'cartes',   cle: 'catCartes',   icone: iconeSacCarte() }
     ];
 
     function sacParDefaut() {
@@ -3754,7 +4013,7 @@
       badge.classList.toggle('vide', total === 0);
 
       document.getElementById('sacSousTitre').textContent =
-        total === 0 ? 'nothing yet' : total + ' item' + (total > 1 ? 's' : '') + ' saved';
+        total === 0 ? t('sacVide') : tAvecVariables(total === 1 ? 'sacUnItem' : 'sacPlusieursItems', { n: total });
 
       const corps = document.getElementById('sacCorps');
       corps.innerHTML = '';
@@ -3766,13 +4025,13 @@
         div.innerHTML =
           '<div class="sac-cat-entete" onclick="toggleCategorieSac(this)">' +
             '<span class="sac-cat-icone">' + cat.icone + '</span>' +
-            '<span>' + cat.nom + '</span>' +
+            '<span>' + t(cat.cle) + '</span>' +
             '<span class="sac-cat-compteur">' + items.length + '</span>' +
             '<span class="sac-cat-chevron">&#9660;</span>' +
           '</div>' +
           '<div class="sac-cat-liste">' +
             (items.length === 0
-              ? '<div class="sac-vide">Nothing here yet.</div>'
+              ? '<div class="sac-vide">' + t('sacRienIci') + '</div>'
               : items.map(i => '<div class="sac-item"><span class="sac-item-nom">' + (i.nom || i.mot || i.code || '—') + '</span><span class="sac-item-detail">' + (i.trad || i.description || i.titre || '') + '</span></div>').join('')
             ) +
           '</div>';

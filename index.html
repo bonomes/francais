@@ -226,7 +226,14 @@
     width: 100%;
     height: auto;
     display: block;
+    transition: opacity 0.35s ease;
   }
+
+  /* Tant qu'un aperçu de menu est actif, l'image de base doit disparaître
+     complètement — sinon, comme les deux images ont un fond transparent
+     et des personnages posés différemment, les bras de la pose de base
+     restent visibles à travers les zones transparentes de l'aperçu. */
+  .image-premiere-fois.masquee-pour-apercu { opacity: 0; }
 
   /* Aperçus au survol des boutons du menu principal : même principe que
      le crossfade de #accueil (.survol), mais déclenché par JS plutôt que
@@ -3061,8 +3068,8 @@
 
         <img class="apercu-menu" data-menu-apercu="histoires" src="images/bonomes_keb_bek_lecons_01.png" alt="Aperçu : Histoires et leçons">
         <img class="apercu-menu" data-menu-apercu="bravo" src="images/bonomes_keb_bek_bravo_01.png" alt="Aperçu : Bravo et sac à dos">
-        <img class="apercu-menu" data-menu-apercu="fiche" src="images/bonomes_keb_bek_creer_un_compte_01.png" alt="Aperçu : mon profil / créer un compte">
-        <img class="apercu-menu" data-menu-apercu="prives" src="images/bonomes_keb_bek_cours_prives_01.png" alt="Aperçu : cours privés">
+        <img class="apercu-menu" data-menu-apercu="fiche" src="images/bonomes_keb_bek_créer_un_compte_01.png" alt="Aperçu : mon profil / créer un compte">
+        <img class="apercu-menu" data-menu-apercu="prives" src="images/bonomes_keb_bek_cours_privés_01.png" alt="Aperçu : cours privés">
         <img class="apercu-menu" data-menu-apercu="contact" src="images/bonomes_keb_bek_contacts_01.png" alt="Aperçu : contact">
 
         <div class="carte-menu">
@@ -4509,6 +4516,7 @@
     (function initialiserApercusMenu() {
       const sceneMenu = document.querySelector('#menu-principal .scene-premiere-fois');
       if (!sceneMenu) return;
+      const imageBase = sceneMenu.querySelector('.image-premiere-fois');
       const boutonsMenu = sceneMenu.querySelectorAll('.bouton-menu[data-menu]');
       const apercusMenu = sceneMenu.querySelectorAll('.apercu-menu');
 
@@ -4516,9 +4524,11 @@
         apercusMenu.forEach(img => {
           img.classList.toggle('actif', img.dataset.menuApercu === nomMenu);
         });
+        if (imageBase) imageBase.classList.add('masquee-pour-apercu');
       }
       function masquerApercus() {
         apercusMenu.forEach(img => img.classList.remove('actif'));
+        if (imageBase) imageBase.classList.remove('masquee-pour-apercu');
       }
 
       boutonsMenu.forEach(bouton => {

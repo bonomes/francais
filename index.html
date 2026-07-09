@@ -228,6 +228,24 @@
     display: block;
   }
 
+  /* Aperçus au survol des boutons du menu principal : même principe que
+     le crossfade de #accueil (.survol), mais déclenché par JS plutôt que
+     par :hover CSS pur, puisque la zone survolée (un bouton) n'est pas la
+     même que la zone qui change visuellement (l'image de la scène). */
+  .apercu-menu {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: auto;
+    display: block;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.35s ease;
+  }
+
+  .apercu-menu.actif { opacity: 1; }
+
   .bulle-first-time {
     position: absolute;
     left: 1%;
@@ -3041,6 +3059,12 @@
       <div class="scene-premiere-fois">
         <img class="image-premiere-fois" src="images/bonomes_keb_bek_principal_sans_fond_01.png" alt="Keb et Bek">
 
+        <img class="apercu-menu" data-menu-apercu="histoires" src="images/bonomes_keb_bek_lecons_01.png" alt="Aperçu : Histoires et leçons">
+        <img class="apercu-menu" data-menu-apercu="bravo" src="images/bonomes_keb_bek_bravo_01.png" alt="Aperçu : Bravo et sac à dos">
+        <img class="apercu-menu" data-menu-apercu="fiche" src="images/bonomes_keb_bek_creer_un_compte_01.png" alt="Aperçu : mon profil / créer un compte">
+        <img class="apercu-menu" data-menu-apercu="prives" src="images/bonomes_keb_bek_cours_prives_01.png" alt="Aperçu : cours privés">
+        <img class="apercu-menu" data-menu-apercu="contact" src="images/bonomes_keb_bek_contacts_01.png" alt="Aperçu : contact">
+
         <div class="carte-menu">
           <button type="button" class="bouton-menu" data-menu="histoires">
             <svg class="icone-menu" viewBox="0 0 24 24"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H12v18H6.5A2.5 2.5 0 0 1 4 18.5v-13Z"/><path d="M20 5.5A2.5 2.5 0 0 0 17.5 3H12v18h5.5a2.5 2.5 0 0 0 2.5-2.5v-13Z"/></svg>
@@ -4475,6 +4499,38 @@
         console.log('Section pas encore construite :', bouton.dataset.menu);
       });
     });
+
+    // Aperçu au survol/focus/tactile des boutons du menu principal : fait
+    // apparaître en fondu l'image d'aperçu correspondante par-dessus
+    // l'image de base de Keb et Bek (voir .apercu-menu, même principe que
+    // le crossfade de #accueil). Couvre les 5 boutons (y compris "fiche",
+    // qui a déjà son propre gestionnaire de clic plus haut — l'aperçu est
+    // indépendant du clic, donc ajouté ici pour les 5).
+    (function initialiserApercusMenu() {
+      const sceneMenu = document.querySelector('#menu-principal .scene-premiere-fois');
+      if (!sceneMenu) return;
+      const boutonsMenu = sceneMenu.querySelectorAll('.bouton-menu[data-menu]');
+      const apercusMenu = sceneMenu.querySelectorAll('.apercu-menu');
+
+      function afficherApercu(nomMenu) {
+        apercusMenu.forEach(img => {
+          img.classList.toggle('actif', img.dataset.menuApercu === nomMenu);
+        });
+      }
+      function masquerApercus() {
+        apercusMenu.forEach(img => img.classList.remove('actif'));
+      }
+
+      boutonsMenu.forEach(bouton => {
+        const nomMenu = bouton.dataset.menu;
+        bouton.addEventListener('mouseenter', () => afficherApercu(nomMenu));
+        bouton.addEventListener('mouseleave', masquerApercus);
+        bouton.addEventListener('focus', () => afficherApercu(nomMenu));
+        bouton.addEventListener('blur', masquerApercus);
+        bouton.addEventListener('touchstart', () => afficherApercu(nomMenu), { passive: true });
+        bouton.addEventListener('touchend', masquerApercus, { passive: true });
+      });
+    })();
 
     // ==================================================================
     // Sac à dos — vrai prototype de Raphaël (demo_sac_a_dos.html), porté

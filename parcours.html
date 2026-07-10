@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ton parcours — Keb &amp; Bek</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700&family=Fuzzy+Bubbles:wght@400;700&family=Caveat+Brush&display=swap" rel="stylesheet">
+<style>
+  /* ==================================================================
+     Version « officielle » du prototype demo_parcours_v2.html.
+     Même structure de données et mêmes noms de fonctions que le
+     prototype (NIVEAUX, construireDOM, rafraichir, toggleNiveau...) —
+     volontairement inchangés pour que l'intégration dans index.html se
+     fasse plus tard par un simple copier-coller, comme pour le sac à
+     dos. Ce qui change ici, c'est uniquement l'habillage visuel : vraies
+     polices du site (Baloo 2 / Fuzzy Bubbles / Caveat Brush), vraie
+     palette, vrai personnage comme marqueur flottant (image fournie par
+     Raphaël, rognée et réduite — voir images/), et plusieurs finitions
+     qui n'existaient pas dans le prototype rapide (voir commentaires
+     plus bas : ligne de progression, verrou sur les niveaux verrouillés,
+     carte de groupe unifiée niveau+chapitres déployés).
+
+     Ce que cette page NE tranche PAS volontairement (voir LECONS_v03,
+     "Questions ouvertes") : coût en monnaie de l'examen, état visuel
+     "fonds insuffisants", zigzag vs ligne droite pour la forme du
+     parcours. Le bouton "Passer l'examen" est donc laissé tel quel,
+     sans mention de coût — à revoir une fois ces questions tranchées.
+     ================================================================== */
+
+  :root {
+    --fond: #F2EDE3;
+    --fond-carte: #FFFFFF;
+    --brun: #665045;
+    --brun-fonce: #4A3B33;
+    --blonde: #F1DC99;
+    --peche: #F0A98B;
+    --peche-fonce: #E08867;
+    --peche-ombre: #B5623F;
+    --gris-verrou: #CFC7BB;
+    --gris-verrou-texte: #A79C8E;
+    --or: #C89B2C;
+    --or-ombre: #8F7018;
+    --or-clair: #FFF8E8;
+    --ombre: rgba(102, 80, 69, 0.16);
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--fond);
+    color: var(--brun-fonce);
+  }
+
+  body {
+    font-family: 'Baloo 2', 'Noto Sans', sans-serif;
+    min-height: 100vh;
+    padding-bottom: 140px; /* laisse la place à la carte d'info fixe en bas */
+  }
+
+  /* ---------- En-tête ---------- */
+
+  .entete-parcours {
+    text-align: center;
+    padding: 28px 20px 6px;
+  }
+
+  .entete-parcours h1 {
+    margin: 0;
+    font-family: 'Fuzzy Bubbles', cursive;
+    font-weight: 700;
+    font-size: clamp(1.5rem, 5.5vw, 2rem);
+    color: var(--peche-ombre);
+    -webkit-text-stroke: 1.4px var(--brun-fonce);
+    paint-order: stroke fill;
+  }
+
+  .entete-parcours p {
+    margin: 6px auto 0;
+    max-width: 340px;
+    font-size: 0.78rem;
+    color: var(--brun);
+    line-height: 1.4;
+  }
+
+  .entete-parcours kbd {
+    font-family: inherit;
+    font-weight: 700;
+    background: var(--fond-carte);
+    border: 1px solid var(--gris-verrou);
+    border-radius: 6px;
+    padding: 0 6px;
+    font-size: 0.72rem;
+  }
+
+  /* ---------- Colonne du parcours ---------- */
+
+  .parcours {
+    width: min(94vw, 440px);
+    margin: 22px auto 0;
+    position: relative;
+  }
+
+  /* Ligne pointillée de fond (tout le trajet, y compris les niveaux à venir) */
+  .ligne-parcours-fond {
+    position: absolute;
+    left: 50%;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    background: repeating-linear-gradient(to bottom, var(--gris-verrou) 0 7px, transparent 7px 15px);
+    transform: translateX(-50%);
+    border-radius: 4px;
+    z-index: 0;
+  }
+
+  /* Ligne pleine par-dessus, du haut jusqu'au niveau actuel : donne un vrai
+     sentiment de progression, comme un chemin déjà parcouru. Hauteur
+     recalculée en JS (voir positionnerLigneProgres) à chaque rendu, parce
+     que la hauteur du parcours change quand un niveau se déploie. */
+  .ligne-parcours-progres {
+    position: absolute;
+    left: 50%;
+    top: 0;
+    width: 4px;
+    height: 0;
+    background: var(--peche-fonce);
+    transform: translateX(-50%);
+    border-radius: 4px;
+    z-index: 0;
+    transition: height 0.35s ease;
+  }
+
+  .bloc-niveau {
+    position: relative;
+    z-index: 1;
+    margin-bottom: 16px;
+  }
+
+  /* Carte englobante : quand un niveau est déployé, le noeud + sa rangée de
+     chapitres forment visuellement UNE seule pièce élevée (même ombre),
+     plutôt que deux éléments ombrés séparément comme dans le prototype. */
+  .groupe-niveau {
+    border-radius: 26px;
+    transition: box-shadow 0.25s ease;
+  }
+
+  .groupe-niveau.ouvert {
+    box-shadow: 0 10px 26px var(--ombre);
+  }
+
+  .noeud-niveau {
+    position: relative;
+    margin: 0 auto;
+    width: 86px;
+    height: 86px;
+    border-radius: 26px;
+    background: var(--fond-carte);
+    border: 4px solid var(--gris-verrou);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+    box-shadow: 0 4px 0 rgba(102, 80, 69, 0.14);
+  }
+
+  .noeud-niveau .num {
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: var(--gris-verrou-texte);
+    line-height: 1;
+  }
+
+  .noeud-niveau .lib {
+    font-size: 0.58rem;
+    font-weight: 700;
+    color: var(--brun);
+    text-align: center;
+    padding: 0 6px;
+    line-height: 1.15;
+  }
+
+  .noeud-niveau .verrou-icone {
+    width: 22px;
+    height: 22px;
+    color: var(--gris-verrou-texte);
+  }
+
+  .noeud-niveau.complete { border-color: var(--peche-fonce); background: #FFF9F5; }
+  .noeud-niveau.complete .num { color: var(--peche-fonce); }
+
+  .noeud-niveau.actuel {
+    border-color: var(--peche-fonce);
+    background: var(--peche-fonce);
+    box-shadow: 0 5px 0 var(--peche-ombre);
+  }
+  .noeud-niveau.actuel .num,
+  .noeud-niveau.actuel .lib { color: #FFFFFF; }
+
+  .noeud-niveau.verrouille { cursor: not-allowed; }
+  .noeud-niveau.verrouille:hover { transform: none; }
+
+  .noeud-niveau.selection {
+    box-shadow: 0 0 0 5px rgba(224, 136, 103, 0.3), 0 4px 0 rgba(102, 80, 69, 0.14);
+  }
+  .noeud-niveau.actuel.selection {
+    box-shadow: 0 0 0 5px rgba(224, 136, 103, 0.3), 0 5px 0 var(--peche-ombre);
+  }
+
+  .noeud-niveau.ouvert { border-radius: 26px 26px 8px 8px; }
+
+  .noeud-niveau:not(.verrouille):hover { transform: translateY(-2px); }
+  .noeud-niveau:not(.verrouille):active { transform: translateY(1px); }
+
+  /* ---------- Rangée de chapitres (dépliée) ---------- */
+
+  .rangee-chapitres {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 12px 10px;
+    background: var(--fond-carte);
+    border-radius: 0 0 22px 22px;
+    padding: 20px 14px 16px;
+    margin: -6px 6px 0;
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+    transition: max-height 0.35s ease, opacity 0.28s ease, padding 0.35s ease;
+  }
+
+  .rangee-chapitres.deployee {
+    max-height: 420px;
+    opacity: 1;
+  }
+
+  .noeud-chapitre {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: var(--fond);
+    border: 3px solid var(--gris-verrou);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--gris-verrou-texte);
+    cursor: default;
+    position: relative;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+  }
+
+  .noeud-chapitre svg { width: 22px; height: 22px; }
+
+  .noeud-chapitre .etiquette-mini {
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translate(-50%, 6px);
+    width: 78px;
+    font-size: 0.6rem;
+    font-weight: 700;
+    color: var(--brun);
+    text-align: center;
+    line-height: 1.2;
+  }
+
+  .noeud-chapitre.complete {
+    border-color: var(--peche-fonce);
+    color: var(--peche-fonce);
+    background: #FFF9F5;
+  }
+
+  .noeud-chapitre.actuel {
+    border-color: var(--peche-fonce);
+    background: var(--peche-fonce);
+    color: #FFFFFF;
+    box-shadow: 0 3px 0 var(--peche-ombre);
+  }
+
+  .noeud-chapitre.deverrouillable { cursor: pointer; }
+  .noeud-chapitre.deverrouillable:hover { transform: scale(1.08); }
+  .noeud-chapitre.deverrouillable:active { transform: scale(0.98); }
+
+  .noeud-chapitre.selection {
+    box-shadow: 0 0 0 4px rgba(224, 136, 103, 0.3);
+  }
+  .noeud-chapitre.actuel.selection {
+    box-shadow: 0 0 0 4px rgba(224, 136, 103, 0.3), 0 3px 0 var(--peche-ombre);
+  }
+
+  .noeud-chapitre.examen {
+    width: 62px;
+    height: 62px;
+    border-color: var(--or);
+    color: var(--or);
+    background: var(--or-clair);
+  }
+  .noeud-chapitre.examen.actuel {
+    background: var(--or);
+    color: #FFFFFF;
+    box-shadow: 0 3px 0 var(--or-ombre);
+  }
+  .noeud-chapitre.examen.actuel.selection {
+    box-shadow: 0 0 0 4px rgba(200, 155, 44, 0.32), 0 3px 0 var(--or-ombre);
+  }
+  .noeud-chapitre.examen.complete {
+    border-color: var(--or);
+    color: var(--or);
+    background: var(--or-clair);
+  }
+  .noeud-chapitre.examen.deverrouillable:hover {
+    box-shadow: 0 0 0 6px rgba(200, 155, 44, 0.18);
+  }
+
+  /* ---------- Marqueur flottant : le vrai duo, plus un socle discret ---------- */
+
+  .bonomes-marqueur {
+    position: fixed;
+    z-index: 50;
+    pointer-events: none;
+    opacity: 0;
+    transition: left 0.4s cubic-bezier(.4,0,.2,1), top 0.4s cubic-bezier(.4,0,.2,1), opacity 0.25s ease;
+    transform: translate(-50%, -100%);
+    width: 76px;
+  }
+
+  .bonomes-marqueur.visible { opacity: 1; }
+
+  .bonomes-marqueur .socle {
+    width: 60%;
+    height: 10px;
+    margin: 0 auto;
+    border-radius: 50%;
+    background: radial-gradient(closest-side, rgba(102,80,69,0.28), transparent 75%);
+    animation: socle-pulse 2.2s ease-in-out infinite;
+  }
+
+  .bonomes-marqueur .flotte {
+    width: 100%;
+    animation: flottement 2.2s ease-in-out infinite;
+    filter: drop-shadow(0 6px 8px rgba(102, 80, 69, 0.22));
+  }
+
+  .bonomes-marqueur img { width: 100%; height: auto; display: block; }
+
+  @keyframes flottement {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-7px); }
+  }
+  @keyframes socle-pulse {
+    0%, 100% { transform: scaleX(1); opacity: 1; }
+    50% { transform: scaleX(0.8); opacity: 0.7; }
+  }
+
+  /* ---------- Carte d'info (bas d'écran, fixe) ---------- */
+
+  .carte-info {
+    position: fixed;
+    left: 50%;
+    bottom: 18px;
+    transform: translateX(-50%) translateY(12px);
+    width: min(90vw, 380px);
+    background: var(--fond-carte);
+    border-radius: 22px;
+    box-shadow: 0 12px 32px var(--ombre);
+    padding: 16px 22px 18px;
+    text-align: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.22s ease, transform 0.22s ease;
+  }
+
+  .carte-info.visible {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  .carte-info .type {
+    display: inline-block;
+    font-size: 0.66rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--peche-fonce);
+    background: rgba(224, 136, 103, 0.12);
+    border-radius: 999px;
+    padding: 3px 12px;
+  }
+
+  .carte-info .type.examen {
+    color: var(--or-ombre);
+    background: rgba(200, 155, 44, 0.16);
+  }
+
+  .carte-info .titre {
+    font-family: 'Fuzzy Bubbles', cursive;
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--brun-fonce);
+    margin: 8px 0 12px;
+    line-height: 1.2;
+  }
+
+  .carte-info button {
+    font-family: 'Caveat Brush', cursive;
+    font-size: 1.25rem;
+    border: none;
+    border-radius: 999px;
+    padding: 9px 30px;
+    cursor: pointer;
+    background: var(--peche-fonce);
+    color: #FFFFFF;
+    box-shadow: 0 4px 0 var(--peche-ombre);
+    transition: transform 0.12s ease, box-shadow 0.12s ease;
+  }
+  .carte-info button:hover { transform: translateY(2px); box-shadow: 0 2px 0 var(--peche-ombre); }
+  .carte-info button:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--peche-ombre); }
+
+  .carte-info button.examen-bouton {
+    background: var(--or);
+    box-shadow: 0 4px 0 var(--or-ombre);
+  }
+  .carte-info button.examen-bouton:hover { box-shadow: 0 2px 0 var(--or-ombre); }
+  .carte-info button.examen-bouton:active { box-shadow: 0 1px 0 var(--or-ombre); }
+
+  .carte-info .indice {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    font-size: 0.74rem;
+    color: var(--brun);
+    font-style: italic;
+  }
+  .carte-info .indice svg { width: 14px; height: 14px; flex-shrink: 0; color: var(--gris-verrou-texte); }
+
+  @media (max-width: 420px) {
+    .noeud-niveau { width: 76px; height: 76px; }
+    .noeud-chapitre { width: 50px; height: 50px; }
+    .noeud-chapitre.examen { width: 56px; height: 56px; }
+    .bonomes-marqueur { width: 62px; }
+  }
+</style>
+</head>
+<body>
+
+  <div class="entete-parcours">
+    <h1>Ton parcours</h1>
+    <p>
+      Clique sur un <b>niveau</b> pour déployer ses chapitres.
+      <br>
+      <kbd>↑</kbd> <kbd>↓</kbd> pour se déplacer, <kbd>Entrée</kbd> pour choisir.
+    </p>
+  </div>
+
+  <div class="parcours" id="parcours">
+    <div class="ligne-parcours-fond"></div>
+    <div class="ligne-parcours-progres" id="ligneProgres"></div>
+  </div>
+
+  <div class="bonomes-marqueur" id="marqueurBonomes">
+    <img class="flotte" src="images/bonomes_keb_bek_parcours_01_officiel.png" alt="Keb et Bek">
+    <div class="socle"></div>
+  </div>
+
+  <div class="carte-info" id="carteInfo">
+    <div class="type" id="carteInfoType">—</div>
+    <div class="titre" id="carteInfoTitre">—</div>
+    <button id="carteInfoBouton">Commencer</button>
+    <div class="indice" id="carteInfoIndice" style="display:none;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="10.5" width="14" height="9" rx="2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg>
+      <span id="carteInfoIndiceTexte">Termine les étapes précédentes pour débloquer ceci.</span>
+    </div>
+  </div>
+
+<script>
+  // ==================================================================
+  // Structure à deux niveaux : Niveaux (cases principales du parcours)
+  // > Chapitres (dialogues/histoires), chaque niveau se terminant par
+  // "L'examen" — étape finale distincte, récompense = carte à obtenir.
+  //
+  // Données et fonctions volontairement identiques à demo_parcours_v2.html
+  // (même API : NIVEAUX, construireDOM, rafraichir, toggleNiveau...) pour
+  // que l'intégration dans index.html reste un simple report, comme ça a
+  // été fait pour le sac à dos dans COMPTES_ELEVES_v09.
+  // ==================================================================
+
+  const NIVEAUX = [
+    { id: 'niveau-1', titre: 'Les salutations', etat: 'complete', chapitres: [
+        { id: 'd1', type: 'dialogue', titre: 'Premier échange', etat: 'complete' },
+        { id: 'h1', type: 'histoire', titre: 'Le café du samedi', etat: 'complete' },
+        { id: 'd2', type: 'dialogue', titre: 'Les couleurs', etat: 'complete' },
+        { id: 'ex1', type: 'examen', titre: "L'examen", etat: 'complete' }
+    ]},
+    { id: 'niveau-2', titre: 'Au parc', etat: 'actuel', chapitres: [
+        { id: 'h2', type: 'histoire', titre: 'La visite au parc', etat: 'actuel' },
+        { id: 'd3', type: 'dialogue', titre: 'Le marché', etat: 'verrouille' },
+        { id: 'h3', type: 'histoire', titre: 'Le mystère du grenier', etat: 'verrouille' },
+        { id: 'ex2', type: 'examen', titre: "L'examen", etat: 'verrouille' }
+    ]},
+    { id: 'niveau-3', titre: 'La météo', etat: 'verrouille', chapitres: [
+        { id: 'd4', type: 'dialogue', titre: 'Le ciel', etat: 'verrouille' },
+        { id: 'h4', type: 'histoire', titre: 'Le grand voyage', etat: 'verrouille' },
+        { id: 'ex3', type: 'examen', titre: "L'examen", etat: 'verrouille' }
+    ]}
+  ];
+
+  function iconeDialogue() { return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5C4 4.7 4.7 4 5.5 4h13c.8 0 1.5.7 1.5 1.5v10c0 .8-.7 1.5-1.5 1.5H9l-4 3.5V17H5.5C4.7 17 4 16.3 4 15.5Z"/></svg>'; }
+  function iconeHistoire() { return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4.5C4 3.7 4.7 3 5.5 3H12V21H5.5C4.7 21 4 20.3 4 19.5Z"/><path d="M20 4.5C20 3.7 19.3 3 18.5 3H12V21H18.5C19.3 21 20 20.3 20 19.5Z"/></svg>'; }
+  function iconeVerrou() { return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="10.5" width="14" height="9" rx="2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg>'; }
+  function iconeCoche() { return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5 9.5 18 20 6"/></svg>'; }
+  function iconeEtoile() { return '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.5l2.9 6.1 6.6.7-4.9 4.6 1.3 6.6L12 17.3 6.1 20.5l1.3-6.6-4.9-4.6 6.6-.7Z"/></svg>'; }
+
+  function iconePourChapitre(ch) {
+    if (ch.etat === 'verrouille') return iconeVerrou();
+    if (ch.type === 'examen') return iconeEtoile();
+    if (ch.etat === 'complete') return iconeCoche();
+    return ch.type === 'dialogue' ? iconeDialogue() : iconeHistoire();
+  }
+
+  const parcoursEl = document.getElementById('parcours');
+  const ligneProgres = document.getElementById('ligneProgres');
+  const marqueur = document.getElementById('marqueurBonomes');
+  const carteInfo = document.getElementById('carteInfo');
+  const carteInfoType = document.getElementById('carteInfoType');
+  const carteInfoTitre = document.getElementById('carteInfoTitre');
+  const carteInfoBouton = document.getElementById('carteInfoBouton');
+  const carteInfoIndice = document.getElementById('carteInfoIndice');
+  const carteInfoIndiceTexte = document.getElementById('carteInfoIndiceTexte');
+
+  let niveauOuvertIdx = NIVEAUX.findIndex(n => n.etat === 'actuel');
+  if (niveauOuvertIdx === -1) niveauOuvertIdx = 0;
+  let curseurNiveau = niveauOuvertIdx;
+  let curseurChapitre = null; // index dans le niveau ouvert, ou null si contexte "niveaux"
+
+  function estAccessible(etat) { return etat !== 'verrouille'; }
+
+  function construireDOM() {
+    parcoursEl.querySelectorAll('.bloc-niveau').forEach(n => n.remove());
+
+    NIVEAUX.forEach((niveau, i) => {
+      const bloc = document.createElement('div');
+      bloc.className = 'bloc-niveau';
+
+      const groupe = document.createElement('div');
+      groupe.className = 'groupe-niveau' + (i === niveauOuvertIdx ? ' ouvert' : '');
+
+      const noeud = document.createElement('div');
+      noeud.className = 'noeud-niveau ' + niveau.etat + (i === niveauOuvertIdx ? ' ouvert' : '') + (curseurChapitre === null && i === curseurNiveau ? ' selection' : '');
+      noeud.innerHTML = niveau.etat === 'verrouille'
+        ? '<svg class="verrou-icone" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="10.5" width="14" height="9" rx="2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg>'
+        : '<div class="num">' + (i + 1) + '</div><div class="lib">' + niveau.titre + '</div>';
+      noeud.addEventListener('click', () => {
+        curseurChapitre = null;
+        curseurNiveau = i;
+        if (estAccessible(niveau.etat)) toggleNiveau(i); else rafraichir();
+      });
+      groupe.appendChild(noeud);
+
+      const rangee = document.createElement('div');
+      rangee.className = 'rangee-chapitres' + (i === niveauOuvertIdx ? ' deployee' : '');
+      niveau.chapitres.forEach((ch, j) => {
+        const nc = document.createElement('div');
+        nc.className = 'noeud-chapitre ' + ch.type + ' ' + (ch.etat === 'verrouille' ? 'verrouille' : ch.etat) +
+          (ch.etat !== 'verrouille' ? ' deverrouillable' : '') +
+          (i === niveauOuvertIdx && j === curseurChapitre ? ' selection' : '');
+        nc.innerHTML = iconePourChapitre(ch) + '<div class="etiquette-mini">' + ch.titre + '</div>';
+        nc.addEventListener('click', (e) => {
+          e.stopPropagation();
+          curseurNiveau = i;
+          curseurChapitre = j;
+          rafraichir();
+        });
+        rangee.appendChild(nc);
+      });
+      groupe.appendChild(rangee);
+      bloc.appendChild(groupe);
+      parcoursEl.appendChild(bloc);
+    });
+  }
+
+  function toggleNiveau(i) {
+    if (niveauOuvertIdx === i) {
+      niveauOuvertIdx = -1;
+      curseurChapitre = null;
+    } else {
+      niveauOuvertIdx = i;
+      curseurNiveau = i;
+      const niveau = NIVEAUX[i];
+      const premierAccessible = niveau.chapitres.findIndex(c => estAccessible(c.etat));
+      curseurChapitre = premierAccessible === -1 ? null : premierAccessible;
+    }
+    rafraichir();
+  }
+
+  function positionnerMarqueur(el) {
+    const r = el.getBoundingClientRect();
+    marqueur.style.left = (r.left + r.width / 2) + 'px';
+    marqueur.style.top = (r.top + window.scrollY - 6) + 'px';
+    marqueur.classList.add('visible');
+  }
+
+  // Trace la portion "déjà parcourue" de la ligne pointillée : du haut du
+  // parcours jusqu'au centre vertical du niveau actuel (pas le niveau
+  // sélectionné au clavier — le vrai niveau "actuel" du joueur), pour
+  // donner un sentiment de progression indépendant de la navigation.
+  function positionnerLigneProgres() {
+    const idxActuel = NIVEAUX.findIndex(n => n.etat === 'actuel');
+    if (idxActuel === -1) { ligneProgres.style.height = '0'; return; }
+    const noeuds = parcoursEl.querySelectorAll('.noeud-niveau');
+    const noeudActuel = noeuds[idxActuel];
+    if (!noeudActuel) return;
+    // getBoundingClientRect() plutôt qu'offsetTop : .noeud-niveau n'a pas
+    // .parcours comme offsetParent direct (il y a .groupe-niveau et
+    // .bloc-niveau entre les deux), offsetTop donnerait une valeur relative
+    // au mauvais ancêtre. Les rectangles réels évitent le problème quel
+    // que soit l'imbrication.
+    const rParcours = parcoursEl.getBoundingClientRect();
+    const rNoeud = noeudActuel.getBoundingClientRect();
+    const hauteur = (rNoeud.top - rParcours.top) + rNoeud.height / 2;
+    ligneProgres.style.height = Math.max(0, hauteur) + 'px';
+  }
+
+  function rafraichir() {
+    construireDOM();
+    positionnerLigneProgres();
+
+    let elActif = null;
+    if (curseurChapitre !== null && niveauOuvertIdx !== -1) {
+      elActif = parcoursEl.querySelectorAll('.bloc-niveau')[niveauOuvertIdx].querySelectorAll('.noeud-chapitre')[curseurChapitre];
+      const ch = NIVEAUX[niveauOuvertIdx].chapitres[curseurChapitre];
+      carteInfoType.textContent = ch.type === 'examen' ? "Examen" : (ch.type === 'dialogue' ? 'Dialogue' : 'Histoire');
+      carteInfoType.className = 'type' + (ch.type === 'examen' ? ' examen' : '');
+      carteInfoTitre.textContent = ch.titre;
+      carteInfo.classList.add('visible');
+      if (ch.etat === 'verrouille') {
+        carteInfoBouton.style.display = 'none';
+        carteInfoIndice.style.display = 'flex';
+        carteInfoIndiceTexte.textContent = 'Termine les étapes précédentes pour débloquer ceci.';
+      } else {
+        carteInfoBouton.style.display = 'inline-block';
+        carteInfoIndice.style.display = 'none';
+        carteInfoBouton.classList.toggle('examen-bouton', ch.type === 'examen');
+        carteInfoBouton.textContent = ch.type === 'examen' ? "Passer l'examen" : (ch.etat === 'complete' ? 'Revoir' : 'Commencer');
+      }
+    } else {
+      elActif = parcoursEl.querySelectorAll('.noeud-niveau')[curseurNiveau];
+      const niveau = NIVEAUX[curseurNiveau];
+      carteInfoType.textContent = 'Niveau';
+      carteInfoType.className = 'type';
+      carteInfoTitre.textContent = niveau.titre;
+      carteInfo.classList.add('visible');
+      carteInfoBouton.style.display = 'none';
+      carteInfoIndice.style.display = 'flex';
+      carteInfoIndiceTexte.textContent = estAccessible(niveau.etat) ? 'Clique pour déployer les chapitres.' : 'Termine le niveau précédent pour débloquer celui-ci.';
+    }
+
+    if (elActif) requestAnimationFrame(() => positionnerMarqueur(elActif));
+  }
+
+  window.addEventListener('keydown', (e) => {
+    if (!['ArrowDown','ArrowUp','ArrowLeft','ArrowRight','Enter',' ','Escape'].includes(e.key)) return;
+    e.preventDefault();
+
+    if (curseurChapitre === null) {
+      // Contexte "niveaux"
+      if (e.key === 'ArrowDown' && curseurNiveau < NIVEAUX.length - 1 && estAccessible(NIVEAUX[curseurNiveau + 1].etat)) curseurNiveau++;
+      if (e.key === 'ArrowUp' && curseurNiveau > 0) curseurNiveau--;
+      if ((e.key === 'Enter' || e.key === ' ') && estAccessible(NIVEAUX[curseurNiveau].etat)) toggleNiveau(curseurNiveau);
+      rafraichir();
+    } else {
+      // Contexte "chapitres" à l'intérieur du niveau ouvert
+      const chapitres = NIVEAUX[niveauOuvertIdx].chapitres;
+      if (e.key === 'ArrowDown' && curseurChapitre < chapitres.length - 1 && estAccessible(chapitres[curseurChapitre + 1].etat)) curseurChapitre++;
+      if (e.key === 'ArrowUp' && curseurChapitre > 0) curseurChapitre--;
+      if (e.key === 'Escape') { niveauOuvertIdx = -1; curseurChapitre = null; }
+      rafraichir();
+    }
+  });
+
+  carteInfoBouton.addEventListener('click', () => {
+    if (curseurChapitre === null) return;
+    const ch = NIVEAUX[niveauOuvertIdx].chapitres[curseurChapitre];
+    console.log('Ouverture :', ch.id, '(' + ch.type + ') — pas encore branché, page de leçon à construire séparément.');
+  });
+
+  window.addEventListener('resize', () => rafraichir());
+  rafraichir();
+</script>
+
+</body>
+</html>

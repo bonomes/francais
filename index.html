@@ -3076,6 +3076,7 @@
           <button type="button" class="bouton-menu" data-menu="histoires">
             <svg class="icone-menu" viewBox="0 0 24 24"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H12v18H6.5A2.5 2.5 0 0 1 4 18.5v-13Z"/><path d="M20 5.5A2.5 2.5 0 0 0 17.5 3H12v18h5.5a2.5 2.5 0 0 0 2.5-2.5v-13Z"/></svg>
             <span id="libelleMenuHistoires">Stories &amp; lessons</span>
+            <span class="badge-bientot">Soon</span>
           </button>
 
           <button type="button" class="bouton-menu" data-menu="bravo">
@@ -3098,7 +3099,6 @@
           <button type="button" class="bouton-menu" data-menu="contact">
             <svg class="icone-menu" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>
             <span id="libelleMenuContact">Contact</span>
-            <span class="badge-bientot">Soon</span>
           </button>
         </div>
       </div>
@@ -4498,25 +4498,25 @@
       window.location.hash = '#connexion';
     });
 
-    // "prives" (Cours privés) et "histoires" (Histoires et leçons) sont les
-    // sections du menu principal réellement construites : elles mènent
-    // chacune vers leur propre page — "prives" vers son mini-site
-    // (cours-prives/index.html), "histoires" vers parcours.html (racine du
-    // dépôt, même niveau que index.html — voir LECONS_v04). "bravo" et
-    // "contact" ne sont pas encore construites et gardent leur repli
-    // console.log.
+    // "prives" (Cours privés) est la première section du menu principal à
+    // être réellement construite : elle mène vers son propre mini-site
+    // (cours-prives/index.html), qui relit lui-même CLE_LANGUE pour rester
+    // dans la langue déjà choisie ici — voir index (33).html/methode.html/
+    // tarifs.html. "contact" est la deuxième : elle mène vers contact.html,
+    // à la racine (même niveau que ce fichier), qui relit aussi CLE_LANGUE.
+    // Les autres entrées du menu (histoires, bravo) ne sont pas encore
+    // construites et gardent leur repli console.log.
     document.querySelector('.bouton-menu[data-menu="prives"]').addEventListener('click', () => {
       window.location.href = 'cours-prives/index.html';
     });
-
-    document.querySelector('.bouton-menu[data-menu="histoires"]').addEventListener('click', () => {
-      window.location.href = 'parcours.html';
+    document.querySelector('.bouton-menu[data-menu="contact"]').addEventListener('click', () => {
+      window.location.href = 'contact.html';
     });
 
     document.querySelectorAll('.bouton-menu[data-menu]').forEach(bouton => {
       if (bouton.dataset.menu === 'fiche') return; // déjà géré ci-dessus
       if (bouton.dataset.menu === 'prives') return; // déjà géré ci-dessus : section active
-      if (bouton.dataset.menu === 'histoires') return; // déjà géré ci-dessus : section active
+      if (bouton.dataset.menu === 'contact') return; // déjà géré ci-dessus : section active
       bouton.addEventListener('click', () => {
         console.log('Section pas encore construite :', bouton.dataset.menu);
       });

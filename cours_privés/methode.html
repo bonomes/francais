@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Method — Le français avec Keb &amp; Bek</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+
+  :root {
+    --fond:        #F2EDE3;
+    --fond-carte:  #FFFCF5;
+    --brun:        #665045;
+    --brun-fonce:  #4A3B33;
+    --peche:       #F0A98B;
+    --peche-pale:  #FBEAE2;
+    --peche-fonce: #E08867;
+    --peche-ombre: #B5623F;
+    --or:          #C89B2C;
+    --or-clair:    #FFF8E8;
+    --or-ombre:    #8F7018;
+    --gris-verrou: #C9C0B4;
+    --ombre-douce: rgba(102,80,69,0.16);
+  }
+
+  body {
+    font-family: "Inter", sans-serif;
+    color: var(--brun-fonce);
+    background:
+      radial-gradient(ellipse 100% 50% at 4% 0%,   rgba(240,169,60,0.10) 0%, transparent 55%),
+      radial-gradient(ellipse 85%  50% at 100% 100%, rgba(224,136,103,0.12) 0%, transparent 55%),
+      var(--fond);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── NAV ── */
+  nav {
+    display: flex; align-items: center; gap: 0.6rem;
+    padding: 1.1rem 2rem;
+    border-bottom: 2px solid rgba(201,192,180,0.5);
+    background: rgba(242,237,227,0.78);
+    backdrop-filter: blur(10px);
+    position: sticky; top: 0; z-index: 100;
+  }
+  .nav-back {
+    font-family: "Baloo 2", sans-serif; font-weight: 700; font-size: 0.95rem;
+    color: var(--brun); text-decoration: none; transition: color 0.2s;
+  }
+  .nav-back:hover { color: var(--peche-fonce); }
+  .nav-sep { color: var(--gris-verrou); font-size: 0.85rem; }
+  .nav-cur { font-family: "Baloo 2", sans-serif; font-weight: 700; font-size: 0.95rem; color: var(--brun); opacity: 0.7; }
+
+  /* ── HERO ── */
+  .hero {
+    text-align: center;
+    padding: clamp(2.6rem, 5vw, 3.8rem) 1.5rem clamp(2rem, 4vw, 3.2rem);
+    max-width: 680px; margin: 0 auto;
+    display: flex; flex-direction: column; align-items: center;
+  }
+  .hero-emblem {
+    width: clamp(120px, 20vw, 170px);
+    height: auto;
+    aspect-ratio: 1408 / 950;
+    object-fit: contain;
+    margin-bottom: 0.6rem;
+    animation: monter 0.5s 0s ease both; opacity: 0;
+  }
+  .hero-surtitre {
+    font-family: "Baloo 2", sans-serif; font-weight: 700; font-size: 0.85rem;
+    letter-spacing: 0.16em; text-transform: uppercase;
+    color: var(--peche-fonce); margin-bottom: 0.7rem;
+    animation: monter 0.5s 0.05s ease both; opacity: 0;
+  }
+  .hero h1 {
+    font-family: "Baloo 2", sans-serif; font-weight: 700;
+    font-size: clamp(2.1rem, 5.2vw, 3.1rem); line-height: 1.16;
+    color: var(--brun-fonce);
+    animation: monter 0.5s 0.15s ease both; opacity: 0;
+  }
+  .hero h1 em { font-style: normal; color: var(--peche-fonce); }
+  .hero-sous {
+    font-size: 1.02rem; font-weight: 400; color: var(--brun); max-width: 500px;
+    margin: 1.1rem auto 0; line-height: 1.75;
+    animation: monter 0.5s 0.25s ease both; opacity: 0;
+  }
+  .hero-ligne {
+    width: 48px; height: 4px; background: var(--peche-fonce);
+    border-radius: 4px; margin: 1.5rem auto 0;
+    animation: monter 0.5s 0.3s ease both; opacity: 0;
+  }
+
+  /* ── CONTENU ── */
+  .contenu {
+    max-width: 760px; margin: 0 auto;
+    padding: 0 1.5rem clamp(3.5rem, 7vw, 5.5rem);
+    display: flex; flex-direction: column; gap: 1.3rem;
+  }
+
+  .carte {
+    background: var(--fond-carte);
+    border: 3px solid var(--gris-verrou);
+    border-radius: 22px;
+    padding: 1.7rem 1.9rem;
+    box-shadow: 0 5px 0 var(--ombre-douce);
+    display: flex; gap: 1.3rem; align-items: flex-start;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+    opacity: 0;
+  }
+  .carte:hover {
+    border-color: var(--brun);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 0 var(--ombre-douce);
+  }
+
+  .carte-icone {
+    flex-shrink: 0; width: 52px; height: 52px; border-radius: 15px;
+    background: var(--peche-pale); color: var(--peche-fonce);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .carte-icone svg { width: 27px; height: 27px; }
+
+  .carte-corps { flex: 1; }
+  .carte-titre {
+    font-family: "Baloo 2", sans-serif; font-weight: 700;
+    font-size: 1.28rem; color: var(--brun-fonce);
+    margin-bottom: 0.45rem; line-height: 1.25;
+  }
+  .carte-texte { font-size: 0.94rem; font-weight: 400; color: var(--brun); line-height: 1.75; }
+  .carte-texte strong { color: var(--brun-fonce); font-weight: 700; }
+  .carte-texte em { font-style: normal; font-weight: 600; color: var(--peche-fonce); }
+
+  /* Carte thèse — traitement or, écho de "L'examen" (le sommet du parcours) */
+  .carte-these {
+    background: linear-gradient(155deg, var(--or-clair) 0%, var(--fond-carte) 100%);
+    border-color: var(--or);
+    box-shadow: 0 6px 0 var(--or-ombre);
+  }
+  .carte-these:hover { transform: translateY(-3px); box-shadow: 0 9px 0 var(--or-ombre); border-color: var(--or); }
+  .carte-these .carte-icone { background: rgba(200,155,44,0.16); color: var(--or-ombre); }
+  .carte-these .carte-titre { color: var(--or-ombre); font-size: 1.42rem; }
+
+  /* ── BLOC LANGUES ── */
+  .bloc-langues {
+    background: var(--fond-carte);
+    border: 3px solid var(--gris-verrou);
+    border-radius: 22px; padding: 1.7rem 1.9rem;
+    box-shadow: 0 5px 0 var(--ombre-douce);
+    opacity: 0;
+    transition: border-color 0.2s ease;
+  }
+  .bloc-langues:hover { border-color: var(--brun); }
+  .bloc-langues-titre {
+    font-family: "Baloo 2", sans-serif; font-weight: 700;
+    font-size: 1.15rem; color: var(--brun-fonce);
+    margin-bottom: 0.9rem;
+  }
+  .langues-grille { display: flex; flex-wrap: wrap; gap: 0.55rem; }
+  .langue-badge {
+    font-family: "Baloo 2", sans-serif; font-weight: 600; font-size: 0.92rem;
+    background: var(--peche-pale); color: var(--peche-ombre);
+    border-radius: 100px; padding: 0.3rem 0.95rem;
+    border: 2px solid rgba(224,136,103,0.28);
+  }
+  .langue-badge.future {
+    background: rgba(102,80,69,0.06); color: var(--brun);
+    border-color: rgba(102,80,69,0.16); font-weight: 500; font-style: italic;
+  }
+  .langues-note {
+    margin-top: 0.9rem; font-size: 0.85rem; font-weight: 400;
+    color: var(--brun); line-height: 1.65; font-style: italic;
+  }
+
+  /* ── DURÉES ── */
+  .bloc-durees { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; opacity: 0; }
+  .duree-carte {
+    background: var(--fond-carte);
+    border: 3px solid var(--gris-verrou);
+    border-radius: 18px; padding: 1.35rem 1.4rem; text-align: center;
+    box-shadow: 0 4px 0 var(--ombre-douce);
+    transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  .duree-carte:hover { border-color: var(--brun); transform: translateY(-2px); box-shadow: 0 6px 0 var(--ombre-douce); }
+  .duree-chiffre { font-family: "Baloo 2", sans-serif; font-weight: 800; font-size: 2.7rem; color: var(--peche-fonce); line-height: 1; }
+  .duree-unite { font-family: "Baloo 2", sans-serif; font-weight: 600; font-size: 0.95rem; color: var(--brun); margin-top: 0.2rem; }
+  .duree-desc { font-size: 0.82rem; font-weight: 400; color: var(--brun); margin-top: 0.5rem; line-height: 1.55; }
+
+  /* ── CTA ── */
+  .cta-wrap { text-align: center; padding-top: 0.4rem; opacity: 0; }
+  .cta {
+    display: inline-flex; align-items: center; gap: 0.6rem;
+    font-family: "Baloo 2", sans-serif; font-weight: 700; font-size: 1.12rem;
+    color: #FFFFFF;
+    background: var(--peche-fonce);
+    border-radius: 16px; padding: 0.85rem 2.1rem;
+    text-decoration: none;
+    box-shadow: 0 6px 0 var(--peche-ombre);
+    transition: transform 0.15s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.15s ease;
+  }
+  .cta:hover { transform: translateY(-3px); box-shadow: 0 9px 0 var(--peche-ombre); }
+  .cta:active { transform: translateY(1px); box-shadow: 0 3px 0 var(--peche-ombre); }
+
+  /* ── FOOTER ── */
+  footer {
+    text-align: center; padding: 1.9rem;
+    border-top: 2px solid rgba(201,192,180,0.5);
+    font-family: "Baloo 2", sans-serif; font-weight: 600; font-size: 0.92rem; color: var(--brun);
+  }
+  footer a { color: var(--peche-fonce); text-decoration: none; transition: color 0.2s; }
+  footer a:hover { color: var(--brun-fonce); }
+
+  @keyframes monter { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+
+  @media (max-width: 560px) {
+    .carte { flex-direction: column; gap: 0.9rem; }
+    .bloc-durees { grid-template-columns: 1fr; }
+    .contenu { gap: 1.1rem; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="nav-back" id="navBack">← Private lessons</a>
+  <span class="nav-sep">/</span>
+  <span class="nav-cur" id="navCur">The method</span>
+</nav>
+
+<div class="hero">
+  <img class="hero-emblem" src="../images/bonomes_keb_bek_methode_01.png" alt="Keb &amp; Bek">
+  <div class="hero-surtitre" id="txtSurtitre">Keb &amp; Bek · Private Lessons</div>
+  <h1 id="txtTitre">Learn, <em>don't memorize</em></h1>
+  <p class="hero-sous" id="txtSous">An immersive, narrative, progressive approach — so that Québécois French becomes a language you truly understand, not just a list of rules to recite.</p>
+  <div class="hero-ligne"></div>
+</div>
+
+<div class="contenu">
+
+  <!-- Philosophie — traitement or, la thèse du cours -->
+  <div class="carte carte-these">
+    <div class="carte-icone">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M13 2 L5 13.5 H11 L9.5 22 L19 9.5 H13 Z"/>
+      </svg>
+    </div>
+    <div class="carte-corps">
+      <div class="carte-titre" id="c1Titre">Enjoyment, the engine of effort</div>
+      <p class="carte-texte" id="c1Texte"></p>
+    </div>
+  </div>
+
+  <!-- Immersion narrative — icône livre, reprise de "histoire" -->
+  <div class="carte">
+    <div class="carte-icone">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M4 4.5C4 3.7 4.7 3 5.5 3H12V21H5.5C4.7 21 4 20.3 4 19.5Z"/>
+        <path d="M20 4.5C20 3.7 19.3 3 18.5 3H12V21H18.5C19.3 21 20 20.3 20 19.5Z"/>
+      </svg>
+    </div>
+    <div class="carte-corps">
+      <div class="carte-titre" id="c2Titre">A story to follow</div>
+      <p class="carte-texte" id="c2Texte"></p>
+    </div>
+  </div>
+
+  <!-- Québécois authentique — icône feuille d'érable -->
+  <div class="carte">
+    <div class="carte-icone">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 2.5 L13.3 6.6 L17 4.6 L15.8 8.6 L20 8.8 L16.7 11.3 L19.6 14.3 L15.5 13.9 L16.2 18 L12.8 15.5 L12 20.5 L11.2 15.5 L7.8 18 L8.5 13.9 L4.4 14.3 L7.3 11.3 L4 8.8 L8.2 8.6 L7 4.6 L10.7 6.6 Z"/>
+        <path d="M12 15.5 L12 20.5" opacity="0.6"/>
+      </svg>
+    </div>
+    <div class="carte-corps">
+      <div class="carte-titre" id="c3Titre">French, the way it's spoken here</div>
+      <p class="carte-texte" id="c3Texte"></p>
+    </div>
+  </div>
+
+  <!-- Oral / écrit / interaction — icône bulles superposées -->
+  <div class="carte">
+    <div class="carte-icone">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 6.5C3 5.7 3.7 5 4.5 5h9c.8 0 1.5.7 1.5 1.5V12c0 .8-.7 1.5-1.5 1.5h-6l-2.8 2.4V13.5h-.2C3.7 13.5 3 12.8 3 12Z"/>
+        <path d="M10 18.5c0 .8.7 1.5 1.5 1.5h5.3L19.5 22v-2h.1c.8 0 1.4-.7 1.4-1.5v-4c0-.8-.6-1.5-1.4-1.5h-8c-.8 0-1.6.7-1.6 1.5Z" opacity="0.55"/>
+      </svg>
+    </div>
+    <div class="carte-corps">
+      <div class="carte-titre" id="c4Titre">Speaking, writing, interacting — in one natural flow</div>
+      <p class="carte-texte" id="c4Texte"></p>
+    </div>
+  </div>
+
+  <!-- Pour tous — icône deux personnages -->
+  <div class="carte">
+    <div class="carte-icone">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="8.2" cy="6.3" r="2.6"/>
+        <path d="M3.5 18C3.5 13.8 5.3 12 8.2 12C11.1 12 12.9 13.8 12.9 18"/>
+        <circle cx="16.6" cy="8.2" r="1.9" opacity="0.7"/>
+        <path d="M13 18C13 14.4 14.4 12.7 16.6 12.7C18.8 12.7 20.2 14.4 20.2 18" opacity="0.7"/>
+      </svg>
+    </div>
+    <div class="carte-corps">
+      <div class="carte-titre" id="c5Titre">For everyone</div>
+      <p class="carte-texte" id="c5Texte"></p>
+    </div>
+  </div>
+
+  <!-- Langues d'enseignement -->
+  <div class="bloc-langues">
+    <div class="bloc-langues-titre" id="blTitre">Available teaching languages</div>
+    <div class="langues-grille">
+      <span class="langue-badge" id="blB1">English</span>
+      <span class="langue-badge" id="blB2">Spanish</span>
+      <span class="langue-badge" id="blB3">Italian</span>
+      <span class="langue-badge" id="blB4">Portuguese</span>
+      <span class="langue-badge" id="blB5">Mandarin</span>
+      <span class="langue-badge future" id="blB6">More languages coming soon…</span>
+    </div>
+    <p class="langues-note" id="blNote">Lessons can be taught in any of these languages. More teaching languages will be added as they're mastered.</p>
+  </div>
+
+  <!-- Durées -->
+  <div class="bloc-durees">
+    <div class="duree-carte">
+      <div class="duree-chiffre">60</div>
+      <div class="duree-unite" id="dUnite1">minutes</div>
+      <div class="duree-desc" id="dDesc1">The standard format, ideal for making steady progress and exploring lessons in depth.</div>
+    </div>
+    <div class="duree-carte">
+      <div class="duree-chiffre">30</div>
+      <div class="duree-unite" id="dUnite2">minutes</div>
+      <div class="duree-desc" id="dDesc2">For students who prefer short, frequent sessions, or younger learners.</div>
+    </div>
+  </div>
+
+  <!-- CTA — pointe vers la nouvelle page de contact autonome. Le chemin
+       exact (../contact.html) est une hypothèse à confirmer une fois
+       cette page créée ailleurs dans le site : voir note dans le chat. -->
+  <div class="cta-wrap">
+    <a href="../contact.html" class="cta" id="ctaBtn">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M4 5.5C4 4.7 4.7 4 5.5 4h13c.8 0 1.5.7 1.5 1.5v10c0 .8-.7 1.5-1.5 1.5H9l-4 3.5V17H5.5C4.7 17 4 16.3 4 15.5Z"/>
+      </svg>
+      <span id="ctaTexte">Book a trial lesson →</span>
+    </a>
+  </div>
+
+</div>
+
+<footer>
+  <a href="index.html" id="footLien">← Private lessons</a> · Keb &amp; Bek · <span id="footTexte">Québécois French lessons</span>
+</footer>
+
+<script>
+  // ==================================================================
+  // Internationalisation — voir le commentaire équivalent dans
+  // index.html (le hub) pour le principe général. CLE_LANGUE est la
+  // même clé partagée que le site principal.
+  // ==================================================================
+  const CLE_LANGUE = 'kebbek_langue';
+  function langueActuelle() {
+    return localStorage.getItem(CLE_LANGUE) || 'en';
+  }
+
+  const TRADUCTIONS = {
+    en: {
+      navBack: '← Private lessons',
+      navCur: 'The method',
+      surtitre: 'Keb & Bek · Private Lessons',
+      titreHtml: 'Learn, <em>don\u2019t memorize</em>',
+      sous: 'An immersive, narrative, progressive approach — so that Québécois French becomes a language you truly understand, not just a list of rules to recite.',
+      c1Titre: 'Enjoyment, the engine of effort',
+      c1Texte: 'Learning a language takes work — there\u2019s no way around that. But effort and enjoyment aren\u2019t opposites. Every lesson is designed to be <strong>engaging, surprising, alive</strong>: you learn because you want to know what happens next, not because you\u2019re told to memorize a conjugation table.',
+      c2Titre: 'A story to follow',
+      c2Texte: 'The course is structured like a story. You meet <strong>Bek and Keb</strong> — two friends from Québec — and you learn through their dialogues, their situations, their everyday life. You don\u2019t study French from the outside: you step into it. Grammar structures settle in naturally, in a context that gives them meaning.',
+      c3Titre: 'French, the way it\u2019s spoken here',
+      c3Texte: 'The course\u2019s reference point is <strong>authentic Québécois French</strong> — not French from France, not a watered-down version. We say <em>dîner</em> for lunch, <em>déjeuner</em> for breakfast. The expressions, the intonation, the natural turns of phrase: all of it is grounded in the reality of Montréal and Québec. Not a textbook — a living language.',
+      c4Titre: 'Speaking, writing, interacting — in one natural flow',
+      c4Texte: 'Lessons aren\u2019t split into \u201cnow we do speaking, now we do writing.\u201d The back-and-forth happens <strong>naturally, right within the lessons themselves</strong>: an image prompts a question, a spoken answer calls for a written trace, an interactive moment asks you to think before you act. You\u2019re not moving from one exercise to the next — you\u2019re living the language.',
+      c5Titre: 'For everyone',
+      c5Texte: 'The content is designed to be accessible to <strong>adults</strong> as well as <strong>children</strong> and teenagers. Private lessons are tailored to each student — their pace, their goals, their level. There\u2019s no single ideal student profile: there\u2019s your profile, and that\u2019s where we start.',
+      blTitre: 'Available teaching languages',
+      blB1: 'English', blB2: 'Spanish', blB3: 'Italian', blB4: 'Portuguese', blB5: 'Mandarin',
+      blB6: 'More languages coming soon…',
+      blNote: 'Lessons can be taught in any of these languages. More teaching languages will be added as they\u2019re mastered.',
+      dUnite: 'minutes',
+      dDesc1: 'The standard format, ideal for making steady progress and exploring lessons in depth.',
+      dDesc2: 'For students who prefer short, frequent sessions, or younger learners.',
+      ctaTexte: 'Book a trial lesson →',
+      footLien: '← Private lessons',
+      footTexte: 'Québécois French lessons',
+      titrePage: 'The Method'
+    },
+    es: {
+      navBack: '← Clases privadas',
+      navCur: 'El método',
+      surtitre: 'Keb & Bek · Clases privadas',
+      titreHtml: 'Aprender, <em>no memorizar</em>',
+      sous: 'Un enfoque inmersivo, narrativo y progresivo — para que el francés quebequense se convierta en una lengua que de verdad entiendes, no solo una lista de reglas para recitar.',
+      c1Titre: 'El placer, motor del esfuerzo',
+      c1Texte: 'Aprender un idioma requiere trabajo — es inevitable. Pero el esfuerzo y el placer no son opuestos. Cada clase está pensada para ser <strong>estimulante, sorprendente, viva</strong>: aprendes porque quieres saber qué pasa después, no porque te pidan memorizar una tabla de conjugaciones.',
+      c2Titre: 'Una historia que seguir',
+      c2Texte: 'El curso está estructurado como un relato. Conoces a <strong>Bek y Keb</strong> — dos amigos quebequenses — y aprendes a través de sus diálogos, sus situaciones, su día a día. No estudias el francés desde fuera: entras en él. Las estructuras gramaticales se asientan de forma natural, en un contexto que les da sentido.',
+      c3Titre: 'El francés de aquí',
+      c3Texte: 'La referencia del curso es el <strong>francés quebequense auténtico</strong> — no el francés de Francia, ni una versión suavizada. Se dice <em>dîner</em> para el almuerzo, <em>déjeuner</em> para el desayuno. Las expresiones, la entonación, los giros naturales: todo está anclado en la realidad de Montreal y Quebec. No es un manual — es una lengua viva.',
+      c4Titre: 'Oral, escrito, interacción — en un mismo flujo natural',
+      c4Texte: 'Las clases no están divididas en \u201cahora hacemos oral, ahora hacemos escrito\u201d. La alternancia ocurre <strong>de forma natural, dentro de las mismas lecciones</strong>: una imagen trae una pregunta, una respuesta oral pide una huella escrita, una zona interactiva invita a pensar antes de actuar. No pasas de un ejercicio a otro — vives el idioma.',
+      c5Titre: 'Para todos',
+      c5Texte: 'El contenido está pensado para ser accesible tanto para <strong>adultos</strong> como para <strong>niños</strong> y adolescentes. Las clases privadas se adaptan a cada estudiante — su ritmo, sus objetivos, su nivel. No existe un único perfil de estudiante ideal: existe tu perfil, y de ahí partimos.',
+      blTitre: 'Idiomas de enseñanza disponibles',
+      blB1: 'Inglés', blB2: 'Español', blB3: 'Italiano', blB4: 'Portugués', blB5: 'Mandarín',
+      blB6: 'Más idiomas próximamente…',
+      blNote: 'Las clases pueden impartirse en cualquiera de estos idiomas. Se irán añadiendo más idiomas de enseñanza a medida que se dominen.',
+      dUnite: 'minutos',
+      dDesc1: 'El formato estándar, ideal para progresar a un ritmo constante y explorar las lecciones en profundidad.',
+      dDesc2: 'Para estudiantes que prefieren sesiones cortas y frecuentes, o para los más jóvenes.',
+      ctaTexte: 'Reservar una clase de prueba →',
+      footLien: '← Clases privadas',
+      footTexte: 'Clases de francés quebequense',
+      titrePage: 'El método'
+    },
+    pt: {
+      navBack: '← Aulas particulares',
+      navCur: 'O método',
+      surtitre: 'Keb & Bek · Aulas particulares',
+      titreHtml: 'Aprender, <em>não decorar</em>',
+      sous: 'Uma abordagem imersiva, narrativa e progressiva — para que o francês quebequense se torne uma língua que compreende verdadeiramente, e não apenas uma lista de regras para decorar.',
+      c1Titre: 'O prazer, motor do esforço',
+      c1Texte: 'Aprender uma língua exige trabalho — é inevitável. Mas o esforço e o prazer não são opostos. Cada aula é pensada para ser <strong>estimulante, surpreendente, viva</strong>: aprende-se porque se quer saber o que acontece a seguir, não porque nos pedem para decorar uma tabela de conjugações.',
+      c2Titre: 'Uma história para seguir',
+      c2Texte: 'O curso está estruturado como uma narrativa. Conhece <strong>o Bek e a Keb</strong> — dois amigos quebequenses — e aprende através dos seus diálogos, das suas situações, do seu quotidiano. Não estuda o francês a partir de fora: entra nele. As estruturas gramaticais instalam-se naturalmente, num contexto que lhes dá sentido.',
+      c3Titre: 'O francês daqui',
+      c3Texte: 'A referência do curso é o <strong>francês quebequense autêntico</strong> — não o francês de França, nem uma versão suavizada. Diz-se <em>dîner</em> para o almoço, <em>déjeuner</em> para o pequeno-almoço. As expressões, a entoação, as construções naturais: tudo está ancorado na realidade de Montreal e do Quebeque. Não é um manual — é uma língua viva.',
+      c4Titre: 'Oral, escrito, interação — num único fluxo natural',
+      c4Texte: 'As aulas não estão divididas em \u201cagora fazemos oral, agora fazemos escrito\u201d. A alternância acontece <strong>naturalmente, ao longo das próprias lições</strong>: uma imagem traz uma pergunta, uma resposta oral pede um registo escrito, uma zona interativa convida a pensar antes de agir. Não passa de um exercício para outro — vive a língua.',
+      c5Titre: 'Para todos',
+      c5Texte: 'O conteúdo é pensado para ser acessível tanto a <strong>adultos</strong> como a <strong>crianças</strong> e adolescentes. As aulas particulares são adaptadas a cada aluno — o seu ritmo, os seus objetivos, o seu nível. Não existe um único perfil de aluno ideal: existe o seu perfil, e é a partir daí que começamos.',
+      blTitre: 'Línguas de ensino disponíveis',
+      blB1: 'Inglês', blB2: 'Espanhol', blB3: 'Italiano', blB4: 'Português', blB5: 'Mandarim',
+      blB6: 'Mais línguas brevemente…',
+      blNote: 'As aulas podem ser dadas em qualquer uma destas línguas. Serão acrescentadas mais línguas de ensino à medida que forem dominadas.',
+      dUnite: 'minutos',
+      dDesc1: 'O formato padrão, ideal para progredir a um ritmo constante e explorar as lições em profundidade.',
+      dDesc2: 'Para alunos que preferem sessões curtas e frequentes, ou para os aprendizes mais jovens.',
+      ctaTexte: 'Marcar uma aula experimental →',
+      footLien: '← Aulas particulares',
+      footTexte: 'Aulas de francês quebequense',
+      titrePage: 'O método'
+    }
+  };
+
+  function t(cle) {
+    const dict = TRADUCTIONS[langueActuelle()] || TRADUCTIONS.en;
+    const valeur = dict[cle];
+    return valeur !== undefined ? valeur : TRADUCTIONS.en[cle];
+  }
+
+  function appliquerTraductions() {
+    const langue = TRADUCTIONS[langueActuelle()] ? langueActuelle() : 'en';
+    document.documentElement.setAttribute('lang', langue);
+
+    document.getElementById('navBack').textContent = t('navBack');
+    document.getElementById('navCur').textContent = t('navCur');
+    document.getElementById('txtSurtitre').textContent = t('surtitre');
+    document.getElementById('txtTitre').innerHTML = t('titreHtml');
+    document.getElementById('txtSous').textContent = t('sous');
+
+    document.getElementById('c1Titre').textContent = t('c1Titre');
+    document.getElementById('c1Texte').innerHTML = t('c1Texte');
+    document.getElementById('c2Titre').textContent = t('c2Titre');
+    document.getElementById('c2Texte').innerHTML = t('c2Texte');
+    document.getElementById('c3Titre').textContent = t('c3Titre');
+    document.getElementById('c3Texte').innerHTML = t('c3Texte');
+    document.getElementById('c4Titre').textContent = t('c4Titre');
+    document.getElementById('c4Texte').innerHTML = t('c4Texte');
+    document.getElementById('c5Titre').textContent = t('c5Titre');
+    document.getElementById('c5Texte').innerHTML = t('c5Texte');
+
+    document.getElementById('blTitre').textContent = t('blTitre');
+    document.getElementById('blB1').textContent = t('blB1');
+    document.getElementById('blB2').textContent = t('blB2');
+    document.getElementById('blB3').textContent = t('blB3');
+    document.getElementById('blB4').textContent = t('blB4');
+    document.getElementById('blB5').textContent = t('blB5');
+    document.getElementById('blB6').textContent = t('blB6');
+    document.getElementById('blNote').textContent = t('blNote');
+
+    document.getElementById('dUnite1').textContent = t('dUnite');
+    document.getElementById('dUnite2').textContent = t('dUnite');
+    document.getElementById('dDesc1').textContent = t('dDesc1');
+    document.getElementById('dDesc2').textContent = t('dDesc2');
+
+    document.getElementById('ctaTexte').textContent = t('ctaTexte');
+    document.getElementById('footLien').textContent = t('footLien');
+    document.getElementById('footTexte').textContent = t('footTexte');
+
+    document.title = t('titrePage') + ' — Le français avec Keb & Bek';
+  }
+
+  appliquerTraductions();
+
+  const observables = document.querySelectorAll('.carte, .bloc-langues, .bloc-durees, .cta-wrap');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        setTimeout(() => { entry.target.style.animation = 'monter 0.55s ease forwards'; }, 70);
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.1 });
+  observables.forEach(el => observer.observe(el));
+</script>
+
+</body>
+</html>

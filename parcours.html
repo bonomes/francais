@@ -60,6 +60,36 @@
     padding-bottom: 140px; /* laisse la place à la carte d'info fixe en bas */
   }
 
+  /* ---------- Retour vers le menu principal ---------- */
+  /* Même look que .retour dans index.html, mais en position: fixed plutôt
+     qu'absolute — cette page défile (liste de niveaux), donc le bouton
+     doit rester ancré au viewport plutôt que remonter avec le contenu. */
+
+  .retour {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #FFFFFF;
+    color: var(--brun);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    text-decoration: none;
+    box-shadow: 0 2px 8px rgba(102, 80, 69, 0.15);
+    opacity: 0.85;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    z-index: 20;
+  }
+
+  .retour:hover {
+    opacity: 1;
+    transform: scale(1.08);
+  }
+
   /* ---------- En-tête ---------- */
 
   .entete-parcours {
@@ -449,6 +479,8 @@
 </style>
 </head>
 <body>
+
+  <a class="retour" href="index.html#menu-principal" aria-label="Retour">‹</a>
 
   <div class="entete-parcours">
     <h1>Ton parcours</h1>

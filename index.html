@@ -3069,7 +3069,7 @@
         <img class="apercu-menu" data-menu-apercu="histoires" src="images/bonomes_keb_bek_lecons_01.png" alt="Aperçu : Histoires et leçons">
         <img class="apercu-menu" data-menu-apercu="bravo" src="images/bonomes_keb_bek_bravo_01.png" alt="Aperçu : Bravo et sac à dos">
         <img class="apercu-menu" data-menu-apercu="fiche" src="images/bonomes_keb_bek_créer_un_compte_01.png" alt="Aperçu : mon profil / créer un compte">
-        <img class="apercu-menu" data-menu-apercu="prives" src="images/bonomes_keb_bek_cours_privés_01.png" alt="Aperçu : cours privés">
+        <img class="apercu-menu" data-menu-apercu="prives" src="images/bonomes_keb_bek_cours_privé_index_01.png" alt="Aperçu : cours privés">
         <img class="apercu-menu" data-menu-apercu="contact" src="images/bonomes_keb_bek_contacts_01.png" alt="Aperçu : contact">
 
         <div class="carte-menu">
@@ -3094,7 +3094,6 @@
           <button type="button" class="bouton-menu" data-menu="prives">
             <svg class="icone-menu" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
             <span id="libelleMenuPrives">Private lessons</span>
-            <span class="badge-bientot">Soon</span>
           </button>
 
           <button type="button" class="bouton-menu" data-menu="contact">
@@ -4500,8 +4499,19 @@
       window.location.hash = '#connexion';
     });
 
+    // "prives" (Cours privés) est la première section du menu principal à
+    // être réellement construite : elle mène vers son propre mini-site
+    // (cours-prives/index.html), qui relit lui-même CLE_LANGUE pour rester
+    // dans la langue déjà choisie ici — voir index (33).html/methode.html/
+    // tarifs.html. Les autres entrées du menu (histoires, bravo, contact)
+    // ne sont pas encore construites et gardent leur repli console.log.
+    document.querySelector('.bouton-menu[data-menu="prives"]').addEventListener('click', () => {
+      window.location.href = 'cours-prives/index.html';
+    });
+
     document.querySelectorAll('.bouton-menu[data-menu]').forEach(bouton => {
       if (bouton.dataset.menu === 'fiche') return; // déjà géré ci-dessus
+      if (bouton.dataset.menu === 'prives') return; // déjà géré ci-dessus : section active
       bouton.addEventListener('click', () => {
         console.log('Section pas encore construite :', bouton.dataset.menu);
       });

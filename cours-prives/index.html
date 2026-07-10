@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Private Lessons — Le français avec Keb &amp; Bek</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --fond:        #F2EDE3;
+    --fond-carte:  #FFFCF5;
+    --brun:        #665045;
+    --brun-fonce:  #4A3B33;
+    --blonde:      #F1DC99;
+    --peche:       #F0A98B;
+    --peche-pale:  #FBEAE2;
+    --peche-fonce: #E08867;
+    --peche-ombre: #B5623F;
+    --or:          #C89B2C;
+    --or-clair:    #FFF8E8;
+    --or-ombre:    #8F7018;
+    --gris-verrou: #C9C0B4;
+    --ombre-douce: rgba(102,80,69,0.16);
+  }
+
+  html, body { min-height: 100vh; }
+
+  body {
+    font-family: "Inter", sans-serif;
+    color: var(--brun-fonce);
+    background:
+      radial-gradient(ellipse 90% 60% at 8% -8%,  rgba(240,169,60,0.10) 0%, transparent 55%),
+      radial-gradient(ellipse 80% 55% at 96% 108%, rgba(224,136,103,0.14) 0%, transparent 55%),
+      var(--fond);
+    overflow-x: hidden;
+  }
+
+  .page {
+    position: relative; z-index: 1;
+    min-height: 100vh;
+    display: flex; flex-direction: column; align-items: center;
+    padding: clamp(36px, 6vw, 72px) 24px 64px;
+  }
+
+  .retour {
+    align-self: flex-start;
+    font-family: "Baloo 2", sans-serif; font-weight: 700; font-size: 0.95rem;
+    color: var(--brun); text-decoration: none;
+    display: inline-flex; align-items: center; gap: 6px;
+    margin-bottom: clamp(24px, 4vw, 40px);
+    opacity: 0; animation: monter 0.5s ease 0.05s forwards;
+    transition: color 0.2s ease, transform 0.2s ease;
+  }
+  .retour:hover { color: var(--peche-fonce); transform: translateX(-2px); }
+
+  /* ── EMBLÈME — véritable illustration officielle Keb & Bek, pas une
+     silhouette inventée. Ratio natif 1408/950 (voir index principal). ── */
+  .emblem {
+    width: clamp(160px, 26vw, 230px);
+    height: auto;
+    aspect-ratio: 1408 / 950;
+    object-fit: contain;
+    margin-bottom: 8px;
+    opacity: 0; animation: monter 0.55s ease 0.15s forwards;
+  }
+
+  .entete {
+    text-align: center;
+    max-width: 560px;
+    display: flex; flex-direction: column; align-items: center;
+    margin-bottom: clamp(40px, 6vw, 64px);
+  }
+  .entete-surtitre {
+    font-family: "Baloo 2", sans-serif; font-weight: 700; font-size: 0.85rem;
+    letter-spacing: 0.16em; text-transform: uppercase;
+    color: var(--peche-fonce); margin-bottom: 0.7rem;
+    opacity: 0; animation: monter 0.5s ease 0.25s forwards;
+  }
+  .entete-titre {
+    font-family: "Baloo 2", sans-serif; font-weight: 700;
+    font-size: clamp(2.2rem, 5.5vw, 3.4rem); line-height: 1.12;
+    color: var(--brun-fonce);
+    opacity: 0; animation: monter 0.55s ease 0.35s forwards;
+  }
+  .entete-titre em { font-style: normal; color: var(--peche-fonce); }
+  .entete-sous {
+    margin-top: 0.9rem; font-size: 1rem; font-weight: 400;
+    color: var(--brun); max-width: 440px; line-height: 1.7;
+    opacity: 0; animation: monter 0.55s ease 0.45s forwards;
+  }
+
+  /* ── JETONS — deux destinations seulement : Contact vit maintenant
+     ailleurs, comme destination de premier niveau du menu principal,
+     donc il ne figure plus dans ce sous-menu. ── */
+  .jetons {
+    display: flex; flex-wrap: wrap; justify-content: center; align-items: stretch;
+    gap: clamp(18px, 3vw, 30px);
+    width: 100%; max-width: 620px;
+    opacity: 0; animation: monter 0.6s ease 0.58s forwards;
+  }
+
+  .jeton {
+    position: relative;
+    display: flex; flex-direction: column; align-items: center; text-align: center;
+    text-decoration: none; color: inherit;
+    width: clamp(220px, 32vw, 280px);
+    padding: clamp(28px, 3.4vw, 36px) clamp(22px, 2.8vw, 28px);
+    background: var(--fond-carte);
+    border: 3px solid var(--gris-verrou);
+    border-radius: 26px;
+    box-shadow: 0 5px 0 var(--ombre-douce);
+    transition: transform 0.18s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.18s ease, border-color 0.2s ease;
+  }
+  .jeton:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 9px 0 var(--ombre-douce);
+    border-color: var(--brun);
+  }
+  .jeton:active { transform: translateY(-1px); box-shadow: 0 3px 0 var(--ombre-douce); }
+
+  .jeton.vedette {
+    border-color: var(--or);
+    background: var(--or-clair);
+    box-shadow: 0 6px 0 var(--or-ombre);
+    transform: translateY(-4px) scale(1.03);
+    z-index: 2;
+  }
+  .jeton.vedette:hover { transform: translateY(-9px) scale(1.03); box-shadow: 0 10px 0 var(--or-ombre); border-color: var(--or); }
+  .jeton.vedette:active { transform: translateY(-2px) scale(1.03); box-shadow: 0 4px 0 var(--or-ombre); }
+
+  .jeton-icone {
+    width: 60px; height: 60px; border-radius: 18px;
+    background: var(--peche-pale); color: var(--peche-fonce);
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 14px;
+  }
+  .jeton.vedette .jeton-icone { background: rgba(200,155,44,0.16); color: var(--or-ombre); }
+  .jeton-icone svg { width: 30px; height: 30px; }
+
+  .jeton-label {
+    font-family: "Baloo 2", sans-serif; font-weight: 700; font-size: 1.32rem;
+  }
+
+  .jeton-detail {
+    margin-top: 6px; font-size: 0.82rem; font-weight: 500; color: var(--brun);
+    line-height: 1.5;
+  }
+  .jeton.vedette .jeton-detail { color: var(--or-ombre); }
+
+  .jeton-fleche {
+    margin-top: 14px; font-weight: 700; font-size: 1.1rem;
+    color: var(--peche-fonce); transition: transform 0.2s ease;
+  }
+  .jeton.vedette .jeton-fleche { color: var(--or); }
+  .jeton:hover .jeton-fleche { transform: translateX(5px); }
+
+  .pied {
+    margin-top: clamp(44px, 6vw, 66px);
+    font-size: 0.82rem; font-weight: 500; color: var(--brun);
+    opacity: 0; animation: monter 0.5s ease 0.85s forwards;
+  }
+
+  @keyframes monter {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  @media (max-width: 680px) {
+    .jetons { flex-direction: column; align-items: center; }
+    .jeton, .jeton.vedette { width: min(340px, 92%); transform: none !important; }
+    .jeton:hover, .jeton.vedette:hover { transform: translateY(-4px) !important; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <a href="../index.html" class="retour" id="lienRetour">← Home</a>
+
+  <img class="emblem" src="../images/bonomes_keb_bek_cours_privé_index_01.png" alt="Keb &amp; Bek">
+
+  <div class="entete">
+    <div class="entete-surtitre" id="txtSurtitre">Keb &amp; Bek · Private Lessons</div>
+    <h1 class="entete-titre" id="txtTitre">Learn with <em>Raphaël</em></h1>
+    <p class="entete-sous" id="txtSous">Personalized lessons in authentic Québécois French — at your pace, with your method.</p>
+  </div>
+
+  <div class="jetons">
+
+    <!-- ── MÉTHODE (icône livre, reprise de "histoire" du parcours) ── -->
+    <a href="methode.html" class="jeton">
+      <div class="jeton-icone">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 4.5C4 3.7 4.7 3 5.5 3H12V21H5.5C4.7 21 4 20.3 4 19.5Z"/>
+          <path d="M20 4.5C20 3.7 19.3 3 18.5 3H12V21H18.5C19.3 21 20 20.3 20 19.5Z"/>
+        </svg>
+      </div>
+      <div class="jeton-label" id="labelMethode">The method</div>
+      <div class="jeton-detail" id="detailMethode">How it works</div>
+      <div class="jeton-fleche">→</div>
+    </a>
+
+    <!-- ── TARIFS (icône étoile, reprise de "l'examen" — le chemin récompensé) ── -->
+    <a href="tarifs.html" class="jeton vedette">
+      <div class="jeton-icone">
+        <svg viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 2.5l2.9 6.1 6.6.7-4.9 4.6 1.3 6.6L12 17.3 6.1 20.5l1.3-6.6-4.9-4.6 6.6-.7Z"/>
+        </svg>
+      </div>
+      <div class="jeton-label" id="labelTarifs">Pricing</div>
+      <div class="jeton-detail" id="detailTarifs">Trial lesson · Packages · Preferred rates</div>
+      <div class="jeton-fleche">→</div>
+    </a>
+
+  </div>
+
+  <div class="pied" id="txtPied">Québécois French lessons · Keb &amp; Bek</div>
+
+</div>
+
+<script>
+  // ==================================================================
+  // Internationalisation — même principe que le site principal
+  // (index.html) : une seule clé localStorage partagée (CLE_LANGUE),
+  // posée au moment du choix de langue sur l'écran d'accueil, lue ici
+  // sans aucun sélecteur visible puisque le choix a déjà été fait en
+  // amont. Seules en/es/pt sont couvertes pour l'instant ; toute autre
+  // langue retombe sur l'anglais via t() — exactement le même filet de
+  // sécurité que TRADUCTIONS.en dans index.html, pour que l'ajout des
+  // 16 langues restantes se fasse plus tard sans rien restructurer ici.
+  // ==================================================================
+  const CLE_LANGUE = 'kebbek_langue';
+  function langueActuelle() {
+    return localStorage.getItem(CLE_LANGUE) || 'en';
+  }
+
+  const TRADUCTIONS = {
+    en: {
+      retour: '← Home',
+      surtitre: 'Keb & Bek · Private Lessons',
+      titreHtml: 'Learn with <em>Raphaël</em>',
+      sous: 'Personalized lessons in authentic Québécois French — at your pace, with your method.',
+      labelMethode: 'The method',
+      detailMethode: 'How it works',
+      labelTarifs: 'Pricing',
+      detailTarifs: 'Trial lesson · Packages · Preferred rates',
+      pied: 'Québécois French lessons · Keb & Bek'
+    },
+    es: {
+      retour: '← Inicio',
+      surtitre: 'Keb & Bek · Clases privadas',
+      titreHtml: 'Aprende con <em>Raphaël</em>',
+      sous: 'Clases personalizadas de francés quebequense auténtico — a tu ritmo, con tu método.',
+      labelMethode: 'El método',
+      detailMethode: 'Cómo funciona',
+      labelTarifs: 'Precios',
+      detailTarifs: 'Clase de prueba · Paquetes · Tarifas preferenciales',
+      pied: 'Clases de francés quebequense · Keb & Bek'
+    },
+    pt: {
+      retour: '← Início',
+      surtitre: 'Keb & Bek · Aulas particulares',
+      titreHtml: 'Aprenda com <em>Raphaël</em>',
+      sous: 'Aulas personalizadas de francês quebequense autêntico — ao seu ritmo, com o seu método.',
+      labelMethode: 'O método',
+      detailMethode: 'Como funciona',
+      labelTarifs: 'Preços',
+      detailTarifs: 'Aula experimental · Pacotes · Tarifas preferenciais',
+      pied: 'Aulas de francês quebequense · Keb & Bek'
+    }
+  };
+
+  function t(cle) {
+    const dict = TRADUCTIONS[langueActuelle()] || TRADUCTIONS.en;
+    const valeur = dict[cle];
+    return valeur !== undefined ? valeur : TRADUCTIONS.en[cle];
+  }
+
+  function appliquerTraductions() {
+    const langue = TRADUCTIONS[langueActuelle()] ? langueActuelle() : 'en';
+    document.documentElement.setAttribute('lang', langue);
+
+    document.getElementById('lienRetour').textContent = t('retour');
+    document.getElementById('txtSurtitre').textContent = t('surtitre');
+    document.getElementById('txtTitre').innerHTML = t('titreHtml');
+    document.getElementById('txtSous').textContent = t('sous');
+    document.getElementById('labelMethode').textContent = t('labelMethode');
+    document.getElementById('detailMethode').textContent = t('detailMethode');
+    document.getElementById('labelTarifs').textContent = t('labelTarifs');
+    document.getElementById('detailTarifs').textContent = t('detailTarifs');
+    document.getElementById('txtPied').textContent = t('pied');
+
+    document.title = (langue === 'es' ? 'Clases privadas' : langue === 'pt' ? 'Aulas particulares' : 'Private Lessons') + ' — Le français avec Keb & Bek';
+  }
+
+  appliquerTraductions();
+</script>
+
+</body>
+</html>

@@ -228,10 +228,9 @@
   // (index.html) : une seule clé localStorage partagée (CLE_LANGUE),
   // posée au moment du choix de langue sur l'écran d'accueil, lue ici
   // sans aucun sélecteur visible puisque le choix a déjà été fait en
-  // amont. Seules en/es/pt sont couvertes pour l'instant ; toute autre
-  // langue retombe sur l'anglais via t() — exactement le même filet de
-  // sécurité que TRADUCTIONS.en dans index.html, pour que l'ajout des
-  // 16 langues restantes se fasse plus tard sans rien restructurer ici.
+  // amont. Les 19 langues du site sont couvertes ; toute langue non
+  // reconnue retombe sur l'anglais via t() — même filet de sécurité
+  // que TRADUCTIONS.en dans index.html.
   // ==================================================================
   const CLE_LANGUE = 'kebbek_langue';
   function langueActuelle() {
@@ -248,7 +247,8 @@
       detailMethode: 'How it works',
       labelTarifs: 'Pricing',
       detailTarifs: 'Trial lesson · Packages · Preferred rates',
-      pied: 'Québécois French lessons · Keb & Bek'
+      pied: 'Québécois French lessons · Keb & Bek',
+      titrePage: 'Private Lessons'
     },
     es: {
       retour: '← Inicio',
@@ -259,7 +259,8 @@
       detailMethode: 'Cómo funciona',
       labelTarifs: 'Precios',
       detailTarifs: 'Clase de prueba · Paquetes · Tarifas preferenciales',
-      pied: 'Clases de francés quebequense · Keb & Bek'
+      pied: 'Clases de francés quebequense · Keb & Bek',
+      titrePage: 'Clases privadas'
     },
     pt: {
       retour: '← Início',
@@ -270,7 +271,200 @@
       detailMethode: 'Como funciona',
       labelTarifs: 'Preços',
       detailTarifs: 'Aula experimental · Pacotes · Tarifas preferenciais',
-      pied: 'Aulas de francês quebequense · Keb & Bek'
+      pied: 'Aulas de francês quebequense · Keb & Bek',
+      titrePage: 'Aulas particulares'
+    },
+    it: {
+      retour: '← Inizio',
+      surtitre: 'Keb & Bek · Lezioni private',
+      titreHtml: 'Impara con <em>Raphaël</em>',
+      sous: 'Lezioni personalizzate di francese québécois autentico — al tuo ritmo, con il tuo metodo.',
+      labelMethode: 'Il metodo',
+      detailMethode: 'Come funziona',
+      labelTarifs: 'Prezzi',
+      detailTarifs: 'Lezione di prova · Pacchetti · Tariffe preferenziali',
+      pied: 'Lezioni di francese québécois · Keb & Bek',
+      titrePage: 'Lezioni private'
+    },
+    zh: {
+      retour: '← 首页',
+      surtitre: 'Keb & Bek · 私人课程',
+      titreHtml: '跟<em>Raphaël</em>一起学习',
+      sous: '地道魁北克法语的个性化课程——按你的节奏，用适合你的方法。',
+      labelMethode: '教学方法',
+      detailMethode: '课程如何运作',
+      labelTarifs: '价格',
+      detailTarifs: '试听课 · 课程套餐 · 优惠价格',
+      pied: '魁北克法语课程 · Keb & Bek',
+      titrePage: '私人课程'
+    },
+    ko: {
+      retour: '← 홈으로',
+      surtitre: 'Keb & Bek · 개인 수업',
+      titreHtml: '<em>Raphaël</em>과 함께 배우기',
+      sous: '진짜 퀘벡 프랑스어를 배우는 맞춤형 수업 — 당신의 속도로, 당신에게 맞는 방법으로.',
+      labelMethode: '학습 방법',
+      detailMethode: '진행 방식',
+      labelTarifs: '요금',
+      detailTarifs: '체험 수업 · 패키지 · 우대 요금',
+      pied: '퀘벡 프랑스어 수업 · Keb & Bek',
+      titrePage: '개인 수업'
+    },
+    ja: {
+      retour: '← ホームへ',
+      surtitre: 'Keb & Bek · プライベートレッスン',
+      titreHtml: '<em>Raphaël</em>と学ぶ',
+      sous: '本場のケベック・フランス語を学ぶ、あなただけのレッスン——自分のペースで、自分に合った方法で。',
+      labelMethode: 'メソッド',
+      detailMethode: 'レッスンの流れ',
+      labelTarifs: '料金',
+      detailTarifs: '体験レッスン・パッケージ・優待料金',
+      pied: 'ケベック・フランス語レッスン · Keb & Bek',
+      titrePage: 'プライベートレッスン'
+    },
+    vi: {
+      retour: '← Trang chủ',
+      surtitre: 'Keb & Bek · Học kèm riêng',
+      titreHtml: 'Học cùng <em>Raphaël</em>',
+      sous: 'Các buổi học tiếng Pháp Québec chuẩn, được thiết kế riêng cho bạn — theo nhịp độ của bạn, theo cách phù hợp với bạn.',
+      labelMethode: 'Phương pháp',
+      detailMethode: 'Cách hoạt động',
+      labelTarifs: 'Bảng giá',
+      detailTarifs: 'Buổi học thử · Gói học · Ưu đãi',
+      pied: 'Các buổi học tiếng Pháp Québec · Keb & Bek',
+      titrePage: 'Học kèm riêng'
+    },
+    tl: {
+      retour: '← Simula',
+      surtitre: 'Keb & Bek · Pribadong Aralin',
+      titreHtml: 'Matuto kasama si <em>Raphaël</em>',
+      sous: 'Personalized na mga aralin sa tunay na Québécois French — sa bilis mo, gamit ang paraang angkop sa\'yo.',
+      labelMethode: 'Ang paraan',
+      detailMethode: 'Paano ito gumagana',
+      labelTarifs: 'Presyo',
+      detailTarifs: 'Klase ng pagsubok · Mga pakete · Espesyal na presyo',
+      pied: 'Mga aralin sa Québécois French · Keb & Bek',
+      titrePage: 'Pribadong Aralin'
+    },
+    de: {
+      retour: '← Startseite',
+      surtitre: 'Keb & Bek · Privatunterricht',
+      titreHtml: 'Lerne mit <em>Raphaël</em>',
+      sous: 'Individuell zugeschnittener Unterricht in authentischem Québec-Französisch — in deinem Tempo, mit deiner Methode.',
+      labelMethode: 'Die Methode',
+      detailMethode: 'So funktioniert\u2019s',
+      labelTarifs: 'Preise',
+      detailTarifs: 'Probestunde · Pakete · Vorzugspreise',
+      pied: 'Québec-Französisch-Unterricht · Keb & Bek',
+      titrePage: 'Privatunterricht'
+    },
+    nl: {
+      retour: '← Startpagina',
+      surtitre: 'Keb & Bek · Privélessen',
+      titreHtml: 'Leer met <em>Raphaël</em>',
+      sous: 'Persoonlijke lessen in authentiek Québecs Frans — in jouw tempo, op jouw manier.',
+      labelMethode: 'De methode',
+      detailMethode: 'Zo werkt het',
+      labelTarifs: 'Tarieven',
+      detailTarifs: 'Proefles · Pakketten · Voordeeltarieven',
+      pied: 'Lessen Québecs Frans · Keb & Bek',
+      titrePage: 'Privélessen'
+    },
+    ca: {
+      retour: '← Inici',
+      surtitre: 'Keb & Bek · Classes privades',
+      titreHtml: 'Aprèn amb <em>Raphaël</em>',
+      sous: 'Classes personalitzades de francès quebequès autèntic — al teu ritme, amb el teu mètode.',
+      labelMethode: 'El mètode',
+      detailMethode: 'Com funciona',
+      labelTarifs: 'Preus',
+      detailTarifs: 'Classe de prova · Paquets · Tarifes preferents',
+      pied: 'Classes de francès quebequès · Keb & Bek',
+      titrePage: 'Classes privades'
+    },
+    ht: {
+      retour: '← Akèy',
+      surtitre: 'Keb & Bek · Kou prive',
+      titreHtml: 'Aprann ak <em>Raphaël</em>',
+      sous: 'Leson pèsonalize nan yon fransè kebekwa otantik — nan pwòp ritm ou, ak metòd ki fèt pou ou.',
+      labelMethode: 'Metòd la',
+      detailMethode: 'Kijan sa fonksyone',
+      labelTarifs: 'Pri',
+      detailTarifs: 'Leson eseye · Pakè · Pri preferansyèl',
+      pied: 'Kou fransè kebekwa · Keb & Bek',
+      titrePage: 'Kou prive'
+    },
+    id: {
+      retour: '← Beranda',
+      surtitre: 'Keb & Bek · Les Privat',
+      titreHtml: 'Belajar bersama <em>Raphaël</em>',
+      sous: 'Pelajaran yang disesuaikan untuk bahasa Prancis Québec yang autentik — sesuai ritmemu, dengan caramu sendiri.',
+      labelMethode: 'Metode',
+      detailMethode: 'Cara kerjanya',
+      labelTarifs: 'Harga',
+      detailTarifs: 'Kelas percobaan · Paket · Tarif istimewa',
+      pied: 'Pelajaran bahasa Prancis Québec · Keb & Bek',
+      titrePage: 'Les Privat'
+    },
+    fa: {
+      retour: '← صفحه اصلی',
+      surtitre: 'Keb & Bek · کلاس‌های خصوصی',
+      titreHtml: 'با <em>Raphaël</em> یاد بگیر',
+      sous: 'کلاس‌های اختصاصی فرانسوی اصیل کبکی — با سرعت خودت، با روشی که مناسب توست.',
+      labelMethode: 'روش تدریس',
+      detailMethode: 'روش کار',
+      labelTarifs: 'قیمت\u200cها',
+      detailTarifs: 'جلسه آزمایشی · بسته\u200cها · نرخ\u200cهای ویژه',
+      pied: 'کلاس‌های فرانسوی کبکی · Keb & Bek',
+      titrePage: 'کلاس‌های خصوصی'
+    },
+    ru: {
+      retour: '← На главную',
+      surtitre: 'Keb & Bek · Частные уроки',
+      titreHtml: 'Учись с <em>Raphaël</em>',
+      sous: 'Персональные уроки настоящего квебекского французского — в твоём темпе, твоим методом.',
+      labelMethode: 'Метод',
+      detailMethode: 'Как это работает',
+      labelTarifs: 'Цены',
+      detailTarifs: 'Пробный урок · Пакеты · Льготные тарифы',
+      pied: 'Уроки квебекского французского · Keb & Bek',
+      titrePage: 'Частные уроки'
+    },
+    no: {
+      retour: '← Hjem',
+      surtitre: 'Keb & Bek · Privattimer',
+      titreHtml: 'Lær med <em>Raphaël</em>',
+      sous: 'Personlig tilpassede timer i autentisk quebecfransk — i ditt tempo, med din metode.',
+      labelMethode: 'Metoden',
+      detailMethode: 'Slik fungerer det',
+      labelTarifs: 'Priser',
+      detailTarifs: 'Prøvetime · Pakker · Fordelspriser',
+      pied: 'Quebecfranske timer · Keb & Bek',
+      titrePage: 'Privattimer'
+    },
+    sv: {
+      retour: '← Hem',
+      surtitre: 'Keb & Bek · Privatlektioner',
+      titreHtml: 'Lär dig med <em>Raphaël</em>',
+      sous: 'Personligt anpassade lektioner i autentisk québecfranska — i din takt, med din metod.',
+      labelMethode: 'Metoden',
+      detailMethode: 'Så funkar det',
+      labelTarifs: 'Priser',
+      detailTarifs: 'Provlektion · Paket · Förmånspriser',
+      pied: 'Québecfranska lektioner · Keb & Bek',
+      titrePage: 'Privatlektioner'
+    },
+    eo: {
+      retour: '← Hejmo',
+      surtitre: 'Keb & Bek · Privataj Lecionoj',
+      titreHtml: 'Lernu kun <em>Raphaël</em>',
+      sous: 'Personecigitaj lecionoj de aŭtenta kebekia franca — laŭ via ritmo, per via metodo.',
+      labelMethode: 'La metodo',
+      detailMethode: 'Kiel ĝi funkcias',
+      labelTarifs: 'Prezoj',
+      detailTarifs: 'Prova leciono · Pakoj · Preferataj prezoj',
+      pied: 'Kebekiaj francaj lecionoj · Keb & Bek',
+      titrePage: 'Privataj Lecionoj'
     }
   };
 
@@ -283,6 +477,7 @@
   function appliquerTraductions() {
     const langue = TRADUCTIONS[langueActuelle()] ? langueActuelle() : 'en';
     document.documentElement.setAttribute('lang', langue);
+    document.documentElement.setAttribute('dir', langue === 'fa' ? 'rtl' : 'ltr');
 
     document.getElementById('lienRetour').textContent = t('retour');
     document.getElementById('txtSurtitre').textContent = t('surtitre');
@@ -294,7 +489,7 @@
     document.getElementById('detailTarifs').textContent = t('detailTarifs');
     document.getElementById('txtPied').textContent = t('pied');
 
-    document.title = (langue === 'es' ? 'Clases privadas' : langue === 'pt' ? 'Aulas particulares' : 'Private Lessons') + ' — Le français avec Keb & Bek';
+    document.title = t('titrePage') + ' — Le français avec Keb & Bek';
   }
 
   appliquerTraductions();

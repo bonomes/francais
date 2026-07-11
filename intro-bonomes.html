@@ -69,7 +69,7 @@
          reprises identiques dans plusieurs leçons indépendamment du
          contexte narratif — pas juste "toute image où Kloé figure".
          Images utilisées, alternées selon le ton de la réplique (voir
-         BONOMES_v41) :
+         BONOMES_v40) :
            bonomes_keb_bek_kloe_salue_01.png        (elle salue, bras levé)
              → étape 9 seulement, la salutation initiale de Kloé.
            bonomes_keb_bek_kloe_invite_dire_02.png  (bras ouverts, invite
@@ -80,33 +80,39 @@
                                                        Kloé mains jointes)
              → étape 12, le tout premier mot français ("Salut !", dit par
                Bek puis Keb) — seule étape à utiliser cette image.
+           bonomes_keb_bek_kloe_explique_01.png     (pose plus posée)
+             → étape 10 : image DÉFINITIVE, confirmée par Raphaël (v41) —
+               ce n'est plus un placeholder pour cette étape précise,
+               malgré l'intention initiale (v39) de lui donner une pose
+               distincte (explique_02, abandonné).
            bonomes_keb_bek_pointent_kloe_explique_01.png (Keb et Bek
                                                        pointent, Kloé
-                                                       accompagne le geste)
-             → étape 14, quand la case à cocher apparaît juste en dessous
-               ("tap the box below!") — seule étape à utiliser cette image.
-           bonomes_keb_bek_kloe_explique_01.png     (pose plus posée)
-             → 🚧 PLACEHOLDER TEMPORAIRE aux étapes 10, 13, 15 et 16 (v39,
-               mis à jour v40/v41 — les étapes 12 et 14 avaient en fait
-               besoin d'images distinctes, pas d'une pose "explique"
-               générique de Kloé, voir ci-dessus) :
-               Raphaël a précisé que ces étapes n'auront pas toutes la
-               même pose à terme — chacune recevra sa propre image
-               dédiée. Noms réservés en attendant (voir commentaire sur
-               chaque étape dans ETAPES ci-dessous) :
-                 étape 10 → bonomes_keb_bek_kloe_explique_02.png
-                 étape 13 → bonomes_keb_bek_kloe_explique_04.png
+                                                       explique)
+             → étape 13 : image dédiée reçue et confirmée par Raphaël
+               (v41) — remplace le placeholder explique_01 à cette étape
+               (réf. réservée explique_04, abandonnée : Raphaël a fourni
+               ce fichier sous son propre nom plutôt que suivre la
+               convention explique_0X).
+           bonomes_keb_bek_kloe_explique_01.png (pose plus posée, toujours
+             en placeholder ici)
+             → 🚧 PLACEHOLDER TEMPORAIRE restant aux étapes 14, 15 et 16
+               seulement (v41 — 10 et 13 résolues, voir ci-dessus). Noms
+               réservés en attendant (voir commentaire sur chaque étape
+               dans ETAPES ci-dessous) :
+                 étape 14 → bonomes_keb_bek_kloe_explique_05.png
                  étape 15 → bonomes_keb_bek_kloe_explique_06.png
                  étape 16 → bonomes_keb_bek_kloe_explique_07.png
-               (les noms explique_03 et explique_05, initialement réservés
-               pour les étapes 12 et 14, sont abandonnés — ces étapes ont
-               reçu des images différentes, voir ci-dessus.) Ces numéros
-               restent une réservation séquentielle de Claude, PAS
-               confirmés par Raphaël quant à quelle pose ira à quelle
-               étape précise. À chaque nouvelle image fournie, remplacer
-               le placeholder explique_01 correspondant dans ETAPES
-               (repérer via le commentaire 🚧 PLACEHOLDER sur l'étape
-               concernée) et supprimer le commentaire une fois fait.
+               (les noms explique_02, explique_03 et explique_04,
+               initialement réservés pour les étapes 10, 12 et 13, sont
+               tous abandonnés — ces étapes ont chacune reçu une image
+               différente ou ont été confirmées définitives, voir
+               ci-dessus.) Ces numéros restent une réservation
+               séquentielle de Claude, PAS confirmés par Raphaël quant à
+               quelle pose ira à quelle étape précise. À chaque nouvelle
+               image fournie, remplacer le placeholder explique_01
+               correspondant dans ETAPES (repérer via le commentaire
+               🚧 PLACEHOLDER sur l'étape concernée) et supprimer le
+               commentaire une fois fait.
        - images/recurrentes/ : vide pour l'instant dans ce fichier — voir
          correction ci-dessus.
      Toutes les étapes (1 à 16) ont maintenant leur vraie image, fournies
@@ -779,11 +785,9 @@
       // Image : elle passe de la salutation à l'explication de son rôle,
       // donc "explique" plutôt que "salue" (précision de Raphaël, v39 —
       // corrige un doublon où "salue" apparaissait deux fois de suite).
-      // 🚧 PLACEHOLDER (v39) : bonomes_keb_bek_kloe_explique_01.png utilisée
-      // ici temporairement. Raphaël prévoit une pose DISTINCTE pour cette
-      // étape (elle n'aura pas la même pose qu'aux étapes 12-16) — nom
-      // réservé : bonomes_keb_bek_kloe_explique_02.png. Remplacer le chemin
-      // ci-dessous dès que Raphaël fournit ce fichier.
+      // Image définitive (confirmée par Raphaël) : bonomes_keb_bek_kloe_explique_01.png
+      // reste l'image finale pour cette étape — pas de pose distincte à
+      // produire, contrairement à ce qui était envisagé en v39.
       speaker: 'kloe',
       img: 'images/prologue/bonomes_keb_bek_kloe_explique_01.png',
       texte: "I'll also take care of grammar explanations and showing you around the site."
@@ -807,20 +811,19 @@
       ]
     },
     { // 13 — ligne de Kloé : légende seulement, ne rejoint jamais la pile
-      // 🚧 PLACEHOLDER (v39) : explique_01 temporaire, réf. réservée :
-      // bonomes_keb_bek_kloe_explique_04.png.
-      img: 'images/prologue/bonomes_keb_bek_kloe_explique_01.png',
+      // Image dédiée reçue et confirmée par Raphaël : remplace le
+      // placeholder explique_01 (réf. réservée explique_04 abandonnée,
+      // Raphaël a fourni ce fichier sous son propre nom plutôt que suivre
+      // la convention explique_0X).
+      img: 'images/prologue/bonomes_keb_bek_pointent_kloe_explique_01.png',
       lignes: [
         { speaker: 'kloe', texte: "If you hover or tap on a word, you'll get the translation — and an explanation, from me, always!" }
       ]
     },
     { // 14 — la case à cocher apparaît maintenant
-      // Image dédiée reçue (v41) : Keb et Bek pointent (vers la case à
-      // cocher qui apparaît juste en dessous), Kloé accompagne le geste —
-      // remplace le placeholder explique_01 (réf. réservée explique_05
-      // abandonnée, cette étape avait besoin d'une image de geste précis,
-      // pas d'une pose "explique" générique).
-      img: 'images/prologue/bonomes_keb_bek_pointent_kloe_explique_01.png',
+      // 🚧 PLACEHOLDER (v39) : explique_01 temporaire, réf. réservée :
+      // bonomes_keb_bek_kloe_explique_05.png.
+      img: 'images/prologue/bonomes_keb_bek_kloe_explique_01.png',
       revealCase: true,
       motACocher: { mot: 'Salut', traduction: 'Hi!' },
       lignes: [

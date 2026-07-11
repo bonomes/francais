@@ -6,6 +6,12 @@
 <title>Meet the Bonomes — Keb &amp; Bek</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700&family=Fuzzy+Bubbles:wght@400;700&family=Caveat+Brush&display=swap" rel="stylesheet">
+<!-- Page à part entière, même situation que parcours.html (voir
+     COMPTES_ELEVES_v10/v11) : aucun état JS partagé avec index.html, donc
+     son propre client Supabase — progression.js en crée un lui-même au
+     premier appel qui en a besoin. -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="progression.js"></script>
 <style>
   /* ==================================================================
      intro-bonomes.html — reconstruction complète.
@@ -63,7 +69,7 @@
          reprises identiques dans plusieurs leçons indépendamment du
          contexte narratif — pas juste "toute image où Kloé figure".
          Images utilisées, alternées selon le ton de la réplique (voir
-         BONOMES_v40) :
+         BONOMES_v41) :
            bonomes_keb_bek_kloe_salue_01.png        (elle salue, bras levé)
              → étape 9 seulement, la salutation initiale de Kloé.
            bonomes_keb_bek_kloe_invite_dire_02.png  (bras ouverts, invite
@@ -74,28 +80,33 @@
                                                        Kloé mains jointes)
              → étape 12, le tout premier mot français ("Salut !", dit par
                Bek puis Keb) — seule étape à utiliser cette image.
+           bonomes_keb_bek_pointent_kloe_explique_01.png (Keb et Bek
+                                                       pointent, Kloé
+                                                       accompagne le geste)
+             → étape 14, quand la case à cocher apparaît juste en dessous
+               ("tap the box below!") — seule étape à utiliser cette image.
            bonomes_keb_bek_kloe_explique_01.png     (pose plus posée)
-             → 🚧 PLACEHOLDER TEMPORAIRE aux étapes 10 et 13 à 16 (v39,
-               mis à jour v40 — l'étape 12 avait en fait besoin d'une
-               image Keb/Bek, pas d'une pose de Kloé, voir ci-dessus) :
+             → 🚧 PLACEHOLDER TEMPORAIRE aux étapes 10, 13, 15 et 16 (v39,
+               mis à jour v40/v41 — les étapes 12 et 14 avaient en fait
+               besoin d'images distinctes, pas d'une pose "explique"
+               générique de Kloé, voir ci-dessus) :
                Raphaël a précisé que ces étapes n'auront pas toutes la
                même pose à terme — chacune recevra sa propre image
                dédiée. Noms réservés en attendant (voir commentaire sur
                chaque étape dans ETAPES ci-dessous) :
                  étape 10 → bonomes_keb_bek_kloe_explique_02.png
                  étape 13 → bonomes_keb_bek_kloe_explique_04.png
-                 étape 14 → bonomes_keb_bek_kloe_explique_05.png
                  étape 15 → bonomes_keb_bek_kloe_explique_06.png
                  étape 16 → bonomes_keb_bek_kloe_explique_07.png
-               (le nom explique_03, initialement réservé pour l'étape 12,
-               est abandonné — cette étape a reçu une image différente,
-               voir ci-dessus.) Ces numéros restent une réservation
-               séquentielle de Claude, PAS confirmés par Raphaël quant à
-               quelle pose ira à quelle étape précise. À chaque nouvelle
-               image fournie, remplacer le placeholder explique_01
-               correspondant dans ETAPES (repérer via le commentaire
-               🚧 PLACEHOLDER sur l'étape concernée) et supprimer le
-               commentaire une fois fait.
+               (les noms explique_03 et explique_05, initialement réservés
+               pour les étapes 12 et 14, sont abandonnés — ces étapes ont
+               reçu des images différentes, voir ci-dessus.) Ces numéros
+               restent une réservation séquentielle de Claude, PAS
+               confirmés par Raphaël quant à quelle pose ira à quelle
+               étape précise. À chaque nouvelle image fournie, remplacer
+               le placeholder explique_01 correspondant dans ETAPES
+               (repérer via le commentaire 🚧 PLACEHOLDER sur l'étape
+               concernée) et supprimer le commentaire une fois fait.
        - images/recurrentes/ : vide pour l'instant dans ce fichier — voir
          correction ci-dessus.
      Toutes les étapes (1 à 16) ont maintenant leur vraie image, fournies
@@ -804,9 +815,12 @@
       ]
     },
     { // 14 — la case à cocher apparaît maintenant
-      // 🚧 PLACEHOLDER (v39) : explique_01 temporaire, réf. réservée :
-      // bonomes_keb_bek_kloe_explique_05.png.
-      img: 'images/prologue/bonomes_keb_bek_kloe_explique_01.png',
+      // Image dédiée reçue (v41) : Keb et Bek pointent (vers la case à
+      // cocher qui apparaît juste en dessous), Kloé accompagne le geste —
+      // remplace le placeholder explique_01 (réf. réservée explique_05
+      // abandonnée, cette étape avait besoin d'une image de geste précis,
+      // pas d'une pose "explique" générique).
+      img: 'images/prologue/bonomes_keb_bek_pointent_kloe_explique_01.png',
       revealCase: true,
       motACocher: { mot: 'Salut', traduction: 'Hi!' },
       lignes: [
@@ -1036,8 +1050,27 @@
       sousLigneVisible = 1;
       rendreEtape();
     } else {
-      console.log('Fin de l’introduction — passage à la première leçon, pas encore branché.');
+      terminerIntroduction();
     }
+  }
+
+  // Fin de l'introduction (COMPTES_ELEVES_v11) — jusqu'ici seulement un
+  // console.log en attente de branchement. chapitre_id = 'prologue' :
+  // reprend l'identifiant déjà utilisé pour cette section dans
+  // parcours.html (voir son curseurNiveau === -1 ? 'prologue' : ...), pas
+  // une invention nouvelle pour ce fichier. Aucune "première leçon" réelle
+  // n'existe encore pour enchaîner dessus (voir COMPTES_ELEVES_v10) — donc
+  // retour au parcours, comme le lien "‹" déjà présent sur cette page,
+  // plutôt qu'une redirection vers une page qui n'existe pas encore.
+  async function terminerIntroduction() {
+    btnSuivant.disabled = true;
+    btnSuivant.textContent = 'Saving…';
+    try {
+      await KebBekProgression.marquerChapitreComplete('prologue');
+    } catch (e) {
+      console.warn('Impossible d\'enregistrer la fin du prologue.', e);
+    }
+    window.location.href = 'parcours.html';
   }
 
   function precedent() {
@@ -1091,6 +1124,27 @@
   });
 
   rendreEtape();
+
+  // Session/profil (COMPTES_ELEVES_v11) — même pattern et mêmes limites
+  // que parcours.html (dernier profil connu, ou auto-sélection si le
+  // compte n'a qu'un seul profil ; voir son commentaire pour le cas non
+  // résolu des comptes à 2+ profils arrivant directement ici). Lancé en
+  // parallèle, sans bloquer l'affichage de la leçon : marquerChapitreComplete
+  // (voir terminerIntroduction plus haut) n'est appelé qu'à la toute fin,
+  // largement après que cette initialisation ait eu le temps de terminer.
+  async function initProgressionReelle() {
+    await KebBekProgression.initSession();
+    if (KebBekProgression.session) {
+      const dernier = KebBekProgression.dernierProfilConnu();
+      if (dernier) {
+        KebBekProgression.profilActifId = dernier;
+      } else {
+        const profils = await KebBekProgression.profilsDuCompte();
+        if (profils.length === 1) KebBekProgression.profilActifId = profils[0].id;
+      }
+    }
+  }
+  initProgressionReelle();
 
   // ═════════════════════════════════════════════
   //  Sac à dos — porté tel quel depuis index.html (mêmes ids, mêmes

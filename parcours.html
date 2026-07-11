@@ -197,6 +197,15 @@
     padding: 20px 22px 18px;
     text-align: center;
     box-shadow: 0 10px 26px var(--ombre);
+    transition: box-shadow 0.15s ease;
+  }
+
+  /* Sélection clavier — même anneau que .noeud-niveau.selection, ajouté à
+     l'ombre existante plutôt qu'à sa place. curseurNiveau = -1 représente
+     le prologue : une position virtuelle juste au-dessus du niveau 1 dans
+     la navigation clavier (voir window.addEventListener('keydown', ...)). */
+  .prologue-carte.selection {
+    box-shadow: 0 0 0 5px rgba(224, 136, 103, 0.3), 0 10px 26px var(--ombre);
   }
 
   .prologue-badge {
@@ -851,7 +860,7 @@
     <p id="instructionNiveau">
       Clique sur un <b>niveau</b> pour déployer ses chapitres.
       <br>
-      <kbd>↑</kbd> <kbd>↓</kbd> <span id="texteDeplacer">pour se déplacer,</span> <kbd id="toucheEntree">Entrée</kbd> <span id="texteChoisir">pour choisir.</span>
+      <kbd>↑</kbd> <kbd>↓</kbd> <kbd>←</kbd> <kbd>→</kbd> <span id="texteDeplacer">pour se déplacer,</span> <kbd id="toucheEntree">Entrée</kbd> <span id="texteChoisir">pour choisir.</span>
     </p>
     <p class="note-provisoire" id="noteProvisoire">✎ Seule l'introduction <b>Les Bonomes</b> est confirmée pour l'instant — les titres suivis d'un <b>*</b> sont provisoires, en attente du contenu final.</p>
   </div>
@@ -1437,6 +1446,8 @@
   // construireDOM(), qui remplacerait le noeud en cours de transition.
   function metAJourCarteInfo() {
     let elActif = null;
+    const prologueCarte = document.querySelector('.prologue-carte');
+
     if (curseurChapitre !== null && niveauOuvertIdx !== -1) {
       elActif = parcoursEl.querySelectorAll('.bloc-niveau')[niveauOuvertIdx].querySelectorAll('.noeud-chapitre')[curseurChapitre];
       const ch = NIVEAUX[niveauOuvertIdx].chapitres[curseurChapitre];
@@ -1455,6 +1466,14 @@
         carteInfoBouton.classList.toggle('examen-bouton', ch.type === 'examen');
         carteInfoBouton.textContent = ch.type === 'examen' ? t('bouton_examen') : (ch.etat === 'complete' ? t('bouton_revoir') : t('bouton_commencer'));
       }
+    } else if (curseurNiveau === -1) {
+      // Prologue sélectionné au clavier — sa grande carte affiche déjà
+      // tout le nécessaire (titre, texte, bouton Découvrir) ; pas besoin
+      // de dupliquer l'info dans la carte-info du bas, on la masque plutôt
+      // (même transition douce que son apparition, voir .carte-info en
+      // CSS — pas de "disparition d'un coup" ici non plus).
+      elActif = prologueCarte;
+      carteInfo.classList.remove('visible');
     } else {
       elActif = parcoursEl.querySelectorAll('.noeud-niveau')[curseurNiveau];
       const niveau = NIVEAUX[curseurNiveau];
@@ -1468,6 +1487,8 @@
       carteInfoIndiceTexte.textContent = estAccessible(niveau.etat) ? t('indice_niveau_ouvrir') : t('indice_niveau_verrouille');
     }
 
+    if (prologueCarte) prologueCarte.classList.toggle('selection', curseurNiveau === -1 && curseurChapitre === null);
+
     if (elActif) {
       elActifCourant = elActif;
       requestAnimationFrame(() => positionnerMarqueur(elActif));
@@ -1478,7 +1499,7 @@
     // chargement de police, etc. n'ont pas à rejouer l'effet).
     const signatureCarteInfo = curseurChapitre !== null
       ? 'ch:' + NIVEAUX[niveauOuvertIdx].chapitres[curseurChapitre].id + ':' + NIVEAUX[niveauOuvertIdx].chapitres[curseurChapitre].etat
-      : 'niv:' + NIVEAUX[curseurNiveau].id + ':' + NIVEAUX[curseurNiveau].etat;
+      : (curseurNiveau === -1 ? 'prologue' : 'niv:' + NIVEAUX[curseurNiveau].id + ':' + NIVEAUX[curseurNiveau].etat);
     if (signatureCarteInfo !== signatureCarteInfoPrecedente) {
       carteInfoCorps.classList.remove('actualise');
       void carteInfoCorps.offsetWidth; // force le recalcul de style pour pouvoir rejouer l'animation
@@ -1497,22 +1518,60 @@
   window.addEventListener('keydown', (e) => {
     if (!['ArrowDown','ArrowUp','ArrowLeft','ArrowRight','Enter',' ','Escape'].includes(e.key)) return;
     e.preventDefault();
+    // Ignore les appuis pendant qu'un niveau est en train de se refermer :
+    // sans ce garde-fou, une flèche pressée pendant les ~450ms de fermerNiveauAnime()
+    // peut retomber dans le contexte "niveaux" (curseurChapitre déjà remis à null de
+    // façon synchrone) et y déclencher un rafraichir()/construireDOM() qui reconstruit
+    // le DOM avant la fin de la transition CSS en cours — précisément le bug de
+    // rebuild destructeur corrigé la session précédente, ici pour le clavier.
+    if (fermetureEnCours) return;
 
     if (curseurChapitre === null) {
-      // Contexte "niveaux"
+      // Contexte "niveaux" — Haut/Bas parcourent la colonne verticale des
+      // niveaux. Le prologue occupe la position virtuelle curseurNiveau =
+      // -1, juste au-dessus du niveau 1 (sa carte est en dehors de la
+      // structure NIVEAUX, voir le bloc .prologue-bonomes plus haut dans
+      // le HTML — d'où ce traitement à part plutôt qu'une entrée de plus
+      // dans le tableau NIVEAUX).
       const niveauAvant = curseurNiveau;
       if (e.key === 'ArrowDown' && curseurNiveau < NIVEAUX.length - 1 && estAccessible(NIVEAUX[curseurNiveau + 1].etat)) curseurNiveau++;
-      if (e.key === 'ArrowUp' && curseurNiveau > 0) curseurNiveau--;
+      if (e.key === 'ArrowUp' && curseurNiveau > -1) curseurNiveau--;
       if (curseurNiveau !== niveauAvant) jouerClicSelection();
-      if ((e.key === 'Enter' || e.key === ' ') && estAccessible(NIVEAUX[curseurNiveau].etat)) toggleNiveau(curseurNiveau);
+      if (e.key === 'Enter' || e.key === ' ') {
+        if (curseurNiveau === -1) {
+          jouerClicSelection();
+          document.getElementById('prologueBouton').click();
+        } else if (estAccessible(NIVEAUX[curseurNiveau].etat)) {
+          toggleNiveau(curseurNiveau);
+        }
+      }
       rafraichir();
     } else {
-      // Contexte "chapitres" à l'intérieur du niveau ouvert
+      // Contexte "chapitres" à l'intérieur du niveau ouvert — Gauche/Droite
+      // parcourent la rangée horizontale de chapitres (elle se lit de
+      // gauche à droite, d'où ce choix plutôt que Haut/Bas). Haut/Bas
+      // referment ce niveau en douceur (même mécanisme animé que
+      // fermerNiveauAnime plus bas) et déplacent la sélection vers le
+      // niveau voisin, ou le prologue en remontant depuis le niveau 1 :
+      // ils naviguent TOUJOURS entre niveaux, jamais à l'horizontale dans
+      // les chapitres, quel que soit le contexte — cohérent avec le
+      // contexte "niveaux" ci-dessus.
       if (e.key === 'Escape') { fermerNiveauAnime(niveauOuvertIdx, null); return; }
+
+      if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+        const cible = niveauOuvertIdx + (e.key === 'ArrowDown' ? 1 : -1);
+        if (cible >= -1 && cible < NIVEAUX.length && (cible === -1 || estAccessible(NIVEAUX[cible].etat))) {
+          curseurNiveau = cible;
+          jouerClicSelection();
+          fermerNiveauAnime(niveauOuvertIdx, null);
+        }
+        return;
+      }
+
       const chapitres = NIVEAUX[niveauOuvertIdx].chapitres;
       const chapitreAvant = curseurChapitre;
-      if (e.key === 'ArrowDown' && curseurChapitre < chapitres.length - 1 && estAccessible(chapitres[curseurChapitre + 1].etat)) curseurChapitre++;
-      if (e.key === 'ArrowUp' && curseurChapitre > 0) curseurChapitre--;
+      if (e.key === 'ArrowRight' && curseurChapitre < chapitres.length - 1 && estAccessible(chapitres[curseurChapitre + 1].etat)) curseurChapitre++;
+      if (e.key === 'ArrowLeft' && curseurChapitre > 0) curseurChapitre--;
       if (curseurChapitre !== chapitreAvant) jouerClicSelection();
       rafraichir();
     }

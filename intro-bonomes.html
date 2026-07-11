@@ -55,12 +55,16 @@
        - images/prologue/  : images propres à cette leçon (étapes 1 à 8,
          Bek et Keb seuls, avant l'arrivée de Kloé).
        - images/recurrentes/ : images générales qui reviendront dans
-         plusieurs leçons — ici, l'unique image de Kloé (étapes 9 à 15),
-         réutilisée telle quelle à chaque réplique tant qu'elle n'a pas
-         de rotation (voir localStorage, BONOMES_v32).
-     Étapes 1 à 8 ont toutes leur vraie image (fournies par Raphaël).
-     Kloé n'a pas encore d'image définitive : voir BONOMES_v32, Raphaël
-     se charge lui-même de la générer.
+         plusieurs leçons — ici, DEUX images de Kloé avec Keb et Bek,
+         alternées selon le ton de la réplique (voir BONOMES_v37) :
+           bonomes_keb_bek_kloe_salue_01.png    (elle salue, bras levé)
+             → étapes 9 à 11, l'accueil/la présentation de Kloé.
+           bonomes_keb_bek_kloe_explique_01.png (pose plus posée)
+             → étapes 12 à 16, dès qu'elle explique le fonctionnement
+               (survol des mots, case à cocher, sac à dos).
+     Toutes les étapes (1 à 16) ont maintenant leur vraie image, fournies
+     par Raphaël — plus aucun repli "image pas encore prête" actif dans
+     cette introduction.
 
      PAS D'ENCADRÉ DERRIÈRE LES PERSONNAGES (relecture de Raphaël) : .scene-
      intro n'a plus de fond, de bordure ni d'ombre — ce n'est qu'un
@@ -721,35 +725,35 @@
       // de l'autre — donc chacune mérite son propre "Continue", plutôt que
       // d'être une seule légende à rallonge).
       speaker: 'kloe',
-      img: 'images/recurrentes/intro-bonomes-09.png',
+      img: 'images/recurrentes/bonomes_keb_bek_kloe_salue_01.png',
       texte: "Hi, I'm Kloé! Nice to meet you!"
     },
     { // 10 — suite de l'étape précédente, scindée pour la même raison
       speaker: 'kloe',
-      img: 'images/recurrentes/intro-bonomes-09.png',
+      img: 'images/recurrentes/bonomes_keb_bek_kloe_salue_01.png',
       texte: "I'll also take care of grammar explanations and showing you around the site."
     },
     { // 11
       speaker: 'kloe',
-      img: 'images/recurrentes/intro-bonomes-09.png',
+      img: 'images/recurrentes/bonomes_keb_bek_kloe_salue_01.png',
       texte: "Let's show you how this works. Say something, you two!"
     },
     { // 12 — Bek et Keb disent le premier mot français : reste en légende
       // ET rejoint la pile du bas pour toujours (francais: true).
-      img: 'images/recurrentes/intro-bonomes-09.png',
+      img: 'images/recurrentes/bonomes_keb_bek_kloe_explique_01.png',
       lignes: [
         { speaker: 'bek', texte: 'Salut !', francais: true, traduction: 'Hi!' },
         { speaker: 'keb', texte: 'Salut !', francais: true, traduction: 'Hi!', delai: 900 }
       ]
     },
     { // 13 — ligne de Kloé : légende seulement, ne rejoint jamais la pile
-      img: 'images/recurrentes/intro-bonomes-09.png',
+      img: 'images/recurrentes/bonomes_keb_bek_kloe_explique_01.png',
       lignes: [
         { speaker: 'kloe', texte: "If you hover or tap on a word, you'll get the translation — and an explanation, from me, always!" }
       ]
     },
     { // 14 — la case à cocher apparaît maintenant
-      img: 'images/recurrentes/intro-bonomes-09.png',
+      img: 'images/recurrentes/bonomes_keb_bek_kloe_explique_01.png',
       revealCase: true,
       motACocher: { mot: 'Salut', traduction: 'Hi!' },
       lignes: [
@@ -757,14 +761,14 @@
       ]
     },
     { // 15 — le sac à dos se révèle maintenant
-      img: 'images/recurrentes/intro-bonomes-09.png',
+      img: 'images/recurrentes/bonomes_keb_bek_kloe_explique_01.png',
       revealSac: true,
       lignes: [
         { speaker: 'kloe', texte: "That checked word will be saved in the backpack you see in the top right corner of your screen." }
       ]
     },
     { // 16
-      img: 'images/recurrentes/intro-bonomes-09.png',
+      img: 'images/recurrentes/bonomes_keb_bek_kloe_explique_01.png',
       lignes: [
         { speaker: 'kloe', texte: "And by the way, everything you collect during a lesson lands there. It stays from one lesson to the next — but create an account so you never lose your progress!" }
       ]

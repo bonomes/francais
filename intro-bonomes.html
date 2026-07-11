@@ -63,33 +63,39 @@
          reprises identiques dans plusieurs leçons indépendamment du
          contexte narratif — pas juste "toute image où Kloé figure".
          Images utilisées, alternées selon le ton de la réplique (voir
-         BONOMES_v39) :
+         BONOMES_v40) :
            bonomes_keb_bek_kloe_salue_01.png        (elle salue, bras levé)
              → étape 9 seulement, la salutation initiale de Kloé.
            bonomes_keb_bek_kloe_invite_dire_02.png  (bras ouverts, invite
                                                        à parler)
              → étape 11, quand elle invite Keb et Bek à dire un mot —
                seule étape à utiliser cette image.
+           bonomes_keb_bek_saluent_kloe_01.png      (Keb et Bek saluent,
+                                                       Kloé mains jointes)
+             → étape 12, le tout premier mot français ("Salut !", dit par
+               Bek puis Keb) — seule étape à utiliser cette image.
            bonomes_keb_bek_kloe_explique_01.png     (pose plus posée)
-             → 🚧 PLACEHOLDER TEMPORAIRE aux étapes 10 et 12 à 16 (v39) :
-               Raphaël a précisé que ces six étapes n'auront PAS toutes
-               la même pose à terme — chacune recevra sa propre image
+             → 🚧 PLACEHOLDER TEMPORAIRE aux étapes 10 et 13 à 16 (v39,
+               mis à jour v40 — l'étape 12 avait en fait besoin d'une
+               image Keb/Bek, pas d'une pose de Kloé, voir ci-dessus) :
+               Raphaël a précisé que ces étapes n'auront pas toutes la
+               même pose à terme — chacune recevra sa propre image
                dédiée. Noms réservés en attendant (voir commentaire sur
                chaque étape dans ETAPES ci-dessous) :
                  étape 10 → bonomes_keb_bek_kloe_explique_02.png
-                 étape 12 → bonomes_keb_bek_kloe_explique_03.png
                  étape 13 → bonomes_keb_bek_kloe_explique_04.png
                  étape 14 → bonomes_keb_bek_kloe_explique_05.png
                  étape 15 → bonomes_keb_bek_kloe_explique_06.png
                  étape 16 → bonomes_keb_bek_kloe_explique_07.png
-               Ces numéros sont une réservation séquentielle de Claude,
-               PAS confirmés par Raphaël quant à quelle pose ira à quelle
-               étape précise — juste un espace de noms cohérent en
-               attendant les fichiers réels. À chaque nouvelle image
-               "explique_0X" fournie, remplacer le placeholder
-               explique_01 correspondant dans ETAPES (repérer via le
-               commentaire 🚧 PLACEHOLDER sur l'étape concernée) et
-               supprimer le commentaire une fois fait.
+               (le nom explique_03, initialement réservé pour l'étape 12,
+               est abandonné — cette étape a reçu une image différente,
+               voir ci-dessus.) Ces numéros restent une réservation
+               séquentielle de Claude, PAS confirmés par Raphaël quant à
+               quelle pose ira à quelle étape précise. À chaque nouvelle
+               image fournie, remplacer le placeholder explique_01
+               correspondant dans ETAPES (repérer via le commentaire
+               🚧 PLACEHOLDER sur l'étape concernée) et supprimer le
+               commentaire une fois fait.
        - images/recurrentes/ : vide pour l'instant dans ce fichier — voir
          correction ci-dessus.
      Toutes les étapes (1 à 16) ont maintenant leur vraie image, fournies
@@ -778,9 +784,12 @@
     },
     { // 12 — Bek et Keb disent le premier mot français : reste en légende
       // ET rejoint la pile du bas pour toujours (francais: true).
-      // 🚧 PLACEHOLDER (v39) : explique_01 temporaire, réf. réservée pour
-      // une pose dédiée à venir : bonomes_keb_bek_kloe_explique_03.png.
-      img: 'images/prologue/bonomes_keb_bek_kloe_explique_01.png',
+      // Image dédiée reçue (v40) : Keb et Bek saluent Kloé, bras levés,
+      // exactement le moment où ils disent "Salut !" — remplace le
+      // placeholder explique_01 (réf. réservée explique_03 abandonnée,
+      // cette étape avait en réalité besoin d'une image Keb/Bek, pas
+      // d'une pose de Kloé).
+      img: 'images/prologue/bonomes_keb_bek_saluent_kloe_01.png',
       lignes: [
         { speaker: 'bek', texte: 'Salut !', francais: true, traduction: 'Hi!' },
         { speaker: 'keb', texte: 'Salut !', francais: true, traduction: 'Hi!', delai: 900 }

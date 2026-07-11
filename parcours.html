@@ -90,6 +90,39 @@
     transform: scale(1.08);
   }
 
+  /* ---------- Bouton son (activable, désactivé par défaut) ---------- */
+  /* Même habillage que .retour, en miroir à droite. Icône SVG changée par
+     JS selon l'état (voir CLE_SON / basculerSon) plutôt que deux icônes
+     superposées, pour rester léger. */
+  .bouton-son {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #FFFFFF;
+    color: var(--brun);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(102, 80, 69, 0.15);
+    opacity: 0.85;
+    transition: opacity 0.2s ease, transform 0.2s ease, color 0.2s ease;
+    z-index: 20;
+    padding: 0;
+  }
+
+  .bouton-son:hover { opacity: 1; transform: scale(1.08); }
+  .bouton-son.actif { color: var(--peche-fonce); }
+  .bouton-son svg { width: 19px; height: 19px; }
+  .bouton-son .onde-son { opacity: 0; transition: opacity 0.2s ease; }
+  .bouton-son .barre-muet { opacity: 1; transition: opacity 0.2s ease; }
+  .bouton-son.actif .onde-son { opacity: 1; }
+  .bouton-son.actif .barre-muet { opacity: 0; }
+
   /* ---------- En-tête ---------- */
 
   .entete-parcours {
@@ -101,10 +134,20 @@
     margin: 0;
     font-family: 'Fuzzy Bubbles', cursive;
     font-weight: 700;
-    font-size: clamp(1.5rem, 5.5vw, 2rem);
-    color: var(--peche-ombre);
-    -webkit-text-stroke: 1.4px var(--brun-fonce);
+    font-size: clamp(1.9rem, 7vw, 2.6rem);
+    background: linear-gradient(100deg, var(--peche-ombre) 20%, var(--or-ombre) 80%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    -webkit-text-stroke: 1.6px var(--brun-fonce);
     paint-order: stroke fill;
+    letter-spacing: 0.01em;
+    animation: titre-entree 0.6s cubic-bezier(.2,.9,.3,1.3);
+  }
+
+  @keyframes titre-entree {
+    0% { transform: translateY(-10px) scale(0.94); opacity: 0; }
+    100% { transform: translateY(0) scale(1); opacity: 1; }
   }
 
   .entete-parcours p {
@@ -123,6 +166,92 @@
     border-radius: 6px;
     padding: 0 6px;
     font-size: 0.72rem;
+  }
+
+  .note-provisoire {
+    margin: 10px auto 0 !important;
+    max-width: 380px !important;
+    font-size: 0.7rem !important;
+    color: var(--gris-verrou-texte) !important;
+    font-style: italic;
+    line-height: 1.4 !important;
+  }
+  .note-provisoire b { color: var(--brun); font-style: normal; }
+
+  /* ---------- Prologue « Les Bonomes » ---------- */
+
+  .prologue-bonomes {
+    width: min(94vw, 440px);
+    margin: 26px auto 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .prologue-carte {
+    position: relative;
+    width: 100%;
+    background: linear-gradient(160deg, #FFF9F5 0%, var(--fond-carte) 65%);
+    border: 2.5px solid var(--peche-fonce);
+    border-radius: 24px;
+    padding: 20px 22px 18px;
+    text-align: center;
+    box-shadow: 0 10px 26px var(--ombre);
+  }
+
+  .prologue-badge {
+    position: absolute;
+    top: -12px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--peche-fonce);
+    color: #FFFFFF;
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    border-radius: 999px;
+    padding: 4px 14px;
+    box-shadow: 0 3px 8px rgba(102, 80, 69, 0.25);
+  }
+
+  .prologue-titre {
+    font-family: 'Fuzzy Bubbles', cursive;
+    font-weight: 700;
+    font-size: 1.2rem;
+    color: var(--peche-ombre);
+    margin-top: 6px;
+  }
+
+  .prologue-texte {
+    margin: 8px auto 14px;
+    max-width: 300px;
+    font-size: 0.8rem;
+    color: var(--brun);
+    line-height: 1.4;
+  }
+
+  .prologue-bouton {
+    display: inline-block;
+    font-family: 'Caveat Brush', cursive;
+    font-size: 1.2rem;
+    text-decoration: none;
+    border-radius: 999px;
+    padding: 9px 32px;
+    background: var(--peche-fonce);
+    color: #FFFFFF;
+    box-shadow: 0 4px 0 var(--peche-ombre);
+    transition: transform 0.12s ease, box-shadow 0.12s ease;
+  }
+  .prologue-bouton:hover { transform: translateY(2px); box-shadow: 0 2px 0 var(--peche-ombre); }
+  .prologue-bouton:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--peche-ombre); }
+
+  .prologue-connecteur {
+    width: 4px;
+    height: 22px;
+    margin-top: 4px;
+    background: repeating-linear-gradient(to bottom, var(--gris-verrou) 0 7px, transparent 7px 15px);
+    border-radius: 4px;
   }
 
   /* ---------- Colonne du parcours ---------- */
@@ -221,6 +350,74 @@
     color: var(--gris-verrou-texte);
   }
 
+  /* ---------- Anneau de progression ---------- */
+  /* Halo circulaire qui déborde légèrement du carré arrondi du noeud —
+     se lit comme un anneau de chargement autour d'une icône d'app.
+     Rempli en fonction de la fraction de chapitres complétés dans le
+     niveau ; absent sur les niveaux verrouillés (progrès non pertinent). */
+  .anneau-progres {
+    position: absolute;
+    inset: -7px;
+    pointer-events: none;
+    transform: rotate(-90deg);
+  }
+  .anneau-progres circle {
+    fill: none;
+    stroke-width: 4;
+    stroke-linecap: round;
+    transition: stroke-dashoffset 0.6s cubic-bezier(.3,1,.4,1);
+  }
+  /* Piste (fond) fixe, discrète ; valeur (avant-plan) en or, seule à
+     changer de stroke-dashoffset — voir fractionNiveau() en JS pour le
+     calcul, et le double rAF dans construireDOM() pour l'animation
+     réelle (un cercle neuf ne peut pas "transitionner" depuis rien : on
+     le pose d'abord à l'ancienne valeur, puis on bascule à la nouvelle
+     une fois peint, comme pour stagger-in plus bas). */
+  .anneau-progres .anneau-piste { stroke: rgba(102, 80, 69, 0.10); }
+  .anneau-progres .anneau-valeur { stroke: var(--or); stroke-dasharray: 289.03; }
+
+  /* ---------- Marqueur « brouillon » ---------- */
+  /* Dérivé directement de l'astérisque déjà présent dans le titre —
+     pas un champ de données séparé, pour ne jamais désynchroniser les
+     deux signaux (voir note-provisoire et piège documenté dans
+     BONOMES_v35). v2 (session courante) : la première version dessinait
+     la bordure principale en pointillé — mais cette bordure sert AUSSI
+     à signaler l'état (complete/actuel/verrouillé), et pour les niveaux
+     elle se trouve à quelques pixels de l'anneau de progression, doré
+     lui aussi : deux ors proches qui se chevauchent en pointillé, lecture
+     confuse plutôt que discrète (signalé par Raphaël). Remplacé par un
+     petit badge crayon en coin, qui ne touche jamais à la bordure d'état
+     et reste net même quand l'anneau est présent. */
+  .badge-brouillon {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    width: 19px;
+    height: 19px;
+    border-radius: 50%;
+    background: var(--fond-carte);
+    border: 2px solid var(--gris-verrou);
+    color: var(--gris-verrou-texte);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    z-index: 2;
+    transition: transform 0.15s ease;
+  }
+  .badge-brouillon svg { width: 10px; height: 10px; }
+  .noeud-niveau:not(.verrouille):hover .badge-brouillon { transform: scale(1.12); }
+
+  .noeud-chapitre .badge-brouillon {
+    top: -4px;
+    right: -4px;
+    width: 16px;
+    height: 16px;
+    border-width: 1.5px;
+  }
+  .noeud-chapitre .badge-brouillon svg { width: 9px; height: 9px; }
+  .noeud-chapitre.deverrouillable:hover .badge-brouillon { transform: scale(1.12); }
+
   .noeud-niveau.complete { border-color: var(--peche-fonce); background: #FFF9F5; }
   .noeud-niveau.complete .num { color: var(--peche-fonce); }
 
@@ -249,6 +446,49 @@
 
   /* ---------- Rangée de chapitres (dépliée) ---------- */
 
+  /* ---------- Cadre d'ouverture/fermeture des chapitres ---------- */
+  /* Ancienne approche : max-height 0 → 420px. Problème découvert cette
+     session : une transition sur max-height interpole entre les DEUX
+     VALEURS DÉCLARÉES (0 et 420px), pas entre 0 et la hauteur réelle du
+     contenu (~140px). Résultat : à la fermeture, la boîte ne bouge
+     visuellement qu'à la toute fin de l'intervalle 420→0 — elle semblait
+     "claquer" plutôt que se refermer. grid-template-rows 0fr → 1fr suit
+     au contraire exactement la hauteur réelle du contenu, quelle qu'elle
+     soit : fermeture proportionnelle, plus de saccade.
+     Résidu trouvé en testant le rendu réel (pas visible à la simple
+     lecture du CSS) : même à 0fr, .rangee-chapitres gardait son padding
+     vertical (20px + 16px = 36px) — le padding d'une boîte ne rétrécit
+     jamais avec son contenu, overflow:hidden a beau masquer le débordement,
+     il ne touche pas au padding lui-même. Résultat : un niveau fermé
+     laissait un petit bandeau blanc résiduel de 36px sous sa carte, visible
+     à l'écran. Le padding anime maintenant avec le même principe que
+     grid-template-rows (voir ci-dessous), donc il atteint réellement 0.
+     Correction v35bis — la session précédente avait mal interprété la
+     demande de Raphaël sur la fermeture : elle avait posé une courbe
+     "accelerate" (cubic-bezier(.4,0,1,1)) sur la fermeture, qui reste lente
+     au début puis se précipite dans les derniers instants — ce qui DONNE
+     justement l'impression d'un "clac" / d'une disparition d'un coup, à
+     l'exact opposé de ce qui était demandé. Correction : Raphaël veut une
+     fermeture douce et graduelle, qui "rentre" tranquillement plutôt que de
+     claquer — donc la même courbe DECELERATE que l'ouverture (cubic-bezier
+     (.4,0,.2,1) : la majorité du mouvement se fait tôt, l'arrivée ralentit
+     et se pose en douceur, aucun sursaut final), avec une durée légèrement
+     plus longue (0.45s vs 0.4s à l'ouverture) pour appuyer ce sentiment de
+     fermeture calme plutôt que précipitée. Ouverture inchangée (aucune
+     plainte dessus) : la transition utilisée reste celle de l'état VERS
+     lequel on va (.deployee à l'ouverture, la base au retrait de
+     .deployee = fermeture) — seule la courbe/durée de la base a changé. */
+  .rangee-chapitres-cadre {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows 0.45s cubic-bezier(.4, 0, .2, 1);
+    margin: -6px 6px 0;
+  }
+  .rangee-chapitres-cadre.deployee {
+    grid-template-rows: 1fr;
+    transition: grid-template-rows 0.4s cubic-bezier(.4, 0, .2, 1);
+  }
+
   .rangee-chapitres {
     display: flex;
     flex-wrap: wrap;
@@ -256,17 +496,22 @@
     gap: 12px 10px;
     background: var(--fond-carte);
     border-radius: 0 0 22px 22px;
-    padding: 20px 14px 16px;
-    margin: -6px 6px 0;
-    max-height: 0;
-    opacity: 0;
+    padding: 0 14px;
+    min-height: 0; /* indispensable : un item de grille ne descend pas sous son contenu par défaut */
     overflow: hidden;
-    transition: max-height 0.35s ease, opacity 0.28s ease, padding 0.35s ease;
+    opacity: 0;
+    /* opacity en ease-out (et non plus ease-in) : le contenu s'estompe
+       progressivement dès le début de la fermeture au lieu de rester
+       visible presque jusqu'au bout puis de s'effacer d'un coup — et sa
+       durée suit maintenant celle du padding/grid pour que tout se referme
+       comme un seul geste continu, plutôt qu'en deux temps désynchronisés. */
+    transition: opacity 0.4s ease-out, padding 0.45s cubic-bezier(.4, 0, .2, 1);
   }
 
-  .rangee-chapitres.deployee {
-    max-height: 420px;
+  .rangee-chapitres-cadre.deployee .rangee-chapitres {
     opacity: 1;
+    padding: 20px 14px 16px;
+    transition: opacity 0.3s ease 0.12s, padding 0.4s cubic-bezier(.4, 0, .2, 1);
   }
 
   .noeud-chapitre {
@@ -281,7 +526,64 @@
     color: var(--gris-verrou-texte);
     cursor: default;
     position: relative;
-    transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease, background 0.15s ease, opacity 0.4s ease;
+  }
+
+  /* ---------- Apparition graduelle des chapitres à l'ouverture d'un niveau ---------- */
+  /* Posé uniquement quand un niveau vient tout juste de s'ouvrir (voir
+     niveauVientDouvrir en JS) — pas à chaque re-rendu, sinon l'animation
+     rejouerait à chaque déplacement au clavier à l'intérieur du niveau. */
+  .noeud-chapitre.stagger-in {
+    opacity: 0;
+    transform: translateY(16px) scale(0.7);
+    transition: opacity 0.4s ease, transform 0.5s cubic-bezier(.3,1.4,.4,1);
+  }
+  .noeud-chapitre.stagger-in.stagger-in-visible {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+
+  /* Petite onde dorée quand un niveau se déploie — pour que ce soit un
+     vrai petit événement, pas juste un accordéon qui s'ouvre. */
+  @keyframes onde-ouverture {
+    0%   { box-shadow: 0 0 0 0 rgba(224, 136, 103, 0.45), 0 10px 26px var(--ombre); }
+    100% { box-shadow: 0 0 0 26px rgba(224, 136, 103, 0), 0 10px 26px var(--ombre); }
+  }
+  .groupe-niveau.juste-ouvert { animation: onde-ouverture 0.7s ease-out; }
+
+  /* Révélation d'un chapitre (ou niveau) tout juste débloqué : éclat doré
+     qui pulse puis s'efface, plus un léger sursaut d'échelle. */
+  @keyframes eclat-deverrouillage {
+    0%   { box-shadow: 0 0 0 0 rgba(200, 155, 44, 0.7); filter: brightness(1); transform: scale(1); }
+    35%  { box-shadow: 0 0 0 16px rgba(200, 155, 44, 0); filter: brightness(1.4); transform: scale(1.14); }
+    100% { box-shadow: 0 0 0 16px rgba(200, 155, 44, 0); filter: brightness(1); transform: scale(1); }
+  }
+  .noeud-chapitre.vient-de-deverrouiller,
+  .noeud-niveau.vient-de-deverrouiller {
+    animation: eclat-deverrouillage 1.2s ease-out;
+  }
+
+  /* ---------- Fête dorée à la complétion d'un niveau ---------- */
+  /* Quelques particules qui s'envolent depuis le centre du niveau tout
+     juste terminé — un vrai petit événement, distinct de l'éclat de
+     déverrouillage (qui, lui, marque un chapitre). Éléments créés/détruits
+     dynamiquement par JS (voir celebrerNiveauComplet), pas présents dans
+     le HTML statique. */
+  .particule-fete {
+    position: fixed;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 60;
+    opacity: 0;
+    animation: envol-particule 0.85s ease-out forwards;
+  }
+
+  @keyframes envol-particule {
+    0%   { opacity: 0; transform: translate(-50%, -50%) rotate(var(--angle)) translateX(0) scale(0.5); }
+    18%  { opacity: 1; }
+    100% { opacity: 0; transform: translate(-50%, -50%) rotate(var(--angle)) translateX(var(--distance)) scale(1); }
   }
 
   .noeud-chapitre svg { width: 22px; height: 22px; }
@@ -411,6 +713,23 @@
     transform: translateX(-50%) translateY(0);
   }
 
+  /* ---------- Actualisation du contenu de la carte-info ---------- */
+  /* Avant : le texte (titre, type, bouton ↔ indice) changeait d'un coup
+     sec — un simple textContent/style.display, sans transition, ce qui
+     donnait l'impression que l'encadré "disparaissait" à chaque
+     changement de sélection. Ici, un léger fondu-remontée rejoue à
+     chaque fois que le contenu affiché change réellement (voir
+     signatureCarteInfo en JS — pas à chaque rafraîchissement, seulement
+     quand ça change pour de vrai, sinon un simple redimensionnement de
+     fenêtre relancerait l'effet inutilement). */
+  .carte-info-corps.actualise {
+    animation: carte-info-actualise 0.26s ease;
+  }
+  @keyframes carte-info-actualise {
+    from { opacity: 0.3; transform: translateY(4px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
   .carte-info .type {
     display: inline-block;
     font-size: 0.66rem;
@@ -433,9 +752,17 @@
     font-size: 1.15rem;
     font-weight: 700;
     color: var(--brun-fonce);
-    margin: 8px 0 12px;
+    margin: 8px 0 4px;
     line-height: 1.2;
   }
+
+  .carte-info .titre-trad {
+    font-size: 0.72rem;
+    font-style: italic;
+    color: var(--brun);
+    margin: 0 0 10px;
+  }
+  .carte-info .titre-trad:empty { display: none; margin: 0 0 8px; }
 
   .carte-info button {
     font-family: 'Caveat Brush', cursive;
@@ -470,6 +797,34 @@
   }
   .carte-info .indice svg { width: 14px; height: 14px; flex-shrink: 0; color: var(--gris-verrou-texte); }
 
+  /* ---------- Petit avis « contenu en préparation » ---------- */
+  /* Remplace l'ancien comportement silencieux (juste un console.log,
+     invisible pour l'utilisateur réel) par un vrai retour visuel quand un
+     chapitre pas encore construit est ouvert. */
+
+  .avis-preparation {
+    position: fixed;
+    left: 50%;
+    bottom: 128px;
+    transform: translateX(-50%) translateY(8px);
+    background: var(--brun-fonce);
+    color: #FFF8E8;
+    font-size: 0.78rem;
+    font-weight: 600;
+    padding: 9px 18px;
+    border-radius: 999px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    z-index: 60;
+    white-space: nowrap;
+  }
+  .avis-preparation.visible {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
   @media (max-width: 420px) {
     .noeud-niveau { width: 76px; height: 76px; }
     .noeud-chapitre { width: 50px; height: 50px; }
@@ -480,15 +835,43 @@
 </head>
 <body>
 
-  <a class="retour" href="index.html#menu-principal" aria-label="Retour">‹</a>
+  <a class="retour" id="lienRetour" href="index.html#menu-principal" aria-label="Retour">‹</a>
+
+  <button class="bouton-son" id="boutonSon" type="button" aria-pressed="false" aria-label="Son désactivé">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M4 9.5v5h3.5L13 19V5L7.5 9.5H4Z" fill="currentColor" stroke="none"/>
+      <path class="onde-son" d="M16.3 8.7a4.8 4.8 0 0 1 0 6.6"/>
+      <path class="onde-son" d="M18.8 6.2a8.3 8.3 0 0 1 0 11.6"/>
+      <path class="barre-muet" d="M16 8l4.2 8M20.2 8 16 16"/>
+    </svg>
+  </button>
 
   <div class="entete-parcours">
-    <h1>Ton parcours</h1>
-    <p>
+    <h1 id="titrePage">Ton parcours</h1>
+    <p id="instructionNiveau">
       Clique sur un <b>niveau</b> pour déployer ses chapitres.
       <br>
-      <kbd>↑</kbd> <kbd>↓</kbd> pour se déplacer, <kbd>Entrée</kbd> pour choisir.
+      <kbd>↑</kbd> <kbd>↓</kbd> <span id="texteDeplacer">pour se déplacer,</span> <kbd id="toucheEntree">Entrée</kbd> <span id="texteChoisir">pour choisir.</span>
     </p>
+    <p class="note-provisoire" id="noteProvisoire">✎ Seule l'introduction <b>Les Bonomes</b> est confirmée pour l'instant — les titres suivis d'un <b>*</b> sont provisoires, en attente du contenu final.</p>
+  </div>
+
+  <!-- ==================================================================
+       Prologue « Les Bonomes » — volontairement en dehors de la structure
+       NIVEAUX/JS : c'est le seul contenu narratif réellement confirmé à
+       ce jour (voir BONOMES_v33/v34), donc il vit à part, avec son propre
+       traitement visuel, plutôt que comme un chapitre de plus dans un
+       niveau encore provisoire. Lien réel vers intro-bonomes.html — pas
+       un console.log comme les chapitres encore à écrire.
+       ================================================================== -->
+  <div class="prologue-bonomes">
+    <div class="prologue-carte">
+      <span class="prologue-badge" id="prologueBadge">✓ confirmé</span>
+      <div class="prologue-titre" id="prologueTitre">Prologue — Les Bonomes</div>
+      <p class="prologue-texte" id="prologueTexte">Fais connaissance avec Keb, Bek… et Kloé, qui t'accompagnera partout.</p>
+      <a class="prologue-bouton" id="prologueBouton" href="intro-bonomes.html">Découvrir</a>
+    </div>
+    <div class="prologue-connecteur"></div>
   </div>
 
   <div class="parcours" id="parcours">
@@ -497,21 +880,163 @@
   </div>
 
   <div class="bonomes-marqueur" id="marqueurBonomes">
-    <img class="flotte" src="images/bonomes_keb_bek_parcours_01.png" alt="Keb et Bek">
+    <img class="flotte" id="imgMarqueur" src="images/bonomes_keb_bek_parcours_01_officiel.png" alt="Keb et Bek">
     <div class="socle"></div>
   </div>
 
   <div class="carte-info" id="carteInfo">
-    <div class="type" id="carteInfoType">—</div>
-    <div class="titre" id="carteInfoTitre">—</div>
-    <button id="carteInfoBouton">Commencer</button>
-    <div class="indice" id="carteInfoIndice" style="display:none;">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="10.5" width="14" height="9" rx="2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg>
-      <span id="carteInfoIndiceTexte">Termine les étapes précédentes pour débloquer ceci.</span>
+    <div class="carte-info-corps" id="carteInfoCorps">
+      <div class="type" id="carteInfoType">—</div>
+      <div class="titre" id="carteInfoTitre">—</div>
+      <div class="titre-trad" id="carteInfoTitreTrad"></div>
+      <button id="carteInfoBouton">Commencer</button>
+      <div class="indice" id="carteInfoIndice" style="display:none;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="10.5" width="14" height="9" rx="2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg>
+        <span id="carteInfoIndiceTexte">Termine les étapes précédentes pour débloquer ceci.</span>
+      </div>
     </div>
   </div>
 
+  <div class="avis-preparation" id="avisPreparation">Ce chapitre est encore en préparation ✏️</div>
+
 <script>
+  // ==================================================================
+  // Mécanisme de langue (voir BONOMES_v31/v34) : une seule clé localStorage
+  // partagée avec tout le site. Règle produit : le PARCOURS (habillage,
+  // instructions, boutons) s'affiche dans la langue de l'apprenant ; seuls
+  // les TITRES de niveaux/chapitres restent en français (ce sont des noms
+  // de leçons, pas de l'interface) — avec une traduction affichée en plus
+  // quand une leçon est sélectionnée, si elle existe dans TRAD_TITRES.
+  // ==================================================================
+  const CLE_LANGUE = 'kebbek_langue';
+  function langueActuelle() {
+    try { return localStorage.getItem(CLE_LANGUE) || 'en'; }
+    catch (e) { return 'en'; }
+  }
+
+  // ==================================================================
+  // Préférence son — même pattern que la langue (une clé localStorage,
+  // lue silencieusement), mais désactivée par défaut : contrairement à
+  // la langue, poser un son sans consentement explicite serait une
+  // surprise plutôt qu'un service. "Activable" = l'apprenant l'allume
+  // s'il le veut, via le bouton en haut à droite.
+  // ==================================================================
+  const CLE_SON = 'kebbek_son';
+  function sonActif() {
+    try { return localStorage.getItem(CLE_SON) === '1'; }
+    catch (e) { return false; }
+  }
+
+  const DICO = {
+    fr: { titre_page: "Ton parcours", instruction_niveau_html: "Clique sur un <b>niveau</b> pour déployer ses chapitres.", pour_deplacer: "pour se déplacer,", pour_choisir: "pour choisir.", touche_entree: "Entrée", note_provisoire_html: "Seule l'introduction <b>Les Bonomes</b> est confirmée pour l'instant — les titres suivis d'un <b>*</b> sont provisoires, en attente du contenu final.", badge_confirme: "confirmé", prologue_titre: "Prologue — Les Bonomes", prologue_texte: "Fais connaissance avec Keb, Bek… et Kloé, qui t'accompagnera partout.", prologue_bouton: "Découvrir", retour_aria: "Retour", type_niveau: "Niveau", type_dialogue: "Dialogue", type_histoire: "Histoire", type_examen: "Examen", bouton_commencer: "Commencer", bouton_revoir: "Revoir", bouton_examen: "Passer l'examen", indice_chapitre_verrouille: "Termine les étapes précédentes pour débloquer ceci.", indice_niveau_ouvrir: "Clique pour déployer les chapitres.", indice_niveau_verrouille: "Termine le niveau précédent pour débloquer celui-ci.", avis_revoir: "Tu revois ce chapitre (démo) ✏️", avis_niveau_debloque: "✨ Niveau terminé — le suivant est débloqué !", avis_chapitre_debloque: "✨ Chapitre débloqué !", avis_preparation: "Ce chapitre est encore en préparation ✏️", marqueur_alt: "Keb et Bek", son_actif: "Son activé", son_inactif: "Son désactivé" },
+    en: { titre_page: "Your journey", instruction_niveau_html: "Click on a <b>level</b> to open its chapters.", pour_deplacer: "to move,", pour_choisir: "to choose.", touche_entree: "Enter", note_provisoire_html: "Only the <b>Les Bonomes</b> introduction is confirmed for now — titles with a <b>*</b> are placeholders, pending final content.", badge_confirme: "confirmed", prologue_titre: "Prologue — Les Bonomes", prologue_texte: "Meet Keb, Bek… and Kloé, who will be with you every step of the way.", prologue_bouton: "Discover", retour_aria: "Back", type_niveau: "Level", type_dialogue: "Dialogue", type_histoire: "Story", type_examen: "Exam", bouton_commencer: "Start", bouton_revoir: "Review", bouton_examen: "Take the exam", indice_chapitre_verrouille: "Finish the previous steps to unlock this.", indice_niveau_ouvrir: "Click to open the chapters.", indice_niveau_verrouille: "Finish the previous level to unlock this one.", avis_revoir: "Reviewing this chapter (demo) ✏️", avis_niveau_debloque: "✨ Level complete — the next one is unlocked!", avis_chapitre_debloque: "✨ Chapter unlocked!", avis_preparation: "This chapter is still being prepared ✏️", marqueur_alt: "Keb and Bek", son_actif: "Sound on", son_inactif: "Sound off" },
+    es: { titre_page: "Tu recorrido", instruction_niveau_html: "Haz clic en un <b>nivel</b> para desplegar sus capítulos.", pour_deplacer: "para moverte,", pour_choisir: "para elegir.", touche_entree: "Intro", note_provisoire_html: "Solo la introducción <b>Les Bonomes</b> está confirmada por ahora — los títulos con un <b>*</b> son provisionales, a la espera del contenido final.", badge_confirme: "confirmado", prologue_titre: "Prólogo — Les Bonomes", prologue_texte: "Conoce a Keb, Bek… y a Kloé, que te acompañará en todo momento.", prologue_bouton: "Descubrir", retour_aria: "Volver", type_niveau: "Nivel", type_dialogue: "Diálogo", type_histoire: "Historia", type_examen: "Examen", bouton_commencer: "Empezar", bouton_revoir: "Repasar", bouton_examen: "Hacer el examen", indice_chapitre_verrouille: "Termina los pasos anteriores para desbloquear esto.", indice_niveau_ouvrir: "Haz clic para desplegar los capítulos.", indice_niveau_verrouille: "Termina el nivel anterior para desbloquear este.", avis_revoir: "Estás repasando este capítulo (demo) ✏️", avis_niveau_debloque: "✨ ¡Nivel completado, se ha desbloqueado el siguiente!", avis_chapitre_debloque: "✨ ¡Capítulo desbloqueado!", avis_preparation: "Este capítulo todavía se está preparando ✏️", marqueur_alt: "Keb y Bek", son_actif: "Sonido activado", son_inactif: "Sonido desactivado" },
+    pt: { titre_page: "O teu percurso", instruction_niveau_html: "Clica num <b>nível</b> para abrir os seus capítulos.", pour_deplacer: "para te moveres,", pour_choisir: "para escolheres.", touche_entree: "Enter", note_provisoire_html: "Apenas a introdução <b>Les Bonomes</b> está confirmada por agora — os títulos seguidos de <b>*</b> são provisórios, à espera do conteúdo final.", badge_confirme: "confirmado", prologue_titre: "Prólogo — Les Bonomes", prologue_texte: "Conhece o Keb, a Bek… e a Kloé, que te vai acompanhar sempre.", prologue_bouton: "Descobrir", retour_aria: "Voltar", type_niveau: "Nível", type_dialogue: "Diálogo", type_histoire: "História", type_examen: "Exame", bouton_commencer: "Começar", bouton_revoir: "Rever", bouton_examen: "Fazer o exame", indice_chapitre_verrouille: "Termina as etapas anteriores para desbloquear isto.", indice_niveau_ouvrir: "Clica para abrir os capítulos.", indice_niveau_verrouille: "Termina o nível anterior para desbloquear este.", avis_revoir: "Estás a rever este capítulo (demo) ✏️", avis_niveau_debloque: "✨ Nível concluído — o seguinte foi desbloqueado!", avis_chapitre_debloque: "✨ Capítulo desbloqueado!", avis_preparation: "Este capítulo ainda está em preparação ✏️", marqueur_alt: "Keb e Bek", son_actif: "Som ativado", son_inactif: "Som desativado" },
+    it: { titre_page: "Il tuo percorso", instruction_niveau_html: "Clicca su un <b>livello</b> per aprire i suoi capitoli.", pour_deplacer: "per spostarti,", pour_choisir: "per scegliere.", touche_entree: "Invio", note_provisoire_html: "Solo l'introduzione <b>Les Bonomes</b> è confermata per ora — i titoli seguiti da <b>*</b> sono provvisori, in attesa dei contenuti definitivi.", badge_confirme: "confermato", prologue_titre: "Prologo — Les Bonomes", prologue_texte: "Conosci Keb, Bek… e Kloé, che ti accompagnerà sempre.", prologue_bouton: "Scopri", retour_aria: "Indietro", type_niveau: "Livello", type_dialogue: "Dialogo", type_histoire: "Storia", type_examen: "Esame", bouton_commencer: "Inizia", bouton_revoir: "Rivedi", bouton_examen: "Fai l'esame", indice_chapitre_verrouille: "Completa le tappe precedenti per sbloccare questo.", indice_niveau_ouvrir: "Clicca per aprire i capitoli.", indice_niveau_verrouille: "Completa il livello precedente per sbloccare questo.", avis_revoir: "Stai rivedendo questo capitolo (demo) ✏️", avis_niveau_debloque: "✨ Livello completato — il prossimo è sbloccato!", avis_chapitre_debloque: "✨ Capitolo sbloccato!", avis_preparation: "Questo capitolo è ancora in preparazione ✏️", marqueur_alt: "Keb e Bek", son_actif: "Audio attivato", son_inactif: "Audio disattivato" },
+    de: { titre_page: "Dein Werdegang", instruction_niveau_html: "Klicke auf eine <b>Stufe</b>, um ihre Kapitel zu öffnen.", pour_deplacer: "zum Bewegen,", pour_choisir: "zum Auswählen.", touche_entree: "Enter", note_provisoire_html: "Nur die Einführung <b>Les Bonomes</b> ist bisher bestätigt — Titel mit einem <b>*</b> sind vorläufig, bis der endgültige Inhalt feststeht.", badge_confirme: "bestätigt", prologue_titre: "Prolog — Les Bonomes", prologue_texte: "Lerne Keb, Bek… und Kloé kennen, die dich überallhin begleitet.", prologue_bouton: "Entdecken", retour_aria: "Zurück", type_niveau: "Stufe", type_dialogue: "Dialog", type_histoire: "Geschichte", type_examen: "Prüfung", bouton_commencer: "Starten", bouton_revoir: "Wiederholen", bouton_examen: "Prüfung ablegen", indice_chapitre_verrouille: "Schließe die vorherigen Schritte ab, um dies freizuschalten.", indice_niveau_ouvrir: "Klicke, um die Kapitel zu öffnen.", indice_niveau_verrouille: "Schließe die vorherige Stufe ab, um diese freizuschalten.", avis_revoir: "Du wiederholst dieses Kapitel (Demo) ✏️", avis_niveau_debloque: "✨ Stufe abgeschlossen — die nächste ist freigeschaltet!", avis_chapitre_debloque: "✨ Kapitel freigeschaltet!", avis_preparation: "Dieses Kapitel wird noch vorbereitet ✏️", marqueur_alt: "Keb und Bek", son_actif: "Ton an", son_inactif: "Ton aus" },
+    nl: { titre_page: "Jouw traject", instruction_niveau_html: "Klik op een <b>niveau</b> om de hoofdstukken te openen.", pour_deplacer: "om te bewegen,", pour_choisir: "om te kiezen.", touche_entree: "Enter", note_provisoire_html: "Alleen de introductie <b>Les Bonomes</b> is voorlopig bevestigd — titels met een <b>*</b> zijn voorlopig, in afwachting van de definitieve inhoud.", badge_confirme: "bevestigd", prologue_titre: "Proloog — Les Bonomes", prologue_texte: "Maak kennis met Keb, Bek… en Kloé, die je overal zal begeleiden.", prologue_bouton: "Ontdekken", retour_aria: "Terug", type_niveau: "Niveau", type_dialogue: "Dialoog", type_histoire: "Verhaal", type_examen: "Examen", bouton_commencer: "Beginnen", bouton_revoir: "Herbekijken", bouton_examen: "Examen afleggen", indice_chapitre_verrouille: "Rond de vorige stappen af om dit te ontgrendelen.", indice_niveau_ouvrir: "Klik om de hoofdstukken te openen.", indice_niveau_verrouille: "Rond het vorige niveau af om dit te ontgrendelen.", avis_revoir: "Je bekijkt dit hoofdstuk opnieuw (demo) ✏️", avis_niveau_debloque: "✨ Niveau voltooid — het volgende is ontgrendeld!", avis_chapitre_debloque: "✨ Hoofdstuk ontgrendeld!", avis_preparation: "Dit hoofdstuk wordt nog voorbereid ✏️", marqueur_alt: "Keb en Bek", son_actif: "Geluid aan", son_inactif: "Geluid uit" },
+    ca: { titre_page: "El teu recorregut", instruction_niveau_html: "Fes clic en un <b>nivell</b> per desplegar els seus capítols.", pour_deplacer: "per moure't,", pour_choisir: "per triar.", touche_entree: "Retorn", note_provisoire_html: "Només la introducció <b>Les Bonomes</b> està confirmada de moment — els títols seguits d'un <b>*</b> són provisionals, a l'espera del contingut final.", badge_confirme: "confirmat", prologue_titre: "Pròleg — Les Bonomes", prologue_texte: "Coneix en Keb, la Bek… i la Kloé, que t'acompanyarà sempre.", prologue_bouton: "Descobrir", retour_aria: "Enrere", type_niveau: "Nivell", type_dialogue: "Diàleg", type_histoire: "Història", type_examen: "Examen", bouton_commencer: "Començar", bouton_revoir: "Repassar", bouton_examen: "Fer l'examen", indice_chapitre_verrouille: "Acaba els passos anteriors per desbloquejar això.", indice_niveau_ouvrir: "Fes clic per desplegar els capítols.", indice_niveau_verrouille: "Acaba el nivell anterior per desbloquejar aquest.", avis_revoir: "Estàs repassant aquest capítol (demo) ✏️", avis_niveau_debloque: "✨ Nivell completat — s'ha desbloquejat el següent!", avis_chapitre_debloque: "✨ Capítol desbloquejat!", avis_preparation: "Aquest capítol encara s'està preparant ✏️", marqueur_alt: "Keb i Bek", son_actif: "So activat", son_inactif: "So desactivat" },
+    ru: { titre_page: "Твой путь", instruction_niveau_html: "Нажми на <b>уровень</b>, чтобы открыть его главы.", pour_deplacer: "чтобы двигаться,", pour_choisir: "чтобы выбрать.", touche_entree: "Enter", note_provisoire_html: "Пока подтверждено только введение <b>Les Bonomes</b> — названия со звёздочкой <b>*</b> временные, в ожидании финального содержания.", badge_confirme: "подтверждено", prologue_titre: "Пролог — Les Bonomes", prologue_texte: "Познакомься с Кебом, Бек… и Клоэ, которая будет рядом всегда.", prologue_bouton: "Открыть", retour_aria: "Назад", type_niveau: "Уровень", type_dialogue: "Диалог", type_histoire: "История", type_examen: "Экзамен", bouton_commencer: "Начать", bouton_revoir: "Повторить", bouton_examen: "Сдать экзамен", indice_chapitre_verrouille: "Заверши предыдущие шаги, чтобы открыть это.", indice_niveau_ouvrir: "Нажми, чтобы открыть главы.", indice_niveau_verrouille: "Заверши предыдущий уровень, чтобы открыть этот.", avis_revoir: "Ты повторяешь эту главу (демо) ✏️", avis_niveau_debloque: "✨ Уровень пройден — следующий открыт!", avis_chapitre_debloque: "✨ Глава открыта!", avis_preparation: "Эта глава ещё готовится ✏️", marqueur_alt: "Кеб и Бек", son_actif: "Звук включён", son_inactif: "Звук выключен" },
+    zh: { titre_page: "你的学习之旅", instruction_niveau_html: "点击一个<b>关卡</b>展开它的章节。", pour_deplacer: "移动，", pour_choisir: "选择。", touche_entree: "回车", note_provisoire_html: "目前只有 <b>Les Bonomes</b> 简介是确定的——带 <b>*</b> 的标题都是临时的，等待最终内容确定。", badge_confirme: "已确认", prologue_titre: "序章 — Les Bonomes", prologue_texte: "认识一下凯博、贝克……还有克洛伊，她会一直陪着你。", prologue_bouton: "去看看", retour_aria: "返回", type_niveau: "关卡", type_dialogue: "对话", type_histoire: "故事", type_examen: "测验", bouton_commencer: "开始", bouton_revoir: "重看", bouton_examen: "参加测验", indice_chapitre_verrouille: "完成前面的内容才能解锁。", indice_niveau_ouvrir: "点击展开章节。", indice_niveau_verrouille: "完成上一关才能解锁。", avis_revoir: "你正在重看这一章（演示）✏️", avis_niveau_debloque: "✨ 关卡完成——下一关已解锁！", avis_chapitre_debloque: "✨ 章节已解锁！", avis_preparation: "这一章还在准备中 ✏️", marqueur_alt: "凯博和贝克", son_actif: "声音已开启", son_inactif: "声音已关闭" },
+    ja: { titre_page: "きみの学習コース", instruction_niveau_html: "<b>レベル</b>をクリックすると章が開きます。", pour_deplacer: "移動、", pour_choisir: "選択。", touche_entree: "Enter", note_provisoire_html: "今のところ確定しているのは <b>Les Bonomes</b> の導入だけです — <b>*</b> がついたタイトルは仮のもので、最終内容待ちです。", badge_confirme: "確定済み", prologue_titre: "プロローグ — Les Bonomes", prologue_texte: "ケブ、ベック…そしてずっと一緒にいてくれるクロエに会おう。", prologue_bouton: "見てみる", retour_aria: "戻る", type_niveau: "レベル", type_dialogue: "会話", type_histoire: "物語", type_examen: "テスト", bouton_commencer: "始める", bouton_revoir: "見直す", bouton_examen: "テストを受ける", indice_chapitre_verrouille: "前のステップを終えるとここが解放されます。", indice_niveau_ouvrir: "クリックして章を開く。", indice_niveau_verrouille: "前のレベルを終えるとここが解放されます。", avis_revoir: "この章を見直しています（デモ）✏️", avis_niveau_debloque: "✨ レベルクリア — 次が解放されました！", avis_chapitre_debloque: "✨ 章が解放されました！", avis_preparation: "この章はまだ準備中です ✏️", marqueur_alt: "ケブとベック", son_actif: "音がオンです", son_inactif: "音がオフです" },
+    ko: { titre_page: "나의 학습 여정", instruction_niveau_html: "<b>레벨</b>을 클릭하면 챕터가 펼쳐져요.", pour_deplacer: "이동,", pour_choisir: "선택.", touche_entree: "Enter", note_provisoire_html: "지금은 <b>Les Bonomes</b> 소개만 확정되어 있어요 — <b>*</b>가 붙은 제목은 최종 내용이 정해지기 전까지 임시 제목입니다.", badge_confirme: "확정됨", prologue_titre: "프롤로그 — Les Bonomes", prologue_texte: "케브, 베크… 그리고 항상 함께할 클로에를 만나보세요.", prologue_bouton: "둘러보기", retour_aria: "뒤로", type_niveau: "레벨", type_dialogue: "대화", type_histoire: "이야기", type_examen: "시험", bouton_commencer: "시작하기", bouton_revoir: "다시 보기", bouton_examen: "시험 보기", indice_chapitre_verrouille: "이전 단계를 마치면 여기가 열려요.", indice_niveau_ouvrir: "클릭하면 챕터가 펼쳐져요.", indice_niveau_verrouille: "이전 레벨을 마치면 여기가 열려요.", avis_revoir: "이 챕터를 다시 보는 중이에요 (데모) ✏️", avis_niveau_debloque: "✨ 레벨 완료 — 다음 레벨이 열렸어요!", avis_chapitre_debloque: "✨ 챕터가 열렸어요!", avis_preparation: "이 챕터는 아직 준비 중이에요 ✏️", marqueur_alt: "케브와 베크", son_actif: "소리 켜짐", son_inactif: "소리 꺼짐" },
+    vi: { titre_page: "Hành trình của bạn", instruction_niveau_html: "Nhấp vào một <b>cấp độ</b> để mở các chương.", pour_deplacer: "để di chuyển,", pour_choisir: "để chọn.", touche_entree: "Enter", note_provisoire_html: "Hiện chỉ có phần giới thiệu <b>Les Bonomes</b> là chính thức — các tiêu đề có dấu <b>*</b> chỉ là tạm thời, chờ nội dung cuối cùng.", badge_confirme: "đã xác nhận", prologue_titre: "Mở đầu — Les Bonomes", prologue_texte: "Làm quen với Keb, Bek… và Kloé, người sẽ luôn đồng hành cùng bạn.", prologue_bouton: "Khám phá", retour_aria: "Quay lại", type_niveau: "Cấp độ", type_dialogue: "Hội thoại", type_histoire: "Câu chuyện", type_examen: "Bài kiểm tra", bouton_commencer: "Bắt đầu", bouton_revoir: "Xem lại", bouton_examen: "Làm bài kiểm tra", indice_chapitre_verrouille: "Hoàn thành các bước trước để mở khóa mục này.", indice_niveau_ouvrir: "Nhấp để mở các chương.", indice_niveau_verrouille: "Hoàn thành cấp độ trước để mở khóa cấp độ này.", avis_revoir: "Bạn đang xem lại chương này (bản demo) ✏️", avis_niveau_debloque: "✨ Hoàn thành cấp độ — cấp độ tiếp theo đã mở khóa!", avis_chapitre_debloque: "✨ Đã mở khóa chương mới!", avis_preparation: "Chương này vẫn đang được chuẩn bị ✏️", marqueur_alt: "Keb và Bek", son_actif: "Đã bật âm thanh", son_inactif: "Đã tắt âm thanh" },
+    tl: { titre_page: "Ang iyong paglalakbay", instruction_niveau_html: "I-click ang isang <b>antas</b> para buksan ang mga kabanata nito.", pour_deplacer: "para gumalaw,", pour_choisir: "para pumili.", touche_entree: "Enter", note_provisoire_html: "Ang panimulang <b>Les Bonomes</b> lang ang tiyak sa ngayon — ang mga pamagat na may <b>*</b> ay pansamantala, hinihintay ang huling nilalaman.", badge_confirme: "kumpirmado", prologue_titre: "Paunang salita — Les Bonomes", prologue_texte: "Kilalanin sina Keb, Bek… at si Kloé, na sasama sa iyo sa bawat hakbang.", prologue_bouton: "Tuklasin", retour_aria: "Bumalik", type_niveau: "Antas", type_dialogue: "Diyalogo", type_histoire: "Kuwento", type_examen: "Pagsusulit", bouton_commencer: "Simulan", bouton_revoir: "Balikan", bouton_examen: "Kunin ang pagsusulit", indice_chapitre_verrouille: "Tapusin ang mga nakaraang hakbang para ma-unlock ito.", indice_niveau_ouvrir: "I-click para buksan ang mga kabanata.", indice_niveau_verrouille: "Tapusin ang nakaraang antas para ma-unlock ito.", avis_revoir: "Binabalikan mo ang kabanatang ito (demo) ✏️", avis_niveau_debloque: "✨ Tapos na ang antas — na-unlock na ang susunod!", avis_chapitre_debloque: "✨ Na-unlock ang kabanata!", avis_preparation: "Inihahanda pa ang kabanatang ito ✏️", marqueur_alt: "Sina Keb at Bek", son_actif: "Naka-on ang tunog", son_inactif: "Naka-off ang tunog" },
+    id: { titre_page: "Perjalananmu", instruction_niveau_html: "Klik sebuah <b>level</b> untuk membuka babnya.", pour_deplacer: "untuk bergerak,", pour_choisir: "untuk memilih.", touche_entree: "Enter", note_provisoire_html: "Untuk saat ini hanya pengantar <b>Les Bonomes</b> yang sudah final — judul dengan tanda <b>*</b> masih sementara, menunggu konten akhir.", badge_confirme: "dikonfirmasi", prologue_titre: "Prolog — Les Bonomes", prologue_texte: "Kenali Keb, Bek… dan Kloé, yang akan menemanimu selalu.", prologue_bouton: "Jelajahi", retour_aria: "Kembali", type_niveau: "Level", type_dialogue: "Dialog", type_histoire: "Cerita", type_examen: "Ujian", bouton_commencer: "Mulai", bouton_revoir: "Tinjau ulang", bouton_examen: "Ikuti ujian", indice_chapitre_verrouille: "Selesaikan langkah sebelumnya untuk membuka ini.", indice_niveau_ouvrir: "Klik untuk membuka bab.", indice_niveau_verrouille: "Selesaikan level sebelumnya untuk membuka ini.", avis_revoir: "Kamu sedang meninjau ulang bab ini (demo) ✏️", avis_niveau_debloque: "✨ Level selesai — level berikutnya terbuka!", avis_chapitre_debloque: "✨ Bab terbuka!", avis_preparation: "Bab ini masih dipersiapkan ✏️", marqueur_alt: "Keb dan Bek", son_actif: "Suara aktif", son_inactif: "Suara nonaktif" },
+    ht: { titre_page: "Chemen ou", instruction_niveau_html: "Klike sou yon <b>nivo</b> pou ouvri chapit li yo.", pour_deplacer: "pou deplase,", pour_choisir: "pou chwazi.", touche_entree: "Antre", note_provisoire_html: "Se sèlman entwodiksyon <b>Les Bonomes</b> ki konfime pou kounye a — tit ki gen yon <b>*</b> yo pwovizwa, y ap tann kontni final la.", badge_confirme: "konfime", prologue_titre: "Pwològ — Les Bonomes", prologue_texte: "Fè konesans ak Keb, Bek… ak Kloé, k ap la avè w tout tan.", prologue_bouton: "Dekouvri", retour_aria: "Tounen", type_niveau: "Nivo", type_dialogue: "Dyalòg", type_histoire: "Istwa", type_examen: "Egzamen", bouton_commencer: "Kòmanse", bouton_revoir: "Revize", bouton_examen: "Pase egzamen an", indice_chapitre_verrouille: "Fini etap anvan yo pou debloke sa a.", indice_niveau_ouvrir: "Klike pou ouvri chapit yo.", indice_niveau_verrouille: "Fini nivo anvan an pou debloke sa a.", avis_revoir: "W ap revize chapit sa a (demo) ✏️", avis_niveau_debloque: "✨ Nivo fini — pwochen an debloke!", avis_chapitre_debloque: "✨ Chapit la debloke!", avis_preparation: "Chapit sa a poko fini prepare ✏️", marqueur_alt: "Keb ak Bek", son_actif: "Son aktive", son_inactif: "Son dezaktive" },
+    fa: { titre_page: "مسیر تو", instruction_niveau_html: "روی یک <b>سطح</b> کلیک کن تا فصل‌هایش باز شود.", pour_deplacer: "برای جابه‌جایی،", pour_choisir: "برای انتخاب.", touche_entree: "Enter", note_provisoire_html: "فعلاً فقط مقدمه‌ی <b>Les Bonomes</b> نهایی شده — عنوان‌هایی که با <b>*</b> مشخص شده‌اند موقتی هستند و منتظر محتوای نهایی.", badge_confirme: "تأییدشده", prologue_titre: "مقدمه — Les Bonomes", prologue_texte: "با کب، بک… و کلوئه که همیشه همراهت خواهد بود آشنا شو.", prologue_bouton: "کشف کن", retour_aria: "بازگشت", type_niveau: "سطح", type_dialogue: "گفت‌وگو", type_histoire: "داستان", type_examen: "آزمون", bouton_commencer: "شروع", bouton_revoir: "مرور", bouton_examen: "شرکت در آزمون", indice_chapitre_verrouille: "مراحل قبلی را تمام کن تا این باز شود.", indice_niveau_ouvrir: "کلیک کن تا فصل‌ها باز شوند.", indice_niveau_verrouille: "سطح قبلی را تمام کن تا این باز شود.", avis_revoir: "داری این فصل را دوباره مرور می‌کنی (نسخه‌ی آزمایشی) ✏️", avis_niveau_debloque: "✨ سطح تمام شد — سطح بعدی باز شد!", avis_chapitre_debloque: "✨ فصل باز شد!", avis_preparation: "این فصل هنوز در حال آماده‌سازی است ✏️", marqueur_alt: "کب و بک", son_actif: "صدا روشن است", son_inactif: "صدا خاموش است" },
+    no: { titre_page: "Din vei", instruction_niveau_html: "Klikk på et <b>nivå</b> for å åpne kapitlene.", pour_deplacer: "for å flytte,", pour_choisir: "for å velge.", touche_entree: "Enter", note_provisoire_html: "Bare introduksjonen <b>Les Bonomes</b> er bekreftet foreløpig — titler med en <b>*</b> er midlertidige, i påvente av det endelige innholdet.", badge_confirme: "bekreftet", prologue_titre: "Prolog — Les Bonomes", prologue_texte: "Bli kjent med Keb, Bek… og Kloé, som blir med deg hele veien.", prologue_bouton: "Utforsk", retour_aria: "Tilbake", type_niveau: "Nivå", type_dialogue: "Dialog", type_histoire: "Historie", type_examen: "Eksamen", bouton_commencer: "Start", bouton_revoir: "Se på nytt", bouton_examen: "Ta eksamen", indice_chapitre_verrouille: "Fullfør de forrige stegene for å låse opp dette.", indice_niveau_ouvrir: "Klikk for å åpne kapitlene.", indice_niveau_verrouille: "Fullfør forrige nivå for å låse opp dette.", avis_revoir: "Du ser gjennom dette kapittelet på nytt (demo) ✏️", avis_niveau_debloque: "✨ Nivå fullført — det neste er låst opp!", avis_chapitre_debloque: "✨ Kapittel låst opp!", avis_preparation: "Dette kapittelet er fortsatt under forberedelse ✏️", marqueur_alt: "Keb og Bek", son_actif: "Lyd på", son_inactif: "Lyd av" },
+    sv: { titre_page: "Din resa", instruction_niveau_html: "Klicka på en <b>nivå</b> för att öppna dess kapitel.", pour_deplacer: "för att flytta,", pour_choisir: "för att välja.", touche_entree: "Enter", note_provisoire_html: "Bara introduktionen <b>Les Bonomes</b> är bekräftad hittills — titlar med en <b>*</b> är preliminära, i väntan på det slutgiltiga innehållet.", badge_confirme: "bekräftad", prologue_titre: "Prolog — Les Bonomes", prologue_texte: "Lär känna Keb, Bek… och Kloé, som följer med dig hela vägen.", prologue_bouton: "Upptäck", retour_aria: "Tillbaka", type_niveau: "Nivå", type_dialogue: "Dialog", type_histoire: "Berättelse", type_examen: "Prov", bouton_commencer: "Starta", bouton_revoir: "Repetera", bouton_examen: "Gör provet", indice_chapitre_verrouille: "Slutför de föregående stegen för att låsa upp det här.", indice_niveau_ouvrir: "Klicka för att öppna kapitlen.", indice_niveau_verrouille: "Slutför föregående nivå för att låsa upp den här.", avis_revoir: "Du repeterar det här kapitlet (demo) ✏️", avis_niveau_debloque: "✨ Nivå klar — nästa är upplåst!", avis_chapitre_debloque: "✨ Kapitel upplåst!", avis_preparation: "Det här kapitlet förbereds fortfarande ✏️", marqueur_alt: "Keb och Bek", son_actif: "Ljud på", son_inactif: "Ljud av" },
+    eo: { titre_page: "Via vojo", instruction_niveau_html: "Alklaku <b>nivelon</b> por malfermi ĝiajn ĉapitrojn.", pour_deplacer: "por moviĝi,", pour_choisir: "por elekti.", touche_entree: "Enigo", note_provisoire_html: "Nur la enkonduko <b>Les Bonomes</b> estas konfirmita nuntempe — titoloj kun <b>*</b> estas provizoraj, atendante la finan enhavon.", badge_confirme: "konfirmita", prologue_titre: "Prologo — Les Bonomes", prologue_texte: "Konatiĝu kun Keb, Bek… kaj Kloé, kiu akompanos vin ĉie.", prologue_bouton: "Malkovri", retour_aria: "Reen", type_niveau: "Nivelo", type_dialogue: "Dialogo", type_histoire: "Rakonto", type_examen: "Ekzameno", bouton_commencer: "Komenci", bouton_revoir: "Rerigardi", bouton_examen: "Fari la ekzamenon", indice_chapitre_verrouille: "Finu la antaŭajn paŝojn por malŝlosi ĉi tion.", indice_niveau_ouvrir: "Alklaku por malfermi la ĉapitrojn.", indice_niveau_verrouille: "Finu la antaŭan nivelon por malŝlosi ĉi tiun.", avis_revoir: "Vi rerigardas ĉi tiun ĉapitron (demo) ✏️", avis_niveau_debloque: "✨ Nivelo finita — la sekva estas malŝlosita!", avis_chapitre_debloque: "✨ Ĉapitro malŝlosita!", avis_preparation: "Ĉi tiu ĉapitro ankoraŭ estas preparata ✏️", marqueur_alt: "Keb kaj Bek", son_actif: "Sono ŝaltita", son_inactif: "Sono malŝaltita" }
+  };
+
+  function t(cle) {
+    const langue = langueActuelle();
+    return (DICO[langue] && DICO[langue][cle]) || DICO.fr[cle] || cle;
+  }
+
+  // Traductions des TITRES de leçons — volontairement partielles : les
+  // titres eux-mêmes sont provisoires (voir note-provisoire), donc seule
+  // une traduction anglaise de démonstration est fournie pour l'instant.
+  // À compléter langue par langue une fois les titres définitifs choisis.
+  const TRAD_TITRES = {
+    'niveau-1': { en: 'Greetings' }, 'd1': { en: 'First exchange' }, 'h1': { en: 'The Saturday café' }, 'd2': { en: 'Colors' }, 'ex1': { en: 'The exam' },
+    'niveau-2': { en: 'At the park' }, 'h2': { en: 'The park visit' }, 'd3': { en: 'The market' }, 'h3': { en: 'The mystery of the attic' }, 'ex2': { en: 'The exam' },
+    'niveau-3': { en: 'The weather' }, 'd4': { en: 'The sky' }, 'h4': { en: 'The big journey' }, 'ex3': { en: 'The exam' }
+  };
+  function traductionTitre(id) {
+    const langue = langueActuelle();
+    return (TRAD_TITRES[id] && TRAD_TITRES[id][langue]) || null;
+  }
+
+  document.documentElement.lang = langueActuelle();
+  document.getElementById('lienRetour').setAttribute('aria-label', t('retour_aria'));
+  document.getElementById('titrePage').textContent = t('titre_page');
+  document.getElementById('instructionNiveau').innerHTML = t('instruction_niveau_html') + '<br><kbd>↑</kbd> <kbd>↓</kbd> <span>' + t('pour_deplacer') + '</span> <kbd>' + t('touche_entree') + '</kbd> <span>' + t('pour_choisir') + '</span>';
+  document.getElementById('noteProvisoire').innerHTML = '✎ ' + t('note_provisoire_html');
+  document.getElementById('prologueBadge').textContent = '✓ ' + t('badge_confirme');
+  document.getElementById('prologueTitre').textContent = t('prologue_titre');
+  document.getElementById('prologueTexte').textContent = t('prologue_texte');
+  document.getElementById('prologueBouton').textContent = t('prologue_bouton');
+  document.getElementById('imgMarqueur').alt = t('marqueur_alt');
+
+  // ==================================================================
+  // Son — synthèse légère via Web Audio, pas de fichier audio (aucun
+  // asset fourni, et ça évite une dépendance binaire pour trois petits
+  // sons). Contexte créé paresseusement, seulement au premier geste de
+  // l'utilisateur (clic), pour respecter les politiques d'autoplay des
+  // navigateurs.
+  // ==================================================================
+  let contexteAudio = null;
+  function obtenirContexteAudio() {
+    if (!window.AudioContext && !window.webkitAudioContext) return null;
+    if (!contexteAudio) {
+      try { contexteAudio = new (window.AudioContext || window.webkitAudioContext)(); }
+      catch (e) { return null; }
+    }
+    if (contexteAudio.state === 'suspended') contexteAudio.resume();
+    return contexteAudio;
+  }
+
+  function jouerTon(frequences, duree, volume) {
+    if (!sonActif()) return;
+    const ctx = obtenirContexteAudio();
+    if (!ctx) return;
+    frequences.forEach((freq, idx) => {
+      const debut = ctx.currentTime + idx * (duree * 0.85);
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.value = freq;
+      gain.gain.setValueAtTime(0, debut);
+      gain.gain.linearRampToValueAtTime(volume, debut + 0.015);
+      gain.gain.exponentialRampToValueAtTime(0.0001, debut + duree);
+      osc.connect(gain).connect(ctx.destination);
+      osc.start(debut);
+      osc.stop(debut + duree + 0.03);
+    });
+  }
+
+  function jouerClicSelection() { jouerTon([740], 0.07, 0.08); }
+  function jouerCarillonDeverrouillage() { jouerTon([659.25, 987.77], 0.3, 0.075); }
+  function jouerFanfareNiveau() { jouerTon([523.25, 659.25, 783.99], 0.4, 0.085); }
+
+  const boutonSon = document.getElementById('boutonSon');
+  function appliquerEtatSon() {
+    const actif = sonActif();
+    boutonSon.classList.toggle('actif', actif);
+    boutonSon.setAttribute('aria-pressed', String(actif));
+    boutonSon.setAttribute('aria-label', actif ? t('son_actif') : t('son_inactif'));
+  }
+  function basculerSon() {
+    const nouvelEtat = !sonActif();
+    try { localStorage.setItem(CLE_SON, nouvelEtat ? '1' : '0'); } catch (e) {}
+    appliquerEtatSon();
+    if (nouvelEtat) jouerClicSelection(); // petit retour immédiat en activant
+  }
+  boutonSon.addEventListener('click', basculerSon);
+  appliquerEtatSon();
+
   // ==================================================================
   // Structure à deux niveaux : Niveaux (cases principales du parcours)
   // > Chapitres (dialogues/histoires), chaque niveau se terminant par
@@ -524,22 +1049,22 @@
   // ==================================================================
 
   const NIVEAUX = [
-    { id: 'niveau-1', titre: 'Les salutations', etat: 'complete', chapitres: [
-        { id: 'd1', type: 'dialogue', titre: 'Premier échange', etat: 'complete' },
-        { id: 'h1', type: 'histoire', titre: 'Le café du samedi', etat: 'complete' },
-        { id: 'd2', type: 'dialogue', titre: 'Les couleurs', etat: 'complete' },
-        { id: 'ex1', type: 'examen', titre: "L'examen", etat: 'complete' }
+    { id: 'niveau-1', titre: 'Les salutations *', etat: 'complete', chapitres: [
+        { id: 'd1', type: 'dialogue', titre: 'Premier échange *', etat: 'complete' },
+        { id: 'h1', type: 'histoire', titre: 'Le café du samedi *', etat: 'complete' },
+        { id: 'd2', type: 'dialogue', titre: 'Les couleurs *', etat: 'complete' },
+        { id: 'ex1', type: 'examen', titre: "L'examen *", etat: 'complete' }
     ]},
-    { id: 'niveau-2', titre: 'Au parc', etat: 'actuel', chapitres: [
-        { id: 'h2', type: 'histoire', titre: 'La visite au parc', etat: 'actuel' },
-        { id: 'd3', type: 'dialogue', titre: 'Le marché', etat: 'verrouille' },
-        { id: 'h3', type: 'histoire', titre: 'Le mystère du grenier', etat: 'verrouille' },
-        { id: 'ex2', type: 'examen', titre: "L'examen", etat: 'verrouille' }
+    { id: 'niveau-2', titre: 'Au parc *', etat: 'actuel', chapitres: [
+        { id: 'h2', type: 'histoire', titre: 'La visite au parc *', etat: 'actuel' },
+        { id: 'd3', type: 'dialogue', titre: 'Le marché *', etat: 'verrouille' },
+        { id: 'h3', type: 'histoire', titre: 'Le mystère du grenier *', etat: 'verrouille' },
+        { id: 'ex2', type: 'examen', titre: "L'examen *", etat: 'verrouille' }
     ]},
-    { id: 'niveau-3', titre: 'La météo', etat: 'verrouille', chapitres: [
-        { id: 'd4', type: 'dialogue', titre: 'Le ciel', etat: 'verrouille' },
-        { id: 'h4', type: 'histoire', titre: 'Le grand voyage', etat: 'verrouille' },
-        { id: 'ex3', type: 'examen', titre: "L'examen", etat: 'verrouille' }
+    { id: 'niveau-3', titre: 'La météo *', etat: 'verrouille', chapitres: [
+        { id: 'd4', type: 'dialogue', titre: 'Le ciel *', etat: 'verrouille' },
+        { id: 'h4', type: 'histoire', titre: 'Le grand voyage *', etat: 'verrouille' },
+        { id: 'ex3', type: 'examen', titre: "L'examen *", etat: 'verrouille' }
     ]}
   ];
 
@@ -548,6 +1073,8 @@
   function iconeVerrou() { return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="10.5" width="14" height="9" rx="2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg>'; }
   function iconeCoche() { return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5 9.5 18 20 6"/></svg>'; }
   function iconeEtoile() { return '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.5l2.9 6.1 6.6.7-4.9 4.6 1.3 6.6L12 17.3 6.1 20.5l1.3-6.6-4.9-4.6 6.6-.7Z"/></svg>'; }
+  function iconePinceau() { return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20l1-4L16.5 4.5a1.5 1.5 0 0 1 2.12 0l.88.88a1.5 1.5 0 0 1 0 2.12L8 19l-4 1Z"/><path d="M14.5 6.5l3 3"/></svg>'; }
+  function badgeBrouillon() { return '<span class="badge-brouillon" aria-hidden="true">' + iconePinceau() + '</span>'; }
 
   function iconePourChapitre(ch) {
     if (ch.etat === 'verrouille') return iconeVerrou();
@@ -556,20 +1083,52 @@
     return ch.type === 'dialogue' ? iconeDialogue() : iconeHistoire();
   }
 
+  // ==================================================================
+  // Anneau de progression — voir commentaire CSS .anneau-progres.
+  // Fraction = chapitres complétés / total de chapitres du niveau
+  // (l'examen compte comme un chapitre parmi d'autres, cohérent avec le
+  // reste du fichier qui ne le traite jamais à part dans les tableaux).
+  // ==================================================================
+  const CIRCONFERENCE_ANNEAU = 2 * Math.PI * 46; // r=46, voir le cercle SVG
+
+  function fractionNiveau(niveau) {
+    const total = niveau.chapitres.length;
+    if (!total) return 0;
+    const faits = niveau.chapitres.filter(c => c.etat === 'complete').length;
+    return faits / total;
+  }
+
+  // Marqueur « brouillon » — dérivé de l'astérisque déjà présent dans le
+  // titre (voir note CSS .brouillon) : jamais un champ séparé, pour ne
+  // jamais désynchroniser les deux signaux.
+  function estProvisoire(titre) { return /\*\s*$/.test(titre); }
+
+  // Capture la fraction "d'avant" quand une progression vient de se
+  // produire, pour que le double rAF plus bas puisse animer l'anneau
+  // depuis son ancienne valeur plutôt que sauter directement à la
+  // nouvelle (voir même principe que niveauVientDouvrir/stagger-in).
+  let progresAAnimer = null; // { id, avant } | null
+
   const parcoursEl = document.getElementById('parcours');
   const ligneProgres = document.getElementById('ligneProgres');
   const marqueur = document.getElementById('marqueurBonomes');
   const carteInfo = document.getElementById('carteInfo');
   const carteInfoType = document.getElementById('carteInfoType');
   const carteInfoTitre = document.getElementById('carteInfoTitre');
+  const carteInfoTitreTrad = document.getElementById('carteInfoTitreTrad');
   const carteInfoBouton = document.getElementById('carteInfoBouton');
   const carteInfoIndice = document.getElementById('carteInfoIndice');
   const carteInfoIndiceTexte = document.getElementById('carteInfoIndiceTexte');
+  const carteInfoCorps = document.getElementById('carteInfoCorps');
+  let signatureCarteInfoPrecedente = null;
 
   let niveauOuvertIdx = NIVEAUX.findIndex(n => n.etat === 'actuel');
   if (niveauOuvertIdx === -1) niveauOuvertIdx = 0;
   let curseurNiveau = niveauOuvertIdx;
   let curseurChapitre = null; // index dans le niveau ouvert, ou null si contexte "niveaux"
+  let niveauVientDouvrir = false; // posé à true seulement au moment précis où toggleNiveau() ouvre un niveau
+  let idAAnimerDeverrouillage = null; // id d'un chapitre/niveau tout juste débloqué, à animer une seule fois
+  let fermetureEnCours = false; // voir fermerNiveauAnime() : évite un rebuild DOM prématuré pendant l'anim
 
   function estAccessible(etat) { return etat !== 'verrouille'; }
 
@@ -583,58 +1142,235 @@
       const groupe = document.createElement('div');
       groupe.className = 'groupe-niveau' + (i === niveauOuvertIdx ? ' ouvert' : '');
 
+      const provisoireNiveau = estProvisoire(niveau.titre);
       const noeud = document.createElement('div');
-      noeud.className = 'noeud-niveau ' + niveau.etat + (i === niveauOuvertIdx ? ' ouvert' : '') + (curseurChapitre === null && i === curseurNiveau ? ' selection' : '');
-      noeud.innerHTML = niveau.etat === 'verrouille'
-        ? '<svg class="verrou-icone" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="10.5" width="14" height="9" rx="2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg>'
-        : '<div class="num">' + (i + 1) + '</div><div class="lib">' + niveau.titre + '</div>';
+      noeud.className = 'noeud-niveau ' + niveau.etat + (i === niveauOuvertIdx ? ' ouvert' : '') +
+        (curseurChapitre === null && i === curseurNiveau ? ' selection' : '') +
+        (provisoireNiveau ? ' brouillon' : '');
+
+      let animerAnneauCeNiveau = false;
+      let fractionCibleAnneau = 0;
+      if (niveau.etat === 'verrouille') {
+        noeud.innerHTML = '<svg class="verrou-icone" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="10.5" width="14" height="9" rx="2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg>' +
+          (provisoireNiveau ? badgeBrouillon() : '');
+      } else {
+        fractionCibleAnneau = fractionNiveau(niveau);
+        let fractionDepart = fractionCibleAnneau;
+        if (progresAAnimer && progresAAnimer.id === niveau.id) {
+          fractionDepart = progresAAnimer.avant;
+          animerAnneauCeNiveau = true;
+        }
+        const offsetDepart = CIRCONFERENCE_ANNEAU * (1 - fractionDepart);
+        noeud.innerHTML =
+          '<svg class="anneau-progres" viewBox="0 0 100 100" aria-hidden="true">' +
+            '<circle class="anneau-piste" cx="50" cy="50" r="46"/>' +
+            '<circle class="anneau-valeur" cx="50" cy="50" r="46" style="stroke-dashoffset:' + offsetDepart.toFixed(2) + ';"/>' +
+          '</svg>' +
+          '<div class="num">' + (i + 1) + '</div><div class="lib">' + niveau.titre + '</div>' +
+          (provisoireNiveau ? badgeBrouillon() : '');
+      }
+
       noeud.addEventListener('click', () => {
         curseurChapitre = null;
         curseurNiveau = i;
+        jouerClicSelection();
         if (estAccessible(niveau.etat)) toggleNiveau(i); else rafraichir();
       });
       groupe.appendChild(noeud);
 
+      if (animerAnneauCeNiveau) {
+        requestAnimationFrame(() => requestAnimationFrame(() => {
+          const cercle = noeud.querySelector('.anneau-valeur');
+          if (cercle) cercle.style.strokeDashoffset = (CIRCONFERENCE_ANNEAU * (1 - fractionCibleAnneau)).toFixed(2);
+        }));
+      }
+
+      const cadreRangee = document.createElement('div');
+      cadreRangee.className = 'rangee-chapitres-cadre' + (i === niveauOuvertIdx ? ' deployee' : '');
       const rangee = document.createElement('div');
-      rangee.className = 'rangee-chapitres' + (i === niveauOuvertIdx ? ' deployee' : '');
+      rangee.className = 'rangee-chapitres';
+      cadreRangee.appendChild(rangee);
+      const vientDouvrirCeNiveau = niveauVientDouvrir && i === niveauOuvertIdx;
       niveau.chapitres.forEach((ch, j) => {
+        const provisoireChapitre = estProvisoire(ch.titre);
         const nc = document.createElement('div');
         nc.className = 'noeud-chapitre ' + ch.type + ' ' + (ch.etat === 'verrouille' ? 'verrouille' : ch.etat) +
           (ch.etat !== 'verrouille' ? ' deverrouillable' : '') +
-          (i === niveauOuvertIdx && j === curseurChapitre ? ' selection' : '');
-        nc.innerHTML = iconePourChapitre(ch) + '<div class="etiquette-mini">' + ch.titre + '</div>';
+          (i === niveauOuvertIdx && j === curseurChapitre ? ' selection' : '') +
+          (provisoireChapitre ? ' brouillon' : '');
+        nc.innerHTML = iconePourChapitre(ch) + '<div class="etiquette-mini">' + ch.titre + '</div>' +
+          (provisoireChapitre ? badgeBrouillon() : '');
+        if (vientDouvrirCeNiveau) {
+          nc.classList.add('stagger-in');
+          nc.style.transitionDelay = (j * 65) + 'ms';
+        }
+        if (ch.id === idAAnimerDeverrouillage) {
+          nc.classList.add('vient-de-deverrouiller');
+        }
         nc.addEventListener('click', (e) => {
           e.stopPropagation();
           curseurNiveau = i;
           curseurChapitre = j;
+          jouerClicSelection();
           rafraichir();
         });
         rangee.appendChild(nc);
       });
-      groupe.appendChild(rangee);
+      if (niveau.id === idAAnimerDeverrouillage) {
+        noeud.classList.add('vient-de-deverrouiller');
+      }
+      groupe.appendChild(cadreRangee);
+      if (vientDouvrirCeNiveau) groupe.classList.add('juste-ouvert');
       bloc.appendChild(groupe);
       parcoursEl.appendChild(bloc);
     });
+
+    if (idAAnimerDeverrouillage) {
+      idAAnimerDeverrouillage = null; // ne joue qu'une fois
+    }
+    if (progresAAnimer) {
+      progresAAnimer = null; // ne joue qu'une fois, même principe
+    }
+    if (niveauVientDouvrir) {
+      // Déclenche la transition CSS après le prochain paint plutôt que dans
+      // la même passe de rendu (sinon le navigateur fusionne l'état de
+      // départ et d'arrivée et il n'y a pas d'animation visible).
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          parcoursEl.querySelectorAll('.stagger-in').forEach(el => el.classList.add('stagger-in-visible'));
+        });
+      });
+      niveauVientDouvrir = false;
+    }
   }
 
+  /* BUG DE FOND découvert cette session en testant le rendu réel avec
+     Playwright (échantillonnage de la hauteur du cadre toutes les 20ms
+     juste après un clic de fermeture) — invisible à la simple lecture du
+     CSS, et non détecté par la session précédente malgré ses tests :
+     construireDOM() DÉTRUIT et RECRÉE tous les .bloc-niveau à CHAQUE
+     rafraichir(). Comme toggleNiveau() appelait rafraichir() de façon
+     SYNCHRONE juste après avoir changé niveauOuvertIdx, le noeud
+     .rangee-chapitres-cadre était remplacé par un noeud TOUT NEUF déjà
+     dans son état final (sans .deployee) dès le tout premier paint.
+     Une transition CSS interpole entre deux états du MÊME élément —
+     jamais entre deux éléments différents ; un nouvel élément inséré
+     prend directement sa valeur finale, sans jouer la transition.
+     Résultat vérifié : grid-template-rows valait déjà "0px" au tout
+     premier échantillon (5ms) après le clic, aucune valeur intermédiaire
+     jamais observée. Autrement dit la fermeture ne "s'animait" jamais :
+     elle disparaissait d'un coup sec, exactement le problème signalé par
+     Raphaël — quelle que soit la courbe d'accélération choisie en CSS,
+     puisque la transition ne jouait tout simplement pas. (L'ouverture
+     donnait une meilleure illusion grâce au stagger-in des icônes de
+     chapitre, qui lui est ajouté sur des noeuds fraîchement créés via un
+     double requestAnimationFrame — un mécanisme différent, qui ne dépend
+     pas de la persistance du noeud entre deux rendus.)
+     Correction : fermerNiveauAnime() retire la classe .deployee
+     directement sur le noeud EXISTANT (donc la vraie transition CSS joue
+     enfin), et ne laisse rafraichir()/construireDOM() reconstruire le DOM
+     qu'une fois la transition terminée. */
   function toggleNiveau(i) {
     if (niveauOuvertIdx === i) {
-      niveauOuvertIdx = -1;
-      curseurChapitre = null;
+      fermerNiveauAnime(i, null);
+    } else if (niveauOuvertIdx !== -1) {
+      // Un niveau différent est déjà ouvert : on le referme en douceur
+      // d'abord, puis on ouvre celui demandé — plutôt que les deux cadres
+      // qui changent d'état en même temps (visuellement confus, et de
+      // toute façon impossible à bien animer puisque niveauOuvertIdx est
+      // une seule valeur).
+      fermerNiveauAnime(niveauOuvertIdx, i);
     } else {
-      niveauOuvertIdx = i;
-      curseurNiveau = i;
-      const niveau = NIVEAUX[i];
-      const premierAccessible = niveau.chapitres.findIndex(c => estAccessible(c.etat));
-      curseurChapitre = premierAccessible === -1 ? null : premierAccessible;
+      ouvrirNiveau(i);
     }
+  }
+
+  function ouvrirNiveau(i) {
+    niveauOuvertIdx = i;
+    curseurNiveau = i;
+    niveauVientDouvrir = true;
+    const niveau = NIVEAUX[i];
+    const premierAccessible = niveau.chapitres.findIndex(c => estAccessible(c.etat));
+    curseurChapitre = premierAccessible === -1 ? null : premierAccessible;
     rafraichir();
   }
 
+  // Ferme le niveau i en laissant vraiment jouer la transition CSS sur son
+  // noeud existant, puis reconstruit le DOM proprement une fois terminé.
+  // idxAOuvrirEnsuite : niveau à ouvrir juste après la fermeture (cas du
+  // changement direct d'un niveau à l'autre), ou null si on ferme sans
+  // rien rouvrir.
+  function fermerNiveauAnime(i, idxAOuvrirEnsuite) {
+    if (fermetureEnCours) return;
+    const blocs = parcoursEl.querySelectorAll('.bloc-niveau');
+    const bloc = blocs[i];
+    const cadre = bloc && bloc.querySelector('.rangee-chapitres-cadre');
+
+    niveauOuvertIdx = -1;
+    curseurChapitre = null;
+    metAJourCarteInfo();
+
+    if (!cadre || !cadre.classList.contains('deployee')) {
+      // Filet de sécurité : pas de noeud vivant à animer (ex. premier
+      // rendu), on retombe sur le comportement direct plutôt que de
+      // rester bloqué en attente d'une transition qui ne viendra pas.
+      if (idxAOuvrirEnsuite != null) ouvrirNiveau(idxAOuvrirEnsuite); else rafraichir();
+      return;
+    }
+
+    fermetureEnCours = true;
+    cadre.classList.remove('deployee');
+    // Synchronisés avec le retrait de .deployee plutôt que laissés à la
+    // reconstruction finale : sinon l'ombre élevée et les coins carrés du
+    // noeud-niveau resteraient figés pendant toute la fermeture puis
+    // sauteraient d'un coup à la toute fin.
+    const groupe = bloc.querySelector('.groupe-niveau');
+    const noeud = bloc.querySelector('.noeud-niveau');
+    if (groupe) groupe.classList.remove('ouvert');
+    if (noeud) noeud.classList.remove('ouvert');
+
+    // La ligne de progression pointillée et le marqueur flottant dépendent
+    // de la position réelle des noeuds à l'écran ; sans ce suivi ils
+    // resteraient figés pendant les ~450ms de fermeture puis "sauteraient"
+    // d'un coup à la fin, recréant à petite échelle le même effet abrupt
+    // qu'on vient de corriger pour le cadre lui-même.
+    let idRAF;
+    const suivreFermeture = () => {
+      positionnerLigneProgres();
+      if (elActifCourant) positionnerMarqueur(elActifCourant);
+      idRAF = requestAnimationFrame(suivreFermeture);
+    };
+    idRAF = requestAnimationFrame(suivreFermeture);
+
+    let fini = false;
+    const terminer = () => {
+      if (fini) return;
+      fini = true;
+      cadre.removeEventListener('transitionend', surTransitionEnd);
+      cancelAnimationFrame(idRAF);
+      fermetureEnCours = false;
+      if (idxAOuvrirEnsuite != null) ouvrirNiveau(idxAOuvrirEnsuite); else rafraichir();
+    };
+    const surTransitionEnd = (e) => {
+      if (e.target === cadre && e.propertyName === 'grid-template-rows') terminer();
+    };
+    cadre.addEventListener('transitionend', surTransitionEnd);
+    // Filet de sécurité si transitionend ne se déclenche pas (onglet en
+    // arrière-plan qui throttle les transitions, etc.) — un peu plus long
+    // que la durée réelle (450ms) pour ne jamais couper l'animation court.
+    setTimeout(terminer, 520);
+  }
+
   function positionnerMarqueur(el) {
+    if (!el) return;
     const r = el.getBoundingClientRect();
+    // IMPORTANT : .bonomes-marqueur est en position: fixed, donc ses
+    // coordonnées sont déjà relatives au viewport — getBoundingClientRect()
+    // aussi. Ajouter window.scrollY ici (comme avant) décale le marqueur
+    // vers le bas à mesure qu'on scrolle, jusqu'à le faire sortir de
+    // l'écran / paraître "coincé en bas". C'était le vrai bug.
     marqueur.style.left = (r.left + r.width / 2) + 'px';
-    marqueur.style.top = (r.top + window.scrollY - 6) + 'px';
+    marqueur.style.top = (r.top - 6) + 'px';
     marqueur.classList.add('visible');
   }
 
@@ -659,42 +1395,104 @@
     ligneProgres.style.height = Math.max(0, hauteur) + 'px';
   }
 
+  // ==================================================================
+  // Fête dorée à la complétion d'un niveau — voir .particule-fete et
+  // @keyframes envol-particule en CSS. Éléments créés/détruits ici,
+  // jamais présents dans le HTML statique (voir commentaire CSS).
+  // ==================================================================
+  function celebrerNiveauComplet(niveauIdx) {
+    const noeuds = parcoursEl.querySelectorAll('.noeud-niveau');
+    const noeud = noeuds[niveauIdx];
+    if (!noeud) return;
+    const r = noeud.getBoundingClientRect();
+    const centreX = r.left + r.width / 2;
+    const centreY = r.top + r.height / 2;
+    const couleurs = ['#C89B2C', '#E08867', '#F0A98B'];
+    const NB_PARTICULES = 9;
+    for (let k = 0; k < NB_PARTICULES; k++) {
+      const p = document.createElement('div');
+      p.className = 'particule-fete';
+      const angle = (360 / NB_PARTICULES) * k + (Math.random() * 18 - 9);
+      const distance = 44 + Math.random() * 24;
+      p.style.left = centreX + 'px';
+      p.style.top = centreY + 'px';
+      p.style.background = couleurs[k % couleurs.length];
+      p.style.setProperty('--angle', angle + 'deg');
+      p.style.setProperty('--distance', distance + 'px');
+      document.body.appendChild(p);
+      p.addEventListener('animationend', () => p.remove());
+    }
+  }
+
+  let elActifCourant = null;
+
   function rafraichir() {
     construireDOM();
     positionnerLigneProgres();
+    metAJourCarteInfo();
+  }
 
+  // Extrait de rafraichir() pour pouvoir l'appeler seul pendant la
+  // fermeture animée d'un niveau (voir fermerNiveauAnime) sans déclencher
+  // construireDOM(), qui remplacerait le noeud en cours de transition.
+  function metAJourCarteInfo() {
     let elActif = null;
     if (curseurChapitre !== null && niveauOuvertIdx !== -1) {
       elActif = parcoursEl.querySelectorAll('.bloc-niveau')[niveauOuvertIdx].querySelectorAll('.noeud-chapitre')[curseurChapitre];
       const ch = NIVEAUX[niveauOuvertIdx].chapitres[curseurChapitre];
-      carteInfoType.textContent = ch.type === 'examen' ? "Examen" : (ch.type === 'dialogue' ? 'Dialogue' : 'Histoire');
+      carteInfoType.textContent = ch.type === 'examen' ? t('type_examen') : (ch.type === 'dialogue' ? t('type_dialogue') : t('type_histoire'));
       carteInfoType.className = 'type' + (ch.type === 'examen' ? ' examen' : '');
       carteInfoTitre.textContent = ch.titre;
+      carteInfoTitreTrad.textContent = traductionTitre(ch.id) || '';
       carteInfo.classList.add('visible');
       if (ch.etat === 'verrouille') {
         carteInfoBouton.style.display = 'none';
         carteInfoIndice.style.display = 'flex';
-        carteInfoIndiceTexte.textContent = 'Termine les étapes précédentes pour débloquer ceci.';
+        carteInfoIndiceTexte.textContent = t('indice_chapitre_verrouille');
       } else {
         carteInfoBouton.style.display = 'inline-block';
         carteInfoIndice.style.display = 'none';
         carteInfoBouton.classList.toggle('examen-bouton', ch.type === 'examen');
-        carteInfoBouton.textContent = ch.type === 'examen' ? "Passer l'examen" : (ch.etat === 'complete' ? 'Revoir' : 'Commencer');
+        carteInfoBouton.textContent = ch.type === 'examen' ? t('bouton_examen') : (ch.etat === 'complete' ? t('bouton_revoir') : t('bouton_commencer'));
       }
     } else {
       elActif = parcoursEl.querySelectorAll('.noeud-niveau')[curseurNiveau];
       const niveau = NIVEAUX[curseurNiveau];
-      carteInfoType.textContent = 'Niveau';
+      carteInfoType.textContent = t('type_niveau');
       carteInfoType.className = 'type';
       carteInfoTitre.textContent = niveau.titre;
+      carteInfoTitreTrad.textContent = traductionTitre(niveau.id) || '';
       carteInfo.classList.add('visible');
       carteInfoBouton.style.display = 'none';
       carteInfoIndice.style.display = 'flex';
-      carteInfoIndiceTexte.textContent = estAccessible(niveau.etat) ? 'Clique pour déployer les chapitres.' : 'Termine le niveau précédent pour débloquer celui-ci.';
+      carteInfoIndiceTexte.textContent = estAccessible(niveau.etat) ? t('indice_niveau_ouvrir') : t('indice_niveau_verrouille');
     }
 
-    if (elActif) requestAnimationFrame(() => positionnerMarqueur(elActif));
+    if (elActif) {
+      elActifCourant = elActif;
+      requestAnimationFrame(() => positionnerMarqueur(elActif));
+    }
+
+    // Fondu de contenu — seulement si ce qui est affiché a réellement
+    // changé (id + état), pas à chaque appel de rafraichir() (resize,
+    // chargement de police, etc. n'ont pas à rejouer l'effet).
+    const signatureCarteInfo = curseurChapitre !== null
+      ? 'ch:' + NIVEAUX[niveauOuvertIdx].chapitres[curseurChapitre].id + ':' + NIVEAUX[niveauOuvertIdx].chapitres[curseurChapitre].etat
+      : 'niv:' + NIVEAUX[curseurNiveau].id + ':' + NIVEAUX[curseurNiveau].etat;
+    if (signatureCarteInfo !== signatureCarteInfoPrecedente) {
+      carteInfoCorps.classList.remove('actualise');
+      void carteInfoCorps.offsetWidth; // force le recalcul de style pour pouvoir rejouer l'animation
+      carteInfoCorps.classList.add('actualise');
+      signatureCarteInfoPrecedente = signatureCarteInfo;
+    }
   }
+
+  // Le marqueur est fixe mais son ancre (le bouton actif) défile avec la
+  // page — sans ça, il resterait figé pendant qu'on scrolle, donnant
+  // l'impression qu'il "décroche" du bouton qu'il est censé désigner.
+  window.addEventListener('scroll', () => {
+    if (elActifCourant) positionnerMarqueur(elActifCourant);
+  }, { passive: true });
 
   window.addEventListener('keydown', (e) => {
     if (!['ArrowDown','ArrowUp','ArrowLeft','ArrowRight','Enter',' ','Escape'].includes(e.key)) return;
@@ -702,27 +1500,94 @@
 
     if (curseurChapitre === null) {
       // Contexte "niveaux"
+      const niveauAvant = curseurNiveau;
       if (e.key === 'ArrowDown' && curseurNiveau < NIVEAUX.length - 1 && estAccessible(NIVEAUX[curseurNiveau + 1].etat)) curseurNiveau++;
       if (e.key === 'ArrowUp' && curseurNiveau > 0) curseurNiveau--;
+      if (curseurNiveau !== niveauAvant) jouerClicSelection();
       if ((e.key === 'Enter' || e.key === ' ') && estAccessible(NIVEAUX[curseurNiveau].etat)) toggleNiveau(curseurNiveau);
       rafraichir();
     } else {
       // Contexte "chapitres" à l'intérieur du niveau ouvert
+      if (e.key === 'Escape') { fermerNiveauAnime(niveauOuvertIdx, null); return; }
       const chapitres = NIVEAUX[niveauOuvertIdx].chapitres;
+      const chapitreAvant = curseurChapitre;
       if (e.key === 'ArrowDown' && curseurChapitre < chapitres.length - 1 && estAccessible(chapitres[curseurChapitre + 1].etat)) curseurChapitre++;
       if (e.key === 'ArrowUp' && curseurChapitre > 0) curseurChapitre--;
-      if (e.key === 'Escape') { niveauOuvertIdx = -1; curseurChapitre = null; }
+      if (curseurChapitre !== chapitreAvant) jouerClicSelection();
       rafraichir();
     }
   });
 
+  const avisPreparation = document.getElementById('avisPreparation');
+  let avisTimeout = null;
+
+  function afficherAvis(texte) {
+    avisPreparation.textContent = texte;
+    avisPreparation.classList.add('visible');
+    clearTimeout(avisTimeout);
+    avisTimeout = setTimeout(() => avisPreparation.classList.remove('visible'), 2600);
+  }
+
+  // Simule "sortir d'une leçon" : comme aucune vraie page de leçon n'existe
+  // encore (voir note-provisoire), un clic sur "Commencer"/"Revoir" termine
+  // le chapitre et débloque le suivant tout de suite, pour donner à voir
+  // l'effet de révélation demandé. À rebrancher sur un vrai retour de
+  // leçon une fois que les pages existeront.
+  function progresserDemo(niveauIdx, chapitreIdx) {
+    const niveau = NIVEAUX[niveauIdx];
+    const ch = niveau.chapitres[chapitreIdx];
+    if (ch.etat === 'complete') return null; // "Revoir" un chapitre déjà fait : pas de nouveau déverrouillage
+
+    ch.etat = 'complete';
+    const suivantChapitre = niveau.chapitres[chapitreIdx + 1];
+    if (suivantChapitre && suivantChapitre.etat === 'verrouille') {
+      suivantChapitre.etat = 'actuel';
+      return { type: 'chapitre', id: suivantChapitre.id };
+    }
+    if (!suivantChapitre) {
+      // Dernier chapitre du niveau (l'examen) tout juste complété.
+      niveau.etat = 'complete';
+      const niveauSuivant = NIVEAUX[niveauIdx + 1];
+      if (niveauSuivant && niveauSuivant.etat === 'verrouille') {
+        niveauSuivant.etat = 'actuel';
+        if (niveauSuivant.chapitres[0]) niveauSuivant.chapitres[0].etat = 'actuel';
+        return { type: 'niveau', id: niveauSuivant.id };
+      }
+    }
+    return null;
+  }
+
   carteInfoBouton.addEventListener('click', () => {
     if (curseurChapitre === null) return;
-    const ch = NIVEAUX[niveauOuvertIdx].chapitres[curseurChapitre];
-    console.log('Ouverture :', ch.id, '(' + ch.type + ') — pas encore branché, page de leçon à construire séparément.');
+    const niveauIdx = niveauOuvertIdx;
+    const chapitreIdx = curseurChapitre;
+    const ch = NIVEAUX[niveauIdx].chapitres[chapitreIdx];
+    const dejaComplete = ch.etat === 'complete';
+    const niveauEnCours = NIVEAUX[niveauIdx];
+    const fractionAvant = fractionNiveau(niveauEnCours);
+
+    const deverrouille = progresserDemo(niveauIdx, chapitreIdx);
+    idAAnimerDeverrouillage = deverrouille ? deverrouille.id : null;
+    if (!dejaComplete) progresAAnimer = { id: niveauEnCours.id, avant: fractionAvant };
+    rafraichir();
+
+    if (dejaComplete) {
+      afficherAvis(t('avis_revoir'));
+    } else if (deverrouille && deverrouille.type === 'niveau') {
+      afficherAvis(t('avis_niveau_debloque'));
+      celebrerNiveauComplet(niveauIdx);
+      jouerFanfareNiveau();
+    } else if (deverrouille) {
+      afficherAvis(t('avis_chapitre_debloque'));
+      jouerCarillonDeverrouillage();
+    } else {
+      afficherAvis(t('avis_preparation'));
+    }
   });
 
   window.addEventListener('resize', () => rafraichir());
+  window.addEventListener('load', () => rafraichir());
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => rafraichir());
   rafraichir();
 </script>
 

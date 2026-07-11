@@ -584,12 +584,12 @@
   //  mot enseigné). Aucune ligne inventée : chaque "texte" ci-dessous
   //  correspond à une réplique précise du script original.
   //
-  //  UN POINT ENCORE OUVERT (voir réponse du chat) :
-  //  - Étape 7 : "la meilleure amie de Kloé" corrigé en "our best friend"
-  //    (probable coquille — Kloé ne peut pas être la meilleure amie
-  //    d'elle-même). À confirmer.
-  //  (L'attribution de l'étape 1 à Bek est maintenant confirmée par
-  //  Raphaël — ce n'est plus une supposition.)
+  //  Étape 7 RÉSOLUE (confirmé par Raphaël) : c'est Keb qui parle, avec une
+  //  pointe d'ironie envers Bek — "Bek's second best friend", pas "our best
+  //  friend" (l'ancienne formulation partagée était une correction erronée
+  //  d'une coquille qui n'en était pas une).
+  //  (L'attribution de l'étape 1 à Bek est confirmée par Raphaël — ce n'est
+  //  plus une supposition.)
   // ─────────────────────────────────────────────
 
   // Chaque ligne peut porter "francais: true" + "traduction: ..." — c'est
@@ -631,27 +631,38 @@
       img: 'images/prologue/bonomes_keb_annonce_lecon_01.png',
       texte: "In fact, we're about to move on to your first lesson — and from then on, we'll speak only French."
     },
-    { // 7
-      speaker: null,
+    { // 7 — Keb (même voix que l'étape 6), avec une pointe d'ironie envers
+      // Bek : Kloé n'est PAS la meilleure amie de Keb, d'où "Bek's second
+      // best friend" plutôt que "our best friend" (précision de Raphaël —
+      // référence à l'ancien texte fautif résolue, voir note ci-dessus).
+      speaker: 'keb',
       img: 'images/prologue/intro-bonomes-07.png',
-      texte: "We're going to need Kloé — our best friend — to come and translate for you."
+      texte: "We're going to need Kloé — Bek's second best friend — to come and translate for you."
     },
-    { // 8
-      speaker: null,
+    { // 8 — c'est Bek qui parle (précision de Raphaël)
+      speaker: 'bek',
       img: 'images/prologue/intro-bonomes-08.png',
       texte: "Here she comes!"
     },
-    { // 9
+    { // 9 — scindée en deux étapes distinctes (précision de Raphaël : les
+      // deux idées sont déconnectées — la salutation d'un côté, son rôle
+      // de l'autre — donc chacune mérite son propre "Continue", plutôt que
+      // d'être une seule légende à rallonge).
       speaker: 'kloe',
       img: 'images/recurrentes/intro-bonomes-09.png',
-      texte: "Hi, I'm Kloé! Nice to meet you! I'll also take care of grammar explanations and showing you around the site."
+      texte: "Hi, I'm Kloé! Nice to meet you!"
     },
-    { // 10
+    { // 10 — suite de l'étape précédente, scindée pour la même raison
+      speaker: 'kloe',
+      img: 'images/recurrentes/intro-bonomes-09.png',
+      texte: "I'll also take care of grammar explanations and showing you around the site."
+    },
+    { // 11
       speaker: 'kloe',
       img: 'images/recurrentes/intro-bonomes-09.png',
       texte: "Let's show you how this works. Say something, you two!"
     },
-    { // 11 — Bek et Keb disent le premier mot français : reste en légende
+    { // 12 — Bek et Keb disent le premier mot français : reste en légende
       // ET rejoint la pile du bas pour toujours (francais: true).
       img: 'images/recurrentes/intro-bonomes-09.png',
       lignes: [
@@ -659,13 +670,13 @@
         { speaker: 'keb', texte: 'Salut !', francais: true, traduction: 'Hi!', delai: 900 }
       ]
     },
-    { // 12 — ligne de Kloé : légende seulement, ne rejoint jamais la pile
+    { // 13 — ligne de Kloé : légende seulement, ne rejoint jamais la pile
       img: 'images/recurrentes/intro-bonomes-09.png',
       lignes: [
         { speaker: 'kloe', texte: "If you hover or tap on a word, you'll get the translation — and an explanation, from me, always!" }
       ]
     },
-    { // 13 — la case à cocher apparaît maintenant
+    { // 14 — la case à cocher apparaît maintenant
       img: 'images/recurrentes/intro-bonomes-09.png',
       revealCase: true,
       motACocher: { mot: 'Salut', traduction: 'Hi!' },
@@ -673,14 +684,14 @@
         { speaker: 'kloe', texte: "Then, if you'd like, you can save the new words you've learned. Just tap the box below!" }
       ]
     },
-    { // 14 — le sac à dos se révèle maintenant
+    { // 15 — le sac à dos se révèle maintenant
       img: 'images/recurrentes/intro-bonomes-09.png',
       revealSac: true,
       lignes: [
         { speaker: 'kloe', texte: "That checked word will be saved in the backpack you see in the top right corner of your screen." }
       ]
     },
-    { // 15
+    { // 16
       img: 'images/recurrentes/intro-bonomes-09.png',
       lignes: [
         { speaker: 'kloe', texte: "And by the way, everything you collect during a lesson lands there. It stays from one lesson to the next — but create an account so you never lose your progress!" }

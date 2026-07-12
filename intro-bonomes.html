@@ -114,8 +114,13 @@
                correspondant dans ETAPES (repérer via le commentaire
                🚧 PLACEHOLDER sur l'étape concernée) et supprimer le
                commentaire une fois fait.
-       - images/recurrentes/ : vide pour l'instant dans ce fichier — voir
-         correction ci-dessus.
+       - images/recurrentes/ : 🆕 plus vide — contient maintenant le
+         portrait tournant de Kloé utilisé dans les infobulles de
+         traduction (kloe_explique_01.png, une seule image à ce jour ;
+         02, 03... à venir). Usage générique hors contexte narratif
+         (médaillon d'interface), exactement le cas anticipé en v38/v42.
+         Voir CLE_ROTATION_KLOE / prochaineImageKloeExplique() plus bas
+         dans le script pour le mécanisme de rotation.
      Toutes les étapes (1 à 16) ont maintenant leur vraie image, fournies
      par Raphaël — plus aucun repli "image pas encore prête" actif dans
      cette introduction.
@@ -410,7 +415,7 @@
     border-radius: 14px;
     padding: 10px 14px;
     width: max-content;
-    max-width: 220px;
+    max-width: 260px;
     box-shadow: 0 8px 22px rgba(102, 80, 69, 0.18);
     z-index: 20;
     font-family: 'Baloo 2', sans-serif;
@@ -419,6 +424,45 @@
     line-height: 1.4;
     color: var(--brun-fonce);
     white-space: normal;
+    /* 🆕 Portrait + texte côte à côte plutôt qu'empilés, pour que
+       l'infobulle reste compacte même avec une explication plus longue. */
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .pile-mot-vocab:hover .pile-tooltip,
+  .pile-mot-vocab.active .pile-tooltip { display: flex; }
+
+  /* 🆕 Portrait tournant de Kloé (demande de Raphaël) — médaillon rond,
+     une image différente à chaque nouveau mot appris (voir
+     prochaineImageKloeExplique). flex-shrink: 0 pour ne jamais se faire
+     écraser par un texte d'explication plus long. */
+  .pile-tooltip-portrait {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+    border: 1.5px solid var(--peche);
+  }
+
+  .pile-tooltip-corps {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  /* 🆕 Explication plus longue, optionnelle (emploi du mot, registre,
+     contexte...) — n'apparaît que si ligne.explication est fourni, jamais
+     inventée par Claude. Visuellement distincte de la traduction (plus
+     petite, italique) pour ne pas laisser croire que c'est LA traduction. */
+  .pile-tooltip-explication {
+    display: block;
+    font-size: 0.76rem;
+    font-style: italic;
+    color: var(--brun);
+    opacity: 0.85;
+    margin-top: 3px;
   }
 
   .pile-tooltip::before {
@@ -438,9 +482,6 @@
     color: var(--peche-fonce);
     margin-bottom: 2px;
   }
-
-  .pile-mot-vocab:hover .pile-tooltip,
-  .pile-mot-vocab.active .pile-tooltip { display: block; }
 
   /* Case à cocher pour sauvegarder un mot appris (générique — voir
      motACocher dans ETAPES) : affiche "mot : traduction", jamais un
@@ -819,6 +860,45 @@
   const NOMS = { bek: 'Bek', keb: 'Keb', kloe: 'Kloé' };
   const INITIALES = { bek: 'B', keb: 'K', kloe: 'Kl' };
 
+  // ── Portrait tournant de Kloé dans les infobulles de traduction (demande
+  //    de Raphaël) : images/recurrentes/kloe_explique_01.png, 02, 03...
+  //    Usage GÉNÉRIQUE hors contexte narratif (portrait médaillon), donc
+  //    bien dans images/recurrentes/ et pas images/prologue/ — voir
+  //    BONOMES_v38/v42, qui anticipait déjà ce cas précis.
+  //    Clé localStorage PARTAGÉE (même famille que CLE_SAC/CLE_LANGUE) :
+  //    la rotation avance d'une infobulle à l'autre "peu importe la leçon,
+  //    l'histoire, etc." (mots de Raphaël), donc l'index doit survivre au
+  //    changement de page, pas seulement à l'intérieur d'intro-bonomes.html.
+  //    N'avance qu'une fois PAR NOUVEAU MOT ajouté à la pile (voir son
+  //    appel dans ajouterLigneVersPile), jamais à chaque survol du même
+  //    mot déjà affiché — sinon la même infobulle changerait de visage à
+  //    chaque passage de souris, ce qui serait plus déroutant qu'utile.
+  const CLE_ROTATION_KLOE = 'kebbek_kloe_explique_index';
+  // 🆕 À incrémenter chaque fois que Raphaël fournit une nouvelle image
+  // kloe_explique_XX.png (une seule existe à ce jour : _01). Reste le seul
+  // endroit à toucher pour agrandir le cycle — rien d'autre à changer.
+  const TOTAL_KLOE_EXPLIQUE = 1;
+
+  function prochaineImageKloeExplique() {
+    let index = 0;
+    try {
+      const brut = parseInt(localStorage.getItem(CLE_ROTATION_KLOE), 10);
+      if (Number.isFinite(brut) && brut >= 0) index = brut;
+    } catch (e) {
+      index = 0; // localStorage indisponible : on repart de 01 sans planter
+    }
+    const numero = (index % TOTAL_KLOE_EXPLIQUE) + 1; // cycle 1..N, jamais 0
+    try {
+      localStorage.setItem(CLE_ROTATION_KLOE, String(index + 1));
+    } catch (e) {
+      // Rotation non persistée d'une page à l'autre, mais l'affichage
+      // courant fonctionne quand même (repli silencieux, comme ailleurs
+      // dans ce fichier — voir sauvegarderSac dans sac-a-dos.js).
+    }
+    const numeroFormatte = String(numero).padStart(2, '0');
+    return 'images/recurrentes/kloe_explique_' + numeroFormatte + '.png';
+  }
+
   let etape = 0;               // index de l'étape courante (0-based)
   let sousLigneVisible = 0;    // combien de "lignes" de l'étape courante sont déjà affichées
   let minuteriesActives = [];  // pour pouvoir annuler les délais auto au "Précédent"
@@ -926,11 +1006,27 @@
   // l'apprenant) pour un mot français dans la pile — mécanisme porté de
   // p02 (.vocab-mot / .vocab-tooltip). N'est utilisé QUE quand
   // ligne.francais est vrai ; jamais pour une ligne de Kloé.
+  // 🆕 Portrait tournant de Kloé (demande de Raphaël) : une image par
+  // infobulle, choisie UNE FOIS à la création de ce mot (pas recalculée à
+  // chaque survol — voir prochaineImageKloeExplique ci-dessus).
+  // 🆕 Champ optionnel ligne.explication : pour certains mots, une note
+  // plus longue (emploi, registre, contexte...) en plus de la simple
+  // traduction — absent tant que Raphaël n'a pas fourni ce texte pour un
+  // mot donné, jamais inventé par Claude.
   function construireTexteAvecVocab(ligne) {
     if (!ligne.francais) return ligne.texte;
+    const explication = ligne.explication
+      ? '<span class="pile-tooltip-explication">' + ligne.explication + '</span>'
+      : '';
     return '<span class="pile-mot-vocab" tabindex="0">' + ligne.texte +
-      '<span class="pile-tooltip"><span class="pile-tooltip-qui">Kloé</span>' +
-      ligne.traduction + '</span></span>';
+      '<span class="pile-tooltip">' +
+        '<img class="pile-tooltip-portrait" src="' + prochaineImageKloeExplique() + '" alt="Kloé" loading="lazy">' +
+        '<span class="pile-tooltip-corps">' +
+          '<span class="pile-tooltip-qui">Kloé</span>' +
+          '<span class="pile-tooltip-traduction">' + ligne.traduction + '</span>' +
+          explication +
+        '</span>' +
+      '</span></span>';
   }
 
   // Rendu d'une ligne : la légende du haut (rattachée à l'image, une seule

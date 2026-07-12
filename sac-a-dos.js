@@ -27,6 +27,59 @@
 
 const CLE_SAC = 'keb_bek_sac_a_dos';
 
+// ==================================================================
+// Vocabulaire du sac, centralisé ici (v49) — même logique que
+// l'extraction de la logique/CSS en v42 : avant, chaque page qui
+// affiche le sac dupliquait catMots/catCodes/.../sacVide/etc. dans son
+// propre dictionnaire local (confirmé : catMots apparaissait déjà 19
+// fois dans intro-bonomes.html et 20 fois dans parcours.html, une fois
+// par langue). Ici, une seule fois par langue — tSacOuDefaut() le
+// consulte en premier, avant de retomber sur le t() propre à la page.
+// Toute future leçon qui affiche le sac hérite de ces traductions sans
+// rien dupliquer dans son propre dictionnaire.
+//
+// Valeurs copiées telles quelles depuis les dictionnaires déjà en
+// place dans parcours.html (source la plus complète, 20 langues) —
+// rien de réinventé, à l'exception de sacRetirer (nouveau cette
+// session, absent partout jusqu'ici, voir BONOMES_v48).
+//
+// Nommage volontairement distinct de ce qu'utilisent déjà les pages
+// (CLE_LANGUE_SAC, pas CLE_LANGUE ; langueActuelleSac, pas
+// langueActuelle) : ce fichier est chargé en <script> classique, donc
+// dans le MÊME scope global que le script de la page hôte — réutiliser
+// un nom déjà déclaré là-bas (ex. CLE_LANGUE) provoquerait une
+// SyntaxError qui casserait toute la page. Vérifié absent des pages
+// hôtes avant de choisir ces noms.
+// ==================================================================
+const CLE_LANGUE_SAC = 'kebbek_langue';
+function langueActuelleSac() {
+  try { return localStorage.getItem(CLE_LANGUE_SAC) || 'en'; }
+  catch (e) { return 'en'; }
+}
+
+const DICO_SAC = {
+  fr: { catMots: "Mots appris", catCodes: "Codes", catSucces: "Réussites", catTrophees: "Trophées", catCartes: "Cartes", sacVide: "rien pour l'instant", sacRienIci: "Rien ici pour l'instant.", sacRetirer: "Retirer", sacUnItem: "{n} élément enregistré", sacPlusieursItems: "{n} éléments enregistrés" },
+  en: { catMots: "Words learned", catCodes: "Codes", catSucces: "Achievements", catTrophees: "Trophies", catCartes: "Cards", sacVide: "nothing yet", sacRienIci: "Nothing here yet.", sacRetirer: "Remove", sacUnItem: "{n} item saved", sacPlusieursItems: "{n} items saved" },
+  es: { catMots: "Palabras aprendidas", catCodes: "Códigos", catSucces: "Logros", catTrophees: "Trofeos", catCartes: "Cartas", sacVide: "nada todavía", sacRienIci: "Todavía no hay nada aquí.", sacRetirer: "Quitar", sacUnItem: "{n} elemento guardado", sacPlusieursItems: "{n} elementos guardados" },
+  pt: { catMots: "Palavras aprendidas", catCodes: "Códigos", catSucces: "Sucessos", catTrophees: "Troféus", catCartes: "Cartas", sacVide: "nada ainda", sacRienIci: "Ainda não há nada aqui.", sacRetirer: "Remover", sacUnItem: "{n} item guardado", sacPlusieursItems: "{n} itens guardados" },
+  it: { catMots: "Parole imparate", catCodes: "Codici", catSucces: "Traguardi", catTrophees: "Trofei", catCartes: "Carte", sacVide: "ancora niente", sacRienIci: "Ancora niente qui.", sacRetirer: "Rimuovi", sacUnItem: "{n} elemento salvato", sacPlusieursItems: "{n} elementi salvati" },
+  de: { catMots: "Gelernte Wörter", catCodes: "Codes", catSucces: "Erfolge", catTrophees: "Trophäen", catCartes: "Karten", sacVide: "noch nichts", sacRienIci: "Hier ist noch nichts.", sacRetirer: "Entfernen", sacUnItem: "{n} Gegenstand gespeichert", sacPlusieursItems: "{n} Gegenstände gespeichert" },
+  nl: { catMots: "Geleerde woorden", catCodes: "Codes", catSucces: "Prestaties", catTrophees: "Trofeeën", catCartes: "Kaarten", sacVide: "nog niets", sacRienIci: "Hier is nog niets.", sacRetirer: "Verwijderen", sacUnItem: "{n} item opgeslagen", sacPlusieursItems: "{n} items opgeslagen" },
+  ca: { catMots: "Paraules apreses", catCodes: "Codis", catSucces: "Assoliments", catTrophees: "Trofeus", catCartes: "Cartes", sacVide: "encara res", sacRienIci: "Encara no hi ha res aquí.", sacRetirer: "Treure", sacUnItem: "{n} element desat", sacPlusieursItems: "{n} elements desats" },
+  ru: { catMots: "Выученные слова", catCodes: "Коды", catSucces: "Достижения", catTrophees: "Трофеи", catCartes: "Карточки", sacVide: "пока пусто", sacRienIci: "Здесь пока ничего нет.", sacRetirer: "Убрать", sacUnItem: "Сохранено: {n}", sacPlusieursItems: "Сохранено: {n}" },
+  zh: { catMots: "学会的单词", catCodes: "兑换码", catSucces: "成就", catTrophees: "奖杯", catCartes: "卡片", sacVide: "还没有内容", sacRienIci: "这里还没有内容。", sacRetirer: "移除", sacUnItem: "已保存 {n} 项", sacPlusieursItems: "已保存 {n} 项" },
+  ja: { catMots: "習った単語", catCodes: "コード", catSucces: "達成記録", catTrophees: "トロフィー", catCartes: "カード", sacVide: "まだ何もありません", sacRienIci: "まだここには何もありません。", sacRetirer: "削除", sacUnItem: "{n}個 保存済み", sacPlusieursItems: "{n}個 保存済み" },
+  ko: { catMots: "배운 단어", catCodes: "코드", catSucces: "업적", catTrophees: "트로피", catCartes: "카드", sacVide: "아직 없음", sacRienIci: "아직 여기에 아무것도 없어요.", sacRetirer: "제거", sacUnItem: "{n}개 저장됨", sacPlusieursItems: "{n}개 저장됨" },
+  vi: { catMots: "Từ đã học", catCodes: "Mã", catSucces: "Thành tích", catTrophees: "Cúp", catCartes: "Thẻ bài", sacVide: "chưa có gì", sacRienIci: "Chưa có gì ở đây.", sacRetirer: "Xóa", sacUnItem: "Đã lưu {n} món", sacPlusieursItems: "Đã lưu {n} món" },
+  tl: { catMots: "Mga natutunang salita", catCodes: "Mga kodigo", catSucces: "Mga tagumpay", catTrophees: "Mga trofeo", catCartes: "Mga kard", sacVide: "wala pa", sacRienIci: "Wala pang laman dito.", sacRetirer: "Alisin", sacUnItem: "{n} bagay ang naka-imbak", sacPlusieursItems: "{n} na bagay ang naka-imbak" },
+  id: { catMots: "Kata yang dipelajari", catCodes: "Kode", catSucces: "Pencapaian", catTrophees: "Piala", catCartes: "Kartu", sacVide: "belum ada", sacRienIci: "Belum ada apa-apa di sini.", sacRetirer: "Hapus", sacUnItem: "{n} item tersimpan", sacPlusieursItems: "{n} item tersimpan" },
+  ht: { catMots: "Mo yo aprann", catCodes: "Kòd", catSucces: "Reyisit", catTrophees: "Twofe", catCartes: "Kat", sacVide: "poko gen anyen", sacRienIci: "Poko gen anyen isit la.", sacRetirer: "Retire", sacUnItem: "{n} bagay anrejistre", sacPlusieursItems: "{n} bagay anrejistre" },
+  fa: { catMots: "کلمات یاد گرفته‌شده", catCodes: "کدها", catSucces: "دستاوردها", catTrophees: "جام‌ها", catCartes: "کارت‌ها", sacVide: "هنوز چیزی نیست", sacRienIci: "هنوز چیزی اینجا نیست.", sacRetirer: "حذف", sacUnItem: "{n} مورد ذخیره شد", sacPlusieursItems: "{n} مورد ذخیره شد" },
+  no: { catMots: "Lærte ord", catCodes: "Koder", catSucces: "Prestasjoner", catTrophees: "Trofeer", catCartes: "Kort", sacVide: "ingenting ennå", sacRienIci: "Ingenting her ennå.", sacRetirer: "Fjern", sacUnItem: "{n} gjenstand lagret", sacPlusieursItems: "{n} gjenstander lagret" },
+  sv: { catMots: "Inlärda ord", catCodes: "Koder", catSucces: "Prestationer", catTrophees: "Troféer", catCartes: "Kort", sacVide: "inget än", sacRienIci: "Inget här än.", sacRetirer: "Ta bort", sacUnItem: "{n} sak sparad", sacPlusieursItems: "{n} saker sparade" },
+  eo: { catMots: "Lernitaj vortoj", catCodes: "Kodoj", catSucces: "Atingoj", catTrophees: "Trofeoj", catCartes: "Kartoj", sacVide: "ankoraŭ nenio", sacRienIci: "Ankoraŭ nenio ĉi tie.", sacRetirer: "Forigi", sacUnItem: "{n} objekto konservita", sacPlusieursItems: "{n} objektoj konservitaj" }
+};
+
 const CATEGORIES_SAC = [
   { id: 'mots',     cle: 'catMots',     nomParDefaut: 'Words learned', icone: iconeSacLivre() },
   { id: 'codes',    cle: 'catCodes',    nomParDefaut: 'Codes',         icone: iconeSacCle() },
@@ -38,8 +91,34 @@ const CATEGORIES_SAC = [
 // Traduit via le système du site si cette page en a un (index.html,
 // parcours.html), sinon retombe sur l'anglais en clair (intro-bonomes.html
 // pour l'instant) — voir note de tête de fichier.
+// Traduit d'abord via DICO_SAC (partagé, voir plus haut) ; si une clé n'y
+// est pas (ne devrait pas arriver pour le vocabulaire du sac lui-même,
+// mais reste une sécurité), retombe sur le t() de la page si elle en a
+// un (index.html, parcours.html), puis sur la valeur par défaut passée
+// en anglais. Le test "val !== cle" écarte le repli ultime de certaines
+// pages (retourner la clé brute telle quelle) qui n'est pas une vraie
+// traduction.
 function tSacOuDefaut(cle, defaut) {
-  return (typeof t === 'function') ? t(cle) : defaut;
+  const dict = DICO_SAC[langueActuelleSac()] || DICO_SAC.en;
+  if (dict && dict[cle] !== undefined) return dict[cle];
+  if (typeof t === 'function') {
+    const val = t(cle);
+    if (val !== undefined && val !== cle) return val;
+  }
+  return defaut;
+}
+
+// Équivalent de tSacOuDefaut() pour les chaînes avec variables
+// (sacUnItem/sacPlusieursItems) — même ordre de priorité.
+function tSacAvecVariables(cle, variables) {
+  const dict = DICO_SAC[langueActuelleSac()] || DICO_SAC.en;
+  let texte = (dict && dict[cle] !== undefined) ? dict[cle]
+    : (typeof tAvecVariables === 'function' ? null : cle);
+  if (texte === null) return tAvecVariables(cle, variables);
+  Object.keys(variables).forEach(nomVar => {
+    texte = texte.replace('{' + nomVar + '}', variables[nomVar]);
+  });
+  return texte;
 }
 
 function sacParDefaut() {
@@ -78,6 +157,33 @@ function ajouterAuSac(categorie, item) {
   rafraichirAffichageSac();
 }
 
+// Retire un item du sac par son identifiant (mot/code/titre/nom — même
+// logique de correspondance qu'ajouterAuSac). Utilisé à la fois par le
+// bouton "retirer" de chaque item dans le panneau, et par le point
+// d'appel local de chaque page quand une case à cocher est décochée
+// (ex. afficherCaseSauvegarde() dans intro-bonomes.html) — décocher
+// doit annuler l'ajout, pas simplement ignorer le changement.
+function retirerDuSac(categorie, identifiant) {
+  const sac = chargerSac();
+  if (!sac[categorie]) return;
+  sac[categorie] = sac[categorie].filter(i => (i.mot || i.code || i.titre || i.nom) !== identifiant);
+  sauvegarderSac(sac);
+  rafraichirAffichageSac();
+}
+
+// Échappement minimal pour insérer une valeur dynamique dans un attribut
+// HTML construit via innerHTML — nécessaire ici parce que identifiant
+// peut contenir une apostrophe (élisions françaises : "l'ami", "d'accord"),
+// ce qui casserait un attribut si on l'insérait sans échappement.
+function echapperAttribut(valeur) {
+  return String(valeur)
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+}
+
 function compterToutSac(sac) {
   return CATEGORIES_SAC.reduce((total, cat) => total + (sac[cat.id] ? sac[cat.id].length : 0), 0);
 }
@@ -96,9 +202,7 @@ function rafraichirAffichageSac() {
   document.getElementById('sacSousTitre').textContent =
     total === 0
       ? tSacOuDefaut('sacVide', 'nothing yet')
-      : (typeof tAvecVariables === 'function'
-          ? tAvecVariables(total === 1 ? 'sacUnItem' : 'sacPlusieursItems', { n: total })
-          : (total === 1 ? '1 item saved' : total + ' items saved'));
+      : tSacAvecVariables(total === 1 ? 'sacUnItem' : 'sacPlusieursItems', { n: total });
 
   const corps = document.getElementById('sacCorps');
   corps.innerHTML = '';
@@ -117,7 +221,18 @@ function rafraichirAffichageSac() {
       '<div class="sac-cat-liste">' +
         (items.length === 0
           ? '<div class="sac-vide">' + tSacOuDefaut('sacRienIci', 'Nothing here yet.') + '</div>'
-          : items.map(i => '<div class="sac-item"><span class="sac-item-nom">' + (i.nom || i.mot || i.code || '—') + '</span><span class="sac-item-detail">' + (i.trad || i.description || i.titre || '') + '</span></div>').join('')
+          : items.map(i => {
+              const identifiant = i.mot || i.code || i.titre || i.nom || '';
+              return '<div class="sac-item">' +
+                '<span class="sac-item-principal">' +
+                  '<span class="sac-item-nom">' + (i.nom || i.mot || i.code || '—') + '</span>' +
+                  '<span class="sac-item-detail">' + (i.trad || i.description || i.titre || '') + '</span>' +
+                '</span>' +
+                '<button type="button" class="sac-item-retirer" title="' + echapperAttribut(tSacOuDefaut('sacRetirer', 'Remove')) + '" ' +
+                  'data-cat="' + cat.id + '" data-id="' + echapperAttribut(identifiant) + '" ' +
+                  'onclick="retirerDuSac(this.dataset.cat, this.dataset.id)">&times;</button>' +
+              '</div>';
+            }).join('')
         ) +
       '</div>';
     corps.appendChild(div);

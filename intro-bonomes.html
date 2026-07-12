@@ -703,10 +703,703 @@
 
 <script>
   // ─────────────────────────────────────────────
+  //  Langue de l'interface — même clé localStorage partagée que le reste
+  //  du site (CLE_LANGUE, posée une fois sur l'écran d'accueil de
+  //  index.html). Aucun sélecteur de langue ici : le choix a déjà été
+  //  fait en amont, cette page ne fait que le relire.
+  // ─────────────────────────────────────────────
+  const CLE_LANGUE = 'kebbek_langue';
+  function langueActuelle() {
+    return localStorage.getItem(CLE_LANGUE) || 'en';
+  }
+
+  // Dix premières langues du site (sur 19) : en (source) + es, pt, it, zh,
+  // ko, ja, vi, tl, de. Les neuf restantes (nl, ca, ht, id, fa, ru, no, sv,
+  // eo) suivront dans une session ultérieure. "Salut !" reste identique
+  // dans toutes les langues — c'est le mot français enseigné, jamais
+  // traduit dans le texte lui-même (seule sa "traduction" affichée à
+  // l'apprenant change selon la langue, via traductionSalut ci-dessous).
+  const TRADUCTIONS = {
+    en: {
+      e1: "Wait... have we actually never properly introduced ourselves?",
+      e2a: "I'm Bek.",
+      e2b: "And I'm Keb.",
+      e3: "We're Bonomes — little drawn characters who've always lived inside every book the real Bek ever owned.",
+      e4: "And now, thanks to the real Keb's computer skills, we live on the internet too — ready to teach you French.",
+      e5: "We can speak every language... but French is the true language of our soul.",
+      e6: "In fact, we're about to move on to your first lesson — and from then on, we'll speak only French.",
+      e7: "We're going to need Kloé — Bek's second best friend — to come and translate for you.",
+      e8: "Here she comes!",
+      e9: "Hi, I'm Kloé! Nice to meet you!",
+      e10: "I'll also take care of grammar explanations and showing you around the site.",
+      e11: "Let's show you how this works. Say something, you two!",
+      e13: "If you hover or tap on a word, you'll get the translation — and an explanation, from me, always!",
+      e14: "Then, if you'd like, you can save the new words you've learned. Just tap the box below!",
+      e15: "That checked word will be saved in the backpack you see in the top right corner of your screen.",
+      e16: "And by the way, everything you collect during a lesson lands there. It stays from one lesson to the next — but create an account so you never lose your progress!",
+      e17: "So — are you ready to jump in?",
+      e17bouton: "Let's go! \u203a",
+      traductionSalut: "Hi!",
+      btnContinuer: "Continue \u203a",
+      btnDemarrer: "Start the lesson \u203a",
+      btnSauvegarde: "Saving…",
+      imageNonPrete: "Image not ready yet",
+      sacAriaLabel: "Backpack",
+      sacTitre: "My backpack",
+      sacVide: "nothing yet",
+      sacAvertissement: "This backpack is saved on this device only. Sign in to keep it for good, even if you switch devices.",
+      sacConnexion: "Sign in",
+      catMots: "Words learned",
+      catCodes: "Codes",
+      catSucces: "Achievements",
+      catTrophees: "Trophies",
+      catCartes: "Cards"
+    },
+    es: {
+      e1: "Espera... ¿en serio nunca nos hemos presentado como es debido?",
+      e2a: "Soy Bek.",
+      e2b: "Y yo soy Keb.",
+      e3: "Somos Bonomes: personajitos dibujados que siempre han vivido dentro de cada libro que la verdadera Bek tuvo.",
+      e4: "Y ahora, gracias a las habilidades informáticas del verdadero Keb, también vivimos en internet, listos para enseñarte francés.",
+      e5: "Podemos hablar todos los idiomas... pero el francés es el verdadero idioma de nuestra alma.",
+      e6: "De hecho, estamos a punto de pasar a tu primera lección — y a partir de ahí, solo hablaremos en francés.",
+      e7: "Vamos a necesitar a Kloé — la segunda mejor amiga de Bek — para que venga a traducirte.",
+      e8: "¡Ahí viene!",
+      e9: "¡Hola, soy Kloé! ¡Mucho gusto!",
+      e10: "También me encargaré de explicarte la gramática y de mostrarte cómo funciona el sitio.",
+      e11: "Vamos a mostrarte cómo funciona esto. ¡Digan algo, ustedes dos!",
+      e13: "Si pasas el cursor o tocas una palabra, verás la traducción — y una explicación, siempre de mi parte.",
+      e14: "Después, si quieres, puedes guardar las palabras nuevas que has aprendido. ¡Solo toca la casilla de abajo!",
+      e15: "Esa palabra marcada se guardará en la mochila que ves en la esquina superior derecha de tu pantalla.",
+      e16: "Y, por cierto, todo lo que recojas durante una lección termina ahí. Se conserva de una lección a otra — ¡pero crea una cuenta para no perder nunca tu progreso!",
+      e17: "Entonces... ¿listo para empezar?",
+      e17bouton: "¡Vamos! \u203a",
+      traductionSalut: "¡Hola!",
+      btnContinuer: "Continuar \u203a",
+      btnDemarrer: "Comenzar la lección \u203a",
+      btnSauvegarde: "Guardando…",
+      imageNonPrete: "Imagen aún no disponible",
+      sacAriaLabel: "Mochila",
+      sacTitre: "Mi mochila",
+      sacVide: "nada por ahora",
+      sacAvertissement: "Esta mochila se guarda solo en este dispositivo. Inicia sesión para conservarla para siempre, aunque cambies de dispositivo.",
+      sacConnexion: "Iniciar sesión",
+      catMots: "Palabras aprendidas",
+      catCodes: "Códigos",
+      catSucces: "Logros",
+      catTrophees: "Trofeos",
+      catCartes: "Cartas"
+    },
+    pt: {
+      e1: "Espera... será que nunca nos apresentámos como deve ser?",
+      e2a: "Eu sou a Bek.",
+      e2b: "E eu sou o Keb.",
+      e3: "Somos Bonomes — personagens desenhadas que sempre viveram dentro de cada livro que a verdadeira Bek teve.",
+      e4: "E agora, graças às capacidades informáticas do verdadeiro Keb, também vivemos na internet — prontos para te ensinar francês.",
+      e5: "Conseguimos falar todas as línguas... mas o francês é a verdadeira língua da nossa alma.",
+      e6: "Aliás, estamos prestes a avançar para a tua primeira aula — e, a partir daí, só falaremos francês.",
+      e7: "Vamos precisar da Kloé — a segunda melhor amiga da Bek — para vir traduzir-te.",
+      e8: "Aí vem ela!",
+      e9: "Olá, sou a Kloé! Muito prazer!",
+      e10: "Também trato das explicações de gramática e de te mostrar o site.",
+      e11: "Vamos mostrar-te como isto funciona. Digam qualquer coisa, vocês os dois!",
+      e13: "Se passares o rato ou tocares numa palavra, vês a tradução — e uma explicação, sempre da minha parte.",
+      e14: "Depois, se quiseres, podes guardar as palavras novas que aprendeste. Basta tocar na caixa abaixo!",
+      e15: "Essa palavra assinalada vai ficar guardada na mochila que vês no canto superior direito do ecrã.",
+      e16: "E já agora, tudo o que recolhes durante uma aula fica ali guardado. Mantém-se de uma aula para a outra — mas cria uma conta para nunca perderes o teu progresso!",
+      e17: "Então... estás pronto/a para começar?",
+      e17bouton: "Vamos lá! \u203a",
+      traductionSalut: "Olá!",
+      btnContinuer: "Continuar \u203a",
+      btnDemarrer: "Começar a aula \u203a",
+      btnSauvegarde: "A guardar…",
+      imageNonPrete: "Imagem ainda não disponível",
+      sacAriaLabel: "Mochila",
+      sacTitre: "A minha mochila",
+      sacVide: "nada por agora",
+      sacAvertissement: "Esta mochila só fica guardada neste dispositivo. Inicia sessão para a guardares para sempre, mesmo que mudes de dispositivo.",
+      sacConnexion: "Iniciar sessão",
+      catMots: "Palavras aprendidas",
+      catCodes: "Códigos",
+      catSucces: "Conquistas",
+      catTrophees: "Troféus",
+      catCartes: "Cartas"
+    },
+    it: {
+      e1: "Aspetta... è vero che non ci siamo mai presentati come si deve?",
+      e2a: "Io sono Bek.",
+      e2b: "E io sono Keb.",
+      e3: "Siamo i Bonomes — piccoli personaggi disegnati che sono sempre vissuti dentro ogni libro appartenuto alla vera Bek.",
+      e4: "E ora, grazie alle capacità informatiche del vero Keb, viviamo anche su internet — pronti a insegnarti il francese.",
+      e5: "Sappiamo parlare tutte le lingue... ma il francese è la vera lingua della nostra anima.",
+      e6: "In realtà, stiamo per passare alla tua prima lezione — e da quel momento parleremo solo francese.",
+      e7: "Avremo bisogno di Kloé — la seconda migliore amica di Bek — perché venga a tradurti.",
+      e8: "Eccola che arriva!",
+      e9: "Ciao, sono Kloé! Piacere di conoscerti!",
+      e10: "Mi occuperò anche delle spiegazioni di grammatica e di mostrarti il sito.",
+      e11: "Vi mostriamo come funziona. Dite qualcosa, voi due!",
+      e13: "Se passi il mouse o tocchi una parola, vedrai la traduzione — e una spiegazione, sempre da parte mia.",
+      e14: "Poi, se vuoi, puoi salvare le nuove parole che hai imparato. Basta toccare la casella qui sotto!",
+      e15: "Quella parola selezionata verrà salvata nello zaino che vedi nell'angolo in alto a destra dello schermo.",
+      e16: "E comunque, tutto ciò che raccogli durante una lezione finisce lì. Resta da una lezione all'altra — ma crea un profilo per non perdere mai i tuoi progressi!",
+      e17: "Allora... pronto/a a iniziare?",
+      e17bouton: "Andiamo! \u203a",
+      traductionSalut: "Ciao!",
+      btnContinuer: "Continua \u203a",
+      btnDemarrer: "Inizia la lezione \u203a",
+      btnSauvegarde: "Salvataggio…",
+      imageNonPrete: "Immagine non ancora disponibile",
+      sacAriaLabel: "Zaino",
+      sacTitre: "Il mio zaino",
+      sacVide: "ancora niente",
+      sacAvertissement: "Questo zaino viene salvato solo su questo dispositivo. Accedi per conservarlo per sempre, anche se cambi dispositivo.",
+      sacConnexion: "Accedi",
+      catMots: "Parole imparate",
+      catCodes: "Codici",
+      catSucces: "Traguardi",
+      catTrophees: "Trofei",
+      catCartes: "Carte"
+    },
+    zh: {
+      e1: "等等……我们真的从来没有好好自我介绍过吗？",
+      e2a: "我是Bek。",
+      e2b: "我是Keb。",
+      e3: "我们是Bonomes——一直生活在真正的Bek拥有过的每一本书里的小小手绘角色。",
+      e4: "多亏了现实中Keb的电脑技术，现在我们也生活在网络上了——准备好教你法语。",
+      e5: "我们会说所有的语言……但法语才是我们灵魂真正的语言。",
+      e6: "事实上，我们马上就要开始你的第一课了——从那时起，我们就只说法语。",
+      e7: "我们需要Kloé——Bek的第二好朋友——来帮你翻译。",
+      e8: "她来了！",
+      e9: "嗨，我是Kloé！很高兴认识你！",
+      e10: "我还会负责讲解语法，并带你熟悉这个网站。",
+      e11: "我们来告诉你这是怎么运作的。你们俩说点什么吧！",
+      e13: "只要把鼠标移到一个单词上，或点一下它，你就会看到翻译——而且永远都会有我的讲解。",
+      e14: "然后，如果你愿意，可以把学到的新单词保存起来。点一下下面的方框就行！",
+      e15: "被勾选的单词会保存到你屏幕右上角看到的背包里。",
+      e16: "顺便说一句，你在课程中收集到的一切都会存在那里。它会从一节课保留到下一节课——不过要创建账户，才不会丢失你的进度！",
+      e17: "那么……准备好开始了吗？",
+      e17bouton: "开始吧！\u203a",
+      traductionSalut: "你好！",
+      btnContinuer: "继续 \u203a",
+      btnDemarrer: "开始上课 \u203a",
+      btnSauvegarde: "保存中…",
+      imageNonPrete: "图片暂未准备好",
+      sacAriaLabel: "背包",
+      sacTitre: "我的背包",
+      sacVide: "暂时还没有内容",
+      sacAvertissement: "这个背包只保存在这台设备上。登录后即可永久保存，即使更换设备也不会丢失。",
+      sacConnexion: "登录",
+      catMots: "学会的单词",
+      catCodes: "兑换码",
+      catSucces: "成就",
+      catTrophees: "奖杯",
+      catCartes: "卡片"
+    },
+    ko: {
+      e1: "잠깐... 우리 정말 제대로 인사한 적이 없었나?",
+      e2a: "난 Bek이야.",
+      e2b: "그리고 난 Keb이야.",
+      e3: "우리는 Bonomes야 — 진짜 Bek이 가졌던 모든 책 속에 늘 살고 있던 작은 그림 캐릭터들이지.",
+      e4: "그리고 이제는 진짜 Keb의 컴퓨터 실력 덕분에 인터넷에서도 살게 됐어 — 너에게 프랑스어를 가르쳐줄 준비가 됐지.",
+      e5: "우리는 모든 언어를 할 수 있어... 하지만 프랑스어가 우리 영혼의 진짜 언어야.",
+      e6: "사실, 우리는 곧 너의 첫 수업으로 넘어갈 거야 — 그때부터는 오직 프랑스어로만 말할 거고.",
+      e7: "너를 위해 통역해 줄 Kloé — Bek의 두 번째 단짝 친구 — 가 필요할 거야.",
+      e8: "저기 온다!",
+      e9: "안녕, 난 Kloé야! 만나서 반가워!",
+      e10: "문법 설명이랑 사이트 안내도 내가 맡을게.",
+      e11: "이게 어떻게 작동하는지 보여줄게. 너희 둘 다 뭐라도 말해봐!",
+      e13: "단어에 마우스를 올리거나 탭하면 번역이 보일 거야 — 그리고 항상 내 설명도 함께.",
+      e14: "그다음, 원한다면 배운 새 단어를 저장할 수 있어. 아래 상자를 탭하기만 하면 돼!",
+      e15: "체크한 단어는 화면 오른쪽 위에 보이는 배낭에 저장될 거야.",
+      e16: "그리고 참고로, 수업 중에 모은 건 다 거기에 쌓여. 수업이 바뀌어도 계속 남아 있어 — 하지만 진행 상황을 절대 잃어버리지 않으려면 계정을 만들어!",
+      e17: "자... 시작할 준비 됐어?",
+      e17bouton: "시작하자! \u203a",
+      traductionSalut: "안녕!",
+      btnContinuer: "계속 \u203a",
+      btnDemarrer: "수업 시작 \u203a",
+      btnSauvegarde: "저장 중…",
+      imageNonPrete: "이미지가 아직 준비되지 않았어요",
+      sacAriaLabel: "배낭",
+      sacTitre: "내 배낭",
+      sacVide: "아직 아무것도 없어요",
+      sacAvertissement: "이 배낭은 이 기기에만 저장됩니다. 로그인하면 기기를 바꿔도 영구적으로 보관할 수 있어요.",
+      sacConnexion: "로그인",
+      catMots: "배운 단어",
+      catCodes: "코드",
+      catSucces: "성취",
+      catTrophees: "트로피",
+      catCartes: "카드"
+    },
+    ja: {
+      e1: "待って……私たち、ちゃんと自己紹介したことなかったよね？",
+      e2a: "私はBek。",
+      e2b: "そして僕はKeb。",
+      e3: "僕たちはBonomes——本物のBekが持っていたすべての本の中に、ずっと住んでいた小さな絵のキャラクターなんだ。",
+      e4: "そして今では、本物のKebのパソコンの腕前のおかげで、インターネットの中にも住んでいるんだ——君にフランス語を教える準備は万端だよ。",
+      e5: "僕たちはどんな言語でも話せる……でも、フランス語こそが僕たちの魂の本当の言語なんだ。",
+      e6: "実は、もうすぐ君の最初のレッスンに進むところなんだ——それからは、フランス語だけで話すよ。",
+      e7: "君のために通訳してくれるKloé——Bekの二番目の親友——が必要になるね。",
+      e8: "ほら、来たよ！",
+      e9: "こんにちは、Kloéです！はじめまして！",
+      e10: "文法の説明とサイトの案内も私が担当するね。",
+      e11: "これがどう動くか見せてあげる。二人とも、何か言ってみて！",
+      e13: "単語にカーソルを合わせるかタップすると、翻訳が出るよ——それに、いつも私からの説明もね。",
+      e14: "それから、よければ覚えた新しい単語を保存できるよ。下のボックスをタップするだけ！",
+      e15: "チェックした単語は、画面右上に見えるリュックに保存されるよ。",
+      e16: "それと、レッスン中に集めたものは全部そこに入るんだ。レッスンが変わっても残るよ——でも進み具合を絶対になくさないように、アカウントを作ってね！",
+      e17: "さあ……始める準備はいい？",
+      e17bouton: "始めよう！\u203a",
+      traductionSalut: "こんにちは！",
+      btnContinuer: "続ける \u203a",
+      btnDemarrer: "レッスンを始める \u203a",
+      btnSauvegarde: "保存中…",
+      imageNonPrete: "画像はまだ準備できていません",
+      sacAriaLabel: "リュック",
+      sacTitre: "私のリュック",
+      sacVide: "まだ何もありません",
+      sacAvertissement: "このリュックはこの端末だけに保存されています。ログインすれば、端末を変えても永久に保存できます。",
+      sacConnexion: "ログイン",
+      catMots: "覚えた単語",
+      catCodes: "コード",
+      catSucces: "達成",
+      catTrophees: "トロフィー",
+      catCartes: "カード"
+    },
+    vi: {
+      e1: "Khoan đã... chẳng lẽ chúng ta chưa bao giờ tự giới thiệu đàng hoàng với nhau sao?",
+      e2a: "Mình là Bek.",
+      e2b: "Còn mình là Keb.",
+      e3: "Chúng mình là Bonomes — những nhân vật vẽ tay nhỏ bé vẫn luôn sống trong mọi cuốn sách mà Bek thật từng có.",
+      e4: "Và giờ đây, nhờ tài năng máy tính của Keb thật, chúng mình cũng sống trên internet — sẵn sàng dạy bạn tiếng Pháp.",
+      e5: "Chúng mình có thể nói mọi ngôn ngữ... nhưng tiếng Pháp mới thực sự là ngôn ngữ của tâm hồn chúng mình.",
+      e6: "Thật ra, chúng mình sắp chuyển sang bài học đầu tiên của bạn — và từ đó trở đi, chúng mình sẽ chỉ nói tiếng Pháp thôi.",
+      e7: "Chúng mình sẽ cần Kloé — người bạn thân thứ hai của Bek — đến để phiên dịch cho bạn.",
+      e8: "Bạn ấy đến rồi kìa!",
+      e9: "Chào, mình là Kloé! Rất vui được gặp bạn!",
+      e10: "Mình cũng sẽ phụ trách giải thích ngữ pháp và hướng dẫn bạn khám phá trang web.",
+      e11: "Để chúng mình cho bạn xem cách này hoạt động. Hai bạn nói gì đi!",
+      e13: "Nếu bạn di chuột hoặc chạm vào một từ, bạn sẽ thấy bản dịch — và luôn có phần giải thích từ mình.",
+      e14: "Sau đó, nếu muốn, bạn có thể lưu lại những từ mới đã học. Chỉ cần chạm vào ô bên dưới!",
+      e15: "Từ đã được đánh dấu đó sẽ được lưu vào ba lô mà bạn thấy ở góc trên bên phải màn hình.",
+      e16: "À, và mọi thứ bạn thu thập được trong một bài học đều rơi vào đó. Nó vẫn còn từ bài học này sang bài học khác — nhưng hãy tạo tài khoản để không bao giờ mất tiến trình của bạn nhé!",
+      e17: "Vậy... bạn đã sẵn sàng bắt đầu chưa?",
+      e17bouton: "Bắt đầu thôi! \u203a",
+      traductionSalut: "Xin chào!",
+      btnContinuer: "Tiếp tục \u203a",
+      btnDemarrer: "Bắt đầu bài học \u203a",
+      btnSauvegarde: "Đang lưu…",
+      imageNonPrete: "Hình ảnh chưa sẵn sàng",
+      sacAriaLabel: "Ba lô",
+      sacTitre: "Ba lô của tôi",
+      sacVide: "chưa có gì cả",
+      sacAvertissement: "Ba lô này chỉ được lưu trên thiết bị này. Hãy đăng nhập để lưu giữ vĩnh viễn, ngay cả khi bạn đổi thiết bị.",
+      sacConnexion: "Đăng nhập",
+      catMots: "Từ đã học",
+      catCodes: "Mã",
+      catSucces: "Thành tích",
+      catTrophees: "Cúp",
+      catCartes: "Thẻ bài"
+    },
+    tl: {
+      e1: "Sandali lang... hindi ba talaga tayo nagpakilala nang maayos sa isa't isa?",
+      e2a: "Ako si Bek.",
+      e2b: "At ako naman si Keb.",
+      e3: "Kami ay Bonomes — maliliit na guhit na tauhan na palaging nabubuhay sa loob ng bawat aklat na napagmay-ari ng tunay na Bek.",
+      e4: "At ngayon, salamat sa husay sa computer ng tunay na Keb, nabubuhay na rin kami sa internet — handa nang ituro sa iyo ang Pranses.",
+      e5: "Kaya naming magsalita ng lahat ng wika... pero ang Pranses ang tunay na wika ng aming kaluluwa.",
+      e6: "Sa katunayan, malapit na kaming lumipat sa iyong unang aralin — at mula noon, Pranses na lang ang gagamitin namin.",
+      e7: "Kakailanganin namin si Kloé — pangalawang matalik na kaibigan ni Bek — para magsalin para sa iyo.",
+      e8: "Andito na siya!",
+      e9: "Hi, ako si Kloé! Ikinagagalak kong makilala ka!",
+      e10: "Ako rin ang bahalang magpaliwanag ng gramatika at maggabay sa iyo sa site.",
+      e11: "Ipapakita namin sa iyo kung paano ito gumagana. Magsabi kayo ng kahit ano, kayong dalawa!",
+      e13: "Kapag itinapat mo ang mouse o tinapik mo ang isang salita, makikita mo ang pagsasalin — at palaging may paliwanag mula sa akin.",
+      e14: "Pagkatapos, kung gusto mo, maaari mong i-save ang mga bagong salitang natutunan mo. Tapikin lang ang kahon sa ibaba!",
+      e15: "Ang salitang na-tsek na iyon ay ise-save sa bag na makikita mo sa kanang itaas na sulok ng iyong screen.",
+      e16: "At oo nga pala, lahat ng natitipon mo sa isang aralin ay napupunta doon. Nananatili ito mula sa isang aralin patungo sa susunod — pero gumawa ng account para hindi mo mawala ang iyong progreso!",
+      e17: "Kaya... handa ka na bang sumubok?",
+      e17bouton: "Tara na! \u203a",
+      traductionSalut: "Kamusta!",
+      btnContinuer: "Magpatuloy \u203a",
+      btnDemarrer: "Simulan ang aralin \u203a",
+      btnSauvegarde: "Sine-save…",
+      imageNonPrete: "Hindi pa handa ang larawan",
+      sacAriaLabel: "Bag",
+      sacTitre: "Ang aking bag",
+      sacVide: "wala pa sa ngayon",
+      sacAvertissement: "Ang bag na ito ay naka-save lang sa device na ito. Mag-sign in para mapanatili ito nang tuluyan, kahit magpalit ka ng device.",
+      sacConnexion: "Mag-login",
+      catMots: "Mga natutunang salita",
+      catCodes: "Mga kodigo",
+      catSucces: "Mga tagumpay",
+      catTrophees: "Mga trofeo",
+      catCartes: "Mga kard"
+    },
+    de: {
+      e1: "Moment mal... haben wir uns eigentlich nie richtig vorgestellt?",
+      e2a: "Ich bin Bek.",
+      e2b: "Und ich bin Keb.",
+      e3: "Wir sind Bonomes — kleine gezeichnete Figuren, die schon immer in jedem Buch gelebt haben, das die echte Bek je besessen hat.",
+      e4: "Und jetzt, dank der Computerkenntnisse des echten Keb, leben wir auch im Internet — bereit, dir Französisch beizubringen.",
+      e5: "Wir können jede Sprache sprechen... aber Französisch ist die wahre Sprache unserer Seele.",
+      e6: "Tatsächlich geht es gleich weiter mit deiner ersten Lektion — und von da an sprechen wir nur noch Französisch.",
+      e7: "Wir brauchen Kloé — Beks zweitbeste Freundin —, damit sie für dich übersetzt.",
+      e8: "Da kommt sie schon!",
+      e9: "Hallo, ich bin Kloé! Freut mich, dich kennenzulernen!",
+      e10: "Ich kümmere mich außerdem um die Grammatikerklärungen und zeige dir die Seite.",
+      e11: "Wir zeigen dir, wie das funktioniert. Sagt mal etwas, ihr beide!",
+      e13: "Wenn du mit der Maus über ein Wort fährst oder es antippst, bekommst du die Übersetzung — und immer auch eine Erklärung von mir.",
+      e14: "Danach kannst du, wenn du möchtest, die neuen Wörter speichern, die du gelernt hast. Tipp einfach das Kästchen unten an!",
+      e15: "Dieses angehakte Wort wird im Rucksack gespeichert, den du oben rechts auf deinem Bildschirm siehst.",
+      e16: "Und übrigens landet dort alles, was du während einer Lektion sammelst. Es bleibt von einer Lektion zur nächsten erhalten — aber leg ein Konto an, damit dein Fortschritt nie verloren geht!",
+      e17: "Also... bereit, loszulegen?",
+      e17bouton: "Los geht's! \u203a",
+      traductionSalut: "Hallo!",
+      btnContinuer: "Weiter \u203a",
+      btnDemarrer: "Lektion starten \u203a",
+      btnSauvegarde: "Wird gespeichert…",
+      imageNonPrete: "Bild noch nicht bereit",
+      sacAriaLabel: "Rucksack",
+      sacTitre: "Mein Rucksack",
+      sacVide: "noch nichts",
+      sacAvertissement: "Dieser Rucksack wird nur auf diesem Gerät gespeichert. Melde dich an, um ihn dauerhaft zu behalten, auch wenn du das Gerät wechselst.",
+      sacConnexion: "Anmelden",
+      catMots: "Gelernte Wörter",
+      catCodes: "Codes",
+      catSucces: "Erfolge",
+      catTrophees: "Trophäen",
+      catCartes: "Karten"
+    },
+    nl: {
+      e1: "Wacht... hebben we ons eigenlijk nooit echt voorgesteld?",
+      e2a: "Ik ben Bek.",
+      e2b: "En ik ben Keb.",
+      e3: "Wij zijn Bonomes — kleine getekende figuurtjes die altijd al in elk boek hebben geleefd dat de echte Bek ooit bezat.",
+      e4: "En nu, dankzij de computervaardigheden van de echte Keb, leven we ook op internet — klaar om je Frans te leren.",
+      e5: "We kunnen elke taal spreken... maar Frans is de echte taal van onze ziel.",
+      e6: "Sterker nog, we gaan zo door naar je eerste les — en vanaf dan spreken we alleen nog Frans.",
+      e7: "We hebben Kloé nodig — Beks op-één-na-beste vriendin — om voor je te vertalen.",
+      e8: "Daar komt ze al!",
+      e9: "Hoi, ik ben Kloé! Leuk je te ontmoeten!",
+      e10: "Ik zorg ook voor de grammatica-uitleg en laat je de site zien.",
+      e11: "We laten je zien hoe het werkt. Zeg eens iets, jullie twee!",
+      e13: "Als je met je muis over een woord gaat of erop tikt, krijg je de vertaling — en altijd een uitleg van mij!",
+      e14: "Daarna kun je, als je wilt, de nieuwe woorden opslaan die je hebt geleerd. Tik gewoon op het vakje hieronder!",
+      e15: "Dat aangevinkte woord wordt opgeslagen in de rugzak die je rechtsboven op je scherm ziet.",
+      e16: "En trouwens, alles wat je tijdens een les verzamelt komt daar terecht. Het blijft bewaard van de ene les op de andere — maar maak een account aan zodat je je voortgang nooit kwijtraakt!",
+      e17: "Dus — klaar om te beginnen?",
+      e17bouton: "We gaan! \u203a",
+      traductionSalut: "Hoi!",
+      btnContinuer: "Verder \u203a",
+      btnDemarrer: "Start de les \u203a",
+      btnSauvegarde: "Bezig met opslaan…",
+      imageNonPrete: "Afbeelding nog niet klaar",
+      sacAriaLabel: "Rugzak",
+      sacTitre: "Mijn rugzak",
+      sacVide: "nog niets",
+      sacAvertissement: "Deze rugzak wordt alleen op dit apparaat opgeslagen. Log in om hem definitief te bewaren, ook als je van apparaat wisselt.",
+      sacConnexion: "Inloggen",
+      catMots: "Geleerde woorden",
+      catCodes: "Codes",
+      catSucces: "Prestaties",
+      catTrophees: "Trofeeën",
+      catCartes: "Kaarten"
+    },
+    ca: {
+      e1: "Espera... és que mai no ens hem presentat com cal?",
+      e2a: "Jo sóc la Bek.",
+      e2b: "I jo sóc en Keb.",
+      e3: "Som Bonomes — petits personatges dibuixats que sempre han viscut dins de cada llibre que la Bek de veritat ha tingut.",
+      e4: "I ara, gràcies als coneixements informàtics del Keb de veritat, també vivim a internet — a punt per ensenyar-te francès.",
+      e5: "Podem parlar qualsevol llengua... però el francès és la llengua veritable de la nostra ànima.",
+      e6: "De fet, ara passarem a la teva primera lliçó — i a partir d'aquí, només parlarem en francès.",
+      e7: "Necessitarem la Kloé — la segona millor amiga de la Bek — perquè vingui a traduir-te.",
+      e8: "Ja arriba!",
+      e9: "Hola, sóc la Kloé! Molt de gust!",
+      e10: "També m'encarregaré de les explicacions de gramàtica i de mostrar-te el lloc.",
+      e11: "Anem a mostrar-te com funciona. Digueu alguna cosa, vosaltres dos!",
+      e13: "Si passes el cursor o toques una paraula, en tindràs la traducció — i sempre una explicació meva!",
+      e14: "Després, si vols, pots desar les paraules noves que has après. Toca la casella de sota!",
+      e15: "Aquesta paraula marcada es desarà a la motxilla que veus a la cantonada superior dreta de la pantalla.",
+      e16: "I per cert, tot el que reculls durant una lliçó hi va a parar. Es manté d'una lliçó a l'altra — però crea un compte perquè no perdis mai el teu progrés!",
+      e17: "Així doncs... a punt per començar?",
+      e17bouton: "Som-hi! \u203a",
+      traductionSalut: "Hola!",
+      btnContinuer: "Continua \u203a",
+      btnDemarrer: "Comença la lliçó \u203a",
+      btnSauvegarde: "Desant…",
+      imageNonPrete: "Imatge encara no disponible",
+      sacAriaLabel: "Motxilla",
+      sacTitre: "La meva motxilla",
+      sacVide: "encara res",
+      sacAvertissement: "Aquesta motxilla només es desa en aquest dispositiu. Inicia sessió per conservar-la sempre, encara que canviïs de dispositiu.",
+      sacConnexion: "Inicia sessió",
+      catMots: "Paraules apreses",
+      catCodes: "Codis",
+      catSucces: "Fites",
+      catTrophees: "Trofeus",
+      catCartes: "Cartes"
+    },
+    ht: {
+      e1: "Tann... èske nou pa janm prezante nou vre?",
+      e2a: "Mwen se Bek.",
+      e2b: "Epi mwen menm, mwen se Keb.",
+      e3: "Nou se Bonòm — ti pèsonaj yo desine ki toujou viv nan chak liv Bek vre a te janm genyen.",
+      e4: "Epi kounye a, gras a talan enfòmatik Keb vre a, nou viv sou entènèt tou — pare pou aprann ou pale fransè.",
+      e5: "Nou ka pale nenpòt lang... men fransè se vrè lang nanm nou.",
+      e6: "Anfèt, nou pral pase nan premye leson ou a — epi apati de la, n ap pale fransè sèlman.",
+      e7: "N ap bezwen Kloé — dezyèm pi bon zanmi Bek — pou vin tradui pou ou.",
+      e8: "Men l ap vini!",
+      e9: "Bonjou, mwen se Kloé! Kontan konnen ou!",
+      e10: "M ap okipe eksplikasyon gramè yo tou, epi m ap montre ou sit la.",
+      e11: "Ann montre ou kijan sa mache. Di yon bagay, nou de a!",
+      e13: "Si ou pase souri a sou yon mo oswa ou tape li, w ap jwenn tradiksyon an — ak yon eksplikasyon nan men mwen, toujou!",
+      e14: "Apre sa, si ou vle, ou ka anrejistre nouvo mo ou aprann yo. Tape ti bwat anba a!",
+      e15: "Mo ou koche a ap anrejistre nan sak do ou wè nan kwen anwo adwat ekran ou a.",
+      e16: "Epitou, tout sa ou ranmase pandan yon leson ale la. Li rete la de yon leson a yon lòt — men kreye yon kont pou ou pa janm pèdi pwogrè ou!",
+      e17: "Bon... ou pare pou kòmanse?",
+      e17bouton: "Ann ale! \u203a",
+      traductionSalut: "Bonjou!",
+      btnContinuer: "Kontinye \u203a",
+      btnDemarrer: "Kòmanse leson an \u203a",
+      btnSauvegarde: "N ap anrejistre…",
+      imageNonPrete: "Imaj la poko pare",
+      sacAriaLabel: "Sak do",
+      sacTitre: "Sak do mwen",
+      sacVide: "poko gen anyen",
+      sacAvertissement: "Sak do sa a anrejistre sèlman sou aparèy sa a. Konekte pou konsève l pou tout tan, menm si ou chanje aparèy.",
+      sacConnexion: "Konekte",
+      catMots: "Mo yo aprann",
+      catCodes: "Kòd",
+      catSucces: "Reyisit",
+      catTrophees: "Twofe",
+      catCartes: "Kat"
+    },
+    id: {
+      e1: "Tunggu... apa kita belum pernah benar-benar berkenalan?",
+      e2a: "Aku Bek.",
+      e2b: "Dan aku Keb.",
+      e3: "Kami adalah Bonomes — karakter kecil hasil gambar yang selalu hidup di setiap buku yang pernah dimiliki Bek yang asli.",
+      e4: "Dan sekarang, berkat kemampuan komputer Keb yang asli, kami juga hidup di internet — siap mengajarimu bahasa Prancis.",
+      e5: "Kami bisa bicara dalam bahasa apa saja... tapi bahasa Prancis adalah bahasa sejati jiwa kami.",
+      e6: "Sebenarnya, sebentar lagi kita akan lanjut ke pelajaran pertamamu — dan mulai saat itu, kami hanya akan berbicara bahasa Prancis.",
+      e7: "Kami akan membutuhkan Kloé — sahabat kedua Bek — untuk datang menerjemahkan untukmu.",
+      e8: "Itu dia datang!",
+      e9: "Hai, aku Kloé! Senang bertemu denganmu!",
+      e10: "Aku juga akan mengurus penjelasan tata bahasa dan menunjukkan situs ini padamu.",
+      e11: "Ayo kami tunjukkan cara kerjanya. Katakan sesuatu, kalian berdua!",
+      e13: "Kalau kamu arahkan kursor atau ketuk sebuah kata, kamu akan dapat terjemahannya — dan penjelasan dariku, selalu!",
+      e14: "Setelah itu, kalau kamu mau, kamu bisa menyimpan kata-kata baru yang sudah kamu pelajari. Ketuk saja kotak di bawah!",
+      e15: "Kata yang dicentang itu akan disimpan di ransel yang kamu lihat di pojok kanan atas layarmu.",
+      e16: "Ngomong-ngomong, semua yang kamu kumpulkan selama pelajaran akan masuk ke sana. Semuanya tersimpan dari satu pelajaran ke pelajaran berikutnya — tapi buat akun supaya progresmu tidak pernah hilang!",
+      e17: "Jadi... siap untuk mulai?",
+      e17bouton: "Ayo mulai! \u203a",
+      traductionSalut: "Hai!",
+      btnContinuer: "Lanjut \u203a",
+      btnDemarrer: "Mulai pelajaran \u203a",
+      btnSauvegarde: "Menyimpan…",
+      imageNonPrete: "Gambar belum siap",
+      sacAriaLabel: "Ransel",
+      sacTitre: "Ransel saya",
+      sacVide: "belum ada apa-apa",
+      sacAvertissement: "Ransel ini hanya disimpan di perangkat ini. Masuk untuk menyimpannya selamanya, meski kamu berganti perangkat.",
+      sacConnexion: "Masuk",
+      catMots: "Kata yang dipelajari",
+      catCodes: "Kode",
+      catSucces: "Pencapaian",
+      catTrophees: "Piala",
+      catCartes: "Kartu"
+    },
+    fa: {
+      e1: "صبر کن... مگه ما تا حالا درست خودمونو معرفی نکردیم؟",
+      e2a: "من بک هستم.",
+      e2b: "و من کب هستم.",
+      e3: "ما بونوم هستیم — شخصیت‌های کوچیک نقاشی‌شده‌ای که همیشه توی هر کتابی که بکِ واقعی داشته زندگی کرده‌ن.",
+      e4: "و حالا، به‌لطف مهارت‌های کامپیوتری کبِ واقعی، توی اینترنت هم زندگی می‌کنیم — آماده که بهت فرانسوی یاد بدیم.",
+      e5: "ما می‌تونیم به هر زبونی حرف بزنیم... ولی فرانسوی زبون واقعی روح ماست.",
+      e6: "راستش، الان می‌ریم سراغ اولین درست — و از اون به بعد، فقط فرانسوی حرف می‌زنیم.",
+      e7: "به کلوئه احتیاج داریم — دومین بهترین دوست بک — تا بیاد برات ترجمه کنه.",
+      e8: "اوناهاش، داره میاد!",
+      e9: "سلام، من کلوئه‌ام! از آشناییت خوشحالم!",
+      e10: "توضیحات گرامری رو هم من میدم و سایت رو بهت نشون میدم.",
+      e11: "بذار نشونت بدیم چطوری کار می‌کنه. یه چیزی بگید، شما دوتا!",
+      e13: "اگه ماوس رو روی یه کلمه ببری یا روش بزنی، ترجمه‌شو می‌بینی — و همیشه یه توضیح از طرف من!",
+      e14: "بعدش، اگه دوست داشتی، می‌تونی کلمات جدیدی که یاد گرفتی رو ذخیره کنی. فقط کادر پایین رو بزن!",
+      e15: "اون کلمه‌ای که تیک زدی توی کوله‌ای که گوشه بالا-راست صفحه‌ت می‌بینی ذخیره می‌شه.",
+      e16: "راستی، هر چیزی که توی یه درس جمع کنی همون‌جا می‌ره. از یه درس به درس بعدی می‌مونه — ولی یه حساب کاربری بساز تا پیشرفتت هیچ‌وقت گم نشه!",
+      e17: "خب... آماده‌ای شروع کنیم؟",
+      e17bouton: "بزن بریم! \u2039",
+      traductionSalut: "سلام!",
+      btnContinuer: "ادامه \u2039",
+      btnDemarrer: "شروع درس \u2039",
+      btnSauvegarde: "در حال ذخیره…",
+      imageNonPrete: "تصویر هنوز آماده نیست",
+      sacAriaLabel: "کوله",
+      sacTitre: "کوله‌ی من",
+      sacVide: "هنوز چیزی نیست",
+      sacAvertissement: "این کوله فقط روی همین دستگاه ذخیره می‌شه. برای نگه‌داشتنش برای همیشه، حتی با تغییر دستگاه، وارد حساب کاربریت شو.",
+      sacConnexion: "ورود",
+      catMots: "کلمات یادگرفته‌شده",
+      catCodes: "کدها",
+      catSucces: "دستاوردها",
+      catTrophees: "جام‌ها",
+      catCartes: "کارت‌ها"
+    },
+    ru: {
+      e1: "Погоди... а мы разве никогда не представлялись друг другу по-настоящему?",
+      e2a: "Я Бек.",
+      e2b: "А я Кеб.",
+      e3: "Мы — Бономы, маленькие нарисованные персонажи, которые всегда жили в каждой книге, что была у настоящей Бек.",
+      e4: "А теперь, благодаря компьютерным талантам настоящего Кеба, мы живём ещё и в интернете — готовы научить тебя французскому.",
+      e5: "Мы можем говорить на любом языке... но французский — истинный язык нашей души.",
+      e6: "На самом деле, сейчас мы перейдём к твоему первому уроку — и с этого момента будем говорить только по-французски.",
+      e7: "Нам понадобится Клоэ — вторая лучшая подруга Бек — чтобы переводить для тебя.",
+      e8: "А вот и она!",
+      e9: "Привет, я Клоэ! Приятно познакомиться!",
+      e10: "Я также займусь объяснением грамматики и покажу тебе сайт.",
+      e11: "Давайте покажем тебе, как это работает. Скажите что-нибудь, вы двое!",
+      e13: "Если навести курсор на слово или коснуться его, ты увидишь перевод — и объяснение от меня, всегда!",
+      e14: "Потом, если хочешь, можешь сохранить новые слова, которые выучил. Просто нажми на поле ниже!",
+      e15: "Отмеченное слово сохранится в рюкзаке, который ты видишь в правом верхнем углу экрана.",
+      e16: "И кстати, всё, что ты собираешь во время урока, попадает туда. Всё сохраняется от урока к уроку — но создай аккаунт, чтобы никогда не потерять свой прогресс!",
+      e17: "Итак... готов начать?",
+      e17bouton: "Поехали! \u203a",
+      traductionSalut: "Привет!",
+      btnContinuer: "Далее \u203a",
+      btnDemarrer: "Начать урок \u203a",
+      btnSauvegarde: "Сохраняем…",
+      imageNonPrete: "Изображение ещё не готово",
+      sacAriaLabel: "Рюкзак",
+      sacTitre: "Мой рюкзак",
+      sacVide: "пока пусто",
+      sacAvertissement: "Этот рюкзак сохраняется только на этом устройстве. Войди в аккаунт, чтобы сохранить его навсегда, даже при смене устройства.",
+      sacConnexion: "Войти",
+      catMots: "Выученные слова",
+      catCodes: "Коды",
+      catSucces: "Достижения",
+      catTrophees: "Трофеи",
+      catCartes: "Карточки"
+    },
+    no: {
+      e1: "Vent... har vi faktisk aldri presentert oss ordentlig for hverandre?",
+      e2a: "Jeg er Bek.",
+      e2b: "Og jeg er Keb.",
+      e3: "Vi er Bonomes — små tegnede figurer som alltid har levd i hver eneste bok den ekte Bek noensinne har eid.",
+      e4: "Og nå, takket være den ekte Kebs dataferdigheter, lever vi også på internett — klare til å lære deg fransk.",
+      e5: "Vi kan snakke alle språk... men fransk er vår sjels sanne språk.",
+      e6: "Faktisk skal vi straks videre til din første leksjon — og fra da av snakker vi bare fransk.",
+      e7: "Vi trenger Kloé — Beks nest beste venninne — til å komme og oversette for deg.",
+      e8: "Her kommer hun!",
+      e9: "Hei, jeg er Kloé! Hyggelig å møte deg!",
+      e10: "Jeg tar meg også av grammatikkforklaringer og viser deg rundt på siden.",
+      e11: "La oss vise deg hvordan dette fungerer. Si noe, dere to!",
+      e13: "Hvis du holder musepekeren over eller trykker på et ord, får du oversettelsen — og alltid en forklaring fra meg!",
+      e14: "Etterpå kan du, hvis du vil, lagre de nye ordene du har lært. Bare trykk på boksen under!",
+      e15: "Det avkryssede ordet blir lagret i sekken du ser oppe i høyre hjørne av skjermen.",
+      e16: "Og forresten, alt du samler i løpet av en leksjon havner der. Det blir værende fra én leksjon til den neste — men opprett en konto så du aldri mister fremgangen din!",
+      e17: "Så... klar til å sette i gang?",
+      e17bouton: "Kjør på! \u203a",
+      traductionSalut: "Hei!",
+      btnContinuer: "Fortsett \u203a",
+      btnDemarrer: "Start leksjonen \u203a",
+      btnSauvegarde: "Lagrer…",
+      imageNonPrete: "Bildet er ikke klart ennå",
+      sacAriaLabel: "Sekk",
+      sacTitre: "Sekken min",
+      sacVide: "ingenting ennå",
+      sacAvertissement: "Denne sekken lagres bare på denne enheten. Logg inn for å beholde den for godt, selv om du bytter enhet.",
+      sacConnexion: "Logg inn",
+      catMots: "Lærte ord",
+      catCodes: "Koder",
+      catSucces: "Prestasjoner",
+      catTrophees: "Trofeer",
+      catCartes: "Kort"
+    },
+    sv: {
+      e1: "Vänta... har vi faktiskt aldrig presenterat oss ordentligt?",
+      e2a: "Jag är Bek.",
+      e2b: "Och jag är Keb.",
+      e3: "Vi är Bonomes — små tecknade figurer som alltid har levt i varje bok som den riktiga Bek någonsin ägt.",
+      e4: "Och nu, tack vare den riktiga Kebs datorkunskaper, lever vi också på internet — redo att lära dig franska.",
+      e5: "Vi kan tala alla språk... men franska är vår själs sanna språk.",
+      e6: "Faktiskt ska vi strax gå vidare till din första lektion — och från och med då talar vi bara franska.",
+      e7: "Vi kommer att behöva Kloé — Beks näst bästa vän — för att komma och översätta åt dig.",
+      e8: "Där kommer hon!",
+      e9: "Hej, jag är Kloé! Trevligt att träffas!",
+      e10: "Jag tar också hand om grammatikförklaringar och visar dig runt på sajten.",
+      e11: "Nu visar vi dig hur det fungerar. Säg något, ni två!",
+      e13: "Om du håller muspekaren över eller trycker på ett ord får du översättningen — och alltid en förklaring från mig!",
+      e14: "Sedan kan du, om du vill, spara de nya orden du har lärt dig. Tryck bara på rutan nedan!",
+      e15: "Det ikryssade ordet sparas i ryggsäcken du ser uppe i högra hörnet av skärmen.",
+      e16: "Och förresten, allt du samlar in under en lektion hamnar där. Det finns kvar från en lektion till nästa — men skapa ett konto så du aldrig förlorar dina framsteg!",
+      e17: "Så... redo att sätta igång?",
+      e17bouton: "Nu kör vi! \u203a",
+      traductionSalut: "Hej!",
+      btnContinuer: "Fortsätt \u203a",
+      btnDemarrer: "Starta lektionen \u203a",
+      btnSauvegarde: "Sparar…",
+      imageNonPrete: "Bilden är inte klar än",
+      sacAriaLabel: "Ryggsäck",
+      sacTitre: "Min ryggsäck",
+      sacVide: "inget än",
+      sacAvertissement: "Den här ryggsäcken sparas bara på den här enheten. Logga in för att behålla den för gott, även om du byter enhet.",
+      sacConnexion: "Logga in",
+      catMots: "Inlärda ord",
+      catCodes: "Koder",
+      catSucces: "Prestationer",
+      catTrophees: "Troféer",
+      catCartes: "Kort"
+    },
+    eo: {
+      e1: "Atendu... ĉu ni fakte neniam vere prezentis nin unu al la alia?",
+      e2a: "Mi estas Bek.",
+      e2b: "Kaj mi estas Keb.",
+      e3: "Ni estas Bonomes — malgrandaj desegnitaj figuroj, kiuj ĉiam vivis en ĉiu libro, kiun la vera Bek iam posedis.",
+      e4: "Kaj nun, dank' al la komputilaj kapabloj de la vera Keb, ni vivas ankaŭ en la interreto — pretaj instrui al vi la francan.",
+      e5: "Ni povas paroli ĉiun lingvon... sed la franca estas la vera lingvo de nia animo.",
+      e6: "Fakte, ni tuj pasos al via unua leciono — kaj de tiam, ni parolos nur en la franca.",
+      e7: "Ni bezonos Kloé-n — la duan plej bonan amikinon de Bek — por veni traduki por vi.",
+      e8: "Jen ŝi venas!",
+      e9: "Saluton, mi estas Kloé! Plezure vin koni!",
+      e10: "Mi ankaŭ zorgos pri gramatikaj klarigoj kaj montros al vi la retejon.",
+      e11: "Ni montru al vi, kiel tio funkcias. Diru ion, vi ambaŭ!",
+      e13: "Se vi ŝvebas aŭ tuŝas vorton, vi ricevos la tradukon — kaj ĉiam klarigon de mi!",
+      e14: "Poste, se vi volas, vi povas konservi la novajn vortojn, kiujn vi lernis. Simple tuŝu la keston sube!",
+      e15: "Tiu markita vorto estos konservita en la dorsosako, kiun vi vidas en la supra dekstra angulo de via ekrano.",
+      e16: "Kaj cetere, ĉio, kion vi kolektas dum leciono, alvenas tien. Ĝi restas de unu leciono al la sekva — sed kreu konton, por ke vi neniam perdu vian progreson!",
+      e17: "Do... ĉu vi pretas eklerni?",
+      e17bouton: "Ni iru! \u203a",
+      traductionSalut: "Saluton!",
+      btnContinuer: "Daŭrigi \u203a",
+      btnDemarrer: "Komenci la lecionon \u203a",
+      btnSauvegarde: "Konservante…",
+      imageNonPrete: "Bildo ankoraŭ ne preta",
+      sacAriaLabel: "Dorsosako",
+      sacTitre: "Mia dorsosako",
+      sacVide: "ankoraŭ nenio",
+      sacAvertissement: "Ĉi tiu dorsosako konserviĝas nur sur ĉi tiu aparato. Ensalutu por konservi ĝin por ĉiam, eĉ se vi ŝanĝas aparaton.",
+      sacConnexion: "Ensaluti",
+      catMots: "Lernitaj vortoj",
+      catCodes: "Kodoj",
+      catSucces: "Atingoj",
+      catTrophees: "Trofeoj",
+      catCartes: "Kartoj"
+    }
+  };
+
+  function t(cle) {
+    const dict = TRADUCTIONS[langueActuelle()] || TRADUCTIONS.en;
+    const valeur = dict[cle];
+    return valeur !== undefined ? valeur : TRADUCTIONS.en[cle];
+  }
+
+  // ─────────────────────────────────────────────
   //  Script des 15 étapes — texte EXACTEMENT celui fourni par Raphaël,
-  //  traduit en anglais (langue choisie pour cette version), à l'exception
-  //  de "Salut !" qui reste en français dans les deux langues (c'est le
-  //  mot enseigné). Aucune ligne inventée : chaque "texte" ci-dessous
+  //  passé maintenant par t() pour être multilingue (dix premières langues
+  //  sur 19 : en, es, pt, it, zh, ko, ja, vi, tl, de — les neuf restantes
+  //  suivront), à l'exception de "Salut !" qui reste en français dans
+  //  toutes les langues (c'est le mot enseigné, jamais traduit dans le
+  //  texte lui-même). Aucune ligne inventée : chaque "texte" ci-dessous
   //  correspond à une réplique précise du script original.
   //
   //  Étape 7 RÉSOLUE (confirmé par Raphaël) : c'est Keb qui parle, avec une
@@ -727,34 +1420,34 @@
     { // 1
       speaker: 'bek',
       img: 'images/prologue/bonomes_keb_bek_presente_01.png',
-      texte: "Wait... have we actually never properly introduced ourselves?"
+      texte: t('e1')
     },
     { // 2 (deux répliques, la deuxième après une courte pause automatique)
       lignes: [
-        { speaker: 'bek', img: 'images/prologue/bonomes_keb_bek_se_presente_01.png', texte: "I'm Bek." },
-        { speaker: 'keb', img: 'images/prologue/bonomes_keb_se_presente_bek_01.png', texte: "And I'm Keb.", delai: 1200 }
+        { speaker: 'bek', img: 'images/prologue/bonomes_keb_bek_se_presente_01.png', texte: t('e2a') },
+        { speaker: 'keb', img: 'images/prologue/bonomes_keb_se_presente_bek_01.png', texte: t('e2b'), delai: 1200 }
       ]
     },
     { // 3 — Keb (pas partagé) ; image de la foule de Bonomes, confirmée par Raphaël
       speaker: 'keb',
       img: 'images/prologue/bonomes_foule_01.png',
-      texte: "We're Bonomes — little drawn characters who've always lived inside every book the real Bek ever owned."
+      texte: t('e3')
     },
     { // 4 — Bek, confirmée par Raphaël
       speaker: 'bek',
       img: 'images/prologue/bonomes_keb_fier_bek_informatique_01.png',
-      texte: "And now, thanks to the real Keb's computer skills, we live on the internet too — ready to teach you French."
+      texte: t('e4')
     },
     { // 5 — toujours Bek, confirmée par Raphaël
       speaker: 'bek',
       img: 'images/prologue/bonomes_keb_bek_francais_ame_01.png',
-      texte: "We can speak every language... but French is the true language of our soul."
+      texte: t('e5')
     },
     { // 6 — c'est Keb qui parle ici (précision de Raphaël), pas une
       // réplique partagée : légende couleur --keb-couleur.
       speaker: 'keb',
       img: 'images/prologue/bonomes_keb_bek_seulement_francais_01.png',
-      texte: "In fact, we're about to move on to your first lesson — and from then on, we'll speak only French."
+      texte: t('e6')
     },
     { // 7 — Keb (même voix que l'étape 6), avec une pointe d'ironie envers
       // Bek : Kloé n'est PAS la meilleure amie de Keb, d'où "Bek's second
@@ -762,12 +1455,12 @@
       // référence à l'ancien texte fautif résolue, voir note ci-dessus).
       speaker: 'keb',
       img: 'images/prologue/bonomes_keb_bek_deuxieme_meilleure_01.png',
-      texte: "We're going to need Kloé — Bek's second best friend — to come and translate for you."
+      texte: t('e7')
     },
     { // 8 — c'est Bek qui parle (précision de Raphaël)
       speaker: 'bek',
       img: 'images/prologue/bonomes_keb_bek_presentent_kloe_01.png',
-      texte: "Here she comes!"
+      texte: t('e8')
     },
     { // 9 — scindée en deux étapes distinctes (précision de Raphaël : les
       // deux idées sont déconnectées — la salutation d'un côté, son rôle
@@ -775,95 +1468,62 @@
       // d'être une seule légende à rallonge).
       speaker: 'kloe',
       img: 'images/prologue/bonomes_keb_bek_kloe_salue_01.png',
-      texte: "Hi, I'm Kloé! Nice to meet you!"
+      texte: t('e9')
     },
     { // 10 — suite de l'étape précédente, scindée pour la même raison.
-      // Image : elle passe de la salutation à l'explication de son rôle,
-      // donc "explique" plutôt que "salue" (précision de Raphaël, v39 —
-      // corrige un doublon où "salue" apparaissait deux fois de suite).
-      // Image définitive (confirmée par Raphaël) : bonomes_keb_bek_kloe_explique_01.png
-      // reste l'image finale pour cette étape — pas de pose distincte à
-      // produire, contrairement à ce qui était envisagé en v39.
       speaker: 'kloe',
       img: 'images/prologue/bonomes_keb_bek_kloe_explique_01.png',
-      texte: "I'll also take care of grammar explanations and showing you around the site."
+      texte: t('e10')
     },
     { // 11
       speaker: 'kloe',
       img: 'images/prologue/bonomes_keb_bek_kloe_invite_dire_02.png',
-      texte: "Let's show you how this works. Say something, you two!"
+      texte: t('e11')
     },
     { // 12 — Bek et Keb disent le premier mot français : reste en légende
-      // ET rejoint la pile du bas pour toujours (francais: true).
-      // Image dédiée reçue (v40) : Keb et Bek saluent Kloé, bras levés,
-      // exactement le moment où ils disent "Salut !" — remplace le
-      // placeholder explique_01 (réf. réservée explique_03 abandonnée,
-      // cette étape avait en réalité besoin d'une image Keb/Bek, pas
-      // d'une pose de Kloé).
+      // ET rejoint la pile du bas pour toujours (francais: true). "Salut !"
+      // n'est JAMAIS traduit ici — seule sa traduction affichée change.
       img: 'images/prologue/bonomes_keb_bek_saluent_kloe_01.png',
       lignes: [
-        { speaker: 'bek', texte: 'Salut !', francais: true, traduction: 'Hi!' },
-        { speaker: 'keb', texte: 'Salut !', francais: true, traduction: 'Hi!', delai: 900 }
+        { speaker: 'bek', texte: 'Salut !', francais: true, traduction: t('traductionSalut') },
+        { speaker: 'keb', texte: 'Salut !', francais: true, traduction: t('traductionSalut'), delai: 900 }
       ]
     },
     { // 13 — ligne de Kloé : légende seulement, ne rejoint jamais la pile
-      // Image dédiée reçue et confirmée par Raphaël : remplace le
-      // placeholder explique_01 (réf. réservée explique_04 abandonnée,
-      // Raphaël a fourni ce fichier sous son propre nom plutôt que suivre
-      // la convention explique_0X).
       img: 'images/prologue/bonomes_keb_bek_pointent_kloe_explique_01.png',
       lignes: [
-        { speaker: 'kloe', texte: "If you hover or tap on a word, you'll get the translation — and an explanation, from me, always!" }
+        { speaker: 'kloe', texte: t('e13') }
       ]
     },
     { // 14 — la case à cocher apparaît maintenant
-      // Image dédiée reçue (v42) : remplace le placeholder explique_01.
       img: 'images/prologue/bonomes_keb_bek_encadrent_kloe_explique_01.png',
       revealCase: true,
-      motACocher: { mot: 'Salut', traduction: 'Hi!' },
+      motACocher: { mot: 'Salut', traduction: t('traductionSalut') },
       lignes: [
-        { speaker: 'kloe', texte: "Then, if you'd like, you can save the new words you've learned. Just tap the box below!" }
+        { speaker: 'kloe', texte: t('e14') }
       ]
     },
     { // 15 — le sac à dos se révèle maintenant
-      // Image dédiée reçue (v42) : remplace le placeholder explique_01.
       img: 'images/prologue/bonomes_keb_bek_pointent_droite_kloe_explique_pointe_droite_01.png',
       revealSac: true,
       lignes: [
-        { speaker: 'kloe', texte: "That checked word will be saved in the backpack you see in the top right corner of your screen." }
+        { speaker: 'kloe', texte: t('e15') }
       ]
     },
     { // 16
-      // Image dédiée reçue (v41) : remplace le placeholder explique_01.
-      // Raphaël a fourni ce fichier sous son propre nom (piasse_dans_sac)
-      // plutôt que suivre la convention explique_07 anticipée en v39 —
-      // même pattern que l'étape 13 (v38) et l'étape 12 (v40) : on garde
-      // le vrai nom de fichier livré plutôt que de forcer une convention.
-      // La pièce qui atterrit dans le sac illustre bien "everything you
-      // collect... lands there" ci-dessous.
       img: 'images/prologue/bonomes_keb_bek_piasse_dans_sac_kloe_explique_01.png',
       lignes: [
-        { speaker: 'kloe', texte: "And by the way, everything you collect during a lesson lands there. It stays from one lesson to the next — but create an account so you never lose your progress!" }
+        { speaker: 'kloe', texte: t('e16') }
       ]
     },
-    { // 17 — conclusion (v43, demande de Raphaël : l'introduction n'avait
-      // pas de vraie fin). Les trois joignent leurs mains au centre comme
-      // une équipe ; Bek demande si l'élève est prêt(e). Bouton dédié
-      // "Let's go!" plutôt que "Continue" : un vrai engagement, pas
-      // juste une étape de plus. Image reçue et confirmée par Raphaël.
+    { // 17 — conclusion (v43). Bouton dédié "Let's go!" plutôt que "Continue".
       speaker: 'bek',
       img: 'images/prologue/bonomes_keb_bek_kloe_prets_a_commencer_02.png',
-      texte: "So — are you ready to jump in?",
-      boutonTexte: "Let's go! \u203a"
+      texte: t('e17'),
+      boutonTexte: t('e17bouton')
     },
     { // 18 — transition pure (v43). Aucun texte, aucune légende, aucun
-      // bouton, aucun compteur, aucun sac à dos — littéralement plus rien
-      // que l'image (demande explicite de Raphaël, voir body.transition-
-      // pure en CSS). Les trois lèvent les bras comme un cri de
-      // ralliement énergique (voir @keyframes ralliementBurst/Pulse, pas
-      // un simple fondu). S'affiche automatiquement pendant environ
-      // 2,5 s puis termine l'introduction toute seule — aucune
-      // interaction requise à cette toute dernière étape.
+      // bouton, aucun compteur, aucun sac à dos.
       img: 'images/prologue/bonomes_keb_bek_kloe_cri_de_ralliement_01.png',
       texte: '',
       transitionPure: true
@@ -1248,6 +1908,7 @@
     if (e.key === 'ArrowLeft') precedent();
   });
 
+  document.documentElement.setAttribute('dir', langueActuelle() === 'fa' ? 'rtl' : 'ltr');
   rendreEtape();
 
   // Session/profil (COMPTES_ELEVES_v11) — même pattern et mêmes limites

@@ -887,10 +887,34 @@
   //    mot déjà affiché — sinon la même infobulle changerait de visage à
   //    chaque passage de souris, ce qui serait plus déroutant qu'utile.
   const CLE_ROTATION_KLOE = 'kebbek_kloe_explique_index';
-  // 🆕 À incrémenter chaque fois que Raphaël fournit une nouvelle image
-  // kloe_explique_XX.png (une seule existe à ce jour : _01). Reste le seul
-  // endroit à toucher pour agrandir le cycle — rien d'autre à changer.
-  const TOTAL_KLOE_EXPLIQUE = 1;
+
+  // 🆕 Détection automatique du nombre d'images disponibles — plus de
+  // constante à mettre à jour à la main (question de Raphaël : "peu
+  // importe le nombre, partout sur le site"). Le site n'a pas de serveur
+  // capable de lister un dossier (pages statiques, GitHub Pages), donc on
+  // sonde en essayant de charger 01, 02, 03... jusqu'à ce qu'une image
+  // échoue — ce qui marque la fin de la série. Démarre dès le chargement
+  // du script, bien avant que le premier mot français n'apparaisse (au
+  // plus tôt étape 12), donc la détection a largement le temps de se
+  // terminer avant qu'un vrai visiteur ne voie une infobulle.
+  // totalKloeExplique commence à 1 (kloe_explique_01.png existe forcément)
+  // et grimpe au fur et à mesure que la sonde confirme chaque image
+  // suivante — jamais besoin d'y toucher manuellement, ni ici ni sur une
+  // future page qui reprendrait ce mécanisme.
+  let totalKloeExplique = 1;
+  (function detecterTotalKloeExplique(n) {
+    const img = new Image();
+    img.onload = function () {
+      totalKloeExplique = n;
+      detecterTotalKloeExplique(n + 1); // essaie la suivante
+    };
+    img.onerror = function () {
+      // n a échoué : la série s'arrête à n - 1, déjà enregistré ci-dessus
+      // par l'appel précédent (ou reste à 1 si même la 01 est introuvable,
+      // ce qui ne devrait jamais arriver en pratique).
+    };
+    img.src = 'images/recurrentes/kloe_explique_' + String(n).padStart(2, '0') + '.png';
+  })(1);
 
   function prochaineImageKloeExplique() {
     let index = 0;
@@ -900,7 +924,7 @@
     } catch (e) {
       index = 0; // localStorage indisponible : on repart de 01 sans planter
     }
-    const numero = (index % TOTAL_KLOE_EXPLIQUE) + 1; // cycle 1..N, jamais 0
+    const numero = (index % totalKloeExplique) + 1; // cycle 1..N, jamais 0
     try {
       localStorage.setItem(CLE_ROTATION_KLOE, String(index + 1));
     } catch (e) {

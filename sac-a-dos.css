@@ -149,18 +149,46 @@
 
 .sac-item {
   display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 10px;
+  align-items: center;
+  gap: 8px;
   font-size: 0.8rem;
   padding: 4px 0;
   border-bottom: 1px dotted rgba(102, 80, 69, 0.18);
 }
 
 .sac-item:last-child { border-bottom: none; }
+
+.sac-item-principal {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+
 .sac-item-nom { font-weight: 700; }
 .sac-item-detail { color: var(--brun-clair, #8A7364); font-size: 0.74rem; text-align: right; }
 .sac-vide { font-size: 0.76rem; color: var(--brun-clair, #8A7364); font-style: italic; padding: 4px 0; }
+
+.sac-item-retirer {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  color: var(--brun-clair, #8A7364);
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.sac-item-retirer:hover { background: rgba(224, 136, 103, 0.15); color: var(--peche-fonce); }
 
 .sac-pied {
   padding: 10px 16px 14px;

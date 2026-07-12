@@ -6,6 +6,7 @@
 <title>Meet the Bonomes — Keb &amp; Bek</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700&family=Fuzzy+Bubbles:wght@400;700&family=Caveat+Brush&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="sac-a-dos.css">
 <!-- Page à part entière, même situation que parcours.html (voir
      COMPTES_ELEVES_v10/v11) : aucun état JS partagé avec index.html, donc
      son propre client Supabase — progression.js en crée un lui-même au
@@ -115,13 +116,9 @@
                commentaire une fois fait.
        - images/recurrentes/ : vide pour l'instant dans ce fichier — voir
          correction ci-dessus.
-     Étapes 1 à 16 ont toutes leur vraie image, fournies par Raphaël.
-     🆕 v43 : conclusion ajoutée (étapes 17 et 18, aucune conclusion
-     n'existait avant cette session) — toutes deux avec un placeholder
-     🚧 actif en attendant leurs images dédiées : noms réservés
-     bonomes_keb_bek_kloe_mains_centre_01.png (étape 17, mains jointes au
-     centre) et bonomes_keb_bek_kloe_bras_leves_01.png (étape 18, bras
-     levés). Voir commentaires 🚧 PLACEHOLDER sur chaque étape.
+     Toutes les étapes (1 à 16) ont maintenant leur vraie image, fournies
+     par Raphaël — plus aucun repli "image pas encore prête" actif dans
+     cette introduction.
 
      PAS D'ENCADRÉ DERRIÈRE LES PERSONNAGES (relecture de Raphaël) : .scene-
      intro n'a plus de fond, de bordure ni d'ombre — ce n'est qu'un
@@ -493,58 +490,19 @@
   .bouton-nav-intro:hover { transform: translateY(-1px); }
   .bouton-nav-intro:disabled { opacity: 0.35; cursor: default; transform: none; }
 
-  /* ── Étape de transition finale (bras levés, aucun texte) — demande de
-       Raphaël : "un effet de soulèvement pour simuler l'effet [du
-       ralliement]". L'image démarre légèrement plus bas et un peu plus
-       petite, puis "se soulève" jusqu'à sa position/taille normale avec
-       un petit dépassement (même famille de courbe "back" que le sac à
-       dos ailleurs dans ce fichier, pour rester cohérent). ── */
-  .scene-intro.scene-transition img.image-scene {
-    animation: soulevementTransition 0.9s cubic-bezier(.34, 1.56, .64, 1);
-  }
+  /* Structure/couleurs/comportement communs : voir sac-a-dos.css (fichier
+     partagé, mêmes ids/classes que index.html/parcours.html). Ci-dessous,
+     uniquement ce qui est propre à CETTE page : le sac démarre invisible
+     et n'est révélé qu'au moment précis où Kloé le présente (étape 15/16,
+     voir BONOMES_v36) — partout ailleurs sur le site, il est visible en
+     permanence dès le chargement. */
 
-  @keyframes soulevementTransition {
-    0%   { transform: translateY(22px) scale(0.94); opacity: 0; }
-    55%  { transform: translateY(-8px) scale(1.03); opacity: 1; }
-    100% { transform: translateY(0) scale(1); opacity: 1; }
-  }
-
-  /* ================= Sac à dos : porté tel quel depuis index.html ================= */
-  /* Même ids/classes/fonctions que index.html (CLE_SAC, CATEGORIES_SAC,
-     chargerSac/sauvegarderSac/ajouterAuSac/rafraichirAffichageSac...),
-     pour rester trivialement resynchronisable. Seul ajout : caché par
-     défaut (.cache) et révélé au moment précis où Kloé le présente
-     (étape 14), plutôt que visible dès le chargement de la page — voir
-     BONOMES_v32 : "l'introduction serait aussi le moment où on l'ajoute
-     pour la première fois à cette page". */
-
-  #sacBouton {
-    position: fixed;
-    top: 24px;
-    right: 24px;
-    z-index: 200;
-    width: 48px;
-    height: 48px;
-    border-radius: 50%;
-    background: #FFFFFF;
-    border: 2px solid var(--peche);
-    box-shadow: 0 6px 18px rgba(102, 80, 69, 0.14);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.5s ease;
-    opacity: 0;
-    pointer-events: none;
-  }
+  #sacBouton { opacity: 0; pointer-events: none; }
 
   /* Apparition du sac : démarre plus gros (échelle 1.9), puis rétrécit
      jusqu'à sa taille normale avec un léger rebond (cubic-bezier "back",
-     même courbe que .rabat un peu plus bas dans ce fichier, pour rester
-     cohérent) — demande explicite de Raphaël, effet fluide plutôt qu'un
-     simple fondu. Enchaîné avec l'ancienne pulsation (box-shadow), qui
-     démarre une fois le rétrécissement terminé plutôt que les deux en
-     même temps, pour ne pas surcharger l'œil.
+     même courbe que .rabat), enchaînée avec une pulsation. Demande
+     explicite de Raphaël, effet fluide plutôt qu'un simple fondu.
      .revele (permanent) porte l'état final (visible, cliquable) ;
      .revele-anim (temporaire, retiré par JS à la fin de l'animation)
      porte l'animation elle-même — les séparer évite qu'un fill-mode
@@ -567,102 +525,63 @@
     50% { box-shadow: 0 6px 26px rgba(224, 136, 103, 0.55); }
   }
 
-  #sacBouton:hover { transform: translateY(-1px); box-shadow: 0 8px 22px rgba(102, 80, 69, 0.14); }
-  #sacBouton:active { transform: translateY(1px); }
-
-  .sac-badge {
-    position: absolute;
-    top: -4px;
-    right: -4px;
-    background: var(--peche-fonce);
-    color: #FFFFFF;
-    border-radius: 50%;
-    min-width: 20px;
-    height: 20px;
-    padding: 0 4px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 11px;
-    font-weight: 700;
-    box-shadow: 0 2px 5px rgba(102, 80, 69, 0.14);
-  }
-
-  .sac-badge.vide { display: none; }
-
-  #iconeSac .rabat { transform-origin: 32px 34px; transition: transform 0.35s cubic-bezier(.34, 1.56, .64, 1); }
-  #sacBouton.ouvert #iconeSac .rabat { transform: rotate(-38deg) translate(-2px, -3px); }
-  #iconeSac .contenu-eclat { opacity: 0; transition: opacity 0.25s ease 0.1s; }
-  #sacBouton.ouvert #iconeSac .contenu-eclat { opacity: 1; }
-
-  #sacPanneau {
-    position: fixed;
-    top: 78px;
-    right: 24px;
-    z-index: 199;
-    width: min(78vw, 300px);
-    background: #FFFFFF;
-    border: 1.5px solid var(--peche);
-    border-radius: 20px;
-    box-shadow: 0 14px 36px rgba(102, 80, 69, 0.14);
-    overflow: hidden;
-    max-height: 0;
-    opacity: 0;
-    pointer-events: none;
-    transition: max-height 0.3s ease, opacity 0.25s ease;
-  }
-
-  #sacPanneau.ouvert { max-height: min(65vh, 520px); opacity: 1; pointer-events: auto; }
-
-  .sac-entete { padding: 14px 18px; background: var(--peche); color: #FFFFFF; font-weight: 700; font-size: 1rem; }
-  .sac-sous-titre { font-size: 0.72rem; font-weight: 500; opacity: 0.9; margin-top: 1px; }
-  .sac-corps { max-height: calc(min(65vh, 520px) - 58px); overflow-y: auto; padding: 8px 10px 14px; }
-  .sac-categorie { margin-top: 10px; }
-  .sac-categorie:first-child { margin-top: 4px; }
-
-  .sac-cat-entete {
-    display: flex; align-items: center; gap: 8px; padding: 6px 8px;
-    font-size: 0.85rem; font-weight: 700; color: var(--brun);
-    cursor: pointer; user-select: none; border-radius: 10px;
-  }
-  .sac-cat-entete:hover { background: var(--fond); }
-  .sac-cat-icone { width: 18px; height: 18px; flex-shrink: 0; color: var(--peche-fonce); }
-  .sac-cat-compteur {
-    margin-left: auto; background: var(--fond); color: var(--brun);
-    border-radius: 100px; font-size: 0.72rem; padding: 1px 8px; font-weight: 700;
-  }
-  .sac-cat-chevron { font-size: 0.7rem; color: var(--brun); transition: transform 0.2s ease; flex-shrink: 0; width: 12px; }
-  .sac-categorie.repliee .sac-cat-chevron { transform: rotate(-90deg); }
-  .sac-cat-liste { padding: 2px 8px 6px 40px; }
-  .sac-categorie.repliee .sac-cat-liste { display: none; }
-
-  .sac-item {
-    display: flex; align-items: baseline; justify-content: space-between; gap: 10px;
-    font-size: 0.8rem; padding: 4px 0; border-bottom: 1px dotted rgba(102, 80, 69, 0.18);
-  }
-  .sac-item:last-child { border-bottom: none; }
-  .sac-item-nom { font-weight: 700; }
-  .sac-item-detail { color: var(--brun); font-size: 0.74rem; text-align: right; }
-  .sac-vide { font-size: 0.76rem; color: var(--brun); font-style: italic; padding: 4px 0; }
-
-  .sac-pied { padding: 10px 16px 14px; border-top: 1px solid rgba(240, 169, 139, 0.35); display: flex; gap: 8px; }
-  .sac-pied button {
-    flex: 1; border-radius: 10px; padding: 8px; font-size: 0.78rem; font-weight: 700;
-    cursor: pointer; font-family: inherit; transition: opacity 0.15s ease;
-  }
-  .sac-pied button:hover { opacity: 0.85; }
-  #btnConnexionDepuisSac { background: var(--peche-fonce); border: none; color: #FFFFFF; }
-
-  .sac-avertissement {
-    margin: 0 10px 10px; padding: 8px 10px; background: #EAF3DE; border-radius: 10px;
-    font-size: 0.72rem; color: #3d5c2c; line-height: 1.35;
-  }
 
   @media (max-width: 560px) {
-    #sacBouton { top: 16px; right: 16px; width: 40px; height: 40px; }
-    #sacPanneau { top: 62px; right: 16px; }
     .legende-intro { font-size: 0.92rem; max-width: 88%; }
     .pile-texte { font-size: 1rem; }
+  }
+
+  /* ==================================================================
+     Étape finale (18) — transition pure. Demande explicite de Raphaël :
+     à ce moment précis, plus RIEN sur la page à part l'image (pas le
+     bouton retour, pas le compteur, pas la légende, pas le sac à dos,
+     pas la nav) — et un mouvement énergique qui va avec "lever les bras
+     comme un cri de ralliement", pas un simple fondu ou un lever discret.
+     body.transition-pure bascule aussi en centrage vertical plein écran,
+     puisque l'image est alors seule et n'a plus besoin de partager la
+     page avec le reste empilé au-dessus/en dessous.
+     ================================================================== */
+  body.transition-pure {
+    justify-content: center;
+    min-height: 100vh;
+  }
+
+  body.transition-pure .retour,
+  body.transition-pure #compteurIntro,
+  body.transition-pure .legende-zone,
+  body.transition-pure .pile-intro-conteneur,
+  body.transition-pure .nav-intro,
+  body.transition-pure #sacBouton,
+  body.transition-pure #sacPanneau {
+    display: none !important;
+  }
+
+  /* Éclatement énergique : démarre plus petite et plus bas (comme un élan
+     pris avant le saut), remonte avec un net dépassement (110%) façon
+     "bras qui se lancent vers le haut", puis se stabilise avec un petit
+     rebond — beaucoup plus vif qu'un simple lever, pour épouser l'énergie
+     du cri de ralliement illustré dans l'image elle-même. Enchaîne avec
+     une légère pulsation pendant que l'image reste affichée, pour ne pas
+     retomber "morte" une fois l'élan initial retombé. */
+  .image-scene.image-ralliement {
+    animation: ralliementBurst 0.6s cubic-bezier(.22, 1.6, .36, 1) both,
+               ralliementPulse 0.9s ease-in-out 0.6s 2;
+  }
+
+  @keyframes ralliementBurst {
+    0%   { opacity: 0; transform: scale(0.7) translateY(55px); }
+    55%  { opacity: 1; transform: scale(1.1) translateY(-16px); }
+    78%  { transform: scale(0.96) translateY(3px); }
+    100% { opacity: 1; transform: scale(1) translateY(0); }
+  }
+
+  @keyframes ralliementPulse {
+    0%, 100% { transform: scale(1); }
+    50%      { transform: scale(1.025); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .image-scene.image-ralliement { animation: none; }
   }
 </style>
 </head>
@@ -670,7 +589,7 @@
 
   <a class="retour" href="parcours.html" aria-label="Retour au parcours">‹</a>
 
-  <div class="compteur-intro" id="compteurIntro">1 / 18</div>
+  <div class="compteur-intro" id="compteurIntro">1 / 15</div>
 
   <div class="scene-intro" id="sceneIntro">
     <!-- Image seule, injectée par JS — la légende ne vit plus ici (voir
@@ -686,7 +605,7 @@
     <div class="pile-intro" id="pileIntro"></div>
   </div>
 
-  <div class="nav-intro" id="navIntro">
+  <div class="nav-intro">
     <button type="button" class="bouton-nav-intro precedent" id="btnPrecedentIntro">‹ Back</button>
     <button type="button" class="bouton-nav-intro suivant" id="btnSuivantIntro">Continue ›</button>
   </div>
@@ -724,6 +643,9 @@
       <button id="btnConnexionDepuisSac" onclick="window.location.hash = '#connexion'">Sign in</button>
     </div>
   </div>
+
+  <!-- Logique du sac à dos : voir sac-a-dos.js (fichier partagé). -->
+  <script src="sac-a-dos.js"></script>
 
 <script>
   // ─────────────────────────────────────────────
@@ -870,38 +792,27 @@
         { speaker: 'kloe', texte: "And by the way, everything you collect during a lesson lands there. It stays from one lesson to the next — but create an account so you never lose your progress!" }
       ]
     },
-    { // 17 — 🆕 conclusion demandée par Raphaël (aucune conclusion
-      // n'existait avant cette session) : Bek lance l'appel de ralliement,
-      // les trois joignent les mains au centre comme le ferait une
-      // équipe. texteBouton personnalisé plutôt que le "Continue ›"
-      // générique, pour marquer ce moment comme un vrai engagement.
-      // 🚧 PLACEHOLDER (v43) : image de l'étape 16 réutilisée en attendant
-      // — nom réservé pour la future image dédiée :
-      // bonomes_keb_bek_kloe_mains_centre_01.png (les trois, mains
-      // jointes au centre, geste d'équipe). Voir convention v39 : ce nom
-      // n'est qu'une réservation de Claude, pas une confirmation de
-      // Raphaël — à faire correspondre par le contexte de la scène, pas
-      // par le nom, quand la vraie image arrive.
+    { // 17 — conclusion (v43, demande de Raphaël : l'introduction n'avait
+      // pas de vraie fin). Les trois joignent leurs mains au centre comme
+      // une équipe ; Bek demande si l'élève est prêt(e). Bouton dédié
+      // "Let's go!" plutôt que "Continue" : un vrai engagement, pas
+      // juste une étape de plus. Image reçue et confirmée par Raphaël.
       speaker: 'bek',
-      img: 'images/prologue/bonomes_keb_bek_piasse_dans_sac_kloe_explique_01.png',
+      img: 'images/prologue/bonomes_keb_bek_kloe_prets_a_commencer_02.png',
       texte: "So — are you ready to jump in?",
-      texteBouton: "Let's go! ›"
+      boutonTexte: "Let's go! \u203a"
     },
-    { // 18 — 🆕 image de transition pure demandée par Raphaël : les trois
-      // lèvent les bras dans les airs (rallying cry), AUCUN texte, ni
-      // légende ni pile ni boutons de navigation — seulement l'image avec
-      // un effet de soulèvement (translateY + léger scale, voir
-      // @keyframes soulevementTransition), puis avance automatiquement
-      // vers la fin de l'introduction après un court délai (pas de clic
-      // requis, l'idée est une image de transition pure, pas une étape de
-      // dialogue). Voir afficherEtapeTransition() plus bas.
-      // 🚧 PLACEHOLDER (v43) : image de l'étape 16 réutilisée en attendant
-      // — nom réservé : bonomes_keb_bek_kloe_bras_leves_01.png (les
-      // trois, bras levés dans les airs, geste de ralliement). Même
-      // convention que ci-dessus : nom réservé par Claude, à confirmer
-      // par le contexte quand Raphaël fournit la vraie image.
-      transition: true,
-      img: 'images/prologue/bonomes_keb_bek_piasse_dans_sac_kloe_explique_01.png'
+    { // 18 — transition pure (v43). Aucun texte, aucune légende, aucun
+      // bouton, aucun compteur, aucun sac à dos — littéralement plus rien
+      // que l'image (demande explicite de Raphaël, voir body.transition-
+      // pure en CSS). Les trois lèvent les bras comme un cri de
+      // ralliement énergique (voir @keyframes ralliementBurst/Pulse, pas
+      // un simple fondu). S'affiche automatiquement pendant environ
+      // 2,5 s puis termine l'introduction toute seule — aucune
+      // interaction requise à cette toute dernière étape.
+      img: 'images/prologue/bonomes_keb_bek_kloe_cri_de_ralliement_01.png',
+      texte: '',
+      transitionPure: true
     }
   ];
 
@@ -928,7 +839,6 @@
   const elCompteur = document.getElementById('compteurIntro');
   const btnPrecedent = document.getElementById('btnPrecedentIntro');
   const btnSuivant = document.getElementById('btnSuivantIntro');
-  const elNavIntro = document.getElementById('navIntro');
 
   function viderMinuteries() {
     minuteriesActives.forEach(id => clearTimeout(id));
@@ -1037,6 +947,9 @@
       elScene.appendChild(creerImage(cheminImage));
       elScene.dataset.cheminImage = cheminImage;
     }
+    const imgActuelle = elScene.querySelector('img.image-scene');
+    if (imgActuelle) imgActuelle.classList.toggle('image-ralliement', !!def.transitionPure);
+
     // La légende vit dans son propre conteneur SOUS l'image (voir
     // .legende-zone) — toujours remplacée par la nouvelle réplique, qu'on
     // ait changé d'image ou non (avant cette correction, elle vivait dans
@@ -1066,23 +979,7 @@
   function rendreEtape() {
     const def = ETAPES[etape];
     elCompteur.textContent = (etape + 1) + ' / ' + ETAPES.length;
-
-    if (def.transition) {
-      // Étape de transition pure (18) : aucune légende, aucune pile,
-      // aucun bouton — juste l'image, avec l'effet de soulèvement, avant
-      // la fin automatique de l'introduction. Voir afficherEtapeTransition.
-      viderMinuteries();
-      afficherEtapeTransition(def);
-      return;
-    }
-
-    // Étape normale : s'assure que tout est bien visible, au cas où on
-    // reviendrait ici après avoir été sur l'étape de transition (qui, elle,
-    // masque légende/nav/compteur — voir ci-dessus et afficherEtapeTransition).
-    elLegendeZone.style.display = 'flex';
-    elNavIntro.style.display = 'flex';
-    elCompteur.style.display = 'block';
-    elScene.classList.remove('scene-transition');
+    document.body.classList.toggle('transition-pure', !!def.transitionPure);
 
     const lignes = def.lignes || [{ speaker: def.speaker, img: def.img, texte: def.texte }];
 
@@ -1108,27 +1005,19 @@
     if (def.revealSac) reveleSacADos();
 
     btnPrecedent.disabled = (etape === 0);
-    btnSuivant.textContent = def.texteBouton || 'Continue ›';
-  }
+    btnSuivant.textContent = def.boutonTexte || ((etape === ETAPES.length - 1) ? 'Start the lesson ›' : 'Continue ›');
 
-  // Étape 18 : aucun texte, aucune interaction — juste l'image (bras
-  // levés) avec l'effet de soulèvement, affichée le temps de l'apprécier,
-  // puis enchaînement automatique sur la fin de l'introduction. Demande
-  // explicite de Raphaël : "il n'y aurait alors que l'image... comme une
-  // image de transition", donc pas de bouton "Continue" à cliquer ici.
-  function afficherEtapeTransition(def) {
-    elLegendeZone.style.display = 'none';
-    elNavIntro.style.display = 'none';
-    elCompteur.style.display = 'none';
-
-    const cheminImage = def.img;
-    elScene.innerHTML = '';
-    elScene.classList.add('scene-transition');
-    elScene.appendChild(creerImage(cheminImage));
-    elScene.dataset.cheminImage = cheminImage;
-
-    const id = setTimeout(terminerIntroduction, 2200);
-    minuteriesActives.push(id);
+    // Étape 18 : rien à cliquer, tout est masqué (voir body.transition-pure
+    // en CSS) — l'introduction se termine toute seule après le temps
+    // laissé à l'animation de ralliement de se jouer pleinement. Le délai
+    // est mis dans minuteriesActives comme les autres : si jamais l'étape
+    // change entre-temps (ne devrait pas arriver ici, aucun bouton n'est
+    // cliquable, mais robustesse plutôt que supposition), viderMinuteries()
+    // l'annule proprement au prochain rendreEtape().
+    if (def.transitionPure) {
+      const id = setTimeout(() => { terminerIntroduction(); }, 2500);
+      minuteriesActives.push(id);
+    }
   }
 
   function suivant() {
@@ -1159,12 +1048,13 @@
   // n'existe encore pour enchaîner dessus (voir COMPTES_ELEVES_v10) — donc
   // retour au parcours, comme le lien "‹" déjà présent sur cette page,
   // plutôt qu'une redirection vers une page qui n'existe pas encore.
-  // 🆕 v43 : appelée automatiquement depuis afficherEtapeTransition() à la
-  // fin de l'étape 18 (transition, bras levés) — l'appel depuis le "else"
-  // de suivant() ci-dessus est désormais inatteignable en pratique (la
-  // navigation vers l'étape de transition ne passe plus par un clic), mais
-  // reste en place par sécurité défensive.
+  let introTerminee = false; // évite un double appel (minuteur auto de
+                              // l'étape 18 + touche Entrée/flèche pressée
+                              // juste avant qu'il ne se déclenche)
+
   async function terminerIntroduction() {
+    if (introTerminee) return;
+    introTerminee = true;
     btnSuivant.disabled = true;
     btnSuivant.textContent = 'Saving…';
     try {
@@ -1248,138 +1138,6 @@
   }
   initProgressionReelle();
 
-  // ═════════════════════════════════════════════
-  //  Sac à dos — porté tel quel depuis index.html (mêmes ids, mêmes
-  //  fonctions, même structure de données CLE_SAC). Le bouton "+ test
-  //  item" du prototype original a été retiré ici : cette page a une
-  //  vraie source d'ajout (la case à cocher "Salut"), donc pas besoin
-  //  d'un bouton de test.
-  // ═════════════════════════════════════════════
-
-  const CLE_SAC = 'keb_bek_sac_a_dos';
-
-  const CATEGORIES_SAC = [
-    { id: 'mots',     nom: 'Words learned', icone: iconeSacLivre() },
-    { id: 'codes',    nom: 'Codes',         icone: iconeSacCle() },
-    { id: 'succes',   nom: 'Achievements',  icone: iconeSacEtoile() },
-    { id: 'trophees', nom: 'Trophies',      icone: iconeSacTrophee() },
-    { id: 'cartes',   nom: 'Cards',         icone: iconeSacCarte() }
-  ];
-
-  function sacParDefaut() {
-    return { version: 1, mots: [], codes: [], succes: [], trophees: [], cartes: [] };
-  }
-
-  function chargerSac() {
-    try {
-      const brut = localStorage.getItem(CLE_SAC);
-      if (!brut) return sacParDefaut();
-      const objet = JSON.parse(brut);
-      return Object.assign(sacParDefaut(), objet);
-    } catch (e) {
-      console.warn('Sac à dos illisible, réinitialisation.', e);
-      return sacParDefaut();
-    }
-  }
-
-  function sauvegarderSac(sac) {
-    try {
-      localStorage.setItem(CLE_SAC, JSON.stringify(sac));
-    } catch (e) {
-      console.warn('Impossible de sauvegarder le sac à dos.', e);
-    }
-  }
-
-  function ajouterAuSac(categorie, item) {
-    const sac = chargerSac();
-    if (!sac[categorie]) sac[categorie] = [];
-    const dejaLa = sac[categorie].some(i => (i.mot || i.code || i.titre || i.nom) === (item.mot || item.code || item.titre || item.nom));
-    if (!dejaLa) {
-      item.obtenu_le = item.obtenu_le || new Date().toISOString();
-      sac[categorie].push(item);
-      sauvegarderSac(sac);
-    }
-    rafraichirAffichageSac();
-  }
-
-  function compterToutSac(sac) {
-    return CATEGORIES_SAC.reduce((total, cat) => total + (sac[cat.id] ? sac[cat.id].length : 0), 0);
-  }
-
-  function rafraichirAffichageSac() {
-    const sac = chargerSac();
-    const total = compterToutSac(sac);
-
-    const badge = document.getElementById('sacBadge');
-    badge.textContent = total;
-    badge.classList.toggle('vide', total === 0);
-
-    document.getElementById('sacSousTitre').textContent =
-      total === 0 ? 'nothing yet' : (total === 1 ? '1 item saved' : total + ' items saved');
-
-    const corps = document.getElementById('sacCorps');
-    corps.innerHTML = '';
-
-    CATEGORIES_SAC.forEach(cat => {
-      const items = sac[cat.id] || [];
-      const div = document.createElement('div');
-      div.className = 'sac-categorie';
-      div.innerHTML =
-        '<div class="sac-cat-entete" onclick="toggleCategorieSac(this)">' +
-          '<span class="sac-cat-icone">' + cat.icone + '</span>' +
-          '<span>' + cat.nom + '</span>' +
-          '<span class="sac-cat-compteur">' + items.length + '</span>' +
-          '<span class="sac-cat-chevron">&#9660;</span>' +
-        '</div>' +
-        '<div class="sac-cat-liste">' +
-          (items.length === 0
-            ? '<div class="sac-vide">Nothing here yet.</div>'
-            : items.map(i => '<div class="sac-item"><span class="sac-item-nom">' + (i.nom || i.mot || i.code || '—') + '</span><span class="sac-item-detail">' + (i.trad || i.description || i.titre || '') + '</span></div>').join('')
-          ) +
-        '</div>';
-      corps.appendChild(div);
-    });
-  }
-
-  function toggleCategorieSac(entete) {
-    entete.parentElement.classList.toggle('repliee');
-  }
-
-  function toggleSacADos() {
-    const bouton = document.getElementById('sacBouton');
-    const panneau = document.getElementById('sacPanneau');
-    const ouvert = panneau.classList.toggle('ouvert');
-    bouton.classList.toggle('ouvert', ouvert);
-  }
-
-  document.addEventListener('click', (e) => {
-    const bouton = document.getElementById('sacBouton');
-    const panneau = document.getElementById('sacPanneau');
-    if (panneau.classList.contains('ouvert') &&
-        !panneau.contains(e.target) &&
-        e.target !== bouton && !bouton.contains(e.target)) {
-      panneau.classList.remove('ouvert');
-      bouton.classList.remove('ouvert');
-    }
-  });
-
-  function iconeSacLivre() {
-    return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4.5C4 3.7 4.7 3 5.5 3H12V21H5.5C4.7 21 4 20.3 4 19.5Z"/><path d="M20 4.5C20 3.7 19.3 3 18.5 3H12V21H18.5C19.3 21 20 20.3 20 19.5Z"/></svg>';
-  }
-  function iconeSacCle() {
-    return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="15" r="4.5"/><path d="M11.2 11.8 20 3"/><path d="M16 7l3 3"/><path d="M13.5 9.5l2.5 2.5"/></svg>';
-  }
-  function iconeSacEtoile() {
-    return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l2.6 5.9 6.4.6-4.8 4.3 1.4 6.2L12 16.9 6.4 20l1.4-6.2-4.8-4.3 6.4-.6Z"/></svg>';
-  }
-  function iconeSacTrophee() {
-    return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4h8v6a4 4 0 0 1-8 0Z"/><path d="M8 5H5.5A1.5 1.5 0 0 0 4 6.5C4 8.5 5.5 10 8 10"/><path d="M16 5h2.5A1.5 1.5 0 0 1 20 6.5C20 8.5 18.5 10 16 10"/><path d="M12 14v3"/><path d="M9 20.5h6"/><path d="M9.5 17.5h5l.5 3h-6Z"/></svg>';
-  }
-  function iconeSacCarte() {
-    return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="12" height="16" rx="2"/><path d="M20 7.5 16 19"/></svg>';
-  }
-
-  rafraichirAffichageSac();
 </script>
 
 </body>

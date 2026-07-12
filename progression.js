@@ -28,9 +28,9 @@
 //     ⚠️ Suppose une fonction SQL enregistrer_identite_eleve(p_eleve_id,
 //     p_genre, p_nationalite) côté Supabase — voir schéma SQL fourni à
 //     part. La colonne d'appartenance utilisée dans cette fonction pour
-//     vérifier que l'élève appartient bien au compte courant (nommée
-//     compte_id ci-dessous) est une HYPOTHÈSE, pas une confirmation du
-//     schéma réel — à ajuster si le nom réel diffère.
+//     vérifier que l'élève appartient bien au compte courant (compte_id)
+//     a été confirmée par introspection réelle du schéma (COMPTES_ELEVES) —
+//     plus une hypothèse.
 //
 // Ce que ce module NE fait PAS (délibérément, hors scope pour l'instant) :
 //   - Migrer le sac à dos (bloqué tant que son contenu n'est pas rattaché

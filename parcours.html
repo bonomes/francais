@@ -236,6 +236,7 @@
   .prologue-carte {
     position: relative;
     width: 100%;
+    cursor: pointer;
     background: linear-gradient(160deg, #FFF9F5 0%, var(--fond-carte) 65%);
     border: 2.5px solid var(--peche-fonce);
     border-radius: 24px;
@@ -749,6 +750,7 @@
     position: fixed;
     left: 50%;
     bottom: 18px;
+    z-index: 90;
     transform: translateX(-50%) translateY(12px);
     width: min(90vw, 380px);
     background: var(--fond-carte);
@@ -1254,7 +1256,11 @@
 
   let niveauOuvertIdx = NIVEAUX.findIndex(n => n.etat === 'actuel');
   if (niveauOuvertIdx === -1) niveauOuvertIdx = 0;
-  let curseurNiveau = niveauOuvertIdx;
+  // Le curseur (et donc le marqueur Keb/Bek) démarre AU PROLOGUE, pas au
+  // niveau 1 — c'est la toute première chose à faire sur un compte neuf.
+  // initProgressionReelle() le fera avancer au niveau 1 automatiquement
+  // si le prologue est déjà confirmé complété (voir plus bas).
+  let curseurNiveau = -1;
   let curseurChapitre = null; // index dans le niveau ouvert, ou null si contexte "niveaux"
   let niveauVientDouvrir = false; // posé à true seulement au moment précis où toggleNiveau() ouvre un niveau
   let idAAnimerDeverrouillage = null; // id d'un chapitre/niveau tout juste débloqué, à animer une seule fois
@@ -1737,6 +1743,25 @@
     return null;
   }
 
+  // La carte du prologue doit être cliquable dans son ensemble, comme les
+  // cases de niveau — pas seulement son bouton "Découvrir"/"Revoir". Un
+  // clic ailleurs que sur ce bouton fait exactement ce que ferait un clic
+  // dessus (elle n'a rien à "ouvrir" comme un niveau : son seul rôle est
+  // de mener à intro-bonomes.html) ; un clic sur le bouton lui-même n'est
+  // pas intercepté ici, pour laisser le lien natif agir normalement plutôt
+  // que de risquer une double navigation.
+  const prologueCarteEl = document.querySelector('.prologue-carte');
+  if (prologueCarteEl) {
+    prologueCarteEl.addEventListener('click', (e) => {
+      if (e.target.closest('.prologue-bouton')) return;
+      curseurNiveau = -1;
+      curseurChapitre = null;
+      jouerClicSelection();
+      rafraichir();
+      document.getElementById('prologueBouton').click();
+    });
+  }
+
   carteInfoBouton.addEventListener('click', () => {
     if (curseurChapitre === null) return;
     const niveauIdx = niveauOuvertIdx;
@@ -1805,6 +1830,13 @@
     if (progression['prologue']) {
       const bouton = document.getElementById('prologueBouton');
       if (bouton) bouton.textContent = t('bouton_revoir');
+      // Prologue déjà fait : plus la peine d'y pointer le curseur/marqueur
+      // par défaut à chaque visite — on avance directement au niveau 1
+      // (ou au niveau "actuel" s'il y en a un autre), comme avant v43.
+      if (curseurNiveau === -1 && curseurChapitre === null) {
+        curseurNiveau = niveauOuvertIdx;
+        rafraichir();
+      }
     }
   }
   initProgressionReelle();

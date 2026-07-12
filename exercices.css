@@ -1,0 +1,152 @@
+/* ==================================================================
+   exercices.css — habillage visuel du moteur de questions partagé
+   (exercices.js), même esprit que sac-a-dos.css : var(--x, repli) sur
+   chaque couleur pas garantie définie partout, pour fonctionner même
+   sur une page qui ne définit que le strict minimum (--fond, --brun,
+   --peche, --peche-fonce).
+
+   ⚠️ Pas encore vu contre un vrai fond de leçon (aucune leçon construite
+   à ce jour) — première passe visuelle, à ajuster une fois qu'un vrai
+   gabarit de lecons/lecon-01-rencontre.html existe.
+   ================================================================== */
+
+.ex-conteneur {
+  font-family: 'Baloo 2', sans-serif;
+  color: var(--brun);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: 100%;
+}
+
+.ex-question {
+  font-weight: 700;
+  font-size: 1.05rem;
+  color: var(--brun);
+}
+
+/* ---------- qcm ---------- */
+.ex-qcm-choix { display: flex; flex-direction: column; gap: 8px; }
+
+.ex-qcm-bouton,
+.ex-identite-bouton,
+.ex-identite-pays-bouton,
+.ex-btn-valider,
+.ex-btn-reessayer {
+  font-family: inherit;
+  font-size: 0.9rem;
+  font-weight: 700;
+  padding: 10px 16px;
+  border-radius: 12px;
+  border: 1.5px solid var(--peche);
+  background: #FFFFFF;
+  color: var(--brun);
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.15s ease, border-color 0.15s ease, opacity 0.15s ease;
+}
+
+.ex-qcm-bouton:hover:not(:disabled),
+.ex-identite-pays-bouton:hover:not(:disabled) { background: var(--fond); }
+.ex-qcm-bouton:disabled { cursor: default; opacity: 0.7; }
+
+.ex-choix-correct { background: var(--vert-clair, #EAF3DE) !important; border-color: #6FA55A !important; }
+.ex-choix-incorrect { background: rgba(224, 90, 90, 0.12) !important; border-color: #C25454 !important; }
+
+/* ---------- texte_a_trous ---------- */
+.ex-texte-a-trous {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 1rem;
+}
+
+.ex-trou-champ {
+  font-family: inherit;
+  font-size: 0.95rem;
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 1.5px solid var(--peche);
+  min-width: 120px;
+}
+.ex-trou-champ:focus { outline: 2px solid var(--peche-fonce); outline-offset: 1px; }
+
+.ex-btn-valider {
+  align-self: flex-start;
+  background: var(--peche-fonce);
+  color: #FFFFFF;
+  border-color: var(--peche-fonce);
+}
+.ex-btn-valider:hover:not(:disabled) { opacity: 0.88; }
+.ex-btn-valider:disabled { opacity: 0.5; cursor: default; }
+
+/* ---------- ordre_mots ---------- */
+.ex-ordre-reponse {
+  min-height: 46px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 8px;
+  border: 1.5px dashed var(--peche);
+  border-radius: 12px;
+  background: var(--fond);
+}
+
+.ex-ordre-banque { display: flex; flex-wrap: wrap; gap: 6px; }
+
+.ex-mot-chip {
+  font-family: inherit;
+  font-size: 0.9rem;
+  font-weight: 700;
+  padding: 7px 12px;
+  border-radius: 10px;
+  border: 1.5px solid var(--peche);
+  background: #FFFFFF;
+  color: var(--brun);
+  cursor: pointer;
+}
+.ex-mot-chip:hover:not(:disabled) { background: var(--fond); }
+.ex-mot-chip:disabled { cursor: default; opacity: 0.7; }
+.ex-mot-chip-place { background: var(--peche); color: #FFFFFF; border-color: var(--peche); }
+
+/* ---------- choix_identite ---------- */
+.ex-identite-genre { display: flex; gap: 10px; }
+.ex-identite-bouton { flex: 1; text-align: center; font-size: 1rem; }
+
+.ex-identite-pays {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.ex-identite-pays-bouton { flex: 0 0 auto; }
+.ex-identite-autre { border-style: dashed; color: var(--brun-clair, #8A7364); }
+
+/* ---------- feedback commun ---------- */
+.ex-feedback {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+.ex-feedback.in { opacity: 1; }
+.ex-correct { background: var(--vert-clair, #EAF3DE); color: #3d5c2c; }
+.ex-incorrect { background: rgba(224, 90, 90, 0.12); color: #7a2f2f; }
+.ex-feedback-icone { font-weight: 900; }
+
+.ex-btn-reessayer {
+  margin-left: auto;
+  padding: 6px 12px;
+  font-size: 0.82rem;
+  background: #FFFFFF;
+}
+
+@media (max-width: 480px) {
+  .ex-identite-genre { flex-direction: column; }
+  .ex-btn-reessayer { margin-left: 0; }
+}

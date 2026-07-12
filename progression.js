@@ -19,6 +19,18 @@
 //   - Migre la progression invité → compte, une seule fois, juste après
 //     la création d'un nouveau profil — jamais sur une reconnexion
 //     normale (voir règle de fusion, COMPTES_ELEVES_v10 section 5).
+//   - 🆕 v51/étape 3 : lit et écrit l'identité de l'élève (genre 'm'/'f'
+//     + nationalité, code ISO alpha-2) — mécanisme introduit par la
+//     Leçon 1 (exercices.js "choix_identite"), mais consommable par tout
+//     futur contenu qui en a besoin. Même symétrie compte/invité que la
+//     progression, migration séparée (migrerIdentiteInviteVersCompte),
+//     à appeler juste après migrerProgressionInviteVersCompte().
+//     ⚠️ Suppose une fonction SQL enregistrer_identite_eleve(p_eleve_id,
+//     p_genre, p_nationalite) côté Supabase — voir schéma SQL fourni à
+//     part. La colonne d'appartenance utilisée dans cette fonction pour
+//     vérifier que l'élève appartient bien au compte courant (nommée
+//     compte_id ci-dessous) est une HYPOTHÈSE, pas une confirmation du
+//     schéma réel — à ajuster si le nom réel diffère.
 //
 // Ce que ce module NE fait PAS (délibérément, hors scope pour l'instant) :
 //   - Migrer le sac à dos (bloqué tant que son contenu n'est pas rattaché
@@ -40,6 +52,7 @@
 
   const CLE_INVITE_LOCALE = 'kebbek_invite';
   const CLE_PROGRESSION_INVITE = 'kebbek_progression_invite'; // { [chapitre_id]: true }
+  const CLE_IDENTITE_INVITE = 'kebbek_identite_invite'; // { genre: 'm'|'f'|null, nationalite: code|null }
   const CLE_DERNIER_PROFIL = 'kebbek_dernier_profil';
 
   // clientSupabase : peut être injecté par la page hôte via definirClient()
@@ -137,6 +150,83 @@
     return progressionInviteLocale();
   }
 
+  // ---------- Identité (genre/nationalité) — v51/COMPTES_ELEVES, étape 3 ----------
+  //
+  // Introduit pour le mécanisme d'identification de la Leçon 1 (voir
+  // BONOMES_v47/v51, exercices.js "choix_identite"). Même principe de
+  // symétrie compte/invité que la progression ci-dessus :
+  //   - genre : 'm' ou 'f' (choisi via bouton Keb/Bek, jamais une case
+  //     "homme/femme" abstraite), ou null si non renseigné.
+  //   - nationalite : code pays ISO 3166-1 alpha-2 (ex. 'FR', 'US'), même
+  //     format que ce que renvoie nationalites.js / exercices.js
+  //     (choix_identite renvoie { genre, nationalite: code }).
+  //   - Un profil créé avant ce champ (ou un invité qui n'a encore rien
+  //     choisi) doit lire { genre: null, nationalite: null } — jamais une
+  //     erreur bloquante. Toute page consommatrice doit traiter null comme
+  //     "non renseigné", pas comme un échec.
+  //
+  // Écriture faite via une fonction RPC dédiée (enregistrer_identite_eleve,
+  // voir SQL fourni séparément), pas un .update() direct sur la table —
+  // même choix que creerProfil()/marquerChapitreComplete() : les écritures
+  // qui touchent la ligne d'un élève passent par du SQL qui vérifie
+  // lui-même l'appartenance (auth.uid()), plutôt que de dépendre d'une
+  // policy RLS d'UPDATE dont l'existence n'est pas confirmée ici.
+
+  function identiteInviteLocale() {
+    try {
+      return Object.assign({ genre: null, nationalite: null }, JSON.parse(localStorage.getItem(CLE_IDENTITE_INVITE) || '{}'));
+    } catch (e) {
+      return { genre: null, nationalite: null };
+    }
+  }
+
+  // Retourne { genre, nationalite } — peu importe la source (compte ou
+  // invité), même forme en sortie, comme lireProgression().
+  async function lireIdentite() {
+    if (sessionActuelle && profilActifId && clientSupabase) {
+      const { data, error } = await clientSupabase
+        .from('eleves')
+        .select('genre, nationalite')
+        .eq('id', profilActifId)
+        .single();
+      if (error) { console.warn('progression.js : lireIdentite a échoué.', error); return { genre: null, nationalite: null }; }
+      return { genre: data.genre || null, nationalite: data.nationalite || null };
+    }
+    return identiteInviteLocale();
+  }
+
+  function enregistrerIdentiteInvite(genre, nationalite) {
+    const actuel = identiteInviteLocale();
+    const suivant = {
+      genre: genre !== undefined ? genre : actuel.genre,
+      nationalite: nationalite !== undefined ? nationalite : actuel.nationalite
+    };
+    try {
+      localStorage.setItem(CLE_IDENTITE_INVITE, JSON.stringify(suivant));
+      return true;
+    } catch (e) {
+      console.warn('progression.js : enregistrerIdentiteInvite a échoué (localStorage indisponible ou plein).', e);
+      return false;
+    }
+  }
+
+  // genre/nationalite : passer undefined (pas null) pour "ne pas modifier
+  // ce champ" — permet d'enregistrer le genre seul, puis la nationalité
+  // séparément, sans écraser l'un en enregistrant l'autre (l'étape 4 du
+  // moteur d'exercices choisit les deux dans deux écrans successifs).
+  async function enregistrerIdentite(genre, nationalite) {
+    if (sessionActuelle && profilActifId && clientSupabase) {
+      const { error } = await clientSupabase.rpc('enregistrer_identite_eleve', {
+        p_eleve_id: profilActifId,
+        p_genre: genre !== undefined ? genre : null,
+        p_nationalite: nationalite !== undefined ? nationalite : null
+      });
+      if (error) { console.warn('progression.js : enregistrerIdentite (compte) a échoué.', error); return false; }
+      return true;
+    }
+    return enregistrerIdentiteInvite(genre, nationalite);
+  }
+
   // ---------- Progression : écriture ----------
 
   function marquerChapitreInvite(chapitreId) {
@@ -188,6 +278,33 @@
     localStorage.removeItem(CLE_PROGRESSION_INVITE);
   }
 
+  // Symétrique de migrerProgressionInviteVersCompte(), pour l'identité —
+  // fonction SÉPARÉE plutôt que fusionnée dans celle-ci, pour ne rien
+  // changer à l'API déjà appelée depuis parcours.html/intro-bonomes.html.
+  // À appeler juste après elle (même moment : immédiatement après un
+  // creerProfil() réussi qui avait de la progression et/ou une identité
+  // invité en attente) — jamais sur une reconnexion normale, même règle
+  // de fusion que COMPTES_ELEVES_v10 section 5.
+  //
+  // Rien à migrer si l'invité n'avait jamais choisi ni genre ni
+  // nationalité (cas le plus courant si la Leçon 1 n'a pas encore été
+  // faite en mode invité) — sort immédiatement dans ce cas, sans appel
+  // réseau inutile.
+  async function migrerIdentiteInviteVersCompte(eleveId) {
+    const locale = identiteInviteLocale();
+    if ((locale.genre === null && locale.nationalite === null) || !clientSupabase) return;
+    try {
+      await clientSupabase.rpc('enregistrer_identite_eleve', {
+        p_eleve_id: eleveId,
+        p_genre: locale.genre,
+        p_nationalite: locale.nationalite
+      });
+    } catch (e) {
+      console.warn('progression.js : échec de migration de l\'identité invité.', e);
+    }
+    localStorage.removeItem(CLE_IDENTITE_INVITE);
+  }
+
   window.KebBekProgression = {
     initSession,
     definirClient,
@@ -200,6 +317,9 @@
     lireProgression,
     marquerChapitreComplete,
     migrerProgressionInviteVersCompte,
+    lireIdentite,
+    enregistrerIdentite,
+    migrerIdentiteInviteVersCompte,
     get client() { return clientSupabase; },
     get session() { return sessionActuelle; },
     get profilActifId() { return profilActifId; },

@@ -713,9 +713,9 @@
     return localStorage.getItem(CLE_LANGUE) || 'en';
   }
 
-  // Dix premières langues du site (sur 19) : en (source) + es, pt, it, zh,
-  // ko, ja, vi, tl, de. Les neuf restantes (nl, ca, ht, id, fa, ru, no, sv,
-  // eo) suivront dans une session ultérieure. "Salut !" reste identique
+  // Les 19 langues du site sont couvertes ici : en (source) + es, pt, it,
+  // zh, ko, ja, vi, tl, de, nl, ca, ht, id, fa, ru, no, sv, eo (complétées
+  // en v45). "Salut !" reste identique
   // dans toutes les langues — c'est le mot français enseigné, jamais
   // traduit dans le texte lui-même (seule sa "traduction" affichée à
   // l'apprenant change selon la langue, via traductionSalut ci-dessous).
@@ -798,10 +798,10 @@
       e4: "E agora, graças às capacidades informáticas do verdadeiro Keb, também vivemos na internet — prontos para te ensinar francês.",
       e5: "Conseguimos falar todas as línguas... mas o francês é a verdadeira língua da nossa alma.",
       e6: "Aliás, estamos prestes a avançar para a tua primeira aula — e, a partir daí, só falaremos francês.",
-      e7: "Vamos precisar da Kloé — a segunda melhor amiga da Bek — para vir traduzir-te.",
+      e7: "Vamos precisar da Kloé — a segunda melhor amiga da Bek — para vir traduzir para ti.",
       e8: "Aí vem ela!",
       e9: "Olá, sou a Kloé! Muito prazer!",
-      e10: "Também trato das explicações de gramática e de te mostrar o site.",
+      e10: "Também trato das explicações de gramática e de te mostrar o sítio.",
       e11: "Vamos mostrar-te como isto funciona. Digam qualquer coisa, vocês os dois!",
       e13: "Se passares o rato ou tocares numa palavra, vês a tradução — e uma explicação, sempre da minha parte.",
       e14: "Depois, se quiseres, podes guardar as palavras novas que aprendeste. Basta tocar na caixa abaixo!",
@@ -1395,9 +1395,8 @@
 
   // ─────────────────────────────────────────────
   //  Script des 15 étapes — texte EXACTEMENT celui fourni par Raphaël,
-  //  passé maintenant par t() pour être multilingue (dix premières langues
-  //  sur 19 : en, es, pt, it, zh, ko, ja, vi, tl, de — les neuf restantes
-  //  suivront), à l'exception de "Salut !" qui reste en français dans
+  //  passé maintenant par t() pour être multilingue (19 langues, voir
+  //  TRADUCTIONS ci-dessus), à l'exception de "Salut !" qui reste en français dans
   //  toutes les langues (c'est le mot enseigné, jamais traduit dans le
   //  texte lui-même). Aucune ligne inventée : chaque "texte" ci-dessous
   //  correspond à une réplique précise du script original.

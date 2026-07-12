@@ -115,9 +115,13 @@
                commentaire une fois fait.
        - images/recurrentes/ : vide pour l'instant dans ce fichier — voir
          correction ci-dessus.
-     Toutes les étapes (1 à 16) ont maintenant leur vraie image, fournies
-     par Raphaël — plus aucun repli "image pas encore prête" actif dans
-     cette introduction.
+     Étapes 1 à 16 ont toutes leur vraie image, fournies par Raphaël.
+     🆕 v43 : conclusion ajoutée (étapes 17 et 18, aucune conclusion
+     n'existait avant cette session) — toutes deux avec un placeholder
+     🚧 actif en attendant leurs images dédiées : noms réservés
+     bonomes_keb_bek_kloe_mains_centre_01.png (étape 17, mains jointes au
+     centre) et bonomes_keb_bek_kloe_bras_leves_01.png (étape 18, bras
+     levés). Voir commentaires 🚧 PLACEHOLDER sur chaque étape.
 
      PAS D'ENCADRÉ DERRIÈRE LES PERSONNAGES (relecture de Raphaël) : .scene-
      intro n'a plus de fond, de bordure ni d'ombre — ce n'est qu'un
@@ -489,6 +493,22 @@
   .bouton-nav-intro:hover { transform: translateY(-1px); }
   .bouton-nav-intro:disabled { opacity: 0.35; cursor: default; transform: none; }
 
+  /* ── Étape de transition finale (bras levés, aucun texte) — demande de
+       Raphaël : "un effet de soulèvement pour simuler l'effet [du
+       ralliement]". L'image démarre légèrement plus bas et un peu plus
+       petite, puis "se soulève" jusqu'à sa position/taille normale avec
+       un petit dépassement (même famille de courbe "back" que le sac à
+       dos ailleurs dans ce fichier, pour rester cohérent). ── */
+  .scene-intro.scene-transition img.image-scene {
+    animation: soulevementTransition 0.9s cubic-bezier(.34, 1.56, .64, 1);
+  }
+
+  @keyframes soulevementTransition {
+    0%   { transform: translateY(22px) scale(0.94); opacity: 0; }
+    55%  { transform: translateY(-8px) scale(1.03); opacity: 1; }
+    100% { transform: translateY(0) scale(1); opacity: 1; }
+  }
+
   /* ================= Sac à dos : porté tel quel depuis index.html ================= */
   /* Même ids/classes/fonctions que index.html (CLE_SAC, CATEGORIES_SAC,
      chargerSac/sauvegarderSac/ajouterAuSac/rafraichirAffichageSac...),
@@ -650,7 +670,7 @@
 
   <a class="retour" href="parcours.html" aria-label="Retour au parcours">‹</a>
 
-  <div class="compteur-intro" id="compteurIntro">1 / 15</div>
+  <div class="compteur-intro" id="compteurIntro">1 / 18</div>
 
   <div class="scene-intro" id="sceneIntro">
     <!-- Image seule, injectée par JS — la légende ne vit plus ici (voir
@@ -666,7 +686,7 @@
     <div class="pile-intro" id="pileIntro"></div>
   </div>
 
-  <div class="nav-intro">
+  <div class="nav-intro" id="navIntro">
     <button type="button" class="bouton-nav-intro precedent" id="btnPrecedentIntro">‹ Back</button>
     <button type="button" class="bouton-nav-intro suivant" id="btnSuivantIntro">Continue ›</button>
   </div>
@@ -849,6 +869,39 @@
       lignes: [
         { speaker: 'kloe', texte: "And by the way, everything you collect during a lesson lands there. It stays from one lesson to the next — but create an account so you never lose your progress!" }
       ]
+    },
+    { // 17 — 🆕 conclusion demandée par Raphaël (aucune conclusion
+      // n'existait avant cette session) : Bek lance l'appel de ralliement,
+      // les trois joignent les mains au centre comme le ferait une
+      // équipe. texteBouton personnalisé plutôt que le "Continue ›"
+      // générique, pour marquer ce moment comme un vrai engagement.
+      // 🚧 PLACEHOLDER (v43) : image de l'étape 16 réutilisée en attendant
+      // — nom réservé pour la future image dédiée :
+      // bonomes_keb_bek_kloe_mains_centre_01.png (les trois, mains
+      // jointes au centre, geste d'équipe). Voir convention v39 : ce nom
+      // n'est qu'une réservation de Claude, pas une confirmation de
+      // Raphaël — à faire correspondre par le contexte de la scène, pas
+      // par le nom, quand la vraie image arrive.
+      speaker: 'bek',
+      img: 'images/prologue/bonomes_keb_bek_piasse_dans_sac_kloe_explique_01.png',
+      texte: "So — are you ready to jump in?",
+      texteBouton: "Let's go! ›"
+    },
+    { // 18 — 🆕 image de transition pure demandée par Raphaël : les trois
+      // lèvent les bras dans les airs (rallying cry), AUCUN texte, ni
+      // légende ni pile ni boutons de navigation — seulement l'image avec
+      // un effet de soulèvement (translateY + léger scale, voir
+      // @keyframes soulevementTransition), puis avance automatiquement
+      // vers la fin de l'introduction après un court délai (pas de clic
+      // requis, l'idée est une image de transition pure, pas une étape de
+      // dialogue). Voir afficherEtapeTransition() plus bas.
+      // 🚧 PLACEHOLDER (v43) : image de l'étape 16 réutilisée en attendant
+      // — nom réservé : bonomes_keb_bek_kloe_bras_leves_01.png (les
+      // trois, bras levés dans les airs, geste de ralliement). Même
+      // convention que ci-dessus : nom réservé par Claude, à confirmer
+      // par le contexte quand Raphaël fournit la vraie image.
+      transition: true,
+      img: 'images/prologue/bonomes_keb_bek_piasse_dans_sac_kloe_explique_01.png'
     }
   ];
 
@@ -875,6 +928,7 @@
   const elCompteur = document.getElementById('compteurIntro');
   const btnPrecedent = document.getElementById('btnPrecedentIntro');
   const btnSuivant = document.getElementById('btnSuivantIntro');
+  const elNavIntro = document.getElementById('navIntro');
 
   function viderMinuteries() {
     minuteriesActives.forEach(id => clearTimeout(id));
@@ -1013,6 +1067,23 @@
     const def = ETAPES[etape];
     elCompteur.textContent = (etape + 1) + ' / ' + ETAPES.length;
 
+    if (def.transition) {
+      // Étape de transition pure (18) : aucune légende, aucune pile,
+      // aucun bouton — juste l'image, avec l'effet de soulèvement, avant
+      // la fin automatique de l'introduction. Voir afficherEtapeTransition.
+      viderMinuteries();
+      afficherEtapeTransition(def);
+      return;
+    }
+
+    // Étape normale : s'assure que tout est bien visible, au cas où on
+    // reviendrait ici après avoir été sur l'étape de transition (qui, elle,
+    // masque légende/nav/compteur — voir ci-dessus et afficherEtapeTransition).
+    elLegendeZone.style.display = 'flex';
+    elNavIntro.style.display = 'flex';
+    elCompteur.style.display = 'block';
+    elScene.classList.remove('scene-transition');
+
     const lignes = def.lignes || [{ speaker: def.speaker, img: def.img, texte: def.texte }];
 
     viderMinuteries();
@@ -1037,7 +1108,27 @@
     if (def.revealSac) reveleSacADos();
 
     btnPrecedent.disabled = (etape === 0);
-    btnSuivant.textContent = (etape === ETAPES.length - 1) ? 'Start the lesson ›' : 'Continue ›';
+    btnSuivant.textContent = def.texteBouton || 'Continue ›';
+  }
+
+  // Étape 18 : aucun texte, aucune interaction — juste l'image (bras
+  // levés) avec l'effet de soulèvement, affichée le temps de l'apprécier,
+  // puis enchaînement automatique sur la fin de l'introduction. Demande
+  // explicite de Raphaël : "il n'y aurait alors que l'image... comme une
+  // image de transition", donc pas de bouton "Continue" à cliquer ici.
+  function afficherEtapeTransition(def) {
+    elLegendeZone.style.display = 'none';
+    elNavIntro.style.display = 'none';
+    elCompteur.style.display = 'none';
+
+    const cheminImage = def.img;
+    elScene.innerHTML = '';
+    elScene.classList.add('scene-transition');
+    elScene.appendChild(creerImage(cheminImage));
+    elScene.dataset.cheminImage = cheminImage;
+
+    const id = setTimeout(terminerIntroduction, 2200);
+    minuteriesActives.push(id);
   }
 
   function suivant() {
@@ -1068,6 +1159,11 @@
   // n'existe encore pour enchaîner dessus (voir COMPTES_ELEVES_v10) — donc
   // retour au parcours, comme le lien "‹" déjà présent sur cette page,
   // plutôt qu'une redirection vers une page qui n'existe pas encore.
+  // 🆕 v43 : appelée automatiquement depuis afficherEtapeTransition() à la
+  // fin de l'étape 18 (transition, bras levés) — l'appel depuis le "else"
+  // de suivant() ci-dessus est désormais inatteignable en pratique (la
+  // navigation vers l'étape de transition ne passe plus par un clic), mais
+  // reste en place par sécurité défensive.
   async function terminerIntroduction() {
     btnSuivant.disabled = true;
     btnSuivant.textContent = 'Saving…';

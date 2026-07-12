@@ -229,6 +229,17 @@
     overflow: visible;
   }
 
+  /* Estompe les bords de l'image dans le fond de la page plutôt que de
+     laisser un contour rectangulaire net (signalé par Raphaël avec
+     l'image de l'étape de ralliement, mais s'applique à toutes les
+     images de cette introduction — même technique, même cause partout).
+     Même si le fond des images est censé être le même beige uni que la
+     page (#F2EDE3, voir gabarit de génération dans BONOMES_v32), une
+     petite dérive de couleur suffit à trahir le contour sur une zone
+     aussi large et unie. Un masque en dégradé radial, qui passe
+     progressivement à la transparence sur les derniers ~15-20 % de
+     chaque bord, laisse le vrai fond de la page prendre le relais en
+     douceur — invisible pour l'œil — plutôt que de couper net. */
   .scene-intro img.image-scene {
     position: absolute;
     inset: 0;
@@ -236,6 +247,8 @@
     height: 100%;
     object-fit: contain;
     display: block;
+    -webkit-mask-image: radial-gradient(ellipse 88% 82% at center, #000 68%, transparent 100%);
+    mask-image: radial-gradient(ellipse 88% 82% at center, #000 68%, transparent 100%);
   }
 
   /* Repli "image pas encore prête" — texte discret, SANS bordure ni fond

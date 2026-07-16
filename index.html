@@ -83,6 +83,35 @@
   .survol:hover img.image-base { opacity: 0; }
   .survol:hover img.image-survol { opacity: 1; }
 
+  /* "Bonjour !" au-dessus de leurs têtes, en même temps qu'ils saluent —
+     même famille visuelle que .bulle-first-time (texte contouré, pas de
+     boîte), pas une nouvelle invention stylistique. Repère de position
+     approximatif (têtes vers 18-30% de hauteur sur l'image 1408×768) —
+     à ajuster à l'œil une fois vu sur la vraie image. */
+  .bulle-bonjour {
+    position: absolute;
+    left: 50%;
+    top: 6%;
+    width: 60%;
+    transform: translateX(-50%) translateY(10px) scale(0.85) rotate(-3deg);
+    font-family: 'Fuzzy Bubbles', cursive;
+    font-weight: 700;
+    font-size: clamp(1.6rem, 6.5vw, 2.6rem);
+    line-height: 1;
+    text-align: center;
+    color: var(--peche-fonce);
+    -webkit-text-stroke: 2.5px var(--brun-fonce);
+    paint-order: stroke fill;
+    opacity: 0;
+    pointer-events: none;
+    z-index: 2;
+    transition: opacity 0.3s ease 0.08s, transform 0.35s cubic-bezier(.3,1.4,.4,1) 0.08s;
+  }
+  .survol:hover .bulle-bonjour {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0) scale(1) rotate(-3deg);
+  }
+
   /* ---------- Vue 2 : choix de langue ---------- */
 
   /* Une seule image (Keb et Bek qui présentent), le menu de langues est
@@ -861,12 +890,32 @@
     width: min(88vw, 320px);
     background: #FFFFFF;
     border-radius: 26px;
+    border: 3px solid var(--brun-fonce);
     padding: 18px 16px;
     box-shadow: 0 10px 28px rgba(102, 80, 69, 0.16);
     z-index: 3;
+    /* 🐛 CORRIGÉ : la carte était ancrée par le bas (bottom: %) et
+       grandissait donc vers le HAUT à mesure que son contenu prenait
+       plus de place — jusqu'à sortir de l'écran par le haut, sans façon
+       d'y revenir (bouton "Stories & lessons" devenu inatteignable).
+       Filet de sécurité réel plutôt qu'un ajustement de pourcentage à
+       l'aveugle : la carte elle-même ne grandit plus jamais au-delà
+       d'une hauteur sûre, c'est .carte-menu-liste (ci-dessous) qui
+       défile en interne si le contenu dépasse. */
+    max-height: min(78vh, 460px);
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Zone qui défile réellement — le connecteur en pointillé (::after,
+     plus bas) reste sur .carte-menu lui-même, jamais coupé par un
+     overflow ici. */
+  .carte-menu-liste {
     display: flex;
     flex-direction: column;
     gap: 13px;
+    overflow-y: auto;
+    padding-right: 2px;
   }
 
   /* Connecteur discret entre la carte et Keb/Bek en dessous — même
@@ -894,7 +943,7 @@
     font-family: 'Baloo 2', sans-serif;
     font-weight: 700;
     font-size: 0.92rem;
-    border: none;
+    border: 2px solid var(--brun-fonce);
     border-radius: 999px;
     padding: 12px 18px;
     background: var(--fond);
@@ -927,6 +976,7 @@
   .bouton-menu.ma-fiche {
     background: var(--peche-fonce);
     color: #FFFFFF;
+    border-color: var(--brun-fonce);
     box-shadow: 0 4px 14px rgba(224, 136, 103, 0.35);
   }
 
@@ -958,6 +1008,7 @@
     letter-spacing: 0.04em;
     color: var(--brun-clair, var(--brun));
     background: rgba(102, 80, 69, 0.09);
+    border: 1.5px solid rgba(102, 80, 69, 0.22);
     border-radius: 999px;
     padding: 3px 9px;
     white-space: nowrap;
@@ -1149,9 +1200,10 @@
   <main id="app">
 
     <section id="accueil" class="vue">
-      <a class="survol" href="#choix-langue">
+      <a class="survol" href="#choix-langue" aria-label="Start">
         <img class="image-base" src="images/bonomes_keb_bek_principal_sans_fond_01.png" alt="Keb et Bek">
         <img class="image-survol" src="images/bonomes_keb_bek_principal_saluent_sans_fond_01.png" alt="Keb et Bek qui saluent">
+        <p class="bulle-bonjour" aria-hidden="true">Bonjour !</p>
       </a>
     </section>
 
@@ -3099,6 +3151,7 @@
         <img class="apercu-menu" data-menu-apercu="contact" src="images/bonomes_keb_bek_contacts_01.png" alt="Aperçu : contact">
 
         <div class="carte-menu">
+          <div class="carte-menu-liste">
           <button type="button" class="bouton-menu" data-menu="histoires">
             <svg class="icone-menu" viewBox="0 0 24 24"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H12v18H6.5A2.5 2.5 0 0 1 4 18.5v-13Z"/><path d="M20 5.5A2.5 2.5 0 0 0 17.5 3H12v18h5.5a2.5 2.5 0 0 0 2.5-2.5v-13Z"/></svg>
             <span id="libelleMenuHistoires">Stories &amp; lessons</span>
@@ -3132,6 +3185,7 @@
             <svg class="icone-menu" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>
             <span id="libelleMenuContact">Contact</span>
           </button>
+          </div>
         </div>
       </div>
 

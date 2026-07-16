@@ -845,87 +845,155 @@
 
   /* ---------- Vue "menu-principal" ---------- */
 
+  /* 🎨 Passe de polish (voir demande de Raphaël + conseils externes
+     reçus) : ce qui suit garde délibérément le langage visuel déjà en
+     place sur tout le site — boutons-pilules 999px, palette
+     beige/brun/pêche, Baloo 2 semi-gras — plutôt que d'adopter les
+     suggestions génériques qui l'auraient cassé (coins moins arrondis,
+     accent bleu/vert hors palette). Voir le message d'accompagnement
+     pour le détail de ce qui a été retenu vs délibérément écarté. */
+
   .carte-menu {
     position: absolute;
     left: 50%;
-    bottom: 76%;
+    bottom: 78%;
     transform: translateX(-50%);
     width: min(88vw, 320px);
     background: #FFFFFF;
-    border-radius: 24px;
-    padding: 16px;
-    box-shadow: 0 6px 20px rgba(102, 80, 69, 0.18);
+    border-radius: 26px;
+    padding: 18px 16px;
+    box-shadow: 0 10px 28px rgba(102, 80, 69, 0.16);
     z-index: 3;
     display: flex;
     flex-direction: column;
-    gap: 9px;
+    gap: 13px;
+  }
+
+  /* Connecteur discret entre la carte et Keb/Bek en dessous — même
+     langage visuel que .prologue-connecteur (parcours.html) : une
+     ligne pointillée plutôt qu'un flottement sans lien. Résout le point
+     "les personnages semblent posés sous le menu sans relation visuelle". */
+  .carte-menu::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    bottom: -34px;
+    transform: translateX(-50%);
+    width: 3px;
+    height: 30px;
+    background: repeating-linear-gradient(to bottom, var(--peche) 0 6px, transparent 6px 12px);
+    border-radius: 3px;
   }
 
   .bouton-menu {
     position: relative;
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 13px;
     width: 100%;
     font-family: 'Baloo 2', sans-serif;
     font-weight: 700;
     font-size: 0.92rem;
     border: none;
     border-radius: 999px;
-    padding: 10px 16px;
+    padding: 12px 18px;
     background: var(--fond);
     color: var(--brun-fonce);
     cursor: pointer;
     text-align: left;
-    transition: transform 0.12s ease, background 0.15s ease;
+    transition: transform 0.16s ease, background 0.16s ease, box-shadow 0.16s ease;
   }
 
   .bouton-menu:hover {
     transform: translateY(1px);
     background: #EFE6D8;
+    box-shadow: 0 3px 10px rgba(102, 80, 69, 0.12);
   }
 
   .bouton-menu .icone-menu {
-    width: 20px;
-    height: 20px;
+    width: 23px;
+    height: 23px;
     flex-shrink: 0;
     stroke: var(--peche-fonce);
     fill: none;
     stroke-width: 2;
     stroke-linecap: round;
     stroke-linejoin: round;
+    transition: transform 0.16s ease;
   }
+
+  .bouton-menu:hover .icone-menu { transform: translateX(1.5px); }
 
   .bouton-menu.ma-fiche {
     background: var(--peche-fonce);
     color: #FFFFFF;
+    box-shadow: 0 4px 14px rgba(224, 136, 103, 0.35);
   }
 
   .bouton-menu.ma-fiche .icone-menu { stroke: #FFFFFF; }
-  .bouton-menu.ma-fiche:hover { background: #d97c5c; }
+  .bouton-menu.ma-fiche:hover { background: #d97c5c; box-shadow: 0 5px 16px rgba(224, 136, 103, 0.42); }
+
+  /* "Bravo & cart" (SOON) : volontairement en retrait — icône et texte
+     légèrement estompés, pas de background hover ni de bascule de
+     couleur, curseur par défaut plutôt que pointer. Évite l'effet
+     "bouton cassé" (on clique, rien de crédible ne se passe) en ne
+     ressemblant plus à un bouton pleinement actif. */
+  .bouton-menu.a-venir {
+    opacity: 0.6;
+    cursor: default;
+  }
+  .bouton-menu.a-venir:hover {
+    transform: none;
+    background: var(--fond);
+    box-shadow: none;
+  }
+  .bouton-menu.a-venir:hover .icone-menu { transform: none; }
 
   .badge-bientot {
     margin-left: auto;
     font-family: 'Baloo 2', sans-serif;
     font-weight: 700;
-    font-size: 0.62rem;
+    font-size: 0.6rem;
     text-transform: uppercase;
-    letter-spacing: 0.03em;
-    color: var(--brun);
-    background: rgba(102, 80, 69, 0.12);
+    letter-spacing: 0.04em;
+    color: var(--brun-clair, var(--brun));
+    background: rgba(102, 80, 69, 0.09);
     border-radius: 999px;
-    padding: 3px 8px;
+    padding: 3px 9px;
     white-space: nowrap;
   }
 
+  /* "Guest" : un chip à part sur le bouton pêche plutôt qu'un simple
+     texte translucide — se lit comme un statut, pas comme une deuxième
+     ligne qui rivalise avec "Create an account" pour l'attention. */
   .info-fiche {
     margin-left: auto;
-    font-size: 0.68rem;
-    color: rgba(255, 255, 255, 0.85);
+    font-family: 'Baloo 2', sans-serif;
+    font-weight: 700;
+    font-size: 0.64rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: #FFFFFF;
+    background: rgba(255, 255, 255, 0.22);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    border-radius: 999px;
+    padding: 3px 9px;
     white-space: nowrap;
     max-width: 40%;
     overflow: hidden;
     text-overflow: ellipsis;
+  }
+
+  /* Une fois connecté, .info-fiche affiche le courriel (texte plus long,
+     pas un statut court comme "Guest") — le chip perd alors son fond
+     plein pour rester lisible sans dominer le bouton. */
+  .info-fiche.compte-connecte {
+    background: transparent;
+    border-color: transparent;
+    color: rgba(255, 255, 255, 0.85);
+    text-transform: none;
+    font-weight: 500;
+    letter-spacing: normal;
   }
 
   /* ---------- Panneau de sélection de profil (COMPTES_ELEVES_v11) ----------
@@ -1047,8 +1115,32 @@
   /* Sac à dos : voir sac-a-dos.css (fichier partagé) */
 
 
+  /* Petit avis "pas encore construit" — remplace un console.log invisible
+     pour un utilisateur réel. Même mécanisme que .avis-preparation dans
+     parcours.html (pas réinventé). */
+  .avis-menu {
+    position: fixed;
+    left: 50%;
+    bottom: 34px;
+    transform: translateX(-50%) translateY(8px);
+    background: var(--brun-fonce);
+    color: #FFF8E8;
+    font-family: 'Baloo 2', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 600;
+    padding: 9px 18px;
+    border-radius: 999px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    z-index: 60;
+    white-space: nowrap;
+  }
+  .avis-menu.visible { opacity: 1; transform: translateX(-50%) translateY(0); }
+
   @media (max-width: 560px) {
-    .carte-menu { bottom: 74%; padding: 14px; }
+    .carte-menu { bottom: 76%; padding: 15px 14px; }
   }
 </style>
 </head>
@@ -3012,7 +3104,7 @@
             <span id="libelleMenuHistoires">Stories &amp; lessons</span>
           </button>
 
-          <button type="button" class="bouton-menu" data-menu="bravo">
+          <button type="button" class="bouton-menu a-venir" data-menu="bravo" aria-disabled="true">
             <svg class="icone-menu" viewBox="0 0 24 24"><path d="M6 6h15l-1.5 9h-12Z"/><path d="M6 6 5 3H2"/><circle cx="9.5" cy="19" r="1.4"/><circle cx="17.5" cy="19" r="1.4"/></svg>
             <span id="libelleMenuBravo">Bravo &amp; cart</span>
             <span class="badge-bientot">Soon</span>
@@ -3042,6 +3134,8 @@
           </button>
         </div>
       </div>
+
+      <div class="avis-menu" id="avisMenu"></div>
     </section>
 
   </main>
@@ -4439,9 +4533,11 @@
       if (sessionActuelle) {
         libelleMaFiche.textContent = t('ficheMonProfil');
         infoMaFiche.textContent = sessionActuelle.user.email;
+        infoMaFiche.classList.add('compte-connecte');
       } else {
         libelleMaFiche.textContent = t('ficheCreerCompte');
         infoMaFiche.textContent = t('ficheInvite');
+        infoMaFiche.classList.remove('compte-connecte');
       }
     }
 
@@ -4627,13 +4723,27 @@
       window.location.href = 'parcours.html';
     });
 
+    const avisMenu = document.getElementById('avisMenu');
+    let avisMenuTimeout = null;
+    function afficherAvisMenu(texte) {
+      avisMenu.textContent = texte;
+      avisMenu.classList.add('visible');
+      clearTimeout(avisMenuTimeout);
+      avisMenuTimeout = setTimeout(() => avisMenu.classList.remove('visible'), 2200);
+    }
+
     document.querySelectorAll('.bouton-menu[data-menu]').forEach(bouton => {
       if (bouton.dataset.menu === 'fiche') return; // déjà géré ci-dessus
       if (bouton.dataset.menu === 'prives') return; // déjà géré ci-dessus : section active
       if (bouton.dataset.menu === 'contact') return; // déjà géré ci-dessus : section active
       if (bouton.dataset.menu === 'histoires') return; // déjà géré ci-dessus : section active (bêta)
       bouton.addEventListener('click', () => {
-        console.log('Section pas encore construite :', bouton.dataset.menu);
+        // Avis visible plutôt qu'un console.log invisible pour un
+        // utilisateur réel — réutilise le libellé du bouton + "Soon"
+        // déjà traduit dans les 19 langues (menuBientot), pas de
+        // nouvelle clé de traduction à maintenir pour ce seul avis.
+        const libelle = bouton.querySelector('span:not(.badge-bientot)');
+        afficherAvisMenu((libelle ? libelle.textContent : '') + ' — ' + t('menuBientot'));
       });
     });
 

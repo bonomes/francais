@@ -59,6 +59,26 @@
     opacity: 1;
   }
 
+  /* Transition douce accueil → choix-langue : #accueil s'estompe avant le
+     changement de hash (voir JS), plutôt que de compter sur .vue/.vue.actif
+     qui ne peuvent pas s'animer entre display:none et display:flex dans le
+     même instant. */
+  #accueil.vue.sortie-douce {
+    transition: opacity 0.38s ease;
+    opacity: 0;
+  }
+
+  /* Entrée "en échelle" du menu de langues : chaque <li> part masqué et
+     légèrement décalé vers le haut, puis retrouve son état de repos normal
+     (opacité 0.35 ou 1 si centré) via la transition déjà définie sur
+     .menu-langues li — le décalage vient du retrait échelonné de cette
+     classe en JS (voir lancerEntreeEchelle), pas d'une animation-delay CSS
+     figée, pour rester compatible avec un nombre de langues variable. */
+  .menu-langues li.entree-cachee {
+    opacity: 0 !important;
+    transform: translateY(-14px) scale(0.85) !important;
+  }
+
   /* ---------- Vue 1 : accueil ---------- */
 
   .survol {
@@ -4086,6 +4106,7 @@
         requestAnimationFrame(() => {
           ajusterEspaceur();
           centrerMenu();
+          lancerEntreeEchelle();
         });
       }
       if (cible.startsWith('tutoriel-')) {
@@ -4107,6 +4128,42 @@
     }
 
     window.addEventListener('hashchange', afficherVue);
+
+    // ---------- Entrée "en échelle" du menu de langues ----------
+    //
+    // Masque tous les <li> d'un coup (synchrone, avant peinture), puis les
+    // révèle un par un avec un léger décalage — chaque retrait de classe
+    // profite de la transition déjà définie sur .menu-langues li pour
+    // s'animer tout seul, comme les barreaux d'une échelle qui se
+    // déplient. Rejoué à chaque arrivée sur #choix-langue, pas seulement
+    // la première fois.
+    function lancerEntreeEchelle() {
+      const items = Array.from(document.querySelectorAll('#menuLangues li'));
+      if (items.length === 0) return;
+      items.forEach(li => li.classList.add('entree-cachee'));
+      requestAnimationFrame(() => {
+        items.forEach((li, i) => {
+          setTimeout(() => li.classList.remove('entree-cachee'), i * 35);
+        });
+      });
+    }
+
+    // ---------- Transition douce accueil → choix-langue ----------
+    //
+    // #accueil s'estompe avant que le hash ne change, plutôt que le saut
+    // instantané précédent (voir commentaire CSS sur .sortie-douce).
+    const lienDemarrerAccueil = document.querySelector('#accueil .survol');
+    if (lienDemarrerAccueil) {
+      lienDemarrerAccueil.addEventListener('click', (e) => {
+        e.preventDefault();
+        const accueilEl = document.getElementById('accueil');
+        accueilEl.classList.add('sortie-douce');
+        setTimeout(() => {
+          window.location.hash = '#choix-langue';
+          accueilEl.classList.remove('sortie-douce');
+        }, 380);
+      });
+    }
 
     // Au tout premier chargement (hash vide, donc pas de lien direct vers
     // une vue précise), on vérifie si une session Supabase existe déjà —

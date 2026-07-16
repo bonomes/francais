@@ -190,6 +190,57 @@
 
 .sac-item-retirer:hover { background: rgba(224, 136, 103, 0.15); color: var(--peche-fonce); }
 
+.sac-item-copier {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  color: var(--brun-clair, #8A7364);
+  font-size: 0.85rem;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.sac-item-copier:hover { background: rgba(102, 80, 69, 0.1); color: var(--brun); }
+.sac-item-copier.copie { color: #2E7D32; }
+
+/* Bannière "des mots sont déjà là" — première ouverture seulement (voir
+   afficherIntroSacSiPremiereFois() dans sac-a-dos.js). Ton distinct de
+   .sac-avertissement (permanent, vert) pour ne pas les confondre : celle-ci
+   est une bulle d'accueil ponctuelle, pas un avertissement de portée. */
+.sac-intro {
+  margin: 10px 10px 0;
+  padding: 10px 12px;
+  background: var(--peche-pale, #FBEAE2);
+  border-radius: 10px;
+  font-size: 0.76rem;
+  color: var(--brun-fonce, #4A3B33);
+  line-height: 1.45;
+}
+
+.sac-intro p { margin: 0 0 8px; }
+
+.sac-intro button {
+  border: none;
+  background: var(--peche-fonce);
+  color: #FFFFFF;
+  font-weight: 700;
+  font-size: 0.72rem;
+  padding: 5px 12px;
+  border-radius: 100px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: opacity 0.15s ease;
+}
+
+.sac-intro button:hover { opacity: 0.85; }
+
 .sac-pied {
   padding: 10px 16px 14px;
   border-top: 1px solid rgba(240, 169, 139, 0.35);

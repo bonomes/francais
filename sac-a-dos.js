@@ -58,26 +58,26 @@ function langueActuelleSac() {
 }
 
 const DICO_SAC = {
-  fr: { catMots: "Mots appris", catCodes: "Codes", catSucces: "Réussites", catTrophees: "Trophées", catCartes: "Cartes", sacVide: "rien pour l'instant", sacRienIci: "Rien ici pour l'instant.", sacRetirer: "Retirer", sacUnItem: "{n} élément enregistré", sacPlusieursItems: "{n} éléments enregistrés", sacIntroPremiereFois: "Des mots que tu as déjà croisés sont ici ! Tu peux les copier ou les enlever — bientôt, tu pourras cocher les nouveaux mots que tu veux garder.", sacIntroCompris: "Compris !" },
-  en: { catMots: "Words learned", catCodes: "Codes", catSucces: "Achievements", catTrophees: "Trophies", catCartes: "Cards", sacVide: "nothing yet", sacRienIci: "Nothing here yet.", sacRetirer: "Remove", sacUnItem: "{n} item saved", sacPlusieursItems: "{n} items saved", sacIntroPremiereFois: "Some words you've already come across are here! You can copy them or remove them — soon, you'll be able to check off any new word you want to keep.", sacIntroCompris: "Got it!" },
-  es: { catMots: "Palabras aprendidas", catCodes: "Códigos", catSucces: "Logros", catTrophees: "Trofeos", catCartes: "Cartas", sacVide: "nada todavía", sacRienIci: "Todavía no hay nada aquí.", sacRetirer: "Quitar", sacUnItem: "{n} elemento guardado", sacPlusieursItems: "{n} elementos guardados", sacIntroPremiereFois: "Algunas palabras que ya has visto están aquí. Puedes copiarlas o quitarlas — pronto podrás marcar las palabras nuevas que quieras conservar.", sacIntroCompris: "¡Entendido!" },
-  pt: { catMots: "Palavras aprendidas", catCodes: "Códigos", catSucces: "Sucessos", catTrophees: "Troféus", catCartes: "Cartas", sacVide: "nada ainda", sacRienIci: "Ainda não há nada aqui.", sacRetirer: "Remover", sacUnItem: "{n} item guardado", sacPlusieursItems: "{n} itens guardados", sacIntroPremiereFois: "Algumas palavras que já viste estão aqui. Podes copiá-las ou removê-las — em breve, vais poder assinalar as novas palavras que queres guardar.", sacIntroCompris: "Entendido!" },
-  it: { catMots: "Parole imparate", catCodes: "Codici", catSucces: "Traguardi", catTrophees: "Trofei", catCartes: "Carte", sacVide: "ancora niente", sacRienIci: "Ancora niente qui.", sacRetirer: "Rimuovi", sacUnItem: "{n} elemento salvato", sacPlusieursItems: "{n} elementi salvati", sacIntroPremiereFois: "Alcune parole che hai già incontrato sono qui. Puoi copiarle o rimuoverle — presto potrai selezionare le nuove parole che vuoi conservare.", sacIntroCompris: "Capito!" },
-  de: { catMots: "Gelernte Wörter", catCodes: "Codes", catSucces: "Erfolge", catTrophees: "Trophäen", catCartes: "Karten", sacVide: "noch nichts", sacRienIci: "Hier ist noch nichts.", sacRetirer: "Entfernen", sacUnItem: "{n} Gegenstand gespeichert", sacPlusieursItems: "{n} Gegenstände gespeichert", sacIntroPremiereFois: "Ein paar Wörter, die dir schon begegnet sind, sind schon hier. Du kannst sie kopieren oder entfernen — bald kannst du neue Wörter ankreuzen, die du behalten willst.", sacIntroCompris: "Verstanden!" },
-  nl: { catMots: "Geleerde woorden", catCodes: "Codes", catSucces: "Prestaties", catTrophees: "Trofeeën", catCartes: "Kaarten", sacVide: "nog niets", sacRienIci: "Hier is nog niets.", sacRetirer: "Verwijderen", sacUnItem: "{n} item opgeslagen", sacPlusieursItems: "{n} items opgeslagen", sacIntroPremiereFois: "Een paar woorden die je al bent tegengekomen staan hier al. Je kunt ze kopiëren of verwijderen — binnenkort kun je nieuwe woorden aanvinken die je wilt bewaren.", sacIntroCompris: "Begrepen!" },
-  ca: { catMots: "Paraules apreses", catCodes: "Codis", catSucces: "Assoliments", catTrophees: "Trofeus", catCartes: "Cartes", sacVide: "encara res", sacRienIci: "Encara no hi ha res aquí.", sacRetirer: "Treure", sacUnItem: "{n} element desat", sacPlusieursItems: "{n} elements desats", sacIntroPremiereFois: "Algunes paraules que ja has trobat són aquí. Les pots copiar o treure — aviat podràs marcar les paraules noves que vulguis conservar.", sacIntroCompris: "Entès!" },
-  ru: { catMots: "Выученные слова", catCodes: "Коды", catSucces: "Достижения", catTrophees: "Трофеи", catCartes: "Карточки", sacVide: "пока пусто", sacRienIci: "Здесь пока ничего нет.", sacRetirer: "Убрать", sacUnItem: "Сохранено: {n}", sacPlusieursItems: "Сохранено: {n}", sacIntroPremiereFois: "Некоторые слова, которые тебе уже встречались, уже здесь. Их можно скопировать или убрать — скоро ты сможешь отмечать новые слова, которые хочешь сохранить.", sacIntroCompris: "Понятно!" },
-  zh: { catMots: "学会的单词", catCodes: "兑换码", catSucces: "成就", catTrophees: "奖杯", catCartes: "卡片", sacVide: "还没有内容", sacRienIci: "这里还没有内容。", sacRetirer: "移除", sacUnItem: "已保存 {n} 项", sacPlusieursItems: "已保存 {n} 项", sacIntroPremiereFois: "你已经遇到过的一些单词已经在这里了。你可以复制或移除它们——很快你就能勾选想保留的新单词了。", sacIntroCompris: "知道了！" },
-  ja: { catMots: "習った単語", catCodes: "コード", catSucces: "達成記録", catTrophees: "トロフィー", catCartes: "カード", sacVide: "まだ何もありません", sacRienIci: "まだここには何もありません。", sacRetirer: "削除", sacUnItem: "{n}個 保存済み", sacPlusieursItems: "{n}個 保存済み", sacIntroPremiereFois: "すでに出会った単語がいくつかここにあります。コピーしたり削除したりできます — もうすぐ、残したい新しい単語にチェックを入れられるようになります。", sacIntroCompris: "わかった！" },
-  ko: { catMots: "배운 단어", catCodes: "코드", catSucces: "업적", catTrophees: "트로피", catCartes: "카드", sacVide: "아직 없음", sacRienIci: "아직 여기에 아무것도 없어요.", sacRetirer: "제거", sacUnItem: "{n}개 저장됨", sacPlusieursItems: "{n}개 저장됨", sacIntroPremiereFois: "이미 만난 몇몇 단어가 여기 있어요. 복사하거나 지울 수 있어요 — 곧 간직하고 싶은 새 단어에 체크할 수 있게 될 거예요.", sacIntroCompris: "알겠어요!" },
-  vi: { catMots: "Từ đã học", catCodes: "Mã", catSucces: "Thành tích", catTrophees: "Cúp", catCartes: "Thẻ bài", sacVide: "chưa có gì", sacRienIci: "Chưa có gì ở đây.", sacRetirer: "Xóa", sacUnItem: "Đã lưu {n} món", sacPlusieursItems: "Đã lưu {n} món", sacIntroPremiereFois: "Một số từ bạn đã từng gặp đã có ở đây rồi. Bạn có thể sao chép hoặc xóa chúng — sắp tới bạn sẽ có thể đánh dấu những từ mới muốn giữ lại.", sacIntroCompris: "Đã hiểu!" },
-  tl: { catMots: "Mga natutunang salita", catCodes: "Mga kodigo", catSucces: "Mga tagumpay", catTrophees: "Mga trofeo", catCartes: "Mga kard", sacVide: "wala pa", sacRienIci: "Wala pang laman dito.", sacRetirer: "Alisin", sacUnItem: "{n} bagay ang naka-imbak", sacPlusieursItems: "{n} na bagay ang naka-imbak", sacIntroPremiereFois: "May mga salita ka nang nakasalubong na nandito na. Puwede mo silang kopyahin o alisin — malapit ka nang makapag-check ng mga bagong salitang gusto mong itago.", sacIntroCompris: "Nakuha ko!" },
-  id: { catMots: "Kata yang dipelajari", catCodes: "Kode", catSucces: "Pencapaian", catTrophees: "Piala", catCartes: "Kartu", sacVide: "belum ada", sacRienIci: "Belum ada apa-apa di sini.", sacRetirer: "Hapus", sacUnItem: "{n} item tersimpan", sacPlusieursItems: "{n} item tersimpan", sacIntroPremiereFois: "Beberapa kata yang sudah kamu temui sudah ada di sini. Kamu bisa menyalin atau menghapusnya — segera kamu bisa mencentang kata baru yang ingin disimpan.", sacIntroCompris: "Mengerti!" },
-  ht: { catMots: "Mo yo aprann", catCodes: "Kòd", catSucces: "Reyisit", catTrophees: "Twofe", catCartes: "Kat", sacVide: "poko gen anyen", sacRienIci: "Poko gen anyen isit la.", sacRetirer: "Retire", sacUnItem: "{n} bagay anrejistre", sacPlusieursItems: "{n} bagay anrejistre", sacIntroPremiereFois: "Gen kèk mo ou deja kwaze ki deja la a. Ou ka kopye yo oswa retire yo — talè konsa, w ap ka koche nouvo mo ou vle konsève.", sacIntroCompris: "Konpri!" },
-  fa: { catMots: "کلمات یاد گرفته‌شده", catCodes: "کدها", catSucces: "دستاوردها", catTrophees: "جام‌ها", catCartes: "کارت‌ها", sacVide: "هنوز چیزی نیست", sacRienIci: "هنوز چیزی اینجا نیست.", sacRetirer: "حذف", sacUnItem: "{n} مورد ذخیره شد", sacPlusieursItems: "{n} مورد ذخیره شد", sacIntroPremiereFois: "چند کلمه که قبلاً باهاشون روبه‌رو شدی همین‌جا هستن! می‌تونی کپی‌شون کنی یا حذفشون کنی — به‌زودی می‌تونی کلمه‌های جدیدی که می‌خوای نگه داری رو تیک بزنی.", sacIntroCompris: "متوجه شدم!" },
-  no: { catMots: "Lærte ord", catCodes: "Koder", catSucces: "Prestasjoner", catTrophees: "Trofeer", catCartes: "Kort", sacVide: "ingenting ennå", sacRienIci: "Ingenting her ennå.", sacRetirer: "Fjern", sacUnItem: "{n} gjenstand lagret", sacPlusieursItems: "{n} gjenstander lagret", sacIntroPremiereFois: "Noen ord du allerede har møtt ligger her. Du kan kopiere dem eller fjerne dem — snart kan du hake av nye ord du vil beholde.", sacIntroCompris: "Skjønner!" },
-  sv: { catMots: "Inlärda ord", catCodes: "Koder", catSucces: "Prestationer", catTrophees: "Troféer", catCartes: "Kort", sacVide: "inget än", sacRienIci: "Inget här än.", sacRetirer: "Ta bort", sacUnItem: "{n} sak sparad", sacPlusieursItems: "{n} saker sparade", sacIntroPremiereFois: "Några ord du redan har stött på finns redan här. Du kan kopiera eller ta bort dem — snart kan du kryssa i nya ord du vill spara.", sacIntroCompris: "Uppfattat!" },
-  eo: { catMots: "Lernitaj vortoj", catCodes: "Kodoj", catSucces: "Atingoj", catTrophees: "Trofeoj", catCartes: "Kartoj", sacVide: "ankoraŭ nenio", sacRienIci: "Ankoraŭ nenio ĉi tie.", sacRetirer: "Forigi", sacUnItem: "{n} objekto konservita", sacPlusieursItems: "{n} objektoj konservitaj", sacIntroPremiereFois: "Kelkaj vortoj, kiujn vi jam renkontis, jam estas ĉi tie. Vi povas kopii aŭ forigi ilin — baldaŭ vi povos marki novajn vortojn, kiujn vi volas konservi.", sacIntroCompris: "Komprenite!" }
+  fr: { catMots: "Mots appris", catCodes: "Codes", catSucces: "Réussites", catTrophees: "Trophées", catCartes: "Cartes", sacVide: "rien pour l'instant", sacRienIci: "Rien ici pour l'instant.", sacRetirer: "Retirer", sacCopier: "Copier", sacUnItem: "{n} élément enregistré", sacPlusieursItems: "{n} éléments enregistrés", sacIntroPremiereFois: "Des mots que tu as déjà croisés sont ici ! Tu peux les copier ou les enlever — bientôt, tu pourras cocher les nouveaux mots que tu veux garder.", sacIntroCompris: "Compris !" },
+  en: { catMots: "Words learned", catCodes: "Codes", catSucces: "Achievements", catTrophees: "Trophies", catCartes: "Cards", sacVide: "nothing yet", sacRienIci: "Nothing here yet.", sacRetirer: "Remove", sacCopier: "Copy", sacUnItem: "{n} item saved", sacPlusieursItems: "{n} items saved", sacIntroPremiereFois: "Some words you've already come across are here! You can copy them or remove them — soon, you'll be able to check off any new word you want to keep.", sacIntroCompris: "Got it!" },
+  es: { catMots: "Palabras aprendidas", catCodes: "Códigos", catSucces: "Logros", catTrophees: "Trofeos", catCartes: "Cartas", sacVide: "nada todavía", sacRienIci: "Todavía no hay nada aquí.", sacRetirer: "Quitar", sacCopier: "Copiar", sacUnItem: "{n} elemento guardado", sacPlusieursItems: "{n} elementos guardados", sacIntroPremiereFois: "Algunas palabras que ya has visto están aquí. Puedes copiarlas o quitarlas — pronto podrás marcar las palabras nuevas que quieras conservar.", sacIntroCompris: "¡Entendido!" },
+  pt: { catMots: "Palavras aprendidas", catCodes: "Códigos", catSucces: "Sucessos", catTrophees: "Troféus", catCartes: "Cartas", sacVide: "nada ainda", sacRienIci: "Ainda não há nada aqui.", sacRetirer: "Remover", sacCopier: "Copiar", sacUnItem: "{n} item guardado", sacPlusieursItems: "{n} itens guardados", sacIntroPremiereFois: "Algumas palavras que já viste estão aqui. Podes copiá-las ou removê-las — em breve, vais poder assinalar as novas palavras que queres guardar.", sacIntroCompris: "Entendido!" },
+  it: { catMots: "Parole imparate", catCodes: "Codici", catSucces: "Traguardi", catTrophees: "Trofei", catCartes: "Carte", sacVide: "ancora niente", sacRienIci: "Ancora niente qui.", sacRetirer: "Rimuovi", sacCopier: "Copia", sacUnItem: "{n} elemento salvato", sacPlusieursItems: "{n} elementi salvati", sacIntroPremiereFois: "Alcune parole che hai già incontrato sono qui. Puoi copiarle o rimuoverle — presto potrai selezionare le nuove parole che vuoi conservare.", sacIntroCompris: "Capito!" },
+  de: { catMots: "Gelernte Wörter", catCodes: "Codes", catSucces: "Erfolge", catTrophees: "Trophäen", catCartes: "Karten", sacVide: "noch nichts", sacRienIci: "Hier ist noch nichts.", sacRetirer: "Entfernen", sacCopier: "Kopieren", sacUnItem: "{n} Gegenstand gespeichert", sacPlusieursItems: "{n} Gegenstände gespeichert", sacIntroPremiereFois: "Ein paar Wörter, die dir schon begegnet sind, sind schon hier. Du kannst sie kopieren oder entfernen — bald kannst du neue Wörter ankreuzen, die du behalten willst.", sacIntroCompris: "Verstanden!" },
+  nl: { catMots: "Geleerde woorden", catCodes: "Codes", catSucces: "Prestaties", catTrophees: "Trofeeën", catCartes: "Kaarten", sacVide: "nog niets", sacRienIci: "Hier is nog niets.", sacRetirer: "Verwijderen", sacCopier: "Kopiëren", sacUnItem: "{n} item opgeslagen", sacPlusieursItems: "{n} items opgeslagen", sacIntroPremiereFois: "Een paar woorden die je al bent tegengekomen staan hier al. Je kunt ze kopiëren of verwijderen — binnenkort kun je nieuwe woorden aanvinken die je wilt bewaren.", sacIntroCompris: "Begrepen!" },
+  ca: { catMots: "Paraules apreses", catCodes: "Codis", catSucces: "Assoliments", catTrophees: "Trofeus", catCartes: "Cartes", sacVide: "encara res", sacRienIci: "Encara no hi ha res aquí.", sacRetirer: "Treure", sacCopier: "Copiar", sacUnItem: "{n} element desat", sacPlusieursItems: "{n} elements desats", sacIntroPremiereFois: "Algunes paraules que ja has trobat són aquí. Les pots copiar o treure — aviat podràs marcar les paraules noves que vulguis conservar.", sacIntroCompris: "Entès!" },
+  ru: { catMots: "Выученные слова", catCodes: "Коды", catSucces: "Достижения", catTrophees: "Трофеи", catCartes: "Карточки", sacVide: "пока пусто", sacRienIci: "Здесь пока ничего нет.", sacRetirer: "Убрать", sacCopier: "Копировать", sacUnItem: "Сохранено: {n}", sacPlusieursItems: "Сохранено: {n}", sacIntroPremiereFois: "Некоторые слова, которые тебе уже встречались, уже здесь. Их можно скопировать или убрать — скоро ты сможешь отмечать новые слова, которые хочешь сохранить.", sacIntroCompris: "Понятно!" },
+  zh: { catMots: "学会的单词", catCodes: "兑换码", catSucces: "成就", catTrophees: "奖杯", catCartes: "卡片", sacVide: "还没有内容", sacRienIci: "这里还没有内容。", sacRetirer: "移除", sacCopier: "复制", sacUnItem: "已保存 {n} 项", sacPlusieursItems: "已保存 {n} 项", sacIntroPremiereFois: "你已经遇到过的一些单词已经在这里了。你可以复制或移除它们——很快你就能勾选想保留的新单词了。", sacIntroCompris: "知道了！" },
+  ja: { catMots: "習った単語", catCodes: "コード", catSucces: "達成記録", catTrophees: "トロフィー", catCartes: "カード", sacVide: "まだ何もありません", sacRienIci: "まだここには何もありません。", sacRetirer: "削除", sacCopier: "コピー", sacUnItem: "{n}個 保存済み", sacPlusieursItems: "{n}個 保存済み", sacIntroPremiereFois: "すでに出会った単語がいくつかここにあります。コピーしたり削除したりできます — もうすぐ、残したい新しい単語にチェックを入れられるようになります。", sacIntroCompris: "わかった！" },
+  ko: { catMots: "배운 단어", catCodes: "코드", catSucces: "업적", catTrophees: "트로피", catCartes: "카드", sacVide: "아직 없음", sacRienIci: "아직 여기에 아무것도 없어요.", sacRetirer: "제거", sacCopier: "복사", sacUnItem: "{n}개 저장됨", sacPlusieursItems: "{n}개 저장됨", sacIntroPremiereFois: "이미 만난 몇몇 단어가 여기 있어요. 복사하거나 지울 수 있어요 — 곧 간직하고 싶은 새 단어에 체크할 수 있게 될 거예요.", sacIntroCompris: "알겠어요!" },
+  vi: { catMots: "Từ đã học", catCodes: "Mã", catSucces: "Thành tích", catTrophees: "Cúp", catCartes: "Thẻ bài", sacVide: "chưa có gì", sacRienIci: "Chưa có gì ở đây.", sacRetirer: "Xóa", sacCopier: "Sao chép", sacUnItem: "Đã lưu {n} món", sacPlusieursItems: "Đã lưu {n} món", sacIntroPremiereFois: "Một số từ bạn đã từng gặp đã có ở đây rồi. Bạn có thể sao chép hoặc xóa chúng — sắp tới bạn sẽ có thể đánh dấu những từ mới muốn giữ lại.", sacIntroCompris: "Đã hiểu!" },
+  tl: { catMots: "Mga natutunang salita", catCodes: "Mga kodigo", catSucces: "Mga tagumpay", catTrophees: "Mga trofeo", catCartes: "Mga kard", sacVide: "wala pa", sacRienIci: "Wala pang laman dito.", sacRetirer: "Alisin", sacCopier: "Kopyahin", sacUnItem: "{n} bagay ang naka-imbak", sacPlusieursItems: "{n} na bagay ang naka-imbak", sacIntroPremiereFois: "May mga salita ka nang nakasalubong na nandito na. Puwede mo silang kopyahin o alisin — malapit ka nang makapag-check ng mga bagong salitang gusto mong itago.", sacIntroCompris: "Nakuha ko!" },
+  id: { catMots: "Kata yang dipelajari", catCodes: "Kode", catSucces: "Pencapaian", catTrophees: "Piala", catCartes: "Kartu", sacVide: "belum ada", sacRienIci: "Belum ada apa-apa di sini.", sacRetirer: "Hapus", sacCopier: "Salin", sacUnItem: "{n} item tersimpan", sacPlusieursItems: "{n} item tersimpan", sacIntroPremiereFois: "Beberapa kata yang sudah kamu temui sudah ada di sini. Kamu bisa menyalin atau menghapusnya — segera kamu bisa mencentang kata baru yang ingin disimpan.", sacIntroCompris: "Mengerti!" },
+  ht: { catMots: "Mo yo aprann", catCodes: "Kòd", catSucces: "Reyisit", catTrophees: "Twofe", catCartes: "Kat", sacVide: "poko gen anyen", sacRienIci: "Poko gen anyen isit la.", sacRetirer: "Retire", sacCopier: "Kopye", sacUnItem: "{n} bagay anrejistre", sacPlusieursItems: "{n} bagay anrejistre", sacIntroPremiereFois: "Gen kèk mo ou deja kwaze ki deja la a. Ou ka kopye yo oswa retire yo — talè konsa, w ap ka koche nouvo mo ou vle konsève.", sacIntroCompris: "Konpri!" },
+  fa: { catMots: "کلمات یاد گرفته‌شده", catCodes: "کدها", catSucces: "دستاوردها", catTrophees: "جام‌ها", catCartes: "کارت‌ها", sacVide: "هنوز چیزی نیست", sacRienIci: "هنوز چیزی اینجا نیست.", sacRetirer: "حذف", sacCopier: "کپی", sacUnItem: "{n} مورد ذخیره شد", sacPlusieursItems: "{n} مورد ذخیره شد", sacIntroPremiereFois: "چند کلمه که قبلاً باهاشون روبه‌رو شدی همین‌جا هستن! می‌تونی کپی‌شون کنی یا حذفشون کنی — به‌زودی می‌تونی کلمه‌های جدیدی که می‌خوای نگه داری رو تیک بزنی.", sacIntroCompris: "متوجه شدم!" },
+  no: { catMots: "Lærte ord", catCodes: "Koder", catSucces: "Prestasjoner", catTrophees: "Trofeer", catCartes: "Kort", sacVide: "ingenting ennå", sacRienIci: "Ingenting her ennå.", sacRetirer: "Fjern", sacCopier: "Kopier", sacUnItem: "{n} gjenstand lagret", sacPlusieursItems: "{n} gjenstander lagret", sacIntroPremiereFois: "Noen ord du allerede har møtt ligger her. Du kan kopiere dem eller fjerne dem — snart kan du hake av nye ord du vil beholde.", sacIntroCompris: "Skjønner!" },
+  sv: { catMots: "Inlärda ord", catCodes: "Koder", catSucces: "Prestationer", catTrophees: "Troféer", catCartes: "Kort", sacVide: "inget än", sacRienIci: "Inget här än.", sacRetirer: "Ta bort", sacCopier: "Kopiera", sacUnItem: "{n} sak sparad", sacPlusieursItems: "{n} saker sparade", sacIntroPremiereFois: "Några ord du redan har stött på finns redan här. Du kan kopiera eller ta bort dem — snart kan du kryssa i nya ord du vill spara.", sacIntroCompris: "Uppfattat!" },
+  eo: { catMots: "Lernitaj vortoj", catCodes: "Kodoj", catSucces: "Atingoj", catTrophees: "Trofeoj", catCartes: "Kartoj", sacVide: "ankoraŭ nenio", sacRienIci: "Ankoraŭ nenio ĉi tie.", sacRetirer: "Forigi", sacCopier: "Kopii", sacUnItem: "{n} objekto konservita", sacPlusieursItems: "{n} objektoj konservitaj", sacIntroPremiereFois: "Kelkaj vortoj, kiujn vi jam renkontis, jam estas ĉi tie. Vi povas kopii aŭ forigi ilin — baldaŭ vi povos marki novajn vortojn, kiujn vi volas konservi.", sacIntroCompris: "Komprenite!" }
 };
 
 const CATEGORIES_SAC = [
@@ -171,6 +171,25 @@ function retirerDuSac(categorie, identifiant) {
   rafraichirAffichageSac();
 }
 
+// Copie le texte d'un item (mot + traduction) dans le presse-papiers.
+// navigator.clipboard demande un contexte sécurisé (https ou localhost) —
+// GitHub Pages sert toujours en https, donc pas de repli nécessaire pour
+// la production ; execCommand (obsolète) volontairement pas utilisé ici.
+// Petit retour visuel (coche 1,1s) plutôt qu'une alerte bloquante.
+function copierDepuisSac(bouton) {
+  const texte = bouton.dataset.texte || '';
+  if (!navigator.clipboard || !texte) return;
+  navigator.clipboard.writeText(texte).then(() => {
+    const original = bouton.innerHTML;
+    bouton.innerHTML = '&#10003;';
+    bouton.classList.add('copie');
+    setTimeout(() => {
+      bouton.innerHTML = original;
+      bouton.classList.remove('copie');
+    }, 1100);
+  }).catch(e => console.warn('Copie impossible.', e));
+}
+
 // Échappement minimal pour insérer une valeur dynamique dans un attribut
 // HTML construit via innerHTML — nécessaire ici parce que identifiant
 // peut contenir une apostrophe (élisions françaises : "l'ami", "d'accord"),
@@ -223,11 +242,17 @@ function rafraichirAffichageSac() {
           ? '<div class="sac-vide">' + tSacOuDefaut('sacRienIci', 'Nothing here yet.') + '</div>'
           : items.map(i => {
               const identifiant = i.mot || i.code || i.titre || i.nom || '';
+              const nomAffiche = i.nom || i.mot || i.code || '—';
+              const detailAffiche = i.trad || i.description || i.titre || '';
+              const texteACopier = detailAffiche ? (nomAffiche + ' : ' + detailAffiche) : nomAffiche;
               return '<div class="sac-item">' +
                 '<span class="sac-item-principal">' +
-                  '<span class="sac-item-nom">' + (i.nom || i.mot || i.code || '—') + '</span>' +
-                  '<span class="sac-item-detail">' + (i.trad || i.description || i.titre || '') + '</span>' +
+                  '<span class="sac-item-nom">' + nomAffiche + '</span>' +
+                  '<span class="sac-item-detail">' + detailAffiche + '</span>' +
                 '</span>' +
+                '<button type="button" class="sac-item-copier" title="' + echapperAttribut(tSacOuDefaut('sacCopier', 'Copy')) + '" ' +
+                  'data-texte="' + echapperAttribut(texteACopier) + '" ' +
+                  'onclick="copierDepuisSac(this)">&#10697;</button>' +
                 '<button type="button" class="sac-item-retirer" title="' + echapperAttribut(tSacOuDefaut('sacRetirer', 'Remove')) + '" ' +
                   'data-cat="' + cat.id + '" data-id="' + echapperAttribut(identifiant) + '" ' +
                   'onclick="retirerDuSac(this.dataset.cat, this.dataset.id)">&times;</button>' +
@@ -243,11 +268,44 @@ function toggleCategorieSac(entete) {
   entete.parentElement.classList.toggle('repliee');
 }
 
+// ---------- Bannière d'introduction (première ouverture seulement) ----------
+//
+// sacIntroPremiereFois/sacIntroCompris existent dans DICO_SAC depuis une
+// session précédente, mais rien ne les affichait encore — la tâche s'était
+// arrêtée à la traduction, avant l'affichage réel. Complété ici : la
+// bannière apparaît au-dessus de la liste au tout premier "sacBouton" cliqué
+// qui ouvre le panneau, quelle que soit la page (clé localStorage partagée,
+// comme CLE_SAC lui-même), et ne réapparaît plus une fois "Compris !" cliqué.
+const CLE_SAC_INTRO_VUE = 'keb_bek_sac_intro_vue';
+
+function afficherIntroSacSiPremiereFois() {
+  try {
+    if (localStorage.getItem(CLE_SAC_INTRO_VUE) === '1') return;
+  } catch (e) { return; }
+  const panneau = document.getElementById('sacPanneau');
+  const corps = document.getElementById('sacCorps');
+  if (!panneau || !corps || document.getElementById('sacIntro')) return;
+
+  const div = document.createElement('div');
+  div.className = 'sac-intro';
+  div.id = 'sacIntro';
+  div.innerHTML =
+    '<p>' + tSacOuDefaut('sacIntroPremiereFois', "Some words you've already come across are here! You can copy them or remove them — soon, you'll be able to check off any new word you want to keep.") + '</p>' +
+    '<button type="button" id="btnSacIntroCompris">' + tSacOuDefaut('sacIntroCompris', 'Got it!') + '</button>';
+  panneau.insertBefore(div, corps);
+
+  document.getElementById('btnSacIntroCompris').addEventListener('click', () => {
+    try { localStorage.setItem(CLE_SAC_INTRO_VUE, '1'); } catch (e) {}
+    div.remove();
+  });
+}
+
 function toggleSacADos() {
   const bouton = document.getElementById('sacBouton');
   const panneau = document.getElementById('sacPanneau');
   const ouvert = panneau.classList.toggle('ouvert');
   bouton.classList.toggle('ouvert', ouvert);
+  if (ouvert) afficherIntroSacSiPremiereFois();
 }
 
 document.addEventListener('click', (e) => {

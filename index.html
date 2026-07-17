@@ -6,7 +6,7 @@
 <title>Le français avec Keb &amp; Bek</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700&family=Fuzzy+Bubbles:wght@400;700&family=Caveat+Brush&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700&family=Fuzzy+Bubbles:wght@400;700&family=Caveat+Brush&family=Chewy&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="sac-a-dos.css">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script src="progression.js"></script>
@@ -83,8 +83,8 @@
 
   .survol {
     position: relative;
-    width: min(90vw, 520px);
-    aspect-ratio: 1408 / 768;
+    width: min(90vw, 420px);
+    aspect-ratio: 848 / 884;
     display: block;
   }
 
@@ -103,24 +103,24 @@
   .survol:hover img.image-base { opacity: 0; }
   .survol:hover img.image-survol { opacity: 1; }
 
-  /* "Bonjour !" au-dessus de leurs têtes, en même temps qu'ils saluent —
-     même famille visuelle que .bulle-first-time (texte contouré, pas de
-     boîte), pas une nouvelle invention stylistique. Repère de position
-     approximatif (têtes vers 18-30% de hauteur sur l'image 1408×768) —
-     à ajuster à l'œil une fois vu sur la vraie image. */
+  /* "Bonjour !" au-dessus de leurs têtes, en même temps qu'ils saluent.
+     Choix retenu après essai comparatif (BONOMES_v57) : Chewy pour une
+     interjection courte, brun plein inversé (fond foncé/contour clair),
+     nettement plus gros qu'à l'origine. Cette page n'a aucune traduction
+     — "Bonjour !" reste toujours en français ici, jamais passé par t(). */
   .bulle-bonjour {
     position: absolute;
     left: 50%;
-    top: -15%;
-    width: 60%;
+    top: -22%;
+    width: 80%;
     transform: translateX(-50%) translateY(10px) scale(0.85) rotate(-3deg);
-    font-family: 'Fuzzy Bubbles', cursive;
-    font-weight: 700;
-    font-size: clamp(1.5rem, 6vw, 2.4rem);
+    font-family: 'Chewy', cursive;
+    font-weight: 400;
+    font-size: clamp(2.4rem, 14vw, 4.2rem);
     line-height: 1;
     text-align: center;
-    color: var(--peche-fonce);
-    -webkit-text-stroke: 2.5px var(--brun-fonce);
+    color: #4A3B33;
+    -webkit-text-stroke: 2.5px #F2EDE3;
     paint-order: stroke fill;
     opacity: 0;
     pointer-events: none;
@@ -131,6 +131,39 @@
     opacity: 1;
     transform: translateX(-50%) translateY(0) scale(1) rotate(-3deg);
   }
+
+  /* Case secrète (BONOMES_v58) : après 50 survols de "Bonjour !" sans
+     jamais avoir cliqué pour continuer, l'image bascule sur la variante
+     "clique ici" — Keb et Bek pointent vers une case précise qu'il faut
+     viser, pas cliquer n'importe où. Coordonnées de .zone-case repérées
+     à l'œil par Raphaël via un outil de calibration dédié, sur l'image
+     source 848×884 — ne pas recalculer "à vue" si l'image change un jour,
+     réutiliser l'outil. */
+  .survol.mode-secret img.image-base,
+  .survol.mode-secret img.image-survol {
+    opacity: 0 !important;
+  }
+  .survol.mode-secret .bulle-bonjour { display: none; }
+
+  .image-secret {
+    opacity: 0;
+    pointer-events: none;
+  }
+  .survol.mode-secret .image-secret {
+    opacity: 1;
+  }
+
+  .zone-case {
+    position: absolute;
+    left: 40.90%;
+    top: 42.67%;
+    width: 17.40%;
+    height: 6.53%;
+    z-index: 3;
+    display: none;
+    cursor: pointer;
+  }
+  .survol.mode-secret .zone-case { display: block; }
 
   /* ---------- Vue 2 : choix de langue ---------- */
 
@@ -1221,9 +1254,11 @@
 
     <section id="accueil" class="vue">
       <a class="survol" href="#choix-langue" aria-label="Start">
-        <img class="image-base" src="images/bonomes_keb_bek_principal_sans_fond_01.png" alt="Keb et Bek">
-        <img class="image-survol" src="images/bonomes_keb_bek_principal_saluent_sans_fond_01.png" alt="Keb et Bek qui saluent">
+        <img class="image-base" src="images/bon_k-b_neutres_01.webp" alt="Keb et Bek">
+        <img class="image-survol" src="images/bon_k-b_saluent_01.webp" alt="Keb et Bek qui saluent">
+        <img class="image-secret" src="images/bon_k-b_clique_ici_01.webp" alt="Keb et Bek qui montrent une case à cliquer">
         <p class="bulle-bonjour" aria-hidden="true">Bonjour !</p>
+        <div class="zone-case" id="zoneCaseSecrete" aria-hidden="true"></div>
       </a>
     </section>
 
@@ -4152,16 +4187,74 @@
     //
     // #accueil s'estompe avant que le hash ne change, plutôt que le saut
     // instantané précédent (voir commentaire CSS sur .sortie-douce).
+    function continuerDepuisAccueil() {
+      const accueilEl = document.getElementById('accueil');
+      accueilEl.classList.add('sortie-douce');
+      setTimeout(() => {
+        window.location.hash = '#choix-langue';
+        accueilEl.classList.remove('sortie-douce');
+      }, 380);
+    }
+
+    // ---------- Case secrète de #accueil (BONOMES_v58) ----------
+    //
+    // Après 50 survols de "Bonjour !" sans jamais avoir cliqué pour
+    // continuer, l'image bascule sur la variante "clique ici" (voir CSS
+    // .mode-secret) — à partir de ce moment-là, seul un clic précis dans
+    // .zone-case fait progresser ; un clic ailleurs sur l'image ne fait
+    // rien. Le drapeau kebbek_case_secrete_trouvee est un simple hook :
+    // il n'a aucun effet visible pour l'instant au-delà de continuer
+    // normalement — le futur mécanisme de récompense à la toute fin du
+    // parcours de l'index (pas encore construit) le consultera plus tard
+    // pour savoir s'il doit accorder la récompense spéciale.
+    const CLE_COMPTEUR_BONJOUR = 'kebbek_compteur_bonjour';
+    const CLE_CASE_SECRETE = 'kebbek_case_secrete_trouvee';
+    const SEUIL_BONJOUR = 50;
+
     const lienDemarrerAccueil = document.querySelector('#accueil .survol');
+    const zoneCaseSecrete = document.getElementById('zoneCaseSecrete');
+
+    function caseSecreteDejaTrouvee() {
+      return localStorage.getItem(CLE_CASE_SECRETE) === '1';
+    }
+    function lireCompteurBonjour() {
+      return parseInt(localStorage.getItem(CLE_COMPTEUR_BONJOUR) || '0', 10);
+    }
+    function majModeSecret() {
+      if (!lienDemarrerAccueil) return;
+      const actif = !caseSecreteDejaTrouvee() && lireCompteurBonjour() >= SEUIL_BONJOUR;
+      lienDemarrerAccueil.classList.toggle('mode-secret', actif);
+    }
+
     if (lienDemarrerAccueil) {
+      majModeSecret(); // en cas de rechargement de page en plein milieu d'un compteur déjà élevé
+
+      lienDemarrerAccueil.addEventListener('mouseenter', () => {
+        if (caseSecreteDejaTrouvee() || lienDemarrerAccueil.classList.contains('mode-secret')) return;
+        localStorage.setItem(CLE_COMPTEUR_BONJOUR, String(lireCompteurBonjour() + 1));
+        majModeSecret();
+      });
+
       lienDemarrerAccueil.addEventListener('click', (e) => {
         e.preventDefault();
-        const accueilEl = document.getElementById('accueil');
-        accueilEl.classList.add('sortie-douce');
-        setTimeout(() => {
-          window.location.hash = '#choix-langue';
-          accueilEl.classList.remove('sortie-douce');
-        }, 380);
+        if (lienDemarrerAccueil.classList.contains('mode-secret')) {
+          // Clic ailleurs que sur la case pendant le mode secret : on ignore,
+          // il faut viser précisément (voir .zone-case ci-dessous).
+          return;
+        }
+        localStorage.setItem(CLE_COMPTEUR_BONJOUR, '0');
+        continuerDepuisAccueil();
+      });
+    }
+
+    if (zoneCaseSecrete) {
+      zoneCaseSecrete.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        localStorage.setItem(CLE_CASE_SECRETE, '1');
+        localStorage.setItem(CLE_COMPTEUR_BONJOUR, '0');
+        if (lienDemarrerAccueil) lienDemarrerAccueil.classList.remove('mode-secret');
+        continuerDepuisAccueil();
       });
     }
 

@@ -4214,6 +4214,25 @@
     const lienDemarrerAccueil = document.querySelector('#accueil .survol');
     const zoneCaseSecrete = document.getElementById('zoneCaseSecrete');
 
+    // Pré-remplissage du sac avec "bonjour" — perdu lors de la refonte du
+    // gestionnaire de clic/survol cette session (le mien, ajouté à une
+    // session précédente, faisait partie du même addEventListener
+    // 'mouseenter' qui vient d'être remplacé). Remis ici, sur le même
+    // événement que le compteur ci-dessous — ajouterAuSac() a sa propre
+    // protection anti-doublon, donc l'appeler à chaque survol (comme le
+    // compteur) est sans risque, pas seulement au premier.
+    const TRAD_BONJOUR = {
+      en: 'Hello', es: 'Hola', pt: 'Olá', it: 'Ciao', zh: '你好', ko: '안녕하세요',
+      ja: 'こんにちは', vi: 'Xin chào', tl: 'Kamusta', de: 'Hallo', nl: 'Hallo',
+      ca: 'Hola', ht: 'Bonjou', id: 'Halo', fa: 'سلام', ru: 'Привет',
+      no: 'Hei', sv: 'Hej', eo: 'Saluton'
+    };
+    function preRemplirBonjour() {
+      if (typeof ajouterAuSac !== 'function') return;
+      const langue = (typeof langueActuelleSac === 'function') ? langueActuelleSac() : 'en';
+      ajouterAuSac('mots', { mot: 'bonjour', trad: TRAD_BONJOUR[langue] || TRAD_BONJOUR.en });
+    }
+
     function caseSecreteDejaTrouvee() {
       return localStorage.getItem(CLE_CASE_SECRETE) === '1';
     }
@@ -4230,6 +4249,7 @@
       majModeSecret(); // en cas de rechargement de page en plein milieu d'un compteur déjà élevé
 
       lienDemarrerAccueil.addEventListener('mouseenter', () => {
+        preRemplirBonjour();
         if (caseSecreteDejaTrouvee() || lienDemarrerAccueil.classList.contains('mode-secret')) return;
         localStorage.setItem(CLE_COMPTEUR_BONJOUR, String(lireCompteurBonjour() + 1));
         majModeSecret();

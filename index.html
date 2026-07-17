@@ -170,12 +170,12 @@
   /* Une seule image (Keb et Bek qui présentent), le menu de langues est
      superposé en position absolue exactement dans l'espace vide entre
      les deux personnages, repéré en pourcentage de la taille de l'image
-     (1380 x 752 px d'origine) pour rester aligné à toutes les tailles. */
+     (1376 x 768 px d'origine) pour rester aligné à toutes les tailles. */
 
   .scene-langues {
     position: relative;
     width: min(92vw, 640px);
-    aspect-ratio: 1380 / 752;
+    aspect-ratio: 1376 / 768;
   }
 
   .image-langues {
@@ -188,10 +188,10 @@
 
   .menu-langues-conteneur {
     position: absolute;
-    left: 36.88%;
-    width: 27.83%;
-    top: 10.77%;
-    height: 82.45%;
+    left: 31.4%;
+    width: 40.26%;
+    top: 13.93%;
+    height: 80.73%;
   }
 
   .menu-langues {
@@ -219,7 +219,11 @@
   .menu-langues li {
     scroll-snap-align: center;
     text-align: center;
-    padding: 6px 6px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 6px;
     margin: 3px 6px;
     border-radius: 999px;
     font-size: clamp(0.68rem, 2.6vw, 1.05rem);
@@ -235,10 +239,17 @@
 
   .menu-langues li.au-centre {
     opacity: 1;
-    transform: scale(1.18);
+    transform: none;
+    width: fit-content;
+    max-width: calc(100% - 12px);
+    height: 44px;
+    padding: 0 20px;
+    margin-left: auto;
+    margin-right: auto;
     font-weight: 700;
     color: var(--peche-fonce);
     background: #FFFFFF;
+    border: 1.5px solid var(--brun-fonce);
     box-shadow: 0 2px 10px rgba(102, 80, 69, 0.12);
   }
 
@@ -1256,7 +1267,7 @@
       <a class="survol" href="#choix-langue" aria-label="Start">
         <img class="image-base" src="images/bon_k-b_neutres_01.png" alt="Keb et Bek">
         <img class="image-survol" src="images/bon_k-b_saluent_01.png" alt="Keb et Bek qui saluent">
-        <img class="image-secret" src="images/bon_k-b_clique_ici_01.png" alt="Keb et Bek qui montrent une case à cliquer">
+        <img class="image-secret" src="images/bon_k-b_CLIQUE-ICI_01.png" alt="Keb et Bek qui montrent une case à cliquer">
         <p class="bulle-bonjour" aria-hidden="true">Bonjour !</p>
         <div class="zone-case" id="zoneCaseSecrete" aria-hidden="true"></div>
       </a>
@@ -1265,7 +1276,7 @@
     <section id="choix-langue" class="vue">
       <a class="retour" href="#accueil" aria-label="Retour">‹</a>
       <div class="scene-langues">
-        <img class="image-langues" src="images/bonomes_keb_bek_principal_presentent_langues_sans_fond_01.png" alt="Keb et Bek qui présentent le choix des langues">
+        <img class="image-langues" src="images/bon_k-b_menu-langues_01.png" alt="Keb et Bek qui présentent le choix des langues">
 
         <div class="menu-langues-conteneur">
           <div class="fondu fondu-haut"></div>
@@ -4323,7 +4334,28 @@
         }
       });
 
-      items.forEach(item => item.classList.toggle('au-centre', item === plusProche));
+      items.forEach(item => {
+        const estCentre = item === plusProche;
+        item.classList.toggle('au-centre', estCentre);
+        if (!estCentre) item.style.fontSize = '';
+      });
+      ajusterTailleCentre(plusProche);
+    }
+
+    // Réduit la taille de police de la case centrale si le nom de la langue
+    // ne tient pas (ex. "Bahasa Indonesia") — la hauteur du <li> reste fixe
+    // (voir CSS) pour ne jamais redéclencher le magnétisme du défilement.
+    function ajusterTailleCentre(centre) {
+      if (!centre) return;
+      centre.style.fontSize = '';
+      requestAnimationFrame(() => {
+        const disponible = conteneurMenu.clientWidth - 16;
+        const necessaire = centre.scrollWidth;
+        if (necessaire > disponible) {
+          const tailleActuelle = parseFloat(getComputedStyle(centre).fontSize);
+          centre.style.fontSize = (tailleActuelle * (disponible / necessaire) * 0.94) + 'px';
+        }
+      });
     }
 
     // Espaceur haut/bas recalculé selon la hauteur réelle du conteneur,

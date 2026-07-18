@@ -7,6 +7,23 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700&family=Fuzzy+Bubbles:wght@400;700&family=Caveat+Brush&family=Chewy&display=swap" rel="stylesheet">
+<!-- ============================================================
+     CONVENTION TYPOGRAPHIQUE GLOBALE (figée, s'applique partout
+     désormais, pas seulement sur #accueil) :
+       - Chewy       → interjections courtes ("Bonjour !",
+                        "First time?", etc.) — brun plein inversé
+                        (texte #4A3B33, contour #F2EDE3 via
+                        -webkit-text-stroke), voir .bulle-bonjour
+                        comme référence canonique.
+       - Patrick Hand → messages/bulles plus longs (dialogues de
+                        plusieurs mots ou phrases). Police PAS
+                        ENCORE chargée dans ce <link> — à ajouter
+                        au Google Fonts ci-dessus dès la première
+                        bulle longue construite.
+     Toute nouvelle bulle courte doit reprendre Chewy + ces mêmes
+     couleurs plutôt que réinventer un style au cas par cas (ex. :
+     .bulle-first-time utilisait encore Fuzzy Bubbles avant d'être
+     alignée sur cette convention). -->
 <link rel="stylesheet" href="sac-a-dos.css">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script src="progression.js"></script>
@@ -455,6 +472,64 @@
       left: -1%;
       font-size: clamp(0.82rem, 3.5vw, 1.25rem);
     }
+  }
+
+  /* ------------------------------------------------------------------
+     "Première fois ?" v2 (BONOMES_v60) — nouvelle image bon_k-b_premiere-
+     fois_01.png (848×854, quasi carrée), structure entièrement différente
+     de .scene-premiere-fois : trois bandes empilées en FLUX NORMAL (pas de
+     positionnement absolu calé sur les pixels) — titre, puis image à son
+     ratio natif, puis boutons. Choisie précisément pour éliminer le besoin
+     de réglages par langue (.une-ligne, exceptions zh/ko/ja, variante
+     mobile) que l'ancienne approche nécessitait : le texte a maintenant
+     son propre espace, peu importe sa longueur.
+
+     Classes séparées de .scene-premiere-fois/.bulle-first-time/.boite-
+     reponse à dessein : ces dernières restent utilisées telles quelles par
+     les panneaux du haut des 19 tutoriels et par #menu-principal (aperçus
+     au survol inclus) — les toucher aurait cassé ces deux usages. Cette
+     migration ne couvre pour l'instant que #premiere-fois-en ; les 18
+     autres langues suivront une fois validées.
+
+     Version retenue par Raphaël : "A" (titre bien séparé, pas de
+     chevauchement avec l'image) — voir essai_premiere_fois_v4.html pour
+     la variante "B" (chevauchement léger) écartée. */
+  .scene-v2 {
+    width: min(88vw, 380px);
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .bulle-first-time-v2 {
+    font-family: 'Chewy', cursive;
+    font-weight: 400;
+    font-size: clamp(2.1rem, 11vw, 3.4rem);
+    line-height: 1;
+    text-align: center;
+    color: var(--brun-fonce);
+    -webkit-text-stroke: 2.5px var(--fond);
+    paint-order: stroke fill;
+    transform: rotate(-2deg);
+    margin-bottom: 10px;
+  }
+
+  .image-premiere-fois-v2 {
+    width: 100%;
+    aspect-ratio: 848 / 854;
+    display: block;
+  }
+
+  .boite-reponse-v2 {
+    margin-top: 18px;
+    display: flex;
+    gap: 14px;
+    justify-content: center;
+    background: #FFFFFF;
+    border-radius: 28px;
+    padding: 12px 20px;
+    box-shadow: 0 4px 14px rgba(102, 80, 69, 0.18);
   }
 
   /* ---------- Vue 4 : tutoriel (dialogue Keb & Bek après "Yes") ---------- */
@@ -1308,10 +1383,10 @@
 
     <section id="premiere-fois-en" class="vue">
       <a class="retour" href="#choix-langue" aria-label="Retour">‹</a>
-      <div class="scene-premiere-fois">
-        <img class="image-premiere-fois" src="images/bonomes_keb_bek_principal_premiere_fois_sans_fond_01.png" alt="Keb et Bek qui demandent si c'est la première fois">
-        <p class="bulle-first-time">First<br>time?</p>
-        <div class="boite-reponse">
+      <div class="scene-v2">
+        <p class="bulle-first-time-v2">First time?</p>
+        <img class="image-premiere-fois-v2" src="images/bon_k-b_premiere-fois_01.png" alt="Keb et Bek qui demandent si c'est la première fois">
+        <div class="boite-reponse-v2">
           <button type="button" class="bouton-reponse oui" data-reponse="oui">Yes</button>
           <button type="button" class="bouton-reponse non" data-reponse="non">No</button>
         </div>

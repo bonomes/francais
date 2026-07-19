@@ -72,6 +72,19 @@
     width: 100vw;
     height: 100vh;
     display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(10px, 2vh, 20px);
+  }
+
+  /* Ligne horizontale d'origine (sélecteur de langue + personnages),
+     inchangée — juste déplacée dans son propre conteneur flex pour
+     laisser .scene devenir une colonne accueillant aussi le lien vers
+     les cours privés en dessous, sans toucher au calcul déjà en place
+     (order:-1, gap, etc.) à l'intérieur de cette ligne. */
+  .scene-rangee {
+    display: flex;
     align-items: center;
     justify-content: center;
     gap: clamp(16px, 4vw, 32px);
@@ -149,6 +162,37 @@
     transform: translateY(-1px) scale(1);
   }
   .bouton-continuer.visible:hover { transform: translateY(-1px) scale(1); }
+
+  /* ==================================================================
+     Lien "Information et cours privés" — voir note dans le HTML.
+     Discret par construction : texte plutôt qu'un bloc plein, opacité
+     réduite au repos, ne se détache qu'au survol/focus — pense à un
+     lien de bas de page, pas à un second appel à l'action à côté du
+     bouton "continuer".
+     ================================================================== */
+  .lien-cours-prives {
+    font-family: 'Baloo 2', sans-serif;
+    font-weight: 700;
+    font-size: 0.82rem;
+    letter-spacing: 0.01em;
+    color: var(--brun);
+    opacity: 0.62;
+    text-decoration: none;
+    padding: 6px 4px;
+    border-bottom: 1.5px solid transparent;
+    transition: opacity 0.2s ease, border-color 0.2s ease;
+    flex-shrink: 0;
+  }
+
+  .lien-cours-prives:hover,
+  .lien-cours-prives:focus-visible {
+    opacity: 1;
+    border-bottom-color: var(--peche);
+  }
+
+  @media (max-height: 560px) {
+    .lien-cours-prives { font-size: 0.74rem; padding: 2px 4px; }
+  }
 
   /* ==================================================================
      Mécanisme "Bonjour !" — COPIÉ de index (2) (BONOMES_v57/v58,
@@ -519,6 +563,7 @@
 <body>
 
   <div class="scene">
+   <div class="scene-rangee">
     <div class="personnages-groupe">
       <div class="personnages" id="personnages">
         <img id="imgNeutre" class="actif" src="images/accueil/index_bonomes_keb_bek_neutres_01.webp" alt="Keb et Bek">
@@ -559,7 +604,17 @@
         <p class="sl-vide" id="slVide" hidden>Aucune langue trouvée</p>
       </div>
     </div>
+   </div>
+
+    <!-- Lien vers les cours privés — pensé pour un parent qui atterrit
+         ici en quête d'info, pas pour l'enfant en immersion : volontairement
+         discret (petit lien, pas un bouton en évidence) pour ne pas
+         concurrencer le sélecteur de langue / bouton continuer, qui restent
+         le parcours principal. Libellé traduit via DICO_COURS_PRIVES (JS
+         plus bas), mis à jour au choix de langue par rafraichirLienCoursPrives(). -->
+    <a class="lien-cours-prives" id="lienCoursPrives" href="cours-prives/">Information et cours privés</a>
   </div>
+
 
 <script>
   // ================================================================
@@ -591,6 +646,40 @@
 
   let langueActuelle = 'en';
 
+  // ==================================================================
+  // Libellé du lien "Information et cours privés" — traduit pour
+  // chacune des 19 langues du sélecteur (voir LANGUES plus haut). Pas
+  // de fonction t() globale sur cette page (contrairement à
+  // sac-a-dos.js, qui retombe sur celle d'index.html/parcours.html) :
+  // dictionnaire autonome, même esprit que DICO_SAC, mais propre à ce
+  // seul lien. 'fr' ajouté aussi par cohérence même si absent de
+  // LANGUES (l'interface ne propose pas le français comme langue
+  // d'apprenant, voir BONOMES_v61), au cas où langueActuelle vaudrait
+  // 'fr' un jour.
+  // ==================================================================
+  const DICO_COURS_PRIVES = {
+    fr: 'Information et cours privés',
+    en: 'Information & private lessons',
+    es: 'Información y clases particulares',
+    it: 'Informazioni e lezioni private',
+    pt: 'Informações e aulas particulares',
+    ca: 'Informació i classes particulars',
+    eo: 'Informoj kaj privataj lecionoj',
+    zh: '信息与私人课程',
+    ja: '情報とプライベートレッスン',
+    ko: '정보 및 개인 수업',
+    vi: 'Thông tin và các lớp học riêng',
+    ht: 'Enfòmasyon ak kou prive',
+    tl: 'Impormasyon at pribadong mga aralin',
+    id: 'Informasi dan les privat',
+    nl: 'Informatie en privélessen',
+    de: 'Informationen und Privatunterricht',
+    fa: 'اطلاعات و کلاس‌های خصوصی',
+    sv: 'Information och privatlektioner',
+    no: 'Informasjon og privattimer',
+    ru: 'Информация и частные уроки'
+  };
+
   const zone = document.getElementById('selecteurLangue');
   const declencheur = document.getElementById('slDeclencheur');
   const code = document.getElementById('slCode');
@@ -603,6 +692,7 @@
   const bulleBonjour = document.getElementById('bulleBonjour');
   const zoneCaseSecrete = document.getElementById('zoneCaseSecrete');
   const boutonContinuer = document.getElementById('boutonContinuer');
+  const lienCoursPrives = document.getElementById('lienCoursPrives');
 
   // ==================================================================
   // Bouton "continuer" — apparaît par le premier de ces deux
@@ -616,6 +706,11 @@
     boutonContinuer.classList.add('visible');
   }
   setTimeout(afficherBoutonContinuer, 15000);
+
+  function rafraichirLienCoursPrives() {
+    lienCoursPrives.textContent = DICO_COURS_PRIVES[langueActuelle] || DICO_COURS_PRIVES.en;
+  }
+  rafraichirLienCoursPrives();
 
   // Destination de "continuer" pas encore définie côté contenu (pas de
   // page suivante précisée) — laissé en point d'ancrage explicite
@@ -853,6 +948,7 @@
     });
     zone.classList.remove('invite');
     afficherBoutonContinuer();
+    rafraichirLienCoursPrives();
     fermer();
   }
 

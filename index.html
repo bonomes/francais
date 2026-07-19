@@ -102,6 +102,55 @@
   .personnages img.actif { opacity: 1; }
 
   /* ==================================================================
+     Groupe personnages + bouton "continuer" — voir la note sur
+     #boutonContinuer plus haut dans le HTML. Un simple conteneur flex
+     pour que le bouton reste toujours collé au bord droit des
+     personnages, à n'importe quelle largeur d'écran (plutôt qu'un
+     positionnement absolu qui aurait dû recalculer le bord droit réel
+     de .personnages à chaque taille de fenêtre).
+     ================================================================== */
+
+  .personnages-groupe {
+    display: flex;
+    align-items: center;
+    gap: clamp(10px, 2vw, 20px);
+    flex-shrink: 0;
+  }
+
+  .bouton-continuer {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.5);
+    backdrop-filter: blur(9px) saturate(160%);
+    -webkit-backdrop-filter: blur(9px) saturate(160%);
+    border: 1.5px solid var(--peche);
+    color: var(--brun);
+    cursor: pointer;
+    box-shadow: 6px 6px 20px var(--ombre), inset -1px 0 0 rgba(255,255,255,0.5);
+    opacity: 0;
+    transform: scale(0.75);
+    pointer-events: none;
+    transition: opacity 0.35s ease, transform 0.4s cubic-bezier(.34,1.6,.4,1), box-shadow 0.25s ease;
+  }
+
+  .bouton-continuer.visible {
+    opacity: 1;
+    transform: scale(1);
+    pointer-events: auto;
+  }
+
+  .bouton-continuer:hover {
+    box-shadow: 8px 8px 26px var(--ombre), inset -1px 0 0 rgba(255,255,255,0.6);
+    transform: translateY(-1px) scale(1);
+  }
+  .bouton-continuer.visible:hover { transform: translateY(-1px) scale(1); }
+
+  /* ==================================================================
      Mécanisme "Bonjour !" — COPIÉ de index (2) (BONOMES_v57/v58,
      .survol / .bulle-bonjour / .zone-case), adapté ici à la structure
      de .personnages (4 images empilées + classe .actif déjà gérée en
@@ -264,6 +313,23 @@
   .sl-declencheur:hover {
     box-shadow: 8px 8px 26px var(--ombre), inset -1px 0 0 rgba(255,255,255,0.6);
     transform: translateY(-1px);
+  }
+
+  /* ==================================================================
+     Radiance d'invitation — attire l'œil vers le sélecteur de langue
+     tant qu'aucun choix actif n'a été fait (classe .invite, retirée par
+     choisir() au premier vrai choix, voir JS). Anneau qui s'étend et
+     s'efface en boucle, superposé au box-shadow existant plutôt qu'à sa
+     place (d'où la 3ᵉ valeur ajoutée dans chaque état des keyframes).
+     ================================================================== */
+  .selecteur-langue.invite .sl-declencheur {
+    animation: radianceInvite 2s ease-out infinite;
+  }
+
+  @keyframes radianceInvite {
+    0%   { box-shadow: 6px 6px 20px var(--ombre), inset -1px 0 0 rgba(255,255,255,0.5), 0 0 0 0 rgba(240, 169, 139, 0.55); }
+    70%  { box-shadow: 6px 6px 20px var(--ombre), inset -1px 0 0 rgba(255,255,255,0.5), 0 0 0 14px rgba(240, 169, 139, 0); }
+    100% { box-shadow: 6px 6px 20px var(--ombre), inset -1px 0 0 rgba(255,255,255,0.5), 0 0 0 0 rgba(240, 169, 139, 0); }
   }
 
   .selecteur-langue.ouvert .sl-declencheur {
@@ -453,16 +519,31 @@
 <body>
 
   <div class="scene">
-    <div class="personnages" id="personnages">
-      <img id="imgNeutre" class="actif" src="images/accueil/index_bonomes_keb_bek_neutres_01.webp" alt="Keb et Bek">
-      <img id="imgGauche" src="images/accueil/index_bonomes_keb_bek_presentent-gauche_01.webp" alt="Keb et Bek regardant vers le sélecteur de langue">
-      <img id="imgSaluent" src="images/accueil/index_bonomes_keb_bek_saluent_01.webp" alt="Keb et Bek qui saluent en disant Bonjour">
-      <img id="imgClique" src="images/accueil/index_bonomes_keb_bek_clique-ici_01.webp" alt="Keb et Bek qui montrent une case précise à cliquer">
-      <p class="bulle-bonjour" id="bulleBonjour" aria-hidden="true">Bonjour !</p>
-      <div class="zone-case" id="zoneCaseSecrete" aria-hidden="true" title="Case secrète — clique ici"></div>
+    <div class="personnages-groupe">
+      <div class="personnages" id="personnages">
+        <img id="imgNeutre" class="actif" src="images/accueil/index_bonomes_keb_bek_neutres_01.webp" alt="Keb et Bek">
+        <img id="imgGauche" src="images/accueil/index_bonomes_keb_bek_presentent-gauche_01.webp" alt="Keb et Bek regardant vers le sélecteur de langue">
+        <img id="imgSaluent" src="images/accueil/index_bonomes_keb_bek_saluent_01.webp" alt="Keb et Bek qui saluent en disant Bonjour">
+        <img id="imgClique" src="images/accueil/index_bonomes_keb_bek_clique-ici_01.webp" alt="Keb et Bek qui montrent une case précise à cliquer">
+        <p class="bulle-bonjour" id="bulleBonjour" aria-hidden="true">Bonjour !</p>
+        <div class="zone-case" id="zoneCaseSecrete" aria-hidden="true" title="Case secrète — clique ici"></div>
+      </div>
+
+      <!-- Bouton "continuer" : apparaît soit dès qu'un choix de langue
+           actif est fait (voir choisir() plus bas), soit automatiquement
+           après 15s sur la page si aucun choix n'a encore été fait — les
+           deux chemins mènent à afficherBoutonContinuer(), idempotent.
+           Espace réservé dès le départ (opacity/scale animés, pas de
+           display:none) pour que son apparition ne déplace rien autour
+           de lui. -->
+      <button class="bouton-continuer" id="boutonContinuer" type="button" aria-label="Continuer" title="Continuer">
+        <svg viewBox="0 0 20 20" width="20" height="20">
+          <path d="M7 3.5l6.5 6.5-6.5 6.5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
     </div>
 
-    <div class="selecteur-langue" id="selecteurLangue">
+    <div class="selecteur-langue invite" id="selecteurLangue">
       <div class="sl-fond" id="slFond"></div>
 
       <button class="sl-declencheur" id="slDeclencheur" aria-haspopup="listbox" aria-expanded="false">
@@ -521,6 +602,27 @@
   const imgClique = document.getElementById('imgClique');
   const bulleBonjour = document.getElementById('bulleBonjour');
   const zoneCaseSecrete = document.getElementById('zoneCaseSecrete');
+  const boutonContinuer = document.getElementById('boutonContinuer');
+
+  // ==================================================================
+  // Bouton "continuer" — apparaît par le premier de ces deux
+  // déclencheurs à se produire : un vrai choix de langue (voir
+  // choisir() plus bas) ou 15s passées sur la page sans choix. Les deux
+  // chemins appellent cette même fonction, idempotente (classList.add
+  // ne fait rien si "visible" y est déjà) — pas besoin de coordonner
+  // qui a "gagné".
+  // ==================================================================
+  function afficherBoutonContinuer() {
+    boutonContinuer.classList.add('visible');
+  }
+  setTimeout(afficherBoutonContinuer, 15000);
+
+  // Destination de "continuer" pas encore définie côté contenu (pas de
+  // page suivante précisée) — laissé en point d'ancrage explicite
+  // plutôt que deviné, à brancher dès que la suite existe.
+  boutonContinuer.addEventListener('click', () => {
+    console.info('boutonContinuer cliqué — destination à définir.');
+  });
 
   const panneau = document.getElementById('slPanneau');
   const recherche = document.getElementById('slRecherche');
@@ -749,6 +851,8 @@
       code.style.transition = 'transform 0.28s cubic-bezier(.34,1.6,.4,1)';
       code.style.transform = 'scale(1)';
     });
+    zone.classList.remove('invite');
+    afficherBoutonContinuer();
     fermer();
   }
 

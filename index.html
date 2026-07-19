@@ -644,7 +644,29 @@
     { code: 'ru', natif: 'Русский',           fr: 'Russe' },
   ];
 
-  let langueActuelle = 'en';
+  // Clé PARTAGÉE avec tout le reste du site (sac-a-dos.js — voir
+  // CLE_LANGUE_SAC/langueActuelleSac — ainsi que cours-prives/index.html,
+  // methode.html, tarifs.html, qui lisent tous ce même
+  // localStorage.getItem('kebbek_langue')). Jusqu'ici cette page ne
+  // faisait QUE tenir langueActuelle en mémoire JS sans jamais l'écrire
+  // ici : choisir() changeait l'affichage local, mais rien n'était
+  // persisté, donc toute page suivante (comme le lien vers les cours
+  // privés) retombait sur son propre repli 'en' — corrigé ci-dessous.
+  const CLE_LANGUE = 'kebbek_langue';
+  function langueSauvegardee() {
+    try { return localStorage.getItem(CLE_LANGUE); }
+    catch (e) { return null; }
+  }
+  function sauvegarderLangue(codeLangue) {
+    try { localStorage.setItem(CLE_LANGUE, codeLangue); }
+    catch (e) { console.warn('Langue non sauvegardée (localStorage indisponible ou plein).', e); }
+  }
+
+  // Reprend le choix déjà fait lors d'une visite précédente s'il existe
+  // — sinon 'en' comme avant. La distinction avec un choix "jamais
+  // fait" (voir .invite / afficherBoutonContinuer plus bas) se base
+  // sur la présence même de la clé, pas sur sa valeur.
+  let langueActuelle = langueSauvegardee() || 'en';
 
   // ==================================================================
   // Libellé du lien "Information et cours privés" — traduit pour
@@ -711,6 +733,15 @@
     lienCoursPrives.textContent = DICO_COURS_PRIVES[langueActuelle] || DICO_COURS_PRIVES.en;
   }
   rafraichirLienCoursPrives();
+
+  // Visite de retour avec une langue déjà choisie précédemment : le
+  // choix est déjà fait, donc la radiance d'invitation n'a plus lieu
+  // d'être et le bouton "continuer" peut apparaître tout de suite,
+  // sans attendre les 15s ni un nouveau clic sur une pastille.
+  if (langueSauvegardee()) {
+    zone.classList.remove('invite');
+    afficherBoutonContinuer();
+  }
 
   // Destination de "continuer" pas encore définie côté contenu (pas de
   // page suivante précisée) — laissé en point d'ancrage explicite
@@ -940,6 +971,7 @@
 
   function choisir(codeLangue) {
     langueActuelle = codeLangue;
+    sauvegarderLangue(codeLangue);
     rafraichirSelection();
     code.style.transform = 'scale(0.7)';
     requestAnimationFrame(() => {

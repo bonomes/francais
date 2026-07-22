@@ -144,7 +144,30 @@ function sauvegarderSac(sac) {
   }
 }
 
+// 🐛 CORRIGÉ, round 2 (signalé par Raphaël : le correctif précédent
+// n'avait rien changé) : le drapeau booléen ne se levait que pour un
+// AJOUT RÉEL (dejaLa === false). Mais en pratique, sur souris, le mot
+// est presque toujours déjà ajouté par le SURVOL (mouseenter → ouvre
+// l'infobulle → ajoute au sac) avant même que le clic n'arrive — le
+// clic qui suit trouve donc le mot déjà présent (dejaLa === true), ne
+// lève jamais le drapeau pour CE clic précis, et le panneau se
+// refermait quand même. D'où l'observation de Raphaël : il fallait
+// "cliquer deux fois" (le premier clic fermait sans rien ajouter de
+// visible, puisque l'ajout réel avait déjà eu lieu, silencieusement,
+// au survol juste avant).
+//
+// Remplacé par un horodatage plutôt qu'un drapeau : dernierAppelAuSacLe
+// est mis à jour à CHAQUE appel d'ajouterAuSac (ajout réel OU rappel
+// d'un mot déjà là), et le détecteur de clic extérieur plus bas vérifie
+// si cet appel est tout récent (moins de DELAI_IGNORER_FERMETURE_SAC)
+// plutôt que d'exiger qu'il ait eu lieu PENDANT ce clic précis. Couvre
+// à la fois survol-puis-clic (souris, ajout un peu avant le clic) et
+// tap direct (tactile, ajout et clic quasi simultanés).
+let dernierAppelAuSacLe = 0;
+const DELAI_IGNORER_FERMETURE_SAC = 400; // ms
+
 function ajouterAuSac(categorie, item) {
+  dernierAppelAuSacLe = Date.now();
   const sac = chargerSac();
   if (!sac[categorie]) sac[categorie] = [];
   const identifiant = item.mot || item.code || item.titre || item.nom;
@@ -308,17 +331,45 @@ function toggleSacADos() {
   if (ouvert) afficherIntroSacSiPremiereFois();
 }
 
+// 🐛 CORRIGÉ (signalé par Raphaël : le sac se refermait tout seul à
+// chaque mot retiré, gênant pour en éliminer plusieurs d'affilée) :
+// ce détecteur écoutait en phase de BULLE (par défaut). Cliquer sur
+// "retirer" (×) déclenche retirerDuSac() → rafraichirAffichageSac(),
+// qui fait corps.innerHTML = '' et reconstruit toute la liste — y
+// compris le bouton tout juste cliqué, qui se retrouve détaché du DOM
+// avant même que ce détecteur ne s'exécute. panneau.contains(e.target)
+// répondait alors "faux" pour un e.target qui n'existe plus dans
+// l'arbre, faisant croire à un clic extérieur, donc fermant le
+// panneau — alors que le clic était bel et bien à l'intérieur.
+// Corrigé en écoutant en phase de CAPTURE (3ᵉ argument `true`) : ce
+// détecteur s'exécute alors AVANT que le clic n'atteigne le bouton et
+// ne déclenche la reconstruction du DOM, donc e.target est encore
+// bien attaché au moment du test — robuste pour ce bouton comme pour
+// tout futur bouton du panneau qui modifierait le DOM à son tour.
+//
+// 🆕 Round 2 : le délai (setTimeout 0) reste nécessaire pour la même
+// raison qu'avant (ce détecteur tourne en CAPTURE, avant que le clic
+// n'atteigne sa cible), mais vérifie maintenant la RÉCENCE du dernier
+// appel à ajouterAuSac (dernierAppelAuSacLe, voir plus haut) plutôt
+// qu'un drapeau propre à ce seul clic — pour couvrir le cas où l'ajout
+// a eu lieu au SURVOL, juste avant le clic, pas pendant le clic
+// lui-même (voir le commentaire détaillé sur ajouterAuSac plus haut).
 document.addEventListener('click', (e) => {
   const bouton = document.getElementById('sacBouton');
   const panneau = document.getElementById('sacPanneau');
   if (!bouton || !panneau) return;
-  if (panneau.classList.contains('ouvert') &&
+  const dehors = panneau.classList.contains('ouvert') &&
       !panneau.contains(e.target) &&
-      e.target !== bouton && !bouton.contains(e.target)) {
+      e.target !== bouton && !bouton.contains(e.target);
+  if (!dehors) return;
+  setTimeout(() => {
+    if (Date.now() - dernierAppelAuSacLe < DELAI_IGNORER_FERMETURE_SAC) {
+      return; // ce clic est lié à un ajout tout récent au sac : on le garde ouvert
+    }
     panneau.classList.remove('ouvert');
     bouton.classList.remove('ouvert');
-  }
-});
+  }, 0);
+}, true);
 
 // ---------- Icônes de catégorie (traits simples, cohérents avec le style du site) ----------
 

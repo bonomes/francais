@@ -158,17 +158,28 @@
 
 .sac-item:last-child { border-bottom: none; }
 
+/* 🐛 CORRIGÉ (signalé par Raphaël sur essai_cava_reactions_v3.html,
+   capture à l'appui) : nom et détail se disputaient la même ligne via
+   justify-content:space-between. Dès que la traduction était un peu
+   longue ("How are you? / How's it going?"), le mot lui-même n'avait
+   plus assez de largeur et se retrouvait forcé à passer à la ligne
+   MOT PAR MOT ("ça" / "va" empilés) — donnant l'illusion d'un vrai
+   chevauchement de calques, alors que c'était un problème de mise en
+   page en ligne, pas de position. Corrigé en empilant nom (en gras) et
+   détail (en dessous, plus petit) verticalement plutôt que côte à
+   côte — chacun a alors toute la largeur de l'item pour lui, jamais à
+   se la partager avec l'autre. */
 .sac-item-principal {
   flex: 1;
   min-width: 0;
   display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 10px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1px;
 }
 
 .sac-item-nom { font-weight: 700; }
-.sac-item-detail { color: var(--brun-clair, #8A7364); font-size: 0.74rem; text-align: right; }
+.sac-item-detail { color: var(--brun-clair, #8A7364); font-size: 0.74rem; text-align: left; }
 .sac-vide { font-size: 0.76rem; color: var(--brun-clair, #8A7364); font-style: italic; padding: 4px 0; }
 
 .sac-item-retirer {

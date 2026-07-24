@@ -115,12 +115,12 @@
   .personnages img.actif { opacity: 1; }
 
   /* ==================================================================
-     Groupe personnages + bouton "continuer" — voir la note sur
-     #boutonContinuer plus haut dans le HTML. Un simple conteneur flex
-     pour que le bouton reste toujours collé au bord droit des
-     personnages, à n'importe quelle largeur d'écran (plutôt qu'un
-     positionnement absolu qui aurait dû recalculer le bord droit réel
-     de .personnages à chaque taille de fenêtre).
+     Groupe personnages + bloc "First time?" — voir la note sur
+     #premiereFois plus haut dans le HTML. Un simple conteneur flex pour
+     que le bloc reste toujours collé au bord droit des personnages, à
+     n'importe quelle largeur d'écran (plutôt qu'un positionnement
+     absolu qui aurait dû recalculer le bord droit réel de .personnages
+     à chaque taille de fenêtre).
      ================================================================== */
 
   .personnages-groupe {
@@ -130,20 +130,28 @@
     flex-shrink: 0;
   }
 
-  .bouton-continuer {
-    width: 52px;
-    height: 52px;
-    border-radius: 50%;
-    flex-shrink: 0;
+  /* ==================================================================
+     Bloc "First time?" — remplace l'ancienne flèche "continuer" (v61).
+     Sur demande de Raphaël : au lieu d'un simple bouton neutre, on
+     demande explicitement si c'est la première visite, avec deux
+     réponses oui/non qui mènent chacune au menu principal (destination
+     encore à définir, voir JS). Même apparition différée/au choix de
+     langue que l'ancien bouton (classe .visible, voir JS
+     afficherPremiereFois()), même habillage visuel (verre dépoli,
+     bordure pêche) que le reste des contrôles de cette page.
+     ================================================================== */
+  .premiere-fois {
     display: flex;
+    flex-direction: column;
     align-items: center;
-    justify-content: center;
+    gap: 8px;
+    flex-shrink: 0;
+    padding: 10px 16px;
+    border-radius: 20px;
     background: rgba(255, 255, 255, 0.5);
     backdrop-filter: blur(9px) saturate(160%);
     -webkit-backdrop-filter: blur(9px) saturate(160%);
     border: 1.5px solid var(--peche);
-    color: var(--brun);
-    cursor: pointer;
     box-shadow: 6px 6px 20px var(--ombre), inset -1px 0 0 rgba(255,255,255,0.5);
     opacity: 0;
     transform: scale(0.75);
@@ -151,24 +159,62 @@
     transition: opacity 0.35s ease, transform 0.4s cubic-bezier(.34,1.6,.4,1), box-shadow 0.25s ease;
   }
 
-  .bouton-continuer.visible {
+  .premiere-fois.visible {
     opacity: 1;
     transform: scale(1);
     pointer-events: auto;
   }
 
-  .bouton-continuer:hover {
-    box-shadow: 8px 8px 26px var(--ombre), inset -1px 0 0 rgba(255,255,255,0.6);
-    transform: translateY(-1px) scale(1);
+  /* Libellé traduit via DICO_PREMIERE_FOIS (JS plus bas), même esprit
+     que DICO_COURS_PRIVES — mis à jour au choix de langue par
+     rafraichirPremiereFois(). Contrairement aux boutons Oui/Non
+     ci-dessous, ce texte est un habillage d'interface, pas un mot de
+     vocabulaire français à retenir : il suit donc la langue choisie. */
+  .pf-question {
+    margin: 0;
+    font-family: 'Baloo 2', sans-serif;
+    font-weight: 700;
+    font-size: 0.8rem;
+    color: var(--brun);
+    text-align: center;
+    white-space: nowrap;
   }
-  .bouton-continuer.visible:hover { transform: translateY(-1px) scale(1); }
+
+  .pf-boutons {
+    display: flex;
+    gap: 8px;
+  }
+
+  /* Libellés "Oui" / "Non" volontairement laissés en français, jamais
+     traduits (comme la bulle "Bonjour !" plus haut) : ce sont eux-mêmes
+     des mots français que l'immersion expose dès cette première page. */
+  .pf-bouton {
+    font-family: 'Baloo 2', sans-serif;
+    font-weight: 700;
+    font-size: 0.85rem;
+    padding: 6px 18px;
+    border-radius: 999px;
+    border: 1.5px solid var(--peche);
+    background: rgba(255, 255, 255, 0.6);
+    color: var(--brun);
+    cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .pf-bouton:hover,
+  .pf-bouton:focus-visible {
+    background: var(--peche);
+    color: #fff;
+    transform: translateY(-1px);
+    box-shadow: 4px 4px 14px var(--ombre);
+  }
 
   /* ==================================================================
      Lien "Information et cours privés" — voir note dans le HTML.
      Discret par construction : texte plutôt qu'un bloc plein, opacité
      réduite au repos, ne se détache qu'au survol/focus — pense à un
      lien de bas de page, pas à un second appel à l'action à côté du
-     bouton "continuer".
+     bloc "First time?".
      ================================================================== */
   .lien-cours-prives {
     font-family: 'Baloo 2', sans-serif;
@@ -212,7 +258,12 @@
 
   /* Police et habillage copiés tels quels de .bulle-bonjour dans
      index (2) (Chewy déjà chargée dans le <link> de cette page, voir
-     tête de fichier — rien à ajouter côté polices). */
+     tête de fichier — rien à ajouter côté polices).
+
+     🆕 Cette même classe est réutilisée telle quelle pour #bulleBienvenue
+     (mot "Bienvenue !" au survol du bouton "Oui" du bloc First time?,
+     voir HTML/JS plus bas) — même bulle visuelle, juste un texte et un
+     déclencheur différents ; aucune règle CSS supplémentaire requise. */
   .bulle-bonjour {
     position: absolute;
     left: 50%;
@@ -570,22 +621,50 @@
         <img id="imgGauche" src="images/accueil/index_bonomes_keb_bek_presentent-gauche_01.webp" alt="Keb et Bek regardant vers le sélecteur de langue">
         <img id="imgSaluent" src="images/accueil/index_bonomes_keb_bek_saluent_01.webp" alt="Keb et Bek qui saluent en disant Bonjour">
         <img id="imgClique" src="images/accueil/index_bonomes_keb_bek_clique-ici_01.webp" alt="Keb et Bek qui montrent une case précise à cliquer">
+        <!-- 🆕 Images du bloc "First time?" (voir plus bas) : Keb & Bek qui
+             souhaitent la bienvenue (survol du bouton "Oui") et Keb & Bek
+             déjà équipés — vêtements colorés, casque, sac à dos — pour
+             suggérer dès le départ qu'il existe un système de progression,
+             sans un mot d'explication (survol du bouton "Non"). Même
+             mécanisme d'affichage que les 4 images ci-dessus, voir
+             afficherImage() en JS. -->
+        <img id="imgBienvenue" src="images/accueil/index_bonomes_keb_bek_bienvenue_01.webp" alt="Keb et Bek qui souhaitent la bienvenue">
+        <img id="imgEquipes" src="images/accueil/index_bonomes_keb_bek_equipes_01.webp" alt="Keb et Bek déjà équipés pour le parcours, avec vêtements colorés, casque et sac à dos">
         <p class="bulle-bonjour" id="bulleBonjour" aria-hidden="true">Bonjour !</p>
+        <!-- 🆕 Bulle "Bienvenue !" — même classe .bulle-bonjour (voir CSS),
+             affichée au survol/tap du bouton "Oui" du bloc First time?
+             plus bas. Texte volontairement toujours en français, comme
+             "Bonjour !" ci-dessus : c'est un mot de vocabulaire exposé par
+             immersion, pas un libellé d'interface à traduire. -->
+        <p class="bulle-bonjour" id="bulleBienvenue" aria-hidden="true">Bienvenue !</p>
         <div class="zone-case" id="zoneCaseSecrete" aria-hidden="true" title="Case secrète — clique ici"></div>
       </div>
 
-      <!-- Bouton "continuer" : apparaît soit dès qu'un choix de langue
-           actif est fait (voir choisir() plus bas), soit automatiquement
-           après 15s sur la page si aucun choix n'a encore été fait — les
-           deux chemins mènent à afficherBoutonContinuer(), idempotent.
-           Espace réservé dès le départ (opacity/scale animés, pas de
-           display:none) pour que son apparition ne déplace rien autour
-           de lui. -->
-      <button class="bouton-continuer" id="boutonContinuer" type="button" aria-label="Continuer" title="Continuer">
-        <svg viewBox="0 0 20 20" width="20" height="20">
-          <path d="M7 3.5l6.5 6.5-6.5 6.5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-      </button>
+      <!-- 🆕 Bloc "First time?" : remplace l'ancien bouton "continuer" (une
+           simple flèche, v61) sur demande de Raphaël. Apparaît soit dès
+           qu'un choix de langue actif est fait (voir choisir() plus bas),
+           soit automatiquement après 15s sur la page si aucun choix n'a
+           encore été fait — les deux chemins mènent à
+           afficherPremiereFois(), idempotente. Espace réservé dès le
+           départ (opacity/scale animés, pas de display:none) pour que son
+           apparition ne déplace rien autour de lui.
+
+           "Oui"/"Non" mènent tous les deux au menu principal pour
+           l'instant (destination encore à définir côté contenu, voir JS)
+           — à la souris, survoler l'un des deux boutons change l'image
+           des personnages en aperçu avant même de cliquer, comme le
+           reste des interactions "Bonjour !"/sélecteur de langue de
+           cette page. Au tactile, pas de survol distinct : le tap
+           déclenche directement clic + navigation (pas besoin d'un
+           aperçu séparé façon essai_cava_reactions_v3.html, puisque les
+           deux réponses mènent pour l'instant à la même destination). -->
+      <div class="premiere-fois" id="premiereFois">
+        <p class="pf-question" id="pfQuestion">First time?</p>
+        <div class="pf-boutons">
+          <button class="pf-bouton pf-oui" id="pfOui" type="button" data-cible="oui">Oui</button>
+          <button class="pf-bouton pf-non" id="pfNon" type="button" data-cible="non">Non</button>
+        </div>
+      </div>
     </div>
 
     <div class="selecteur-langue invite" id="selecteurLangue">
@@ -664,7 +743,7 @@
 
   // Reprend le choix déjà fait lors d'une visite précédente s'il existe
   // — sinon 'en' comme avant. La distinction avec un choix "jamais
-  // fait" (voir .invite / afficherBoutonContinuer plus bas) se base
+  // fait" (voir .invite / afficherPremiereFois plus bas) se base
   // sur la présence même de la clé, pas sur sa valeur.
   let langueActuelle = langueSauvegardee() || 'en';
 
@@ -702,6 +781,39 @@
     ru: 'Информация и частные уроки'
   };
 
+  // ==================================================================
+  // 🆕 Libellé de la question "First time?" du bloc qui remplace
+  // l'ancien bouton "continuer" — même esprit et mêmes 19+1 langues que
+  // DICO_COURS_PRIVES juste au-dessus (dictionnaire autonome, mis à
+  // jour au choix de langue par rafraichirPremiereFois() plus bas).
+  // Contrairement aux libellés "Oui"/"Non" des boutons (volontairement
+  // laissés en français, voir HTML), ce texte est un habillage
+  // d'interface : il suit la langue choisie comme le lien vers les
+  // cours privés.
+  // ==================================================================
+  const DICO_PREMIERE_FOIS = {
+    fr: 'Première fois ?',
+    en: 'First time?',
+    es: '¿Primera vez?',
+    it: 'Prima volta?',
+    pt: 'Primeira vez?',
+    ca: 'Primera vegada?',
+    eo: 'Ĉu unua fojo?',
+    zh: '第一次来吗？',
+    ja: '初めてですか？',
+    ko: '처음이신가요?',
+    vi: 'Lần đầu tiên?',
+    ht: 'Premye fwa?',
+    tl: 'Unang beses?',
+    id: 'Pertama kali?',
+    nl: 'Eerste keer?',
+    de: 'Erstes Mal?',
+    fa: 'اولین بار است؟',
+    sv: 'Första gången?',
+    no: 'Første gang?',
+    ru: 'Первый раз?'
+  };
+
   const zone = document.getElementById('selecteurLangue');
   const declencheur = document.getElementById('slDeclencheur');
   const code = document.getElementById('slCode');
@@ -711,43 +823,89 @@
   const imgGauche = document.getElementById('imgGauche');
   const imgSaluent = document.getElementById('imgSaluent');
   const imgClique = document.getElementById('imgClique');
+  const imgBienvenue = document.getElementById('imgBienvenue');
+  const imgEquipes = document.getElementById('imgEquipes');
   const bulleBonjour = document.getElementById('bulleBonjour');
+  const bulleBienvenue = document.getElementById('bulleBienvenue');
   const zoneCaseSecrete = document.getElementById('zoneCaseSecrete');
-  const boutonContinuer = document.getElementById('boutonContinuer');
+  const premiereFois = document.getElementById('premiereFois');
+  const pfQuestion = document.getElementById('pfQuestion');
+  const pfOui = document.getElementById('pfOui');
+  const pfNon = document.getElementById('pfNon');
   const lienCoursPrives = document.getElementById('lienCoursPrives');
 
   // ==================================================================
-  // Bouton "continuer" — apparaît par le premier de ces deux
+  // Bloc "First time?" — apparaît par le premier de ces deux
   // déclencheurs à se produire : un vrai choix de langue (voir
   // choisir() plus bas) ou 15s passées sur la page sans choix. Les deux
   // chemins appellent cette même fonction, idempotente (classList.add
   // ne fait rien si "visible" y est déjà) — pas besoin de coordonner
   // qui a "gagné".
   // ==================================================================
-  function afficherBoutonContinuer() {
-    boutonContinuer.classList.add('visible');
+  function afficherPremiereFois() {
+    premiereFois.classList.add('visible');
   }
-  setTimeout(afficherBoutonContinuer, 15000);
+  setTimeout(afficherPremiereFois, 15000);
 
   function rafraichirLienCoursPrives() {
     lienCoursPrives.textContent = DICO_COURS_PRIVES[langueActuelle] || DICO_COURS_PRIVES.en;
   }
   rafraichirLienCoursPrives();
 
+  // 🆕 Même principe que rafraichirLienCoursPrives() ci-dessus, pour la
+  // question "First time?" — voir DICO_PREMIERE_FOIS plus haut.
+  function rafraichirPremiereFois() {
+    pfQuestion.textContent = DICO_PREMIERE_FOIS[langueActuelle] || DICO_PREMIERE_FOIS.en;
+  }
+  rafraichirPremiereFois();
+
   // Visite de retour avec une langue déjà choisie précédemment : le
   // choix est déjà fait, donc la radiance d'invitation n'a plus lieu
-  // d'être et le bouton "continuer" peut apparaître tout de suite,
-  // sans attendre les 15s ni un nouveau clic sur une pastille.
+  // d'être et le bloc "First time?" peut apparaître tout de suite, sans
+  // attendre les 15s ni un nouveau clic sur une pastille.
   if (langueSauvegardee()) {
     zone.classList.remove('invite');
-    afficherBoutonContinuer();
+    afficherPremiereFois();
   }
 
-  // Destination de "continuer" pas encore définie côté contenu (pas de
-  // page suivante précisée) — laissé en point d'ancrage explicite
-  // plutôt que deviné, à brancher dès que la suite existe.
-  boutonContinuer.addEventListener('click', () => {
-    console.info('boutonContinuer cliqué — destination à définir.');
+  // Destination du menu principal pas encore définie côté contenu (pas
+  // de page suivante précisée) — laissé en point d'ancrage explicite
+  // plutôt que deviné, à brancher dès que la suite existe. "Oui" et
+  // "Non" y mènent tous les deux pour l'instant ; à distinguer plus
+  // tard si "Oui" (première visite) doit plutôt ouvrir la séquence de
+  // présentation de Keb & Bek avant le menu (évoqué séparément par
+  // Raphaël), une fois cette séquence construite.
+  function allerAuMenuPrincipal(reponse) {
+    console.info(`Bloc "First time?" — réponse "${reponse}", destination du menu principal à définir.`);
+  }
+
+  // 🆕 Aperçu au survol (souris) / tap (tactile) des boutons Oui/Non,
+  // même esprit que le reste des interactions de cette page (sélecteur
+  // de langue, "Bonjour !") : on prévisualise avant même de cliquer.
+  // "Oui" fait apparaître la bulle "Bienvenue !" en plus du changement
+  // d'image ; "Non" n'a pas de bulle, l'image "équipés" étant pensée
+  // pour se suffire à elle-même (voir HTML).
+  function apercuPremiereFois(cible) {
+    if (modeSecretActif()) return; // case secrète prioritaire sur tout le reste
+    bulleBonjour.classList.remove('visible'); // un seul mot à la fois au-dessus des personnages
+    if (cible === 'oui') {
+      afficherImage(imgBienvenue);
+      bulleBienvenue.classList.add('visible');
+    } else {
+      bulleBienvenue.classList.remove('visible');
+      afficherImage(imgEquipes);
+    }
+  }
+
+  function masquerApercuPremiereFois() {
+    bulleBienvenue.classList.remove('visible');
+    if (!modeSecretActif() && !hoverBonjourActif && !estOuvert()) afficherImage(imgNeutre);
+  }
+
+  [pfOui, pfNon].forEach(bouton => {
+    bouton.addEventListener('mouseenter', () => apercuPremiereFois(bouton.dataset.cible));
+    bouton.addEventListener('mouseleave', masquerApercuPremiereFois);
+    bouton.addEventListener('click', () => allerAuMenuPrincipal(bouton.dataset.cible));
   });
 
   const panneau = document.getElementById('slPanneau');
@@ -800,15 +958,16 @@
   recherche.addEventListener('input', filtrer);
 
   // ==================================================================
-  // Affichage des 4 images de #personnages — une seule "active" à la
-  // fois. Remplace le crossfade en pur CSS :hover de l'original
-  // (.survol dans index (2)) par un point d'entrée JS unique, pour que
-  // le survol du sélecteur de langue (ci-dessous) et le mécanisme
-  // "Bonjour !" (voir plus bas) puissent tous les deux décider quelle
-  // image montrer sans se marcher dessus.
+  // Affichage des 6 images de #personnages — une seule "active" à la
+  // fois (4 d'origine + 🆕 imgBienvenue/imgEquipes pour le bloc "First
+  // time?", voir plus haut). Remplace le crossfade en pur CSS :hover de
+  // l'original (.survol dans index (2)) par un point d'entrée JS
+  // unique, pour que le survol du sélecteur de langue, le mécanisme
+  // "Bonjour !" et le bloc "First time?" (voir plus bas et plus haut)
+  // puissent tous décider quelle image montrer sans se marcher dessus.
   // ==================================================================
   function afficherImage(imgAAfficher) {
-    [imgNeutre, imgGauche, imgSaluent, imgClique].forEach(img => {
+    [imgNeutre, imgGauche, imgSaluent, imgClique, imgBienvenue, imgEquipes].forEach(img => {
       img.classList.toggle('actif', img === imgAAfficher);
     });
   }
@@ -979,8 +1138,9 @@
       code.style.transform = 'scale(1)';
     });
     zone.classList.remove('invite');
-    afficherBoutonContinuer();
+    afficherPremiereFois();
     rafraichirLienCoursPrives();
+    rafraichirPremiereFois();
     fermer();
   }
 

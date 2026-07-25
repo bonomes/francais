@@ -28,6 +28,66 @@
   color: var(--brun);
 }
 
+/* ---------- Étape 0 : trio d'images d'intro (Keb → Bek → question) ----------
+   Repris tel quel du patron .cava-img/.cava-img.actif de
+   essai_cava_reactions_v3 : mêmes 896×936 que la scène "Ça va ?", donc
+   même technique de superposition (images en position absolute, une
+   seule .actif à la fois, transition d'opacité) — aucune image ne
+   bouge, seule celle visible change, pour une scène qui semble continue
+   d'un tap à l'autre plutôt qu'un changement de page. */
+
+.iden-intro-personnages {
+  position: relative;
+  width: 100%;
+  max-width: 320px;
+  aspect-ratio: 896 / 936;
+  margin: 0 auto;
+  cursor: pointer;
+}
+
+.iden-intro-personnages:focus-visible {
+  outline: 2px solid var(--peche-fonce);
+  outline-offset: 4px;
+  border-radius: 12px;
+}
+
+.iden-intro-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  opacity: 0;
+  transition: opacity 0.28s ease;
+  pointer-events: none;
+}
+.iden-intro-img.actif { opacity: 1; }
+
+/* Chevron discret, coin bas-droit de la scène — indice visuel qu'on
+   peut taper/cliquer pour avancer, sans dépendre uniquement du texte
+   .iden-intro-indice pour les élèves qui ne le liraient pas. */
+.iden-intro-chevron {
+  position: absolute;
+  right: 6px;
+  bottom: 10%;
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--peche-fonce);
+  animation: iden-intro-chevron-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes iden-intro-chevron-pulse {
+  0%, 100% { transform: translateX(0); opacity: 0.6; }
+  50% { transform: translateX(4px); opacity: 1; }
+}
+
+.iden-intro-indice {
+  font-size: 0.76rem;
+  color: var(--brun-clair, #8A7364);
+  text-align: center;
+  margin-top: -4px;
+}
+
 /* ---------- Étape 1 : saisie libre ---------- */
 
 .iden-champ-nom {

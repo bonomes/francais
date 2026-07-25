@@ -1,0 +1,146 @@
+/* ==================================================================
+   identite-eleve.css — habillage visuel de identite-eleve.js.
+   Mêmes conventions que exercices.css / sac-a-dos.css : var(--x, repli)
+   sur chaque couleur pas garantie définie partout sur toutes les
+   pages, pour fonctionner même avec le strict minimum (--fond, --brun,
+   --peche, --peche-fonce).
+
+   ⚠️ Première passe visuelle, pas encore vue contre un vrai gabarit
+   d'index.html en conditions réelles — à ajuster une fois en place.
+   ================================================================== */
+
+.iden-conteneur {
+  font-family: 'Baloo 2', sans-serif;
+  color: var(--brun);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  max-width: 420px;
+  margin: 0 auto;
+}
+
+.iden-titre {
+  font-weight: 700;
+  font-size: 1.1rem;
+  text-align: center;
+  color: var(--brun);
+}
+
+/* ---------- Étape 1 : saisie libre ---------- */
+
+.iden-champ-nom {
+  font-family: inherit;
+  font-size: 1rem;
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 1.5px solid var(--peche);
+  width: 100%;
+  box-sizing: border-box;
+  text-align: center;
+}
+.iden-champ-nom:focus { outline: 2px solid var(--peche-fonce); outline-offset: 1px; }
+
+.iden-btn-valider {
+  font-family: inherit;
+  font-size: 0.95rem;
+  font-weight: 700;
+  padding: 10px 20px;
+  border-radius: 100px;
+  border: none;
+  background: var(--peche-fonce);
+  color: #FFFFFF;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+}
+.iden-btn-valider:hover { opacity: 0.88; }
+
+.iden-erreur {
+  min-height: 1.2em;
+  font-size: 0.82rem;
+  color: #C25454;
+  text-align: center;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+.iden-erreur.in { opacity: 1; }
+
+/* ---------- Étape 1bis : choix de nom de repli ---------- */
+
+.iden-grille-noms {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  width: 100%;
+}
+
+.iden-btn-nom {
+  font-family: inherit;
+  font-size: 0.92rem;
+  font-weight: 700;
+  padding: 10px 8px;
+  border-radius: 12px;
+  border: 1.5px solid var(--peche);
+  background: #FFFFFF;
+  color: var(--brun);
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.1s ease;
+}
+.iden-btn-nom:hover { background: var(--fond); }
+.iden-btn-nom:active { transform: translateY(1px); }
+.iden-btn-nom-m { border-color: var(--peche); }
+.iden-btn-nom-f { border-color: var(--peche-fonce); }
+
+/* ---------- Étape 2 : silhouettes ---------- */
+
+.iden-grille-silhouettes {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  width: 100%;
+}
+
+.iden-btn-silhouette {
+  font-family: inherit;
+  font-size: 0.95rem;
+  font-weight: 700;
+  padding: 18px 10px;
+  border-radius: 16px;
+  border: 1.5px solid var(--peche);
+  background: #FFFFFF;
+  color: var(--brun);
+  cursor: pointer;
+  transition: background 0.15s ease, opacity 0.15s ease, transform 0.1s ease;
+}
+.iden-btn-silhouette:hover:not(:disabled) { background: var(--fond); transform: translateY(-1px); }
+.iden-btn-silhouette:active:not(:disabled) { transform: translateY(1px); }
+
+/* Visible mais désactivée — jamais masquée : signale à l'élève qu'il
+   s'est peut-être trompé de bonhomme au choix de nom, si aucune des
+   silhouettes actives ne lui correspond (voir logique dans le .js). */
+.iden-silhouette-desactivee {
+  opacity: 0.35;
+  cursor: not-allowed;
+  border-style: dashed;
+}
+
+.iden-btn-changer-nom {
+  font-family: inherit;
+  font-size: 0.82rem;
+  font-weight: 700;
+  padding: 8px 16px;
+  border-radius: 100px;
+  border: 1.5px solid var(--brun-clair, #8A7364);
+  background: none;
+  color: var(--brun-clair, #8A7364);
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+}
+.iden-btn-changer-nom:hover { opacity: 0.8; }
+
+@media (max-width: 480px) {
+  .iden-grille-noms,
+  .iden-grille-silhouettes { grid-template-columns: 1fr 1fr; gap: 8px; }
+  .iden-btn-silhouette { padding: 14px 8px; font-size: 0.88rem; }
+}

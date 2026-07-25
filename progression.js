@@ -44,6 +44,30 @@
 // client Supabase (index.html) n'avait donc aucun moyen réel de l'injecter
 // ici malgré l'intention documentée ci-dessus. Corrigé : les deux
 // fonctions sont maintenant dans l'objet exporté en bas de fichier.
+//
+// 🆕 AJOUT — séquence identité "Oui" (nom + genre + tranche d'âge,
+// voir identite-eleve.js) :
+//   - prenom : PAS ajouté ici. La colonne eleves.prenom est déjà
+//     écrite via creerProfil(prenom) (RPC creer_profil existante) au
+//     moment de la création du profil — ce module n'a donc rien de
+//     nouveau à faire pour l'écrire côté compte. Il est cependant
+//     ajouté à l'objet d'identité INVITÉ ci-dessous par simple
+//     commodité (un seul objet local à lire/écrire pour tout ce que la
+//     séquence "Oui" collecte d'un coup), et lu depuis eleves.prenom
+//     côté compte dans lireIdentite() — ⚠️ SUPPOSE que cette colonne
+//     s'appelle bien `prenom` (déduit de l'usage de creerProfil, pas
+//     confirmé par introspection directe du schéma).
+//   - adulte : booléen, tranche d'âge captée par le choix de
+//     silhouette (garçon/homme/fille/femme). null = non renseigné
+//     (profils existants, ou invité qui n'a pas encore répondu).
+//     ⚠️ SUPPOSE que la colonne eleves.adulte existe (voir
+//     bravo_schema_v07__PROPOSITION.sql fourni séparément — à exécuter
+//     sur Supabase avant que ce module puisse réellement l'écrire) et
+//     que enregistrer_identite_eleve accepte un p_adulte optionnel.
+//   - Les deux nouveaux champs suivent exactement le même principe que
+//     genre/nationalite déjà en place : passer `undefined` = "ne pas
+//     modifier ce champ", pour ne jamais écraser une valeur déjà
+//     enregistrée en modifiant seulement les autres.
 // ============================================================
 
 (function () {
@@ -52,7 +76,12 @@
 
   const CLE_INVITE_LOCALE = 'kebbek_invite';
   const CLE_PROGRESSION_INVITE = 'kebbek_progression_invite'; // { [chapitre_id]: true }
-  const CLE_IDENTITE_INVITE = 'kebbek_identite_invite'; // { genre: 'm'|'f'|null, nationalite: code|null }
+  // 🆕 Étendu pour la séquence identité "Oui" (prenom, adulte) — un seul
+  // objet plutôt qu'une clé de plus par champ : prenom/genre/adulte sont
+  // maintenant capturés ensemble, dans la même séquence, au même moment
+  // (voir identite-eleve.js) — les séparer en clés distinctes n'aurait
+  // fait que dupliquer la même logique de repli/migration trois fois.
+  const CLE_IDENTITE_INVITE = 'kebbek_identite_invite'; // { genre: 'm'|'f'|null, nationalite: code|null, prenom: string|null, adulte: boolean|null }
   const CLE_DERNIER_PROFIL = 'kebbek_dernier_profil';
 
   // clientSupabase : peut être injecté par la page hôte via definirClient()
@@ -174,32 +203,49 @@
 
   function identiteInviteLocale() {
     try {
-      return Object.assign({ genre: null, nationalite: null }, JSON.parse(localStorage.getItem(CLE_IDENTITE_INVITE) || '{}'));
+      return Object.assign(
+        { genre: null, nationalite: null, prenom: null, adulte: null },
+        JSON.parse(localStorage.getItem(CLE_IDENTITE_INVITE) || '{}')
+      );
     } catch (e) {
-      return { genre: null, nationalite: null };
+      return { genre: null, nationalite: null, prenom: null, adulte: null };
     }
   }
 
-  // Retourne { genre, nationalite } — peu importe la source (compte ou
-  // invité), même forme en sortie, comme lireProgression().
+  // Retourne { genre, nationalite, prenom, adulte } — peu importe la
+  // source (compte ou invité), même forme en sortie, comme
+  // lireProgression(). Côté compte, prenom vient de eleves.prenom
+  // (déjà écrite par creerProfil(), voir note en tête de fichier) et
+  // adulte de eleves.adulte (⚠️ colonne à ajouter, voir
+  // bravo_schema_v07__PROPOSITION.sql).
   async function lireIdentite() {
     if (sessionActuelle && profilActifId && clientSupabase) {
       const { data, error } = await clientSupabase
         .from('eleves')
-        .select('genre, nationalite')
+        .select('genre, nationalite, prenom, adulte')
         .eq('id', profilActifId)
         .single();
-      if (error) { console.warn('progression.js : lireIdentite a échoué.', error); return { genre: null, nationalite: null }; }
-      return { genre: data.genre || null, nationalite: data.nationalite || null };
+      if (error) {
+        console.warn('progression.js : lireIdentite a échoué.', error);
+        return { genre: null, nationalite: null, prenom: null, adulte: null };
+      }
+      return {
+        genre: data.genre || null,
+        nationalite: data.nationalite || null,
+        prenom: data.prenom || null,
+        adulte: (data.adulte === true || data.adulte === false) ? data.adulte : null
+      };
     }
     return identiteInviteLocale();
   }
 
-  function enregistrerIdentiteInvite(genre, nationalite) {
+  function enregistrerIdentiteInvite(genre, nationalite, prenom, adulte) {
     const actuel = identiteInviteLocale();
     const suivant = {
       genre: genre !== undefined ? genre : actuel.genre,
-      nationalite: nationalite !== undefined ? nationalite : actuel.nationalite
+      nationalite: nationalite !== undefined ? nationalite : actuel.nationalite,
+      prenom: prenom !== undefined ? prenom : actuel.prenom,
+      adulte: adulte !== undefined ? adulte : actuel.adulte
     };
     try {
       localStorage.setItem(CLE_IDENTITE_INVITE, JSON.stringify(suivant));
@@ -210,21 +256,29 @@
     }
   }
 
-  // genre/nationalite : passer undefined (pas null) pour "ne pas modifier
-  // ce champ" — permet d'enregistrer le genre seul, puis la nationalité
-  // séparément, sans écraser l'un en enregistrant l'autre (l'étape 4 du
-  // moteur d'exercices choisit les deux dans deux écrans successifs).
-  async function enregistrerIdentite(genre, nationalite) {
+  // genre/nationalite/prenom/adulte : passer undefined (pas null) pour
+  // "ne pas modifier ce champ" — permet d'enregistrer un sous-ensemble
+  // des champs sans écraser les autres (même principe déjà en place
+  // pour genre/nationalite). Note : prenom est accepté ici pour le mode
+  // invité (stockage local le temps qu'un profil existe), mais côté
+  // COMPTE le prénom ne passe PAS par cette fonction — il est écrit une
+  // seule fois, à la création du profil, via creerProfil(prenom). Le
+  // passer ici alors qu'une session existe n'a donc aucun effet côté
+  // compte (RPC actuelle : seuls genre/nationalite/adulte y sont
+  // envoyés) ; à réviser si un jour on veut permettre de renommer un
+  // profil existant.
+  async function enregistrerIdentite(genre, nationalite, prenom, adulte) {
     if (sessionActuelle && profilActifId && clientSupabase) {
       const { error } = await clientSupabase.rpc('enregistrer_identite_eleve', {
         p_eleve_id: profilActifId,
         p_genre: genre !== undefined ? genre : null,
-        p_nationalite: nationalite !== undefined ? nationalite : null
+        p_nationalite: nationalite !== undefined ? nationalite : null,
+        p_adulte: adulte !== undefined ? adulte : null
       });
       if (error) { console.warn('progression.js : enregistrerIdentite (compte) a échoué.', error); return false; }
       return true;
     }
-    return enregistrerIdentiteInvite(genre, nationalite);
+    return enregistrerIdentiteInvite(genre, nationalite, prenom, adulte);
   }
 
   // ---------- Progression : écriture ----------
@@ -287,17 +341,27 @@
   // de fusion que COMPTES_ELEVES_v10 section 5.
   //
   // Rien à migrer si l'invité n'avait jamais choisi ni genre ni
-  // nationalité (cas le plus courant si la Leçon 1 n'a pas encore été
-  // faite en mode invité) — sort immédiatement dans ce cas, sans appel
-  // réseau inutile.
+  // nationalité ni tranche d'âge (cas le plus courant si la séquence
+  // identité n'a pas encore été faite en mode invité) — sort
+  // immédiatement dans ce cas, sans appel réseau inutile — mais on
+  // nettoie quand même la clé locale ici (petit ajustement : la version
+  // précédente de cette sortie anticipée ne le faisait pas, laissant un
+  // objet vide traîner indéfiniment). Le prénom n'entre PAS dans cette
+  // condition de sortie anticipée : il est déjà passé directement à
+  // creerProfil(prenom) au moment de la création du profil (voir note
+  // en tête de fichier), pas migré ici.
   async function migrerIdentiteInviteVersCompte(eleveId) {
     const locale = identiteInviteLocale();
-    if ((locale.genre === null && locale.nationalite === null) || !clientSupabase) return;
+    if ((locale.genre === null && locale.nationalite === null && locale.adulte === null) || !clientSupabase) {
+      localStorage.removeItem(CLE_IDENTITE_INVITE);
+      return;
+    }
     try {
       await clientSupabase.rpc('enregistrer_identite_eleve', {
         p_eleve_id: eleveId,
         p_genre: locale.genre,
-        p_nationalite: locale.nationalite
+        p_nationalite: locale.nationalite,
+        p_adulte: locale.adulte
       });
     } catch (e) {
       console.warn('progression.js : échec de migration de l\'identité invité.', e);

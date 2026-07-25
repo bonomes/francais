@@ -11,7 +11,25 @@
    DOM générée sont donc une proposition, pas une contrainte déjà en
    place à respecter.
 
+   🆕 Étape 0 ajoutée cette session : etapeIntroPersonnages(), un trio
+   d'images (Keb se présente → Bek se présente → Bek demande "et toi ?")
+   qui précède désormais etapeSaisieNom(). Les 3 images (896×936, même
+   canevas que la scène "Ça va ?" de essai_cava_reactions_v3) sont
+   superposées dans un seul conteneur et défilent au tap/clic — jamais
+   automatiquement — en réutilisant tel quel le patron .cava-img/
+   .cava-img.actif de cet essai (une seule image .actif à la fois,
+   transition d'opacité, aucun repositionnement : les personnages
+   restent au même endroit d'une image à l'autre). Voir IMAGES_PAR_DEFAUT
+   plus bas pour l'avertissement sur les chemins d'image (non confirmés).
+   Le dialogue parlé qui accompagnera ces images (mots cliquables vers
+   le sac, comme "Ça va ?" dans l'essai) n'est PAS encore construit ici
+   — texte pas encore fourni par Raphaël (voir BONOMES_v63, "reste à
+   faire") — seul le mécanisme de défilement est en place pour l'instant.
+
    Déroulé complet, tel que décidé :
+   0. etapeIntroPersonnages() : 3 images superposées, tap/clic pour
+      avancer (voir note ci-dessus). Au tap sur la 3e (la question),
+      enchaîne directement sur etapeSaisieNom().
    1. etapeSaisieNom() : champ texte libre, bouton valider.
       - Un "échec" = champ vide, OU mot jugé inapproprié (liste non
         exhaustive, volontairement — voir MOTS_BANNIS), OU longueur
@@ -146,6 +164,10 @@ const KebBekIdentite = (function () {
   //   callbacks = { onComplet({ prenom, genre, adulte }) }
 
   const TEXTES_PAR_DEFAUT = {
+    introAltKeb: 'Keb introduces himself',
+    introAltBek: 'Bek introduces himself',
+    introAltQuestion: 'Bek asks: what is your name?',
+    introIndiceTap: 'Tap to continue',
     labelChampNom: 'Type your name...',
     labelValider: 'OK',
     erreurVide: 'Please type your name.',
@@ -165,6 +187,23 @@ const KebBekIdentite = (function () {
   function texte(options, cle) {
     const t = (options && options.textes) || {};
     return (t[cle] !== undefined) ? t[cle] : TEXTES_PAR_DEFAUT[cle];
+  }
+
+  // ⚠️ CHEMINS NON CONFIRMÉS — Raphaël n'a pas encore précisé le dossier
+  // où ces 3 .webp vivront dans le dépôt une fois remises en place (livrées
+  // cette session sous ces noms, à la racine du zip fourni). Repli ici :
+  // les noms de fichier tels quels, supposant qu'ils sont placés à côté de
+  // la page hôte — à écraser via options.images = { keb, bek, question }
+  // si le vrai dossier diffère, même principe que options.textes ci-dessus.
+  const IMAGES_PAR_DEFAUT = {
+    keb: "index_bonomes_keb_bek_je-m'appelle-Keb_01.webp",
+    bek: "index_bonomes_keb_bek_je-m'appelle-Bek_01.webp",
+    question: 'index_bonomes_keb_bek_tu-t-appelles_01.webp'
+  };
+
+  function image(options, cle) {
+    const im = (options && options.images) || {};
+    return (im[cle] !== undefined) ? im[cle] : IMAGES_PAR_DEFAUT[cle];
   }
 
   const SILHOUETTES = [
@@ -196,6 +235,70 @@ const KebBekIdentite = (function () {
         case 'inapproprie': return texte(options, 'erreurInapproprie');
         default: return texte(options, 'erreurInapproprie');
       }
+    }
+
+    // ---- Étape 0 : trio d'images d'intro (Keb → Bek → question) ----
+    // Défilement MANUEL uniquement (tap/clic n'importe où sur la scène,
+    // jamais de minuterie automatique) — voir note de tête de fichier.
+    // Les 3 <img> sont superposées dans un seul conteneur en position
+    // absolute ; une seule porte la classe .actif à la fois (transition
+    // d'opacité en CSS), donc les personnages ne bougent jamais d'une
+    // image à l'autre — seule l'image visible change, exactement comme
+    // .cava-img/.cava-img.actif dans essai_cava_reactions_v3.
+    function etapeIntroPersonnages() {
+      conteneur.innerHTML = '';
+
+      const scene = document.createElement('div');
+      scene.className = 'iden-intro-personnages';
+      scene.tabIndex = 0; // focusable/activable au clavier (Entrée/Espace)
+      scene.setAttribute('role', 'button');
+
+      const IMAGES_INTRO = [
+        { cle: 'keb', altCle: 'introAltKeb' },
+        { cle: 'bek', altCle: 'introAltBek' },
+        { cle: 'question', altCle: 'introAltQuestion' }
+      ];
+
+      const elementsImg = IMAGES_INTRO.map(function (im, i) {
+        const img = document.createElement('img');
+        img.className = 'iden-intro-img' + (i === 0 ? ' actif' : '');
+        img.src = image(options, im.cle);
+        img.alt = texte(options, im.altCle);
+        scene.appendChild(img);
+        return img;
+      });
+
+      const chevron = document.createElement('span');
+      chevron.className = 'iden-intro-chevron';
+      chevron.setAttribute('aria-hidden', 'true');
+      chevron.textContent = '\u203A'; // ›
+      scene.appendChild(chevron);
+
+      conteneur.appendChild(scene);
+
+      // Indice sous la scène — même rôle que .cava-note-ajout-sac dans
+      // l'essai : explique le geste attendu sans dépendre uniquement du
+      // chevron visuel (utile aussi pour un lecteur d'écran).
+      const indice = document.createElement('div');
+      indice.className = 'iden-intro-indice';
+      indice.textContent = texte(options, 'introIndiceTap');
+      conteneur.appendChild(indice);
+
+      let indexActuel = 0;
+      function avancer() {
+        if (indexActuel >= elementsImg.length - 1) {
+          etapeSaisieNom(); // tap sur la 3e image (la question) : place à la saisie du nom
+          return;
+        }
+        elementsImg[indexActuel].classList.remove('actif');
+        indexActuel++;
+        elementsImg[indexActuel].classList.add('actif');
+      }
+
+      scene.addEventListener('click', avancer);
+      scene.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); avancer(); }
+      });
     }
 
     // ---- Étape 1 : saisie libre du nom ----
@@ -323,7 +426,7 @@ const KebBekIdentite = (function () {
       }
     }
 
-    etapeSaisieNom();
+    etapeIntroPersonnages();
   }
 
   return {

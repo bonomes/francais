@@ -630,6 +630,12 @@
              afficherImage() en JS. -->
         <img id="imgBienvenue" src="images/accueil/index_bonomes_keb_bek_bienvenue_01.webp" alt="Keb et Bek qui souhaitent la bienvenue">
         <img id="imgEquipes" src="images/accueil/index_bonomes_keb_bek_equipes_01.webp" alt="Keb et Bek déjà équipés pour le parcours, avec vêtements colorés, casque et sac à dos">
+        <!-- 🆕 Deuxième pose "équipés", bras levé façon salut — utilisée
+             uniquement le temps d'un battement au survol de "Non", voir
+             jouerSequenceEquipes() en JS : 01 (posture normale) → 02 (ce
+             salut) → retour à 01, pour imiter un mouvement de salutation
+             plutôt qu'un simple changement d'image figé. -->
+        <img id="imgEquipesSalut" src="images/accueil/index_bonomes_keb_bek_equipes_02.webp" alt="Keb et Bek équipés qui font un salut de la main">
         <p class="bulle-bonjour" id="bulleBonjour" aria-hidden="true">Bonjour !</p>
         <!-- 🆕 Bulle "Bienvenue !" — même classe .bulle-bonjour (voir CSS),
              affichée au survol/tap du bouton "Oui" du bloc First time?
@@ -825,6 +831,7 @@
   const imgClique = document.getElementById('imgClique');
   const imgBienvenue = document.getElementById('imgBienvenue');
   const imgEquipes = document.getElementById('imgEquipes');
+  const imgEquipesSalut = document.getElementById('imgEquipesSalut');
   const bulleBonjour = document.getElementById('bulleBonjour');
   const bulleBienvenue = document.getElementById('bulleBienvenue');
   const zoneCaseSecrete = document.getElementById('zoneCaseSecrete');
@@ -879,25 +886,54 @@
     console.info(`Bloc "First time?" — réponse "${reponse}", destination du menu principal à définir.`);
   }
 
+  // 🆕 Petite séquence animée au survol de "Non" : posture normale (01)
+  // → bras levé façon salut (02) pendant un court instant → retour à la
+  // posture normale (01), pour imiter un mouvement de salutation plutôt
+  // qu'un simple changement d'image figé. Minuteries gardées dans des
+  // variables pour pouvoir les annuler si la souris quitte le bouton
+  // avant la fin (arreterSequenceEquipes(), voir masquerApercuPremiereFois
+  // plus bas) — sinon une image pourrait s'afficher après coup, une fois
+  // le survol déjà terminé.
+  let minuterieSalutDebut = null;
+  let minuterieSalutFin = null;
+
+  function jouerSequenceEquipes() {
+    arreterSequenceEquipes();
+    afficherImage(imgEquipes); // 01, posture normale, tout de suite
+    minuterieSalutDebut = setTimeout(() => {
+      afficherImage(imgEquipesSalut); // 02, le salut, une fraction de seconde plus tard
+    }, 180);
+    minuterieSalutFin = setTimeout(() => {
+      afficherImage(imgEquipes); // retour à 01, moins d'une seconde après le salut
+    }, 620);
+  }
+
+  function arreterSequenceEquipes() {
+    clearTimeout(minuterieSalutDebut);
+    clearTimeout(minuterieSalutFin);
+  }
+
   // 🆕 Aperçu au survol (souris) / tap (tactile) des boutons Oui/Non,
   // même esprit que le reste des interactions de cette page (sélecteur
   // de langue, "Bonjour !") : on prévisualise avant même de cliquer.
   // "Oui" fait apparaître la bulle "Bienvenue !" en plus du changement
-  // d'image ; "Non" n'a pas de bulle, l'image "équipés" étant pensée
-  // pour se suffire à elle-même (voir HTML).
+  // d'image ; "Non" déclenche la petite séquence de salut ci-dessus, pas
+  // de bulle, l'image étant pensée pour se suffire à elle-même (HTML).
   function apercuPremiereFois(cible) {
     if (modeSecretActif()) return; // case secrète prioritaire sur tout le reste
     bulleBonjour.classList.remove('visible'); // un seul mot à la fois au-dessus des personnages
     if (cible === 'oui') {
+      arreterSequenceEquipes();
       afficherImage(imgBienvenue);
       bulleBienvenue.classList.add('visible');
     } else {
       bulleBienvenue.classList.remove('visible');
-      afficherImage(imgEquipes);
+      jouerSequenceEquipes();
     }
   }
 
   function masquerApercuPremiereFois() {
+    arreterSequenceEquipes();
     bulleBienvenue.classList.remove('visible');
     if (!modeSecretActif() && !hoverBonjourActif && !estOuvert()) afficherImage(imgNeutre);
   }
@@ -958,16 +994,17 @@
   recherche.addEventListener('input', filtrer);
 
   // ==================================================================
-  // Affichage des 6 images de #personnages — une seule "active" à la
-  // fois (4 d'origine + 🆕 imgBienvenue/imgEquipes pour le bloc "First
-  // time?", voir plus haut). Remplace le crossfade en pur CSS :hover de
-  // l'original (.survol dans index (2)) par un point d'entrée JS
-  // unique, pour que le survol du sélecteur de langue, le mécanisme
-  // "Bonjour !" et le bloc "First time?" (voir plus bas et plus haut)
-  // puissent tous décider quelle image montrer sans se marcher dessus.
+  // Affichage des 7 images de #personnages — une seule "active" à la
+  // fois (4 d'origine + 🆕 imgBienvenue/imgEquipes/imgEquipesSalut pour
+  // le bloc "First time?", voir plus haut). Remplace le crossfade en
+  // pur CSS :hover de l'original (.survol dans index (2)) par un point
+  // d'entrée JS unique, pour que le survol du sélecteur de langue, le
+  // mécanisme "Bonjour !" et le bloc "First time?" (voir plus bas et
+  // plus haut) puissent tous décider quelle image montrer sans se
+  // marcher dessus.
   // ==================================================================
   function afficherImage(imgAAfficher) {
-    [imgNeutre, imgGauche, imgSaluent, imgClique, imgBienvenue, imgEquipes].forEach(img => {
+    [imgNeutre, imgGauche, imgSaluent, imgClique, imgBienvenue, imgEquipes, imgEquipesSalut].forEach(img => {
       img.classList.toggle('actif', img === imgAAfficher);
     });
   }

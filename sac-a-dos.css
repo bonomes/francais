@@ -158,28 +158,35 @@
 
 .sac-item:last-child { border-bottom: none; }
 
-/* 🐛 CORRIGÉ (signalé par Raphaël sur essai_cava_reactions_v3.html,
-   capture à l'appui) : nom et détail se disputaient la même ligne via
-   justify-content:space-between. Dès que la traduction était un peu
-   longue ("How are you? / How's it going?"), le mot lui-même n'avait
-   plus assez de largeur et se retrouvait forcé à passer à la ligne
-   MOT PAR MOT ("ça" / "va" empilés) — donnant l'illusion d'un vrai
-   chevauchement de calques, alors que c'était un problème de mise en
-   page en ligne, pas de position. Corrigé en empilant nom (en gras) et
-   détail (en dessous, plus petit) verticalement plutôt que côte à
-   côte — chacun a alors toute la largeur de l'item pour lui, jamais à
-   se la partager avec l'autre. */
 .sac-item-principal {
   flex: 1;
   min-width: 0;
   display: flex;
-  flex-direction: column;
+  /* 🐛 CORRIGÉ : était align-items: baseline, ce qui provoquait un
+     chevauchement visuel dès qu'un nom de plusieurs mots (ex. "ça va")
+     repassait à la ligne — le nom (2 lignes) et le détail (1 ligne)
+     n'avaient alors plus la même ligne de référence pour s'aligner, et
+     se superposaient physiquement. flex-start élimine le problème quel
+     que soit le nombre de lignes de chaque côté. */
   align-items: flex-start;
-  gap: 1px;
+  justify-content: space-between;
+  gap: 10px;
 }
 
-.sac-item-nom { font-weight: 700; }
-.sac-item-detail { color: var(--brun-clair, #8A7364); font-size: 0.74rem; text-align: left; }
+/* 🐛 CORRIGÉ : rien n'empêchait "ça va" (deux mots) de se couper en
+   deux lignes dans l'espace restreint du panneau — le nom d'un mot de
+   vocabulaire ne doit jamais se couper au milieu. C'est maintenant le
+   détail (la traduction, potentiellement plus longue) qui absorbe le
+   manque de place en passant à la ligne, jamais le nom. */
+.sac-item-nom { font-weight: 700; white-space: nowrap; }
+.sac-item-detail {
+  color: var(--brun-clair, #8A7364);
+  font-size: 0.74rem;
+  text-align: right;
+  flex-shrink: 1;
+  min-width: 0;
+  overflow-wrap: break-word;
+}
 .sac-vide { font-size: 0.76rem; color: var(--brun-clair, #8A7364); font-style: italic; padding: 4px 0; }
 
 .sac-item-retirer {

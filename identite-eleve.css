@@ -28,15 +28,30 @@
   color: var(--brun);
 }
 
-/* ---------- Étape 0 : trio d'images d'intro (Keb → Bek → question) ----------
-   Repris tel quel du patron .cava-img/.cava-img.actif de
-   essai_cava_reactions_v3 : mêmes 896×936 que la scène "Ça va ?", donc
-   même technique de superposition (images en position absolute, une
-   seule .actif à la fois, transition d'opacité) — aucune image ne
-   bouge, seule celle visible change, pour une scène qui semble continue
-   d'un tap à l'autre plutôt qu'un changement de page. */
+/* Zone RÉÉCRITE à chaque étape par le .js (voir #idenAction) — c'est la
+   SEULE partie qui change ; #idenPersonnages juste au-dessus (voir plus
+   bas) reste affiché sans interruption pendant que celle-ci se
+   renouvelle (saisie du nom → choix de repli → silhouettes). */
+.iden-action {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+}
 
-.iden-intro-personnages {
+/* ---------- Étape 0 : trio d'images d'intro (Keb → Bek → question) ----------
+   🆕 Renommé .iden-intro-personnages → .iden-personnages : cette scène
+   n'est plus propre à "l'étape 0" au sens strict, elle reste affichée en
+   fond pendant TOUTE la séquence (voir correctif de tête de fichier du
+   .js — Keb et Bek ne doivent plus jamais disparaître). Technique de
+   superposition inchangée, reprise telle quelle du patron .cava-img/
+   .cava-img.actif de essai_cava_reactions_v3 : mêmes 896×936 que la
+   scène "Ça va ?" (images en position absolute, une seule .actif à la
+   fois, transition d'opacité) — aucune image ne bouge, seule celle
+   visible change. */
+
+.iden-personnages {
   position: relative;
   width: 100%;
   max-width: 320px;
@@ -45,13 +60,13 @@
   cursor: pointer;
 }
 
-.iden-intro-personnages:focus-visible {
+.iden-personnages:focus-visible {
   outline: 2px solid var(--peche-fonce);
   outline-offset: 4px;
   border-radius: 12px;
 }
 
-.iden-intro-img {
+.iden-img {
   position: absolute;
   inset: 0;
   width: 100%;
@@ -61,34 +76,222 @@
   transition: opacity 0.28s ease;
   pointer-events: none;
 }
-.iden-intro-img.actif { opacity: 1; }
+.iden-img.actif { opacity: 1; }
 
-/* Chevron discret, coin bas-droit de la scène — indice visuel qu'on
-   peut taper/cliquer pour avancer, sans dépendre uniquement du texte
-   .iden-intro-indice pour les élèves qui ne le liraient pas. */
-.iden-intro-chevron {
+/* ---------- 🆕 Bulle de dialogue superposée ----------
+   C'est ce bloc qui manquait ENTIÈREMENT dans la version précédente — le
+   texte n'était nulle part visible (seulement en attribut alt). Même
+   habillage que .cava-bulle-question/.pile-mot-vocab dans
+   essai_cava_reactions_v3, à la demande explicite de Raphaël : gros
+   Chewy, contour de la couleur du fond (JAMAIS un encadré blanc), pas de
+   bulle de bande dessinée. Chaque mot est un <span class="iden-mot">
+   cliquable (voir .js) — la lueur douce ci-dessous invite à interagir,
+   même mécanisme que .pile-mot-vocab. */
+.iden-bulle {
   position: absolute;
-  right: 6px;
-  bottom: 10%;
+  left: 50%;
+  top: -14%;
+  width: 92%;
+  transform: translateX(-50%);
+  text-align: center;
+  z-index: 2;
+  font-family: 'Chewy', cursive;
+  font-weight: 400;
+  font-size: clamp(1.3rem, 7vw, 2.4rem);
+  line-height: 1.15;
+  color: var(--brun-fonce, #4A3B33);
+  -webkit-text-stroke: 2px var(--fond);
+  paint-order: stroke fill;
+  pointer-events: none; /* seuls les .iden-mot individuels (ci-dessous) captent les clics */
+}
+
+.iden-mot {
+  cursor: pointer;
+  pointer-events: auto;
+  position: relative;
+  display: inline-block;
+  transition: color 0.15s ease, text-shadow 0.25s ease;
+  animation: iden-lueur-mot 2.6s ease-in-out infinite;
+}
+@keyframes iden-lueur-mot {
+  0%, 100% { text-shadow: 0 0 0 rgba(224, 136, 103, 0); }
+  50%      { text-shadow: 0 0 14px rgba(224, 136, 103, 0.5); }
+}
+.iden-mot:hover {
+  color: var(--peche-fonce);
+  animation: none;
+  text-shadow: 0 0 16px rgba(224, 136, 103, 0.6);
+}
+
+/* Confirmation visuelle du double-clic/double-tap "ajoute au sac" —
+   rejouée à chaque déclenchement (voir ajouterMotAuSac dans le .js, qui
+   force un reflow pour ça). Vert plutôt que pêche, même esprit que
+   .sac-item-copier.copie dans sac-a-dos.css et .pile-mot-vocab.flash-
+   ajout dans essai_cava_reactions_v3. */
+@keyframes iden-flash-ajout {
+  0%   { text-shadow: 0 0 0 rgba(111, 174, 94, 0); }
+  30%  { color: #4C8A3E; text-shadow: 0 0 18px rgba(111, 174, 94, 0.85); }
+  100% { text-shadow: 0 0 0 rgba(111, 174, 94, 0); }
+}
+.iden-mot.flash-ajout { animation: iden-flash-ajout 0.7s ease; }
+
+/* Petite bulle de traduction, affichée au clic simple sur un mot — ne
+   s'affiche que si options.traductions connaît ce mot (voir .js) ; sinon
+   rien n'apparaît plutôt qu'une bulle vide. Police normale (pas Chewy) et
+   pas de contour : ce n'est plus le texte parlé lui-même, juste son
+   explication. */
+.iden-tooltip-mot {
+  position: absolute;
+  left: 50%;
+  top: calc(100% + 10px);
+  transform: translateX(-50%);
+  -webkit-text-stroke: 0;
+  font-family: 'Baloo 2', sans-serif;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--brun-fonce, #4A3B33);
+  background: #FFFFFF;
+  border: 1.5px solid var(--peche);
+  border-radius: 8px;
+  padding: 3px 8px;
+  white-space: nowrap;
+  z-index: 3;
+  pointer-events: none;
+}
+
+/* 🆕 v3 — petite flèche qui pointe vers le mot, pour que ça se lise
+   comme une vraie bulle de dialogue plutôt qu'une étiquette flottante
+   sans lien visuel avec ce qu'elle explique — repris de .pile-tooltip
+   dans essai_cava_reactions_v3 (double triangle bordure+fond, même
+   technique qu'un ::after légèrement plus grand que le ::before pour
+   dessiner le contour). C'est la fidélité qui manquait dans la version
+   précédente ("tu as imité à moitié le modèle"). */
+.iden-tooltip-mot::after,
+.iden-tooltip-mot::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+}
+.iden-tooltip-mot::after {
+  bottom: 100%;
+  border-bottom: 7px solid var(--peche);
+}
+.iden-tooltip-mot::before {
+  bottom: calc(100% - 1.5px);
+  border-bottom: 6px solid #FFFFFF;
+  z-index: 1;
+}
+
+/* Chevron droit — indice visuel qu'on peut taper/cliquer/glisser pour
+   avancer, sans dépendre uniquement du texte .iden-indice pour les
+   élèves qui ne le liraient pas. Masqué (voir .js, chevron.style.display
+   = 'none') une fois l'étape 0 terminée : cliquer la scène n'avance plus
+   rien après ça. */
+.iden-chevron {
+  position: absolute;
+  bottom: 6%;
   font-size: 1.6rem;
   font-weight: 700;
   color: var(--peche-fonce);
-  animation: iden-intro-chevron-pulse 1.4s ease-in-out infinite;
 }
 
-@keyframes iden-intro-chevron-pulse {
+.iden-chevron-droite {
+  right: 6px;
+  animation: iden-chevron-pulse-droite 1.4s ease-in-out infinite;
+}
+
+/* 🆕 v3 — symétrique du chevron droit : signale qu'on peut aussi
+   reculer (glissement/flèche gauche). Grisé (jamais masqué) sur la
+   première image, où reculer ne ferait rien — même philosophie que
+   .iden-silhouette-desactivee (visible, pas caché, pour que l'élève
+   comprenne pourquoi ça ne bouge pas plutôt que de croire à un bug). */
+.iden-chevron-gauche {
+  left: 6px;
+  animation: iden-chevron-pulse-gauche 1.4s ease-in-out infinite;
+}
+.iden-chevron-gauche.iden-chevron-desactive {
+  opacity: 0.25;
+  animation: none;
+}
+
+@keyframes iden-chevron-pulse-droite {
   0%, 100% { transform: translateX(0); opacity: 0.6; }
   50% { transform: translateX(4px); opacity: 1; }
 }
+@keyframes iden-chevron-pulse-gauche {
+  0%, 100% { transform: translateX(0); opacity: 0.6; }
+  50% { transform: translateX(-4px); opacity: 1; }
+}
 
-.iden-intro-indice {
+.iden-indice {
   font-size: 0.76rem;
   color: var(--brun-clair, #8A7364);
   text-align: center;
   margin-top: -4px;
 }
 
+/* 🆕 v3 — bouton "Traduire la phrase" : pilule discrète, même famille
+   visuelle que .iden-btn-changer-nom (contour, pas de remplissage plein
+   pêche) pour rester secondaire par rapport à l'action principale de
+   l'étape (avancer/saisir). Masqué en JS (display:none) quand la
+   réplique en cours n'a pas de traduction connue. */
+.iden-btn-traduire-phrase {
+  font-family: inherit;
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 6px 14px;
+  border-radius: 100px;
+  border: 1.5px solid var(--peche);
+  background: none;
+  color: var(--peche-fonce);
+  cursor: pointer;
+  transition: background 0.15s ease, opacity 0.15s ease;
+}
+.iden-btn-traduire-phrase:hover { background: var(--peche-pale, #FBEAE2); }
+
+/* Traduction de la phrase entière — texte simple, PAS de cadre (même
+   principe que .iden-bulle : jamais d'encadré blanc autour du texte
+   parlé/traduit). Italique pour la distinguer visuellement du dialogue
+   français lui-même. */
+.iden-tooltip-phrase {
+  display: none;
+  font-size: 0.86rem;
+  font-style: italic;
+  color: var(--brun-clair, #8A7364);
+  text-align: center;
+  max-width: 320px;
+  margin: 0 auto;
+}
+.iden-tooltip-phrase.visible { display: block; }
+
 /* ---------- Étape 1 : saisie libre ---------- */
+
+/* 🆕 v3 — "Je m'appelle ___" : le préfixe et le champ sur une même
+   ligne plutôt qu'une boîte de saisie nue. flex-wrap au cas où le
+   préfixe traduit serait plus long que prévu dans certaines langues. */
+.iden-ligne-nom {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  width: 100%;
+}
+
+.iden-prefixe-nom {
+  font-weight: 700;
+  color: var(--brun);
+  white-space: nowrap;
+}
+
+.iden-ligne-nom .iden-champ-nom {
+  flex: 1;
+  min-width: 120px;
+  width: auto;
+}
 
 .iden-champ-nom {
   font-family: inherit;

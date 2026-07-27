@@ -142,6 +142,31 @@
   font-weight: 700;
 }
 
+/* Actions par catégorie (copier / vider) — n'apparaissent que si la
+   catégorie contient au moins un item (voir rafraichirAffichageSac) ;
+   .sac-cat-compteur perd son margin-left:auto au profit de ce groupe
+   pour rester juste avant elles plutôt qu'au bout complet de la ligne. */
+.sac-cat-compteur { margin-left: auto; }
+.sac-cat-action {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  color: var(--brun-clair, #8A7364);
+  font-size: 0.78rem;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.sac-cat-copier:hover { background: rgba(102, 80, 69, 0.1); color: var(--brun); }
+.sac-cat-copier.copie { color: #2E7D32; }
+.sac-cat-vider:hover { background: rgba(224, 90, 90, 0.14); color: #C25454; }
+
 .sac-cat-chevron { font-size: 0.7rem; color: var(--brun-clair, #8A7364); transition: transform 0.2s ease; flex-shrink: 0; width: 12px; }
 .sac-categorie.repliee .sac-cat-chevron { transform: rotate(-90deg); }
 .sac-cat-liste { padding: 2px 8px 6px 40px; }
@@ -263,11 +288,12 @@
   padding: 10px 16px 14px;
   border-top: 1px solid rgba(240, 169, 139, 0.35);
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
 }
 
 .sac-pied button {
-  flex: 1;
+  flex: 1 1 40%;
   border-radius: 10px;
   padding: 8px;
   font-size: 0.78rem;
@@ -278,10 +304,18 @@
   border: none;
 }
 
-.sac-pied button:hover { opacity: 0.85; }
+.sac-pied button:hover:not(:disabled) { opacity: 0.85; }
+.sac-pied button:disabled { opacity: 0.4; cursor: not-allowed; }
 #btnConnexionDepuisSac { background: var(--peche-fonce); color: #FFFFFF; }
 #btnAjouterTest,
+#btnCopierToutSac,
 #btnFermerSac { background: none; border: 1.5px solid var(--brun-clair, #8A7364) !important; color: var(--brun-clair, #8A7364); }
+/* "Vider tout" est destructeur/irréversible — contour rouge discret pour
+   le distinguer visuellement des autres actions du pied, sans devenir un
+   gros bouton d'alerte qui attirerait trop l'œil (la vraie protection
+   contre les clics accidentels est la confirmation, pas la couleur). */
+#btnViderToutSac { background: none; border: 1.5px solid #C25454 !important; color: #C25454; }
+#btnCopierToutSac.copie { color: #2E7D32; border-color: #2E7D32 !important; }
 
 .sac-avertissement {
   margin: 0 10px 10px;
@@ -292,6 +326,71 @@
   color: #3d5c2c;
   line-height: 1.35;
 }
+
+/* ---------- Modale de confirmation "vider" (voir demanderConfirmationVider
+   dans le .js) — remplace window.confirm() pour pouvoir proposer de
+   copier le contenu avant de l'effacer. z-index bien au-dessus de
+   #sacBouton (200) et #sacPanneau (199) : doit toujours passer devant
+   eux, quel que soit l'écran. ---------- */
+
+.sac-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(74, 59, 51, 0.45);
+  z-index: 300;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.sac-modal {
+  font-family: 'Baloo 2', sans-serif;
+  background: #FFFFFF;
+  border-radius: 18px;
+  padding: 20px 20px 16px;
+  width: 100%;
+  max-width: 320px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
+}
+
+.sac-modal-message {
+  margin: 0 0 16px;
+  font-size: 0.88rem;
+  line-height: 1.45;
+  color: var(--brun);
+  text-align: center;
+}
+
+.sac-modal-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sac-modal-btn {
+  font-family: inherit;
+  font-size: 0.84rem;
+  font-weight: 700;
+  padding: 10px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+}
+.sac-modal-btn:hover { opacity: 0.85; }
+
+/* "Copier puis vider" : action mise en avant, le choix le plus sûr des
+   deux façons de vider — même couleur pleine que les autres actions
+   principales du site (var(--peche-fonce)). */
+.sac-modal-btn-copier { border: none; background: var(--peche-fonce); color: #FFFFFF; }
+
+/* "Vider sans copier" : destructeur, même code couleur que le bouton
+   poubelle/#btnViderToutSac (contour rouge discret, jamais un pavé plein
+   qui attirerait trop l'œil). */
+.sac-modal-btn-vider { border: 1.5px solid #C25454; background: none; color: #C25454; }
+
+.sac-modal-btn-annuler { border: 1.5px solid var(--brun-clair, #8A7364); background: none; color: var(--brun-clair, #8A7364); }
 
 @media (max-width: 560px) {
   #sacBouton { top: 16px; right: 16px; width: 40px; height: 40px; }

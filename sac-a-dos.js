@@ -58,8 +58,8 @@ function langueActuelleSac() {
 }
 
 const DICO_SAC = {
-  fr: { catMots: "Mots appris", catCodes: "Codes", catSucces: "Réussites", catTrophees: "Trophées", catCartes: "Cartes", sacVide: "rien pour l'instant", sacRienIci: "Rien ici pour l'instant.", sacRetirer: "Retirer", sacCopier: "Copier", sacUnItem: "{n} élément enregistré", sacPlusieursItems: "{n} éléments enregistrés", sacIntroPremiereFois: "Des mots que tu as déjà croisés sont ici ! Tu peux les copier ou les enlever — bientôt, tu pourras cocher les nouveaux mots que tu veux garder.", sacIntroCompris: "Compris !" },
-  en: { catMots: "Words learned", catCodes: "Codes", catSucces: "Achievements", catTrophees: "Trophies", catCartes: "Cards", sacVide: "nothing yet", sacRienIci: "Nothing here yet.", sacRetirer: "Remove", sacCopier: "Copy", sacUnItem: "{n} item saved", sacPlusieursItems: "{n} items saved", sacIntroPremiereFois: "Some words you've already come across are here! You can copy them or remove them — soon, you'll be able to check off any new word you want to keep.", sacIntroCompris: "Got it!" },
+  fr: { catMots: "Mots appris", catCodes: "Codes", catSucces: "Réussites", catTrophees: "Trophées", catCartes: "Cartes", sacVide: "rien pour l'instant", sacRienIci: "Rien ici pour l'instant.", sacRetirer: "Retirer", sacCopier: "Copier", sacUnItem: "{n} élément enregistré", sacPlusieursItems: "{n} éléments enregistrés", sacIntroPremiereFois: "Des mots que tu as déjà croisés sont ici ! Tu peux les copier ou les enlever — bientôt, tu pourras cocher les nouveaux mots que tu veux garder.", sacIntroCompris: "Compris !", sacViderCategorie: "Vider", sacViderTout: "Tout vider", sacConfirmViderCategorie: "Vider complètement « {categorie} » ? Cette action est irréversible.", sacConfirmViderTout: "Vider complètement le sac à dos ? Cette action est irréversible.", sacCopierCategorie: "Copier la catégorie", sacCopierTout: "Copier tout le sac", sacRienACopier: "Rien à copier dans cette catégorie.", sacModalCopierPuisVider: "Copier, puis vider", sacModalViderSansCopier: "Vider sans copier", sacModalAnnuler: "Annuler" },
+  en: { catMots: "Words learned", catCodes: "Codes", catSucces: "Achievements", catTrophees: "Trophies", catCartes: "Cards", sacVide: "nothing yet", sacRienIci: "Nothing here yet.", sacRetirer: "Remove", sacCopier: "Copy", sacUnItem: "{n} item saved", sacPlusieursItems: "{n} items saved", sacIntroPremiereFois: "Some words you've already come across are here! You can copy them or remove them — soon, you'll be able to check off any new word you want to keep.", sacIntroCompris: "Got it!", sacViderCategorie: "Clear", sacViderTout: "Clear everything", sacConfirmViderCategorie: "Completely clear \"{categorie}\"? This can't be undone.", sacConfirmViderTout: "Completely clear the whole backpack? This can't be undone.", sacCopierCategorie: "Copy this category", sacCopierTout: "Copy the whole backpack", sacRienACopier: "Nothing to copy in this category.", sacModalCopierPuisVider: "Copy, then clear", sacModalViderSansCopier: "Clear without copying", sacModalAnnuler: "Cancel" },
   es: { catMots: "Palabras aprendidas", catCodes: "Códigos", catSucces: "Logros", catTrophees: "Trofeos", catCartes: "Cartas", sacVide: "nada todavía", sacRienIci: "Todavía no hay nada aquí.", sacRetirer: "Quitar", sacCopier: "Copiar", sacUnItem: "{n} elemento guardado", sacPlusieursItems: "{n} elementos guardados", sacIntroPremiereFois: "Algunas palabras que ya has visto están aquí. Puedes copiarlas o quitarlas — pronto podrás marcar las palabras nuevas que quieras conservar.", sacIntroCompris: "¡Entendido!" },
   pt: { catMots: "Palavras aprendidas", catCodes: "Códigos", catSucces: "Sucessos", catTrophees: "Troféus", catCartes: "Cartas", sacVide: "nada ainda", sacRienIci: "Ainda não há nada aqui.", sacRetirer: "Remover", sacCopier: "Copiar", sacUnItem: "{n} item guardado", sacPlusieursItems: "{n} itens guardados", sacIntroPremiereFois: "Algumas palavras que já viste estão aqui. Podes copiá-las ou removê-las — em breve, vais poder assinalar as novas palavras que queres guardar.", sacIntroCompris: "Entendido!" },
   it: { catMots: "Parole imparate", catCodes: "Codici", catSucces: "Traguardi", catTrophees: "Trofei", catCartes: "Carte", sacVide: "ancora niente", sacRienIci: "Ancora niente qui.", sacRetirer: "Rimuovi", sacCopier: "Copia", sacUnItem: "{n} elemento salvato", sacPlusieursItems: "{n} elementi salvati", sacIntroPremiereFois: "Alcune parole che hai già incontrato sono qui. Puoi copiarle o rimuoverle — presto potrai selezionare le nuove parole che vuoi conservare.", sacIntroCompris: "Capito!" },
@@ -97,24 +97,64 @@ const CATEGORIES_SAC = [
 // un (index.html, parcours.html), puis sur la valeur par défaut passée
 // en anglais. Le test "val !== cle" écarte le repli ultime de certaines
 // pages (retourner la clé brute telle quelle) qui n'est pas une vraie
-// traduction.
+// traduction. try/catch autour de t() : certaines pages hôtes lèvent une
+// erreur pour une clé qu'elles ne connaissent pas plutôt que de renvoyer
+// la clé telle quelle — jamais laisser ça remonter et casser l'appelant
+// (voir bug réel corrigé ci-dessous dans tSacAvecVariables, même famille
+// de problème).
 function tSacOuDefaut(cle, defaut) {
   const dict = DICO_SAC[langueActuelleSac()] || DICO_SAC.en;
   if (dict && dict[cle] !== undefined) return dict[cle];
   if (typeof t === 'function') {
-    const val = t(cle);
-    if (val !== undefined && val !== cle) return val;
+    try {
+      const val = t(cle);
+      if (val !== undefined && val !== cle) return val;
+    } catch (e) { /* repli silencieux vers `defaut`, voir note ci-dessus */ }
   }
   return defaut;
 }
 
 // Équivalent de tSacOuDefaut() pour les chaînes avec variables
-// (sacUnItem/sacPlusieursItems) — même ordre de priorité.
-function tSacAvecVariables(cle, variables) {
+// (sacUnItem/sacPlusieursItems, sacConfirmViderCategorie, etc.), même
+// ordre de priorité.
+//
+// 🐛 CORRIGÉ (cause réelle de "la poubelle ne fait rien, même pas
+// l'invite de confirmation" signalé par Raphaël en chinois) : contrairement
+// à tSacOuDefaut() ci-dessus, cette fonction n'avait AUCUN filet de
+// sécurité — dès qu'une langue autre que fr/en (zh ici) ne connaissait pas
+// une des nouvelles clés (sacConfirmViderCategorie, ajoutée cette session,
+// jamais traduite au-delà de fr/en), elle renvoyait directement le
+// résultat de tAvecVariables(cle, variables) — la fonction de traduction
+// PROPRE À LA PAGE hôte — sans jamais vérifier s'il s'agissait d'un
+// résultat valide. Si cette fonction hôte ne connaît pas non plus cette
+// clé toute neuve (normal : elle vit uniquement dans DICO_SAC, jamais
+// dans le dictionnaire de la page), elle peut très bien lever une
+// exception plutôt que de renvoyer la clé telle quelle. Comme cet appel
+// est l'argument même de window.confirm(...), une exception ici empêche
+// window.confirm() d'être appelé DU TOUT — d'où "aucun effet, pas même
+// l'invite" : ce n'était jamais viderCategorieSac() qui échouait, mais la
+// traduction du message qui plantait avant même d'atteindre confirm().
+// Corrigé en donnant à tSacAvecVariables() le même filet que
+// tSacOuDefaut() : un troisième paramètre `defaut` optionnel, un
+// try/catch autour de l'appel à la page hôte, et — nouveau filet
+// supplémentaire propre à cette fonction — un repli sur DICO_SAC.en[cle]
+// si aucun `defaut` explicite n'est fourni par l'appelant (utile ici
+// puisque DICO_SAC.en possède déjà toutes ces clés, contrairement au
+// dictionnaire de la page hôte).
+function tSacAvecVariables(cle, variables, defaut) {
   const dict = DICO_SAC[langueActuelleSac()] || DICO_SAC.en;
-  let texte = (dict && dict[cle] !== undefined) ? dict[cle]
-    : (typeof tAvecVariables === 'function' ? null : cle);
-  if (texte === null) return tAvecVariables(cle, variables);
+  let texte = null;
+  if (dict && dict[cle] !== undefined) {
+    texte = dict[cle];
+  } else if (typeof tAvecVariables === 'function') {
+    try {
+      const val = tAvecVariables(cle, variables);
+      if (val !== undefined && val !== cle) texte = val;
+    } catch (e) { /* repli silencieux vers `defaut`/DICO_SAC.en, voir note ci-dessus */ }
+  }
+  if (texte === null) {
+    texte = (defaut !== undefined) ? defaut : (DICO_SAC.en[cle] || cle);
+  }
   Object.keys(variables).forEach(nomVar => {
     texte = texte.replace('{' + nomVar + '}', variables[nomVar]);
   });
@@ -144,30 +184,7 @@ function sauvegarderSac(sac) {
   }
 }
 
-// 🐛 CORRIGÉ, round 2 (signalé par Raphaël : le correctif précédent
-// n'avait rien changé) : le drapeau booléen ne se levait que pour un
-// AJOUT RÉEL (dejaLa === false). Mais en pratique, sur souris, le mot
-// est presque toujours déjà ajouté par le SURVOL (mouseenter → ouvre
-// l'infobulle → ajoute au sac) avant même que le clic n'arrive — le
-// clic qui suit trouve donc le mot déjà présent (dejaLa === true), ne
-// lève jamais le drapeau pour CE clic précis, et le panneau se
-// refermait quand même. D'où l'observation de Raphaël : il fallait
-// "cliquer deux fois" (le premier clic fermait sans rien ajouter de
-// visible, puisque l'ajout réel avait déjà eu lieu, silencieusement,
-// au survol juste avant).
-//
-// Remplacé par un horodatage plutôt qu'un drapeau : dernierAppelAuSacLe
-// est mis à jour à CHAQUE appel d'ajouterAuSac (ajout réel OU rappel
-// d'un mot déjà là), et le détecteur de clic extérieur plus bas vérifie
-// si cet appel est tout récent (moins de DELAI_IGNORER_FERMETURE_SAC)
-// plutôt que d'exiger qu'il ait eu lieu PENDANT ce clic précis. Couvre
-// à la fois survol-puis-clic (souris, ajout un peu avant le clic) et
-// tap direct (tactile, ajout et clic quasi simultanés).
-let dernierAppelAuSacLe = 0;
-const DELAI_IGNORER_FERMETURE_SAC = 400; // ms
-
 function ajouterAuSac(categorie, item) {
-  dernierAppelAuSacLe = Date.now();
   const sac = chargerSac();
   if (!sac[categorie]) sac[categorie] = [];
   const identifiant = item.mot || item.code || item.titre || item.nom;
@@ -194,6 +211,143 @@ function retirerDuSac(categorie, identifiant) {
   rafraichirAffichageSac();
 }
 
+// ---------- Confirmation personnalisée pour les actions "vider" ----------
+//
+// Remplace window.confirm() (utilisé dans une version précédente) —
+// Raphaël a demandé qu'on puisse PROPOSER de copier le contenu avant de
+// l'effacer, ce qu'une boîte native (OK/Annuler seulement) ne permet pas
+// d'offrir en un seul geste. Une seule modale, réutilisée pour les deux
+// cas (une catégorie ou tout le sac) : `message` change selon le
+// contexte, `executerCopie`/`executerVider` sont les deux actions
+// réelles, propres à l'appelant (voir viderCategorieSac/viderToutSac
+// ci-dessous). "Copier puis vider" est le premier bouton (le choix le
+// plus sûr) et reçoit le focus par défaut ; l'action reste IRRÉVERSIBLE
+// dans tous les cas dès qu'un des deux boutons de vidage est cliqué —
+// copier ne fait qu'ajouter une sauvegarde avant, jamais annuler le
+// vidage lui-même.
+function demanderConfirmationVider(message, executerCopie, executerVider) {
+  // Une seule modale à la fois — filet de sécurité si une précédente
+  // traînait encore (ne devrait pas arriver en usage normal).
+  const ancienne = document.getElementById('sacModalOverlay');
+  if (ancienne) ancienne.remove();
+
+  const overlay = document.createElement('div');
+  overlay.id = 'sacModalOverlay';
+  overlay.className = 'sac-modal-overlay';
+
+  const modal = document.createElement('div');
+  modal.className = 'sac-modal';
+  modal.setAttribute('role', 'alertdialog');
+  modal.setAttribute('aria-modal', 'true');
+
+  const texteMsg = document.createElement('p');
+  texteMsg.className = 'sac-modal-message';
+  texteMsg.textContent = message;
+  modal.appendChild(texteMsg);
+
+  const actions = document.createElement('div');
+  actions.className = 'sac-modal-actions';
+
+  function fermer() { overlay.remove(); }
+
+  const btnCopierPuisVider = document.createElement('button');
+  btnCopierPuisVider.type = 'button';
+  btnCopierPuisVider.className = 'sac-modal-btn sac-modal-btn-copier';
+  btnCopierPuisVider.textContent = tSacOuDefaut('sacModalCopierPuisVider', 'Copy, then clear');
+  btnCopierPuisVider.addEventListener('click', function () {
+    fermer();
+    try { executerCopie(); } catch (e) { console.warn('Copie avant vidage impossible.', e); }
+    executerVider();
+  });
+
+  const btnViderSansCopier = document.createElement('button');
+  btnViderSansCopier.type = 'button';
+  btnViderSansCopier.className = 'sac-modal-btn sac-modal-btn-vider';
+  btnViderSansCopier.textContent = tSacOuDefaut('sacModalViderSansCopier', 'Clear without copying');
+  btnViderSansCopier.addEventListener('click', function () {
+    fermer();
+    executerVider();
+  });
+
+  const btnAnnuler = document.createElement('button');
+  btnAnnuler.type = 'button';
+  btnAnnuler.className = 'sac-modal-btn sac-modal-btn-annuler';
+  btnAnnuler.textContent = tSacOuDefaut('sacModalAnnuler', 'Cancel');
+  btnAnnuler.addEventListener('click', fermer);
+
+  actions.appendChild(btnCopierPuisVider);
+  actions.appendChild(btnViderSansCopier);
+  actions.appendChild(btnAnnuler);
+  modal.appendChild(actions);
+  overlay.appendChild(modal);
+
+  // Clic sur le fond sombre (hors modale) = annuler, comme "Échap" pour
+  // qui n'y penserait pas.
+  overlay.addEventListener('click', function (e) { if (e.target === overlay) fermer(); });
+  document.addEventListener('keydown', function echapUneFois(e) {
+    if (e.key === 'Escape') { fermer(); document.removeEventListener('keydown', echapUneFois); }
+  });
+
+  document.body.appendChild(overlay);
+  btnAnnuler.focus(); // le choix le plus prudent (ne rien faire) reçoit le focus clavier par défaut
+}
+
+// ---------- Vider (catégorie par catégorie, ou tout le sac) ----------
+//
+// Action IRRÉVERSIBLE (voir demande explicite : "avec une demande
+// confirmation avant de le faire, car c'est irréversible") — jamais de
+// suppression silencieuse, toujours via demanderConfirmationVider()
+// ci-dessus, qui propose aussi de copier le contenu avant de l'effacer
+// (demande explicite de Raphaël).
+function viderCategorieSac(categorieId) {
+  const sac = chargerSac();
+  if (!sac[categorieId] || sac[categorieId].length === 0) return; // rien à vider
+  const cat = CATEGORIES_SAC.find(c => c.id === categorieId);
+  const nomCategorie = cat ? tSacOuDefaut(cat.cle, cat.nomParDefaut) : categorieId;
+  const message = tSacAvecVariables('sacConfirmViderCategorie', { categorie: nomCategorie });
+
+  demanderConfirmationVider(
+    message,
+    function () { // "Copier puis vider" : copie le contenu ACTUEL de la catégorie avant qu'il ne disparaisse
+      if (!navigator.clipboard) return;
+      const texte = sac[categorieId].map(ligneCopiableItem).join('\n');
+      navigator.clipboard.writeText(texte).catch(e => console.warn('Copie impossible.', e));
+    },
+    function () { // vidage réel — relit le sac au cas où il aurait changé entre-temps
+      const sacFrais = chargerSac();
+      sacFrais[categorieId] = [];
+      sauvegarderSac(sacFrais);
+      rafraichirAffichageSac();
+    }
+  );
+}
+
+function viderToutSac() {
+  const sac = chargerSac();
+  if (compterToutSac(sac) === 0) return; // déjà vide, rien à confirmer
+  const message = tSacOuDefaut('sacConfirmViderTout', "Completely clear the whole backpack? This can't be undone.");
+
+  demanderConfirmationVider(
+    message,
+    function () { // "Copier puis vider" : même regroupement par catégorie que copierToutSac()
+      if (!navigator.clipboard) return;
+      const blocs = CATEGORIES_SAC
+        .map(cat => {
+          const items = sac[cat.id] || [];
+          if (items.length === 0) return null;
+          const nomCategorie = tSacOuDefaut(cat.cle, cat.nomParDefaut);
+          return nomCategorie + '\n' + items.map(ligneCopiableItem).map(l => '- ' + l).join('\n');
+        })
+        .filter(Boolean);
+      navigator.clipboard.writeText(blocs.join('\n\n')).catch(e => console.warn('Copie impossible.', e));
+    },
+    function () {
+      sauvegarderSac(sacParDefaut());
+      rafraichirAffichageSac();
+    }
+  );
+}
+
 // Copie le texte d'un item (mot + traduction) dans le presse-papiers.
 // navigator.clipboard demande un contexte sécurisé (https ou localhost) —
 // GitHub Pages sert toujours en https, donc pas de repli nécessaire pour
@@ -210,6 +364,50 @@ function copierDepuisSac(bouton) {
       bouton.innerHTML = original;
       bouton.classList.remove('copie');
     }, 1100);
+  }).catch(e => console.warn('Copie impossible.', e));
+}
+
+// Construit le texte d'un item comme une seule ligne "nom : détail" —
+// même logique que texteACopier dans rafraichirAffichageSac(), extraite
+// ici pour être réutilisée par copierCategorieSac()/copierToutSac() sans
+// dupliquer la règle nomAffiche/detailAffiche à deux endroits.
+function ligneCopiableItem(item) {
+  const nomAffiche = item.nom || item.mot || item.code || '—';
+  const detailAffiche = item.trad || item.description || item.titre || '';
+  return detailAffiche ? (nomAffiche + ' : ' + detailAffiche) : nomAffiche;
+}
+
+// Copie tout le contenu d'UNE catégorie, une ligne par item — bouton
+// dédié dans l'en-tête de chaque catégorie (voir rafraichirAffichageSac).
+// Même retour visuel (coche temporaire) que copierDepuisSac() ci-dessus,
+// appliqué au bouton de catégorie plutôt qu'à un bouton d'item.
+function copierCategorieSac(bouton, categorieId) {
+  const sac = chargerSac();
+  const items = sac[categorieId] || [];
+  if (!navigator.clipboard || items.length === 0) return;
+  const texte = items.map(ligneCopiableItem).join('\n');
+  navigator.clipboard.writeText(texte).then(() => {
+    bouton.classList.add('copie');
+    setTimeout(() => bouton.classList.remove('copie'), 1100);
+  }).catch(e => console.warn('Copie impossible.', e));
+}
+
+// Copie TOUT le sac (toutes les catégories non vides, groupées sous leur
+// nom traduit) — bouton dédié dans le pied du panneau.
+function copierToutSac(bouton) {
+  const sac = chargerSac();
+  if (!navigator.clipboard || compterToutSac(sac) === 0) return;
+  const blocs = CATEGORIES_SAC
+    .map(cat => {
+      const items = sac[cat.id] || [];
+      if (items.length === 0) return null;
+      const nomCategorie = tSacOuDefaut(cat.cle, cat.nomParDefaut);
+      return nomCategorie + '\n' + items.map(ligneCopiableItem).map(l => '- ' + l).join('\n');
+    })
+    .filter(Boolean);
+  navigator.clipboard.writeText(blocs.join('\n\n')).then(() => {
+    bouton.classList.add('copie');
+    setTimeout(() => bouton.classList.remove('copie'), 1100);
   }).catch(e => console.warn('Copie impossible.', e));
 }
 
@@ -246,6 +444,20 @@ function rafraichirAffichageSac() {
       ? tSacOuDefaut('sacVide', 'nothing yet')
       : tSacAvecVariables(total === 1 ? 'sacUnItem' : 'sacPlusieursItems', { n: total });
 
+  // Boutons du pied "Copier tout" / "Vider tout" — texte traduit et
+  // désactivés (jamais masqués) quand le sac est vide, rien à copier ou
+  // vider dans ce cas.
+  const btnCopierTout = document.getElementById('btnCopierToutSac');
+  if (btnCopierTout) {
+    btnCopierTout.textContent = tSacOuDefaut('sacCopierTout', 'Copy the whole backpack');
+    btnCopierTout.disabled = (total === 0);
+  }
+  const btnViderTout = document.getElementById('btnViderToutSac');
+  if (btnViderTout) {
+    btnViderTout.textContent = tSacOuDefaut('sacViderTout', "Clear everything");
+    btnViderTout.disabled = (total === 0);
+  }
+
   const corps = document.getElementById('sacCorps');
   corps.innerHTML = '';
 
@@ -258,6 +470,12 @@ function rafraichirAffichageSac() {
         '<span class="sac-cat-icone">' + cat.icone + '</span>' +
         '<span>' + tSacOuDefaut(cat.cle, cat.nomParDefaut) + '</span>' +
         '<span class="sac-cat-compteur">' + items.length + '</span>' +
+        (items.length > 0
+          ? '<button type="button" class="sac-cat-action sac-cat-copier" title="' + echapperAttribut(tSacOuDefaut('sacCopierCategorie', 'Copy this category')) + '" ' +
+              'onclick="event.stopPropagation(); copierCategorieSac(this, \'' + cat.id + '\')">&#10697;</button>' +
+            '<button type="button" class="sac-cat-action sac-cat-vider" title="' + echapperAttribut(tSacOuDefaut('sacViderCategorie', 'Clear')) + '" ' +
+              'onclick="event.stopPropagation(); viderCategorieSac(\'' + cat.id + '\')">&#128465;</button>'
+          : '') +
         '<span class="sac-cat-chevron">&#9660;</span>' +
       '</div>' +
       '<div class="sac-cat-liste">' +
@@ -331,45 +549,17 @@ function toggleSacADos() {
   if (ouvert) afficherIntroSacSiPremiereFois();
 }
 
-// 🐛 CORRIGÉ (signalé par Raphaël : le sac se refermait tout seul à
-// chaque mot retiré, gênant pour en éliminer plusieurs d'affilée) :
-// ce détecteur écoutait en phase de BULLE (par défaut). Cliquer sur
-// "retirer" (×) déclenche retirerDuSac() → rafraichirAffichageSac(),
-// qui fait corps.innerHTML = '' et reconstruit toute la liste — y
-// compris le bouton tout juste cliqué, qui se retrouve détaché du DOM
-// avant même que ce détecteur ne s'exécute. panneau.contains(e.target)
-// répondait alors "faux" pour un e.target qui n'existe plus dans
-// l'arbre, faisant croire à un clic extérieur, donc fermant le
-// panneau — alors que le clic était bel et bien à l'intérieur.
-// Corrigé en écoutant en phase de CAPTURE (3ᵉ argument `true`) : ce
-// détecteur s'exécute alors AVANT que le clic n'atteigne le bouton et
-// ne déclenche la reconstruction du DOM, donc e.target est encore
-// bien attaché au moment du test — robuste pour ce bouton comme pour
-// tout futur bouton du panneau qui modifierait le DOM à son tour.
-//
-// 🆕 Round 2 : le délai (setTimeout 0) reste nécessaire pour la même
-// raison qu'avant (ce détecteur tourne en CAPTURE, avant que le clic
-// n'atteigne sa cible), mais vérifie maintenant la RÉCENCE du dernier
-// appel à ajouterAuSac (dernierAppelAuSacLe, voir plus haut) plutôt
-// qu'un drapeau propre à ce seul clic — pour couvrir le cas où l'ajout
-// a eu lieu au SURVOL, juste avant le clic, pas pendant le clic
-// lui-même (voir le commentaire détaillé sur ajouterAuSac plus haut).
 document.addEventListener('click', (e) => {
   const bouton = document.getElementById('sacBouton');
   const panneau = document.getElementById('sacPanneau');
   if (!bouton || !panneau) return;
-  const dehors = panneau.classList.contains('ouvert') &&
+  if (panneau.classList.contains('ouvert') &&
       !panneau.contains(e.target) &&
-      e.target !== bouton && !bouton.contains(e.target);
-  if (!dehors) return;
-  setTimeout(() => {
-    if (Date.now() - dernierAppelAuSacLe < DELAI_IGNORER_FERMETURE_SAC) {
-      return; // ce clic est lié à un ajout tout récent au sac : on le garde ouvert
-    }
+      e.target !== bouton && !bouton.contains(e.target)) {
     panneau.classList.remove('ouvert');
     bouton.classList.remove('ouvert');
-  }, 0);
-}, true);
+  }
+});
 
 // ---------- Icônes de catégorie (traits simples, cohérents avec le style du site) ----------
 

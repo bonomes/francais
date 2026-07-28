@@ -618,7 +618,7 @@
 <body>
 
   <div class="scene">
-   <div class="scene-rangee">
+   <div class="scene-rangee" id="sceneRangee">
     <div class="personnages-groupe">
       <div class="personnages" id="personnages">
         <img id="imgNeutre" class="actif" src="images/accueil/index_bonomes_keb_bek_neutres_01.webp" alt="Keb et Bek">
@@ -694,34 +694,44 @@
       </div>
     </div>
    </div>
-  </div>
-  <!-- 🐛 CORRIGÉ : .scene (ouverte plus haut) se referme ICI, juste après
-       .scene-rangee — avant cette correction, elle ne se refermait
-       qu'après le lien "cours privés" ci-dessous, ce qui plaçait
-       #sequenceIdentite ET ce lien À L'INTÉRIEUR de .scene plutôt qu'à
-       côté. Conséquence concrète : scene.style.display = 'none' (voir
-       demarrerIdentiteSiPremiereFois() plus bas) cachait aussi
-       #sequenceIdentite avec elle, puisqu'un parent display:none masque
-       tout ce qu'il contient — peu importe le display propre de l'enfant.
-       C'est la cause réelle de "rien n'apparaît" après le clic sur "Oui". -->
 
-    <!-- 🆕 Séquence identité (nom + genre + tranche d'âge) — se substitue
-         à la scène d'accueil ci-dessus quand l'élève répond "Oui" à
-         "First time?" (voir demarrerIdentiteSiPremiereFois() plus bas).
-         Masqué par défaut (display:none) plutôt que retiré du DOM, pour
-         pouvoir y revenir sans tout reconstruire ; demarrerSequenceIdentite
-         (identite-eleve.js) réécrit tout son contenu à chaque étape.
-         Maintenant un VRAI FRÈRE de .scene (voir correctif ci-dessus),
-         plus un enfant caché avec elle. -->
-    <div id="sequenceIdentite" style="display:none;"></div>
+  <!-- 🐛 CORRIGÉ (2 allers-retours plus tard) : #sequenceIdentite et le
+       lien "cours privés" restent ICI, À L'INTÉRIEUR de .scene — pas à
+       côté. .scene est délibérément un conteneur flex EN COLONNE (voir
+       CSS de .scene-rangee : "laisser .scene devenir une colonne
+       accueillant aussi le lien vers les cours privés en dessous"),
+       conçu pour empiler .scene-rangee (personnages + sélecteur de
+       langue) au-dessus de ces deux éléments. Une tentative précédente
+       les avait sortis de .scene pour qu'ils restent visibles quand
+       .scene se cache — mais body est lui un conteneur flex en LIGNE
+       (flex-direction: row, par défaut) : dès que .scene disparaissait,
+       ces deux éléments (devenus des frères de .scene au lieu de ses
+       enfants) se faisaient reposition­ner par le flex du <body>, d'où
+       le lien "Information et cours privés" qui se retrouvait plaqué à
+       l'extrême droite de l'écran au lieu de rester sous les
+       personnages. Corrigé pour de bon cette fois : #sceneRangee (voir
+       id ajouté plus haut) est l'élément qu'on cache/affiche
+       individuellement (voir demarrerIdentiteSiPremiereFois() plus bas),
+       jamais .scene en entier — #sequenceIdentite et le lien restent
+       donc toujours dans le même flux de mise en page, qu'ils soient
+       visibles ou non. -->
 
-    <!-- Lien vers les cours privés — pensé pour un parent qui atterrit
-         ici en quête d'info, pas pour l'enfant en immersion : volontairement
-         discret (petit lien, pas un bouton en évidence) pour ne pas
-         concurrencer le sélecteur de langue / bouton continuer, qui restent
-         le parcours principal. Libellé traduit via DICO_COURS_PRIVES (JS
-         plus bas), mis à jour au choix de langue par rafraichirLienCoursPrives(). -->
-    <a class="lien-cours-prives" id="lienCoursPrives" href="cours-prives/">Information et cours privés</a>
+  <!-- 🆕 Séquence identité (nom + genre + tranche d'âge) — se substitue
+       à la scène d'accueil ci-dessus quand l'élève répond "Oui" à
+       "First time?" (voir demarrerIdentiteSiPremiereFois() plus bas).
+       Masqué par défaut (display:none) plutôt que retiré du DOM, pour
+       pouvoir y revenir sans tout reconstruire ; demarrerSequenceIdentite
+       (identite-eleve.js) réécrit tout son contenu à chaque étape. -->
+  <div id="sequenceIdentite" style="display:none;"></div>
+
+  <!-- Lien vers les cours privés — pensé pour un parent qui atterrit
+       ici en quête d'info, pas pour l'enfant en immersion : volontairement
+       discret (petit lien, pas un bouton en évidence) pour ne pas
+       concurrencer le sélecteur de langue / bouton continuer, qui restent
+       le parcours principal. Libellé traduit via DICO_COURS_PRIVES (JS
+       plus bas), mis à jour au choix de langue par rafraichirLienCoursPrives(). -->
+  <a class="lien-cours-prives" id="lienCoursPrives" href="cours-prives/">Information et cours privés</a>
+ </div>
 
 <!-- Chargé AVANT le script principal ci-dessous : demarrerIdentiteSiPremiereFois()
      (voir plus bas) appelle KebBekIdentite.demarrerSequenceIdentite(), qui
@@ -857,6 +867,107 @@
     ru: 'Первый раз?'
   };
 
+  // ==================================================================
+  // 🆕 Mécanisme de traduction pour la séquence identité (identite-eleve.js)
+  // — manquait ENTIÈREMENT jusqu'ici : demarrerSequenceIdentite() était
+  // appelée avec des options vides ({}), donc identite-eleve.js retombait
+  // systématiquement sur ses replis anglais internes (TEXTES_PAR_DEFAUT)
+  // et n'avait aucun mot ni aucune phrase à proposer en traduction (le
+  // clic sur un mot n'affichait jamais rien, le bouton "Traduire la
+  // phrase" restait invisible). Corrigé : les trois dictionnaires
+  // ci-dessous (mots / phrases / habillage d'interface) couvrent les 19
+  // langues du sélecteur (voir LANGUES plus haut) et sont assemblés en
+  // options réelles par optionsIdentitePourLangue() plus bas, appelée au
+  // moment de démarrer la séquence (voir demarrerIdentiteSiPremiereFois).
+  //
+  // ⚠️ Première passe de traduction (pas encore relue par un locuteur
+  // natif de chaque langue) — même statut que tout premier jet de
+  // contenu ailleurs sur ce site (voir dialogueKeb/dialogueBek/etc. dans
+  // identite-eleve.js, encore marqués PLACEHOLDER). À faire réviser
+  // langue par langue avant une mise en prod définitive, mais permet dès
+  // maintenant au mécanisme de fonctionner réellement dans les 19 langues
+  // plutôt que seulement en anglais.
+  //
+  // TRADUCTIONS_MOTS_IDENTITE : mot-à-mot, clé = mot français nettoyé en
+  // minuscules tel que produit par identite-eleve.js (afficherBulle /
+  // afficherBulleEnchantes) — doit rester en phase avec les 8 répliques
+  // fixes du fichier (dialogueKeb/dialogueBek/dialogueQuestion et les 4
+  // clés de DIALOGUES_FIXES) si jamais leur texte français change.
+  // TRADUCTIONS_PHRASES_IDENTITE : phrase entière, mêmes clés que le
+  // texte français (dialogueCle / clés de DIALOGUES_FIXES) — {prenom}
+  // laissé tel quel, substitué automatiquement par identite-eleve.js
+  // (voir texteTraductionPhrase()) exactement comme pour le français.
+  // TEXTES_IDENTITE : habillage d'interface (préfixe du champ nom,
+  // messages d'erreur, titres, etc.) — mêmes clés que
+  // TEXTES_PAR_DEFAUT dans identite-eleve.js.
+  // ==================================================================
+
+  const TRADUCTIONS_MOTS_IDENTITE = {
+  en: { "et": "and", "moi": "me", "c'est": "it's", "toi": "you", "tu": "you", "t'appelles": "are called", "comment": "what", "enchantée": "nice to meet you", "enchanté": "nice to meet you", "continuons": "let's continue", "je": "I", "suis": "am", "une": "a", "fille": "girl", "un": "a", "garçon": "boy", "es": "are", "salut": "hi" },
+  es: { "et": "y", "moi": "mí", "c'est": "es", "toi": "tú", "tu": "tú", "t'appelles": "te llamas", "comment": "cómo", "enchantée": "encantada", "enchanté": "encantado", "continuons": "sigamos", "je": "yo", "suis": "soy", "une": "una", "fille": "niña", "un": "un", "garçon": "niño", "es": "eres", "salut": "hola" },
+  it: { "et": "e", "moi": "io", "c'est": "è", "toi": "tu", "tu": "tu", "t'appelles": "ti chiami", "comment": "come", "enchantée": "piacere", "enchanté": "piacere", "continuons": "continuiamo", "je": "io", "suis": "sono", "une": "una", "fille": "ragazza", "un": "un", "garçon": "ragazzo", "es": "sei", "salut": "ciao" },
+  pt: { "et": "e", "moi": "eu", "c'est": "é", "toi": "tu", "tu": "tu", "t'appelles": "chamas-te", "comment": "como", "enchantée": "prazer", "enchanté": "prazer", "continuons": "vamos continuar", "je": "eu", "suis": "sou", "une": "uma", "fille": "menina", "un": "um", "garçon": "menino", "es": "és", "salut": "oi" },
+  ca: { "et": "i", "moi": "jo", "c'est": "és", "toi": "tu", "tu": "tu", "t'appelles": "et dius", "comment": "com", "enchantée": "encantada", "enchanté": "encantat", "continuons": "continuem", "je": "jo", "suis": "sóc", "une": "una", "fille": "noia", "un": "un", "garçon": "noi", "es": "ets", "salut": "hola" },
+  eo: { "et": "kaj", "moi": "mi", "c'est": "estas", "toi": "vi", "tu": "vi", "t'appelles": "vi nomiĝas", "comment": "kiel", "enchantée": "agrable koni vin", "enchanté": "agrable koni vin", "continuons": "ni daŭrigu", "je": "mi", "suis": "estas", "une": "unu", "fille": "knabino", "un": "unu", "garçon": "knabo", "es": "estas", "salut": "saluton" },
+  zh: { "et": "和", "moi": "我", "c'est": "是", "toi": "你", "tu": "你", "t'appelles": "你叫", "comment": "什么", "enchantée": "很高兴认识你", "enchanté": "很高兴认识你", "continuons": "我们继续", "je": "我", "suis": "是", "une": "一个", "fille": "女孩", "un": "一个", "garçon": "男孩", "es": "是", "salut": "你好" },
+  ja: { "et": "と", "moi": "私", "c'est": "です", "toi": "あなた", "tu": "あなた", "t'appelles": "あなたの名前は", "comment": "何", "enchantée": "はじめまして", "enchanté": "はじめまして", "continuons": "続けましょう", "je": "私", "suis": "です", "une": "一人の", "fille": "女の子", "un": "一人の", "garçon": "男の子", "es": "です", "salut": "やあ" },
+  ko: { "et": "그리고", "moi": "나", "c'est": "이다", "toi": "너", "tu": "너", "t'appelles": "네 이름은", "comment": "무엇", "enchantée": "만나서 반가워", "enchanté": "만나서 반가워", "continuons": "계속하자", "je": "나", "suis": "이다", "une": "한", "fille": "소녀", "un": "한", "garçon": "소년", "es": "이다", "salut": "안녕" },
+  vi: { "et": "và", "moi": "tôi", "c'est": "là", "toi": "bạn", "tu": "bạn", "t'appelles": "tên bạn là", "comment": "gì", "enchantée": "rất vui được gặp bạn", "enchanté": "rất vui được gặp bạn", "continuons": "hãy tiếp tục", "je": "tôi", "suis": "là", "une": "một", "fille": "cô gái", "un": "một", "garçon": "cậu bé", "es": "là", "salut": "chào" },
+  ht: { "et": "epi", "moi": "mwen", "c'est": "se", "toi": "ou", "tu": "ou", "t'appelles": "ou rele", "comment": "kijan", "enchantée": "kontan konnen w", "enchanté": "kontan konnen w", "continuons": "ann kontinye", "je": "mwen", "suis": "se", "une": "yon", "fille": "fi", "un": "yon", "garçon": "gason", "es": "se", "salut": "alo" },
+  tl: { "et": "at", "moi": "ako", "c'est": "ito ay", "toi": "ikaw", "tu": "ikaw", "t'appelles": "ang pangalan mo ay", "comment": "ano", "enchantée": "ikinagagalak kitang makilala", "enchanté": "ikinagagalak kitang makilala", "continuons": "magpatuloy tayo", "je": "ako", "suis": "ay", "une": "isang", "fille": "babae", "un": "isang", "garçon": "lalaki", "es": "ay", "salut": "kamusta" },
+  id: { "et": "dan", "moi": "aku", "c'est": "adalah", "toi": "kamu", "tu": "kamu", "t'appelles": "namamu", "comment": "apa", "enchantée": "senang bertemu denganmu", "enchanté": "senang bertemu denganmu", "continuons": "ayo lanjutkan", "je": "aku", "suis": "adalah", "une": "seorang", "fille": "gadis", "un": "seorang", "garçon": "anak laki-laki", "es": "adalah", "salut": "hai" },
+  nl: { "et": "en", "moi": "ik", "c'est": "dit is", "toi": "jij", "tu": "jij", "t'appelles": "heet je", "comment": "hoe", "enchantée": "aangenaam", "enchanté": "aangenaam", "continuons": "laten we verdergaan", "je": "ik", "suis": "ben", "une": "een", "fille": "meisje", "un": "een", "garçon": "jongen", "es": "bent", "salut": "hoi" },
+  de: { "et": "und", "moi": "ich", "c'est": "das ist", "toi": "du", "tu": "du", "t'appelles": "heißt du", "comment": "wie", "enchantée": "freut mich", "enchanté": "freut mich", "continuons": "machen wir weiter", "je": "ich", "suis": "bin", "une": "eine", "fille": "Mädchen", "un": "ein", "garçon": "Junge", "es": "bist", "salut": "hallo" },
+  fa: { "et": "و", "moi": "من", "c'est": "این است", "toi": "تو", "tu": "تو", "t'appelles": "اسمت است", "comment": "چی", "enchantée": "خوشبختم", "enchanté": "خوشبختم", "continuons": "ادامه دهیم", "je": "من", "suis": "هستم", "une": "یک", "fille": "دختر", "un": "یک", "garçon": "پسر", "es": "هستی", "salut": "سلام" },
+  sv: { "et": "och", "moi": "jag", "c'est": "det är", "toi": "du", "tu": "du", "t'appelles": "heter du", "comment": "vad", "enchantée": "trevligt att träffas", "enchanté": "trevligt att träffas", "continuons": "vi fortsätter", "je": "jag", "suis": "är", "une": "en", "fille": "flicka", "un": "en", "garçon": "pojke", "es": "är", "salut": "hej" },
+  no: { "et": "og", "moi": "jeg", "c'est": "det er", "toi": "du", "tu": "du", "t'appelles": "heter du", "comment": "hva", "enchantée": "hyggelig å møte deg", "enchanté": "hyggelig å møte deg", "continuons": "la oss fortsette", "je": "jeg", "suis": "er", "une": "en", "fille": "jente", "un": "en", "garçon": "gutt", "es": "er", "salut": "hei" },
+  ru: { "et": "и", "moi": "я", "c'est": "это", "toi": "ты", "tu": "ты", "t'appelles": "тебя зовут", "comment": "как", "enchantée": "приятно познакомиться", "enchanté": "приятно познакомиться", "continuons": "продолжим", "je": "я", "suis": "являюсь", "une": "одна", "fille": "девочка", "un": "один", "garçon": "мальчик", "es": "являешься", "salut": "привет" },
+  };
+
+  const TRADUCTIONS_PHRASES_IDENTITE = {
+  en: { "dialogueKeb": "Hi! I’m Keb.", "dialogueBek": "And I’m Bek!", "dialogueQuestion": "And you, what’s your name?", "enchanteeBek": "Nice to meet you, {prenom}!", "enchanteKeb": "Nice to meet you, {prenom}.", "continuonsBek": "Let's continue. I am a girl.", "garconKeb": "I am a boy.", "etToiBek": "And you? You are…" },
+  es: { "dialogueKeb": "¡Hola! Soy Keb.", "dialogueBek": "¡Y yo soy Bek!", "dialogueQuestion": "¿Y tú, cómo te llamas?", "enchanteeBek": "¡Encantada, {prenom}!", "enchanteKeb": "Encantado, {prenom}.", "continuonsBek": "Sigamos. Soy una niña.", "garconKeb": "Yo soy un niño.", "etToiBek": "¿Y tú? Eres…" },
+  it: { "dialogueKeb": "Ciao! Io sono Keb.", "dialogueBek": "E io sono Bek!", "dialogueQuestion": "E tu, come ti chiami?", "enchanteeBek": "Piacere, {prenom}!", "enchanteKeb": "Piacere, {prenom}.", "continuonsBek": "Continuiamo. Sono una ragazza.", "garconKeb": "Io sono un ragazzo.", "etToiBek": "E tu? Sei…" },
+  pt: { "dialogueKeb": "Oi! Eu sou o Keb.", "dialogueBek": "E eu sou a Bek!", "dialogueQuestion": "E tu, como te chamas?", "enchanteeBek": "Prazer, {prenom}!", "enchanteKeb": "Prazer, {prenom}.", "continuonsBek": "Vamos continuar. Eu sou uma menina.", "garconKeb": "Eu sou um menino.", "etToiBek": "E tu? És…" },
+  ca: { "dialogueKeb": "Hola! Jo sóc en Keb.", "dialogueBek": "I jo sóc la Bek!", "dialogueQuestion": "I tu, com et dius?", "enchanteeBek": "Encantada, {prenom}!", "enchanteKeb": "Encantat, {prenom}.", "continuonsBek": "Continuem. Sóc una noia.", "garconKeb": "Jo sóc un noi.", "etToiBek": "I tu? Ets…" },
+  eo: { "dialogueKeb": "Saluton! Mi estas Keb.", "dialogueBek": "Kaj mi estas Bek!", "dialogueQuestion": "Kaj vi, kiel vi nomiĝas?", "enchanteeBek": "Agrable koni vin, {prenom}!", "enchanteKeb": "Agrable koni vin, {prenom}.", "continuonsBek": "Ni daŭrigu. Mi estas knabino.", "garconKeb": "Mi estas knabo.", "etToiBek": "Kaj vi? Vi estas…" },
+  zh: { "dialogueKeb": "你好！我是凯布。", "dialogueBek": "我是贝克！", "dialogueQuestion": "那你呢，你叫什么名字？", "enchanteeBek": "很高兴认识你，{prenom}！", "enchanteKeb": "很高兴认识你，{prenom}。", "continuonsBek": "我们继续吧。我是女孩。", "garconKeb": "我是男孩。", "etToiBek": "那你呢？你是……" },
+  ja: { "dialogueKeb": "やあ！ぼくはケブだよ。", "dialogueBek": "わたしはベックだよ！", "dialogueQuestion": "きみの名前は何ていうの？", "enchanteeBek": "はじめまして、{prenom}！", "enchanteKeb": "はじめまして、{prenom}。", "continuonsBek": "続けましょう。わたしは女の子だよ。", "garconKeb": "ぼくは男の子だよ。", "etToiBek": "きみは？きみは……" },
+  ko: { "dialogueKeb": "안녕! 나는 케브야.", "dialogueBek": "그리고 나는 베크야!", "dialogueQuestion": "그럼 너는, 이름이 뭐야?", "enchanteeBek": "만나서 반가워, {prenom}!", "enchanteKeb": "만나서 반가워, {prenom}.", "continuonsBek": "계속하자. 나는 소녀야.", "garconKeb": "나는 소년이야.", "etToiBek": "너는? 너는……" },
+  vi: { "dialogueKeb": "Chào! Mình là Keb.", "dialogueBek": "Còn mình là Bek!", "dialogueQuestion": "Còn bạn, tên bạn là gì?", "enchanteeBek": "Rất vui được gặp bạn, {prenom}!", "enchanteKeb": "Rất vui được gặp bạn, {prenom}.", "continuonsBek": "Hãy tiếp tục nào. Mình là con gái.", "garconKeb": "Mình là con trai.", "etToiBek": "Còn bạn? Bạn là…" },
+  ht: { "dialogueKeb": "Alo! Mwen se Keb.", "dialogueBek": "Epi mwen se Bek!", "dialogueQuestion": "Ak ou menm, kijan ou rele?", "enchanteeBek": "Kontan konnen w, {prenom}!", "enchanteKeb": "Kontan konnen w, {prenom}.", "continuonsBek": "Ann kontinye. Mwen se yon fi.", "garconKeb": "Mwen menm, mwen se yon gason.", "etToiBek": "Ak ou menm? Ou se…" },
+  tl: { "dialogueKeb": "Kamusta! Ako si Keb.", "dialogueBek": "At ako naman si Bek!", "dialogueQuestion": "Ikaw naman, ano ang pangalan mo?", "enchanteeBek": "Ikinagagalak kitang makilala, {prenom}!", "enchanteKeb": "Ikinagagalak kitang makilala, {prenom}.", "continuonsBek": "Magpatuloy tayo. Ako ay babae.", "garconKeb": "Ako naman, ako ay lalaki.", "etToiBek": "Ikaw naman? Ikaw ay…" },
+  id: { "dialogueKeb": "Hai! Aku Keb.", "dialogueBek": "Dan aku Bek!", "dialogueQuestion": "Kalau kamu, namamu siapa?", "enchanteeBek": "Senang bertemu denganmu, {prenom}!", "enchanteKeb": "Senang bertemu denganmu, {prenom}.", "continuonsBek": "Ayo lanjutkan. Aku seorang gadis.", "garconKeb": "Aku seorang anak laki-laki.", "etToiBek": "Kalau kamu? Kamu adalah…" },
+  nl: { "dialogueKeb": "Hoi! Ik ben Keb.", "dialogueBek": "En ik ben Bek!", "dialogueQuestion": "En jij, hoe heet je?", "enchanteeBek": "Aangenaam, {prenom}!", "enchanteKeb": "Aangenaam, {prenom}.", "continuonsBek": "Laten we verdergaan. Ik ben een meisje.", "garconKeb": "Ik ben een jongen.", "etToiBek": "En jij? Jij bent…" },
+  de: { "dialogueKeb": "Hallo! Ich bin Keb.", "dialogueBek": "Und ich bin Bek!", "dialogueQuestion": "Und du, wie heißt du?", "enchanteeBek": "Freut mich, {prenom}!", "enchanteKeb": "Freut mich, {prenom}.", "continuonsBek": "Machen wir weiter. Ich bin ein Mädchen.", "garconKeb": "Ich bin ein Junge.", "etToiBek": "Und du? Du bist…" },
+  fa: { "dialogueKeb": "سلام! من کِب هستم.", "dialogueBek": "و من بِک هستم!", "dialogueQuestion": "و تو، اسمت چیه؟", "enchanteeBek": "از آشنایی‌ات خوشبختم، {prenom}!", "enchanteKeb": "از آشنایی‌ات خوشبختم، {prenom}.", "continuonsBek": "ادامه بدیم. من یک دخترم.", "garconKeb": "من یک پسرم.", "etToiBek": "و تو؟ تو…" },
+  sv: { "dialogueKeb": "Hej! Jag är Keb.", "dialogueBek": "Och jag är Bek!", "dialogueQuestion": "Och du, vad heter du?", "enchanteeBek": "Trevligt att träffas, {prenom}!", "enchanteKeb": "Trevligt att träffas, {prenom}.", "continuonsBek": "Vi fortsätter. Jag är en flicka.", "garconKeb": "Jag är en pojke.", "etToiBek": "Och du? Du är…" },
+  no: { "dialogueKeb": "Hei! Jeg er Keb.", "dialogueBek": "Og jeg er Bek!", "dialogueQuestion": "Og du, hva heter du?", "enchanteeBek": "Hyggelig å møte deg, {prenom}!", "enchanteKeb": "Hyggelig å møte deg, {prenom}.", "continuonsBek": "La oss fortsette. Jeg er ei jente.", "garconKeb": "Jeg er en gutt.", "etToiBek": "Og du? Du er…" },
+  ru: { "dialogueKeb": "Привет! Я Кеб.", "dialogueBek": "А я Бек!", "dialogueQuestion": "А тебя как зовут?", "enchanteeBek": "Приятно познакомиться, {prenom}!", "enchanteKeb": "Приятно познакомиться, {prenom}.", "continuonsBek": "Продолжим. Я девочка.", "garconKeb": "Я мальчик.", "etToiBek": "А ты? Ты…" },
+  };
+
+  const TEXTES_IDENTITE = {
+  en: { "labelPrefixeNom": "My name is", "labelChampNom": "...", "labelValider": "OK", "erreurVide": "Please type your name.", "erreurTropCourt": "That name seems too short.", "erreurTropLong": "That name seems too long.", "erreurCaracteresEtrangers": "Please use French letters only.", "erreurInapproprie": "That doesn't look like a real name — try again.", "titreChoixRepli": "Let's pick a name for you, then!", "titreSilhouettes": "Which one is you?", "labelChangerNom": "Change my name", "labelTraduirePhrase": "Translate the sentence", "labelMasquerTraduction": "Hide translation", "indiceCarrousel": "Slide, then tap again to choose", "introIndiceTap": "Tap to continue" },
+  es: { "labelPrefixeNom": "Me llamo", "labelChampNom": "...", "labelValider": "OK", "erreurVide": "Escribe tu nombre.", "erreurTropCourt": "Ese nombre parece muy corto.", "erreurTropLong": "Ese nombre parece muy largo.", "erreurCaracteresEtrangers": "Usa solo letras francesas.", "erreurInapproprie": "Eso no parece un nombre real — inténtalo de nuevo.", "titreChoixRepli": "¡Elijamos un nombre para ti, entonces!", "titreSilhouettes": "¿Cuál eres tú?", "labelChangerNom": "Cambiar mi nombre", "labelTraduirePhrase": "Traducir la frase", "labelMasquerTraduction": "Ocultar traducción", "indiceCarrousel": "Desliza y luego toca de nuevo para elegir", "introIndiceTap": "Toca para continuar" },
+  it: { "labelPrefixeNom": "Mi chiamo", "labelChampNom": "...", "labelValider": "OK", "erreurVide": "Scrivi il tuo nome.", "erreurTropCourt": "Quel nome sembra troppo corto.", "erreurTropLong": "Quel nome sembra troppo lungo.", "erreurCaracteresEtrangers": "Usa solo lettere francesi.", "erreurInapproprie": "Non sembra un vero nome — riprova.", "titreChoixRepli": "Allora, scegliamo un nome per te!", "titreSilhouettes": "Quale sei tu?", "labelChangerNom": "Cambia il mio nome", "labelTraduirePhrase": "Traduci la frase", "labelMasquerTraduction": "Nascondi la traduzione", "indiceCarrousel": "Scorri, poi tocca di nuovo per scegliere", "introIndiceTap": "Tocca per continuare" },
+  pt: { "labelPrefixeNom": "Chamo-me", "labelChampNom": "...", "labelValider": "OK", "erreurVide": "Escreve o teu nome.", "erreurTropCourt": "Esse nome parece muito curto.", "erreurTropLong": "Esse nome parece muito longo.", "erreurCaracteresEtrangers": "Usa apenas letras francesas.", "erreurInapproprie": "Isso não parece um nome real — tenta outra vez.", "titreChoixRepli": "Então vamos escolher um nome para ti!", "titreSilhouettes": "Qual és tu?", "labelChangerNom": "Mudar o meu nome", "labelTraduirePhrase": "Traduzir a frase", "labelMasquerTraduction": "Ocultar tradução", "indiceCarrousel": "Desliza e depois toca de novo para escolher", "introIndiceTap": "Toca para continuar" },
+  ca: { "labelPrefixeNom": "Em dic", "labelChampNom": "...", "labelValider": "OK", "erreurVide": "Escriu el teu nom.", "erreurTropCourt": "Aquest nom sembla massa curt.", "erreurTropLong": "Aquest nom sembla massa llarg.", "erreurCaracteresEtrangers": "Fes servir només lletres franceses.", "erreurInapproprie": "Això no sembla un nom real — torna-ho a provar.", "titreChoixRepli": "Doncs triem un nom per a tu!", "titreSilhouettes": "Quin ets tu?", "labelChangerNom": "Canviar el meu nom", "labelTraduirePhrase": "Traduir la frase", "labelMasquerTraduction": "Amaga la traducció", "indiceCarrousel": "Llisca i després toca de nou per triar", "introIndiceTap": "Toca per continuar" },
+  eo: { "labelPrefixeNom": "Mia nomo estas", "labelChampNom": "...", "labelValider": "Bone", "erreurVide": "Bonvolu tajpi vian nomon.", "erreurTropCourt": "Tiu nomo ŝajnas tro mallonga.", "erreurTropLong": "Tiu nomo ŝajnas tro longa.", "erreurCaracteresEtrangers": "Bonvolu uzi nur francajn literojn.", "erreurInapproprie": "Tio ne ŝajnas vera nomo — provu denove.", "titreChoixRepli": "Ni do elektu nomon por vi!", "titreSilhouettes": "Kiu estas vi?", "labelChangerNom": "Ŝanĝi mian nomon", "labelTraduirePhrase": "Traduki la frazon", "labelMasquerTraduction": "Kaŝi la tradukon", "indiceCarrousel": "Glitu, poste tuŝu denove por elekti", "introIndiceTap": "Tuŝu por daŭrigi" },
+  zh: { "labelPrefixeNom": "我的名字是", "labelChampNom": "...", "labelValider": "确定", "erreurVide": "请输入你的名字。", "erreurTropCourt": "这个名字太短了。", "erreurTropLong": "这个名字太长了。", "erreurCaracteresEtrangers": "请只使用法语字母。", "erreurInapproprie": "这看起来不像真名——再试一次。", "titreChoixRepli": "那我们就给你选一个名字吧！", "titreSilhouettes": "哪一个是你？", "labelChangerNom": "更改我的名字", "labelTraduirePhrase": "翻译这句话", "labelMasquerTraduction": "隐藏翻译", "indiceCarrousel": "滑动后再次点击以选择", "introIndiceTap": "点击继续" },
+  ja: { "labelPrefixeNom": "わたしの名前は", "labelChampNom": "...", "labelValider": "OK", "erreurVide": "名前を入力してね。", "erreurTropCourt": "その名前は短すぎるみたい。", "erreurTropLong": "その名前は長すぎるみたい。", "erreurCaracteresEtrangers": "フランス語の文字だけを使ってね。", "erreurInapproprie": "本当の名前じゃなさそう。もう一度試してね。", "titreChoixRepli": "じゃあ、名前を選ぼうね！", "titreSilhouettes": "どれがきみ？", "labelChangerNom": "名前を変える", "labelTraduirePhrase": "この文を訳す", "labelMasquerTraduction": "訳を隠す", "indiceCarrousel": "スライドして、もう一度タップして選んでね", "introIndiceTap": "タップして続ける" },
+  ko: { "labelPrefixeNom": "제 이름은", "labelChampNom": "...", "labelValider": "확인", "erreurVide": "이름을 입력해줘.", "erreurTropCourt": "이름이 너무 짧은 것 같아.", "erreurTropLong": "이름이 너무 긴 것 같아.", "erreurCaracteresEtrangers": "프랑스어 문자만 사용해줘.", "erreurInapproprie": "진짜 이름 같지 않아 — 다시 시도해줘.", "titreChoixRepli": "그럼 네 이름을 골라보자!", "titreSilhouettes": "어느 게 너야?", "labelChangerNom": "내 이름 바꾸기", "labelTraduirePhrase": "문장 번역하기", "labelMasquerTraduction": "번역 숨기기", "indiceCarrousel": "밀어서 넘긴 다음 다시 눌러서 선택해", "introIndiceTap": "눌러서 계속하기" },
+  vi: { "labelPrefixeNom": "Tên mình là", "labelChampNom": "...", "labelValider": "OK", "erreurVide": "Hãy nhập tên của bạn.", "erreurTropCourt": "Tên đó có vẻ quá ngắn.", "erreurTropLong": "Tên đó có vẻ quá dài.", "erreurCaracteresEtrangers": "Vui lòng chỉ dùng chữ cái tiếng Pháp.", "erreurInapproprie": "Cái tên đó có vẻ không thật — hãy thử lại.", "titreChoixRepli": "Vậy hãy chọn một cái tên cho bạn nhé!", "titreSilhouettes": "Bạn là ai trong số này?", "labelChangerNom": "Đổi tên của tôi", "labelTraduirePhrase": "Dịch câu này", "labelMasquerTraduction": "Ẩn bản dịch", "indiceCarrousel": "Vuốt rồi chạm lại để chọn", "introIndiceTap": "Chạm để tiếp tục" },
+  ht: { "labelPrefixeNom": "Non mwen se", "labelChampNom": "...", "labelValider": "OK", "erreurVide": "Tanpri ekri non ou.", "erreurTropCourt": "Non sa a sanble twò kout.", "erreurTropLong": "Non sa a sanble twò long.", "erreurCaracteresEtrangers": "Tanpri itilize sèlman lèt fransè.", "erreurInapproprie": "Sa a pa sanble yon vre non — eseye ankò.", "titreChoixRepli": "Ann chwazi yon non pou ou, donk!", "titreSilhouettes": "Kilès ki ou menm?", "labelChangerNom": "Chanje non mwen", "labelTraduirePhrase": "Tradwi fraz la", "labelMasquerTraduction": "Kache tradiksyon an", "indiceCarrousel": "Glise, epi tape ankò pou chwazi", "introIndiceTap": "Tape pou kontinye" },
+  tl: { "labelPrefixeNom": "Ang pangalan ko ay", "labelChampNom": "...", "labelValider": "OK", "erreurVide": "Pakisulat ang iyong pangalan.", "erreurTropCourt": "Mukhang masyadong maikli ang pangalang iyon.", "erreurTropLong": "Mukhang masyadong mahaba ang pangalang iyon.", "erreurCaracteresEtrangers": "Mangyaring gumamit lamang ng mga letrang Pranses.", "erreurInapproprie": "Mukhang hindi iyon totoong pangalan — subukan muli.", "titreChoixRepli": "Kung gayon, pumili tayo ng pangalan para sa iyo!", "titreSilhouettes": "Alin dito ang ikaw?", "labelChangerNom": "Baguhin ang pangalan ko", "labelTraduirePhrase": "Isalin ang pangungusap", "labelMasquerTraduction": "Itago ang salin", "indiceCarrousel": "I-slide, pagkatapos i-tap ulit para pumili", "introIndiceTap": "I-tap para magpatuloy" },
+  id: { "labelPrefixeNom": "Namaku", "labelChampNom": "...", "labelValider": "OK", "erreurVide": "Silakan ketik namamu.", "erreurTropCourt": "Nama itu sepertinya terlalu pendek.", "erreurTropLong": "Nama itu sepertinya terlalu panjang.", "erreurCaracteresEtrangers": "Silakan gunakan huruf Prancis saja.", "erreurInapproprie": "Itu sepertinya bukan nama asli — coba lagi.", "titreChoixRepli": "Kalau begitu, ayo pilih nama untukmu!", "titreSilhouettes": "Yang mana kamu?", "labelChangerNom": "Ubah namaku", "labelTraduirePhrase": "Terjemahkan kalimat", "labelMasquerTraduction": "Sembunyikan terjemahan", "indiceCarrousel": "Geser, lalu ketuk lagi untuk memilih", "introIndiceTap": "Ketuk untuk melanjutkan" },
+  nl: { "labelPrefixeNom": "Mijn naam is", "labelChampNom": "...", "labelValider": "OK", "erreurVide": "Typ je naam.", "erreurTropCourt": "Die naam lijkt te kort.", "erreurTropLong": "Die naam lijkt te lang.", "erreurCaracteresEtrangers": "Gebruik alleen Franse letters.", "erreurInapproprie": "Dat lijkt geen echte naam — probeer opnieuw.", "titreChoixRepli": "Laten we dan een naam voor je kiezen!", "titreSilhouettes": "Wie ben jij?", "labelChangerNom": "Mijn naam wijzigen", "labelTraduirePhrase": "Vertaal de zin", "labelMasquerTraduction": "Vertaling verbergen", "indiceCarrousel": "Veeg en tik dan nogmaals om te kiezen", "introIndiceTap": "Tik om door te gaan" },
+  de: { "labelPrefixeNom": "Ich heiße", "labelChampNom": "...", "labelValider": "OK", "erreurVide": "Bitte gib deinen Namen ein.", "erreurTropCourt": "Der Name scheint zu kurz zu sein.", "erreurTropLong": "Der Name scheint zu lang zu sein.", "erreurCaracteresEtrangers": "Bitte nur französische Buchstaben verwenden.", "erreurInapproprie": "Das sieht nicht wie ein echter Name aus — versuch es noch einmal.", "titreChoixRepli": "Dann lass uns einen Namen für dich aussuchen!", "titreSilhouettes": "Welcher bist du?", "labelChangerNom": "Meinen Namen ändern", "labelTraduirePhrase": "Satz übersetzen", "labelMasquerTraduction": "Übersetzung ausblenden", "indiceCarrousel": "Wischen, dann erneut tippen zum Auswählen", "introIndiceTap": "Zum Fortfahren tippen" },
+  fa: { "labelPrefixeNom": "اسم من", "labelChampNom": "...", "labelValider": "تأیید", "erreurVide": "لطفاً اسمت را بنویس.", "erreurTropCourt": "این اسم خیلی کوتاه به نظر می‌رسه.", "erreurTropLong": "این اسم خیلی بلند به نظر می‌رسه.", "erreurCaracteresEtrangers": "لطفاً فقط از حروف فرانسوی استفاده کن.", "erreurInapproprie": "این شبیه یک اسم واقعی نیست — دوباره امتحان کن.", "titreChoixRepli": "پس بیا یک اسم برات انتخاب کنیم!", "titreSilhouettes": "کدومش تویی؟", "labelChangerNom": "تغییر اسمم", "labelTraduirePhrase": "ترجمه جمله", "labelMasquerTraduction": "پنهان کردن ترجمه", "indiceCarrousel": "بکش، سپس دوباره لمس کن تا انتخاب کنی", "introIndiceTap": "لمس کن تا ادامه بدی" },
+  sv: { "labelPrefixeNom": "Jag heter", "labelChampNom": "...", "labelValider": "OK", "erreurVide": "Skriv ditt namn.", "erreurTropCourt": "Det namnet verkar för kort.", "erreurTropLong": "Det namnet verkar för långt.", "erreurCaracteresEtrangers": "Använd bara franska bokstäver.", "erreurInapproprie": "Det ser inte ut som ett riktigt namn — försök igen.", "titreChoixRepli": "Då väljer vi ett namn åt dig!", "titreSilhouettes": "Vilken är du?", "labelChangerNom": "Ändra mitt namn", "labelTraduirePhrase": "Översätt meningen", "labelMasquerTraduction": "Dölj översättning", "indiceCarrousel": "Svep och tryck sedan igen för att välja", "introIndiceTap": "Tryck för att fortsätta" },
+  no: { "labelPrefixeNom": "Jeg heter", "labelChampNom": "...", "labelValider": "OK", "erreurVide": "Skriv inn navnet ditt.", "erreurTropCourt": "Det navnet virker for kort.", "erreurTropLong": "Det navnet virker for langt.", "erreurCaracteresEtrangers": "Bruk bare franske bokstaver.", "erreurInapproprie": "Det ser ikke ut som et ekte navn — prøv igjen.", "titreChoixRepli": "Da velger vi et navn til deg!", "titreSilhouettes": "Hvem er du?", "labelChangerNom": "Endre navnet mitt", "labelTraduirePhrase": "Oversett setningen", "labelMasquerTraduction": "Skjul oversettelse", "indiceCarrousel": "Sveip, trykk deretter igjen for å velge", "introIndiceTap": "Trykk for å fortsette" },
+  ru: { "labelPrefixeNom": "Меня зовут", "labelChampNom": "...", "labelValider": "ОК", "erreurVide": "Пожалуйста, введи своё имя.", "erreurTropCourt": "Это имя кажется слишком коротким.", "erreurTropLong": "Это имя кажется слишком длинным.", "erreurCaracteresEtrangers": "Пожалуйста, используй только французские буквы.", "erreurInapproprie": "Это не похоже на настоящее имя — попробуй снова.", "titreChoixRepli": "Тогда давай выберем тебе имя!", "titreSilhouettes": "Кто из них ты?", "labelChangerNom": "Изменить моё имя", "labelTraduirePhrase": "Перевести фразу", "labelMasquerTraduction": "Скрыть перевод", "indiceCarrousel": "Прокрути, затем нажми ещё раз, чтобы выбрать", "introIndiceTap": "Нажми, чтобы продолжить" },
+  };
+
   const zone = document.getElementById('selecteurLangue');
   const declencheur = document.getElementById('slDeclencheur');
   const code = document.getElementById('slCode');
@@ -928,6 +1039,26 @@
   // une fois onComplet() déclenché (voir note de tête de identite-eleve.js :
   // ce module ne fait que collecter { prenom, genre, adulte }, jamais de
   // persistance Supabase/localStorage lui-même).
+  // 🆕 Assemble les options réelles (textes/traductions/traductionsPhrases)
+  // pour la langue actuellement choisie, avec repli anglais si jamais une
+  // clé manquait pour cette langue précise (même principe que
+  // DICO_COURS_PRIVES/DICO_PREMIERE_FOIS ci-dessus) — c'est CE résultat
+  // qu'il faut passer à demarrerSequenceIdentite(), plus jamais un objet
+  // vide.
+  function optionsIdentitePourLangue(codeLangue) {
+    const motsLangue = TRADUCTIONS_MOTS_IDENTITE[codeLangue] || TRADUCTIONS_MOTS_IDENTITE.en;
+    const motsAnglais = TRADUCTIONS_MOTS_IDENTITE.en;
+    const phrasesLangue = TRADUCTIONS_PHRASES_IDENTITE[codeLangue] || TRADUCTIONS_PHRASES_IDENTITE.en;
+    const phrasesAnglais = TRADUCTIONS_PHRASES_IDENTITE.en;
+    const textesLangue = TEXTES_IDENTITE[codeLangue] || TEXTES_IDENTITE.en;
+    const textesAnglais = TEXTES_IDENTITE.en;
+    return {
+      textes: Object.assign({}, textesAnglais, textesLangue),
+      traductions: Object.assign({}, motsAnglais, motsLangue),
+      traductionsPhrases: Object.assign({}, phrasesAnglais, phrasesLangue)
+    };
+  }
+
   const sequenceIdentite = document.getElementById('sequenceIdentite');
   const scene = document.querySelector('.scene');
 
@@ -942,7 +1073,13 @@
     // (accidentellement) avant ce correctif.
     lienCoursPrives.style.display = 'none';
     sequenceIdentite.style.display = '';
-    KebBekIdentite.demarrerSequenceIdentite('sequenceIdentite', {}, {
+    // 🐛 CORRIGÉ : options vides ({}) remplacées par le vrai contenu de
+    // traduction pour la langue actuellement choisie — voir
+    // optionsIdentitePourLangue() ci-dessus. C'est la cause du mécanisme
+    // de traduction manquant signalé par Raphaël (survoler/taper un mot
+    // n'affichait rien, le bouton "Traduire la phrase" ne s'affichait
+    // jamais).
+    KebBekIdentite.demarrerSequenceIdentite('sequenceIdentite', optionsIdentitePourLangue(langueActuelle), {
       onComplet: function (identite) {
         // identite = { prenom, genre, adulte } — enregistré tout de suite
         // via KebBekProgression (mode invité, localStorage : aucune

@@ -264,7 +264,13 @@ const KebBekIdentite = (function () {
     altEtToi: 'Bek asks: and you, are you...',
     // 🆕 Carrousel de silhouettes (voir lancerSilhouettes) — indice sous
     // les cartes, chrome d'interface descriptif, traduisible normalement.
-    indiceCarrousel: 'Slide, then tap again to choose'
+    indiceCarrousel: 'Slide, then tap again to choose',
+    // 🆕 Bouton "Annuler" affiché brièvement après confirmation d'une
+    // silhouette (voir confirmerChoix dans lancerSilhouettes) — filet de
+    // sécurité en cas de double-tap accidentel. Comme les autres clés
+    // ci-dessus, PLACEHOLDER anglais tant qu'aucune traduction n'est
+    // fournie via options.textes pour la langue de l'élève.
+    labelAnnulerChoix: 'Cancel'
   };
 
   function texte(options, cle) {
@@ -1101,6 +1107,23 @@ const KebBekIdentite = (function () {
       const piste = document.createElement('div');
       piste.className = 'iden-carrousel';
 
+      // 🐛 CORRIGÉ cette session : carte.scrollIntoView() (utilisé plus
+      // bas jusqu'ici) ne se contente pas de faire glisser LA PISTE
+      // horizontalement — par défaut, il fait aussi défiler TOUT
+      // ancêtre scrollable, y compris la PAGE elle-même verticalement,
+      // pour s'assurer que l'élément entier reste visible. Sur un écran
+      // où la page est déjà plus haute que la fenêtre, ce défilement
+      // vertical additionnel et non désiré pouvait pousser le bas de la
+      // carte (son libellé, "Un homme"/"Une fille"/etc.) littéralement
+      // sous le bord inférieur de l'écran — exactement le symptôme
+      // observé ("les mots apparaissent occultés par le bas de
+      // l'écran"). Remplacé par un centrage manuel qui ne touche QUE
+      // piste.scrollLeft, jamais le défilement de la page.
+      function centrerCarteDansPiste(carte, comportement) {
+        const cible = carte.offsetLeft + carte.offsetWidth / 2 - piste.clientWidth / 2;
+        piste.scrollTo({ left: cible, behavior: comportement || 'smooth' });
+      }
+
       const cartes = SILHOUETTES.map(function (s) {
         const carte = document.createElement('button');
         carte.type = 'button';
@@ -1141,7 +1164,7 @@ const KebBekIdentite = (function () {
             if (carteLaPlusProche() === carte) {
               confirmerChoix(carte, s);
             } else {
-              carte.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+              centrerCarteDansPiste(carte, 'smooth');
             }
           });
         }
@@ -1164,16 +1187,50 @@ const KebBekIdentite = (function () {
       // l'appelant (onComplet) prenne la relève — évite qu'un second tap
       // accidentel pendant l'animation ne rappelle onComplet deux fois,
       // ou que l'élève parte sur une autre carte alors que son choix est
-      // déjà enregistré. Appel à callbacks.onComplet légèrement DIFFÉRÉ
-      // (plutôt qu'immédiat) pour garantir que la confirmation ait le
-      // temps d'être vue, peu importe ce que fait l'appelant ensuite
-      // (navigation immédiate ou non, encore indéterminé côté page hôte).
-      const DUREE_CONFIRMATION_MS = 480;
+      // déjà enregistré.
+      // 🆕 Bouton "Annuler" — filet de sécurité demandé explicitement, au
+      // cas où le double-tap aurait été accidentel (ex. un tap parasite
+      // pendant le glissement, juste avant d'arriver sur la bonne carte).
+      // Reste affiché toute la durée de la fenêtre de confirmation
+      // ci-dessous ; cliqué à temps, il annule TOUT (retire la
+      // confirmation, déverrouille le carrousel, empêche onComplet
+      // d'être appelé) et rend la main à l'élève exactement comme avant
+      // le double-tap. Fenêtre allongée à 1.6s (plutôt que les 480ms
+      // d'origine, pensés seulement pour laisser voir l'animation) pour
+      // que ce bouton ait le temps réel d'être vu ET cliqué avant que
+      // callbacks.onComplet ne parte — au-delà de ce délai, le choix est
+      // considéré définitif (annuler après coup sortirait du rôle de ce
+      // module : il faudrait revenir en arrière depuis la page hôte/le
+      // menu suivant, hors de sa portée ici).
+      const DUREE_CONFIRMATION_MS = 1600;
+      let minuterieConfirmation = null;
+
       function confirmerChoix(carte, s) {
         piste.classList.add('iden-carrousel-verrouille');
         cartes.forEach(function (c) { c.disabled = true; });
         carte.classList.add('iden-carte-confirmee');
-        setTimeout(function () {
+
+        const btnAnnuler = document.createElement('button');
+        btnAnnuler.type = 'button';
+        btnAnnuler.className = 'iden-btn-annuler-choix';
+        btnAnnuler.textContent = texte(options, 'labelAnnulerChoix');
+        btnAnnuler.addEventListener('click', function () {
+          clearTimeout(minuterieConfirmation);
+          btnAnnuler.remove();
+          carte.classList.remove('iden-carte-confirmee');
+          piste.classList.remove('iden-carrousel-verrouille');
+          // Ne réactive que les cartes qui n'étaient PAS déjà désactivées
+          // pour une autre raison (genre opposé du chemin de repli,
+          // .iden-carte-desactivee) — celles-là doivent le rester.
+          cartes.forEach(function (c) {
+            if (!c.classList.contains('iden-carte-desactivee')) c.disabled = false;
+          });
+          majCarteActive();
+        });
+        action.insertBefore(btnAnnuler, piste.nextSibling);
+
+        minuterieConfirmation = setTimeout(function () {
+          btnAnnuler.remove();
           if (typeof callbacks.onComplet === 'function') {
             callbacks.onComplet({ prenom: prenomChoisi, genre: s.genre, adulte: s.adulte });
           }
@@ -1283,7 +1340,7 @@ const KebBekIdentite = (function () {
         const procheInitiale = carteLaPlusProche();
         if (procheInitiale && procheInitiale.disabled) {
           const premiereActive = cartes.find(function (c) { return !c.disabled; });
-          if (premiereActive) premiereActive.scrollIntoView({ behavior: 'auto', inline: 'center', block: 'nearest' });
+          if (premiereActive) centrerCarteDansPiste(premiereActive, 'auto');
         }
         majCarteActive();
       });

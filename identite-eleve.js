@@ -1137,10 +1137,9 @@ const KebBekIdentite = (function () {
             // CSS posée par un observateur asynchrone — voir note
             // détaillée ci-dessous sur la cause réelle du bug "cliquer
             // sur une silhouette ne fait rien".
+            if (piste.classList.contains('iden-carrousel-verrouille')) return; // choix déjà confirmé, plus rien à faire
             if (carteLaPlusProche() === carte) {
-              if (typeof callbacks.onComplet === 'function') {
-                callbacks.onComplet({ prenom: prenomChoisi, genre: s.genre, adulte: s.adulte });
-              }
+              confirmerChoix(carte, s);
             } else {
               carte.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
             }
@@ -1152,6 +1151,34 @@ const KebBekIdentite = (function () {
       });
 
       action.appendChild(piste);
+
+      // 🆕 Confirmation visuelle discrète au double-tap — manquait
+      // ENTIÈREMENT avant : l'enregistrement { prenom, genre, adulte }
+      // se faisait bien (voir onComplet), mais rien à l'écran ne
+      // signalait que le double-tap avait été pris en compte, ce qui
+      // pouvait laisser croire à un clic sans effet. Petit badge ✓ qui
+      // apparaît sur la carte choisie + légère pulsation (même famille
+      // visuelle que .iden-mot.flash-ajout dans le sac à dos : vert,
+      // discret, une seule fois). Le carrousel est ensuite VERROUILLÉ
+      // (plus de glissement ni de second choix possible) le temps que
+      // l'appelant (onComplet) prenne la relève — évite qu'un second tap
+      // accidentel pendant l'animation ne rappelle onComplet deux fois,
+      // ou que l'élève parte sur une autre carte alors que son choix est
+      // déjà enregistré. Appel à callbacks.onComplet légèrement DIFFÉRÉ
+      // (plutôt qu'immédiat) pour garantir que la confirmation ait le
+      // temps d'être vue, peu importe ce que fait l'appelant ensuite
+      // (navigation immédiate ou non, encore indéterminé côté page hôte).
+      const DUREE_CONFIRMATION_MS = 480;
+      function confirmerChoix(carte, s) {
+        piste.classList.add('iden-carrousel-verrouille');
+        cartes.forEach(function (c) { c.disabled = true; });
+        carte.classList.add('iden-carte-confirmee');
+        setTimeout(function () {
+          if (typeof callbacks.onComplet === 'function') {
+            callbacks.onComplet({ prenom: prenomChoisi, genre: s.genre, adulte: s.adulte });
+          }
+        }, DUREE_CONFIRMATION_MS);
+      }
 
       // ---------- Détection de la carte centrée ----------
       // 🐛 CORRIGÉ cette session — cause réelle de "cliquer (une ou deux
@@ -1189,17 +1216,54 @@ const KebBekIdentite = (function () {
         return proche;
       }
 
+      // 🆕 Effet de style pendant le glissement — remplace le bascule
+      // strictement binaire (active à 100%/scale(1) vs inactive figée à
+      // 55%/scale(0.85)) par une interpolation CONTINUE selon la distance
+      // réelle au centre : les cartes qui s'approchent grandissent/
+      // s'éclaircissent progressivement, celles qui s'éloignent
+      // rapetissent/s'estompent, plutôt qu'un saut brusque d'un état à
+      // l'autre au moment où le centre est franchi. Appliqué en style
+      // inline (donc prioritaire sur les valeurs par défaut de .iden-carte
+      // dans le CSS, qui restent le repli pour le tout premier paint avant
+      // que ce calcul ne s'exécute). Les cartes désactivées (genre opposé,
+      // chemin de repli) gardent leur apparence grisée fixe définie en
+      // CSS — jamais recalculées ici, pour ne pas leur redonner
+      // accidentellement de l'importance visuelle.
+      const DISTANCE_EFFET_MAX = 220; // au-delà, l'échelle/l'opacité n'est plus réduite davantage
       function majCarteActive() {
-        const proche = carteLaPlusProche();
+        const centreVise = piste.scrollLeft + piste.clientWidth / 2;
+        let proche = null;
+        let distanceMin = Infinity;
+        cartes.forEach(function (c) {
+          const centreCarte = c.offsetLeft + c.offsetWidth / 2;
+          const distance = Math.abs(centreCarte - centreVise);
+          if (distance < distanceMin) { distanceMin = distance; proche = c; }
+          if (c.disabled) return;
+          const ratio = Math.min(distance / DISTANCE_EFFET_MAX, 1); // 0 = centrée, 1 = loin
+          c.style.transform = 'scale(' + (1 - ratio * 0.18).toFixed(3) + ')';
+          c.style.opacity = (1 - ratio * 0.45).toFixed(3);
+        });
         cartes.forEach(function (c) {
           c.classList.toggle('iden-carte-active', c === proche && !c.disabled);
         });
       }
 
       // Recalcul au scroll (glissement/scroll-snap), throttlé par frame
-      // plutôt qu'à chaque micro-événement de scroll.
+      // plutôt qu'à chaque micro-événement de scroll. 🆕 Bascule aussi une
+      // classe sur la piste le temps du glissement actif (voir CSS,
+      // .iden-carrousel-glisse) qui désactive la transition des cartes —
+      // sans ça, la transition de 0.35s déjà en place pour l'arrivée en
+      // place (scroll-snap) ferait TOUJOURS un peu de retard sur le doigt
+      // pendant un glissement continu, un temps de retard perceptible
+      // qu'on ne veut que pour l'arrêt final, pas pendant le mouvement.
       let raccourciScrollActif = null;
+      let minuterieFinGlissement = null;
       piste.addEventListener('scroll', function () {
+        piste.classList.add('iden-carrousel-glisse');
+        if (minuterieFinGlissement) clearTimeout(minuterieFinGlissement);
+        minuterieFinGlissement = setTimeout(function () {
+          piste.classList.remove('iden-carrousel-glisse');
+        }, 120);
         if (raccourciScrollActif) return;
         raccourciScrollActif = requestAnimationFrame(function () {
           majCarteActive();

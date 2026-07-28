@@ -1060,17 +1060,28 @@
   }
 
   const sequenceIdentite = document.getElementById('sequenceIdentite');
-  const scene = document.querySelector('.scene');
+  // 🐛 CORRIGÉ : pointait vers .scene (le conteneur ENTIER, parent direct
+  // de #sequenceIdentite lui-même — voir structure HTML plus haut) au
+  // lieu de #sceneRangee (personnages + sélecteur de langue seulement).
+  // Cacher .scene aurait aussi caché #sequenceIdentite, puisque ce
+  // dernier est un DESCENDANT de .scene : peu importe que son propre
+  // style.display soit remis à '' juste après (voir plus bas), un
+  // display:none sur un ancêtre masque tout de même ses enfants. C'est
+  // la cause réelle de "cliquer sur Oui ne montre rien" qui restait
+  // après le correctif de nesting HTML — celui-ci n'avait corrigé que le
+  // marquage (#sceneRangee existe bel et bien dans le HTML), jamais le
+  // point du JS qui devait s'en servir.
+  const sceneRangee = document.getElementById('sceneRangee');
 
   function demarrerIdentiteSiPremiereFois() {
     if (modeSecretActif()) return; // case secrète prioritaire sur tout le reste
-    scene.style.display = 'none';
-    // 🐛 CORRIGÉ : lienCoursPrives est maintenant un vrai frère de .scene
-    // (voir correctif de structure plus haut dans le HTML) — il ne se
-    // cache donc plus automatiquement avec elle comme avant (quand il en
-    // était un enfant par erreur). Caché explicitement ici pour laisser
-    // la séquence identité toute la place, comme c'était le cas
-    // (accidentellement) avant ce correctif.
+    sceneRangee.style.display = 'none';
+    // 🐛 CORRIGÉ : lienCoursPrives est maintenant un vrai frère de
+    // #sceneRangee à l'intérieur de .scene (voir correctif de structure
+    // plus haut dans le HTML) — il ne se cache donc plus automatiquement
+    // avec elle comme avant (quand il en était un enfant par erreur).
+    // Caché explicitement ici pour laisser la séquence identité toute la
+    // place, comme c'était le cas (accidentellement) avant ce correctif.
     lienCoursPrives.style.display = 'none';
     sequenceIdentite.style.display = '';
     // 🐛 CORRIGÉ : options vides ({}) remplacées par le vrai contenu de

@@ -499,6 +499,20 @@ const KebBekIdentite = (function () {
     // options.traductionsPhrases ne connaît pas la réplique en cours,
     // plutôt que d'afficher un bouton qui ne ferait rien.
     let phraseTraductionVisible = false;
+    // 🐛 CORRIGÉ cette session : cette variable + les deux fonctions
+    // ci-dessous remplacent l'ancien câblage qui ne connaissait QUE
+    // l'étape 0 (IMAGES_INTRO[indexActuel].dialogueCle, en dur). Résultat
+    // concret du bug : à l'étape "Enchanté(e)" (afficherBulleEnchantes
+    // plus bas), le bouton "Traduire la phrase" restait sur son dernier
+    // état de l'étape 0 (souvent display:none, hérité de lancerSaisieNom)
+    // et n'était JAMAIS remis à jour pour les répliques de cette
+    // nouvelle scène — aucune traduction de phrase n'y était donc
+    // jamais possible, quel que soit le contenu de
+    // options.traductionsPhrases. dialogueClesActuelles est un TABLEAU
+    // (pas une seule clé) pour couvrir le cas "Bek + Keb parlent en même
+    // temps" de la première image de cette étape (2 répliques à la fois).
+    let dialogueClesActuelles = [IMAGES_INTRO[0].dialogueCle];
+
     const btnTraduirePhrase = document.createElement('button');
     btnTraduirePhrase.type = 'button';
     btnTraduirePhrase.className = 'iden-btn-traduire-phrase';
@@ -509,11 +523,42 @@ const KebBekIdentite = (function () {
     tooltipPhrase.className = 'iden-tooltip-phrase';
     conteneur.appendChild(tooltipPhrase);
 
+    // Traduction de phrase, généralisée à un TABLEAU de clés (une seule
+    // dans la plupart des cas, deux pour "Enchanté(e)") — les morceaux
+    // trouvés sont joints par un espace. Les clés de DIALOGUES_FIXES
+    // (scène "Enchanté(e)") contiennent {prenom} dans le texte français
+    // ET dans sa traduction (voir options.traductionsPhrases) : sans
+    // cette substitution, "{prenom}" apparaîtrait tel quel, non remplacé,
+    // dans la traduction affichée — même transformation que
+    // remplacerPrenom() applique déjà au texte français lui-même.
+    function texteTraductionPhrase(cles) {
+      const dico = (options && options.traductionsPhrases) || {};
+      const morceaux = cles.map(function (cle) {
+        const brut = dico[cle];
+        if (!brut) return null;
+        return DIALOGUES_FIXES[cle] ? remplacerPrenom(brut, prenomChoisi || '') : brut;
+      }).filter(Boolean);
+      return morceaux.length > 0 ? morceaux.join(' ') : null;
+    }
+
+    // À appeler à chaque changement de réplique (étape 0 ET "Enchanté(e)")
+    // — remet le bouton/la bulle de traduction de phrase à zéro pour la
+    // nouvelle réplique, et n'affiche le bouton que si une traduction
+    // existe réellement pour elle (jamais un bouton qui ne ferait rien).
+    function majBoutonTraduirePhrase(cles) {
+      dialogueClesActuelles = cles;
+      phraseTraductionVisible = false;
+      tooltipPhrase.classList.remove('visible');
+      tooltipPhrase.textContent = '';
+      btnTraduirePhrase.textContent = texte(options, 'labelTraduirePhrase');
+      btnTraduirePhrase.style.display = texteTraductionPhrase(cles) ? '' : 'none';
+    }
+
     btnTraduirePhrase.addEventListener('click', function (e) {
       e.stopPropagation();
       phraseTraductionVisible = !phraseTraductionVisible;
       if (phraseTraductionVisible) {
-        tooltipPhrase.textContent = traductionDePhrase(IMAGES_INTRO[indexActuel].dialogueCle) || '';
+        tooltipPhrase.textContent = texteTraductionPhrase(dialogueClesActuelles) || '';
         tooltipPhrase.classList.add('visible');
         btnTraduirePhrase.textContent = texte(options, 'labelMasquerTraduction');
       } else {
@@ -543,15 +588,6 @@ const KebBekIdentite = (function () {
     function traductionDeMot(mot) {
       const dico = (options && options.traductions) || {};
       return dico[mot.toLowerCase()];
-    }
-
-    // 🆕 v3 — pendant de traductionDeMot() pour la phrase entière plutôt
-    // qu'un mot : options.traductionsPhrases = { dialogueKeb: '...', ... },
-    // même clé que celle déjà utilisée pour le texte français lui-même
-    // (dialogueCle), donc rien de nouveau à faire circuler en plus.
-    function traductionDePhrase(dialogueCle) {
-      const dico = (options && options.traductionsPhrases) || {};
-      return dico[dialogueCle];
     }
 
     function afficherTraductionMot(span, mot) {
@@ -606,7 +642,15 @@ const KebBekIdentite = (function () {
       // ponctuation est rattaché au mot précédent plutôt que de former son
       // propre span.
       const motsBrutSepares = String(brut).split(/\s+/).filter(Boolean);
-      const PONCTUATION_SEULE = /^[.,!?;:'"«»]+$/;
+      // 🐛 CORRIGÉ cette session : le points de suspension "…" (U+2026,
+      // utilisé dans etToiBek : "Tu es…") n'était PAS dans cette classe
+      // de caractères — un mot suivi de "…" sans espace ("es…") n'était
+      // donc jamais nettoyé de son "…" final, et la clé nettoyée ("es…")
+      // ne correspondait alors plus jamais à l'entrée "es" du
+      // dictionnaire de traduction. "…" ajouté aux deux regex ci-dessous
+      // (celle-ci et motNettoye plus bas), même principe que les autres
+      // signes de ponctuation déjà gérés.
+      const PONCTUATION_SEULE = /^[.,!?;:'"«»\u2026]+$/;
       const mots = [];
       motsBrutSepares.forEach(function (tok) {
         if (PONCTUATION_SEULE.test(tok) && mots.length > 0) {
@@ -627,7 +671,7 @@ const KebBekIdentite = (function () {
         // clé du dictionnaire ("c'est") ne correspondait plus jamais
         // au mot nettoyé, donc aucune traduction ne s'affichait pour
         // ces mots-là.
-        const motNettoye = motBrut.replace(/^[\s.,!?;:'"«»]+|[\s.,!?;:'"«»]+$/g, '');
+        const motNettoye = motBrut.replace(/^[\s.,!?;:'"«»\u2026]+|[\s.,!?;:'"«»\u2026]+$/g, '');
         span.tabIndex = 0;
         // 🆕 v3 — clic simple = à la fois consulter la traduction ET
         // ajouter au sac (voir AJOUT_AUTOMATIQUE_TEMPORAIRE en tête de
@@ -660,11 +704,7 @@ const KebBekIdentite = (function () {
       // réinitialise à chaque changement de bulle plutôt que de laisser
       // la traduction d'une réplique précédente s'afficher sur la
       // suivante.
-      phraseTraductionVisible = false;
-      tooltipPhrase.classList.remove('visible');
-      tooltipPhrase.textContent = '';
-      btnTraduirePhrase.textContent = texte(options, 'labelTraduirePhrase');
-      btnTraduirePhrase.style.display = traductionDePhrase(dialogueCle) ? '' : 'none';
+      majBoutonTraduirePhrase([dialogueCle]);
     }
 
     // ---- Étape 0 : trio d'images d'intro (Keb → Bek → question) ----
@@ -949,7 +989,10 @@ const KebBekIdentite = (function () {
           const locuteur = locuteurDeDialogue(dialogueCle);
           ligne.className = 'iden-bulle-ligne' + (locuteur ? ' iden-bulle-ligne-' + locuteur : '');
           const motsBrutSepares = String(brut).split(/\s+/).filter(Boolean);
-          const PONCTUATION_SEULE = /^[.,!?;:'"«»]+$/;
+          // 🐛 CORRIGÉ (même bug que dans afficherBulle ci-dessus, voir
+          // note détaillée là-bas) : "…" ajouté à la classe de
+          // ponctuation, ici aussi pertinent pour "Tu es…" (etToiBek).
+          const PONCTUATION_SEULE = /^[.,!?;:'"«»\u2026]+$/;
           const mots = [];
           motsBrutSepares.forEach(function (tok) {
             if (PONCTUATION_SEULE.test(tok) && mots.length > 0) {
@@ -962,7 +1005,7 @@ const KebBekIdentite = (function () {
             const span = document.createElement('span');
             span.className = 'iden-mot';
             span.textContent = motBrut + (idx < mots.length - 1 ? '\u00A0' : '');
-            const motNettoye = motBrut.replace(/^[\s.,!?;:'"«»]+|[\s.,!?;:'"«»]+$/g, '');
+            const motNettoye = motBrut.replace(/^[\s.,!?;:'"«»\u2026]+|[\s.,!?;:'"«»\u2026]+$/g, '');
             span.tabIndex = 0;
             span.addEventListener('click', function (e) {
               e.stopPropagation();
@@ -980,6 +1023,14 @@ const KebBekIdentite = (function () {
           });
           bulle.appendChild(ligne);
         });
+        // 🐛 CORRIGÉ cette session : c'est CET appel qui manquait
+        // entièrement — le bouton "Traduire la phrase" n'était donc
+        // jamais mis à jour pour les répliques de cette étape (voir note
+        // détaillée à la déclaration de majBoutonTraduirePhrase plus
+        // haut). dialogueCles peut contenir 1 ou 2 clés (Bek + Keb "en
+        // même temps" sur la 1ʳᵉ image) — texteTraductionPhrase() gère
+        // déjà les deux cas.
+        majBoutonTraduirePhrase(dialogueCles);
       }
 
       function avancerEnchantes() {
@@ -1080,7 +1131,13 @@ const KebBekIdentite = (function () {
           carte.classList.add('iden-carte-desactivee');
         } else {
           carte.addEventListener('click', function () {
-            if (carte.classList.contains('iden-carte-active')) {
+            // 🐛 CORRIGÉ cette session : vérifie la proximité au CENTRE
+            // directement au moment du clic (calcul synchrone, voir
+            // carteLaPlusProche() plus bas) plutôt que de lire une classe
+            // CSS posée par un observateur asynchrone — voir note
+            // détaillée ci-dessous sur la cause réelle du bug "cliquer
+            // sur une silhouette ne fait rien".
+            if (carteLaPlusProche() === carte) {
               if (typeof callbacks.onComplet === 'function') {
                 callbacks.onComplet({ prenom: prenomChoisi, genre: s.genre, adulte: s.adulte });
               }
@@ -1096,26 +1153,76 @@ const KebBekIdentite = (function () {
 
       action.appendChild(piste);
 
-      // Effet de grossissement : la carte la plus proche du centre du
-      // carrousel reçoit .iden-carte-active. rootMargin qui ne garde
-      // qu'une bande verticale étroite au centre de la piste — une
-      // seule carte peut réellement s'y trouver à la fois.
-      const observateur = new IntersectionObserver(function (entrees) {
-        entrees.forEach(function (entree) {
-          entree.target.classList.toggle('iden-carte-active', entree.isIntersecting);
+      // ---------- Détection de la carte centrée ----------
+      // 🐛 CORRIGÉ cette session — cause réelle de "cliquer (une ou deux
+      // fois) sur une silhouette ne génère aucune réaction" : l'ancienne
+      // détection (IntersectionObserver avec rootMargin '0px -40% 0px
+      // -40%' + threshold 0.6) ne pouvait MATHÉMATIQUEMENT jamais se
+      // déclencher. rootMargin -40%/-40% réduit la zone d'intersection
+      // effective à seulement ~20% de la largeur du carrousel — plus
+      // étroite qu'une seule carte (180px fixes). Le ratio d'intersection
+      // maximal possible pour une carte, même PARFAITEMENT centrée, ne
+      // pouvait donc jamais atteindre le seuil de 0.6 exigé. Résultat
+      // concret : l'observateur ne marquait JAMAIS aucune carte comme
+      // .iden-carte-active — pire, son tout premier appel (déclenché dès
+      // observer()) retirait même la classe posée manuellement sur la
+      // carte 0 juste avant. Le clic ne pouvait donc jamais confirmer un
+      // choix (carte.classList.contains('iden-carte-active') n'était
+      // jamais vrai), qu'il s'agisse d'un tap, deux taps espacés, ou un
+      // vrai double-clic.
+      //
+      // Remplacé par un calcul manuel, robuste et SYNCHRONE : la carte la
+      // plus proche du centre de la piste (comparaison de positions, pas
+      // d'aire d'intersection), recalculée au scroll pour l'effet visuel
+      // ET interrogée directement au moment du clic (voir plus haut) —
+      // plus jamais tributaire de la fiabilité/du délai d'un callback
+      // asynchrone.
+      function carteLaPlusProche() {
+        const centreVise = piste.scrollLeft + piste.clientWidth / 2;
+        let proche = null;
+        let distanceMin = Infinity;
+        cartes.forEach(function (c) {
+          const centreCarte = c.offsetLeft + c.offsetWidth / 2;
+          const distance = Math.abs(centreCarte - centreVise);
+          if (distance < distanceMin) { distanceMin = distance; proche = c; }
         });
-      }, { root: piste, rootMargin: '0px -40% 0px -40%', threshold: 0.6 });
-      cartes.forEach(function (c) { observateur.observe(c); });
-      // La toute première carte est centrée par défaut (scroll à 0),
-      // mais l'observateur ne se déclenche qu'au premier scroll sur
-      // certains navigateurs — on force donc son état actif initial ici
-      // plutôt que d'attendre un geste de l'élève.
-      if (cartes.length > 0 && !cartes[0].disabled) {
-        cartes[0].classList.add('iden-carte-active');
-      } else {
-        const premiereActive = cartes.find(function (c) { return !c.disabled; });
-        if (premiereActive) premiereActive.classList.add('iden-carte-active');
+        return proche;
       }
+
+      function majCarteActive() {
+        const proche = carteLaPlusProche();
+        cartes.forEach(function (c) {
+          c.classList.toggle('iden-carte-active', c === proche && !c.disabled);
+        });
+      }
+
+      // Recalcul au scroll (glissement/scroll-snap), throttlé par frame
+      // plutôt qu'à chaque micro-événement de scroll.
+      let raccourciScrollActif = null;
+      piste.addEventListener('scroll', function () {
+        if (raccourciScrollActif) return;
+        raccourciScrollActif = requestAnimationFrame(function () {
+          majCarteActive();
+          raccourciScrollActif = null;
+        });
+      }, { passive: true });
+
+      // État initial, calculé après mise en page réelle (offsetLeft n'est
+      // fiable qu'une fois le DOM inséré et peint) plutôt que de deviner
+      // que la première carte non désactivée est forcément centrée à
+      // scrollLeft 0. Si la carte la plus proche par défaut se trouve
+      // être désactivée (chemin de repli, genre opposé grisé), on centre
+      // plutôt directement la première carte utilisable — pour que
+      // l'élève commence avec un choix déjà actif, pas bloqué sur une
+      // carte grisée qu'il ne peut pas valider.
+      requestAnimationFrame(function () {
+        const procheInitiale = carteLaPlusProche();
+        if (procheInitiale && procheInitiale.disabled) {
+          const premiereActive = cartes.find(function (c) { return !c.disabled; });
+          if (premiereActive) premiereActive.scrollIntoView({ behavior: 'auto', inline: 'center', block: 'nearest' });
+        }
+        majCarteActive();
+      });
 
       const indiceCarrousel = document.createElement('div');
       indiceCarrousel.className = 'iden-indice-carrousel';

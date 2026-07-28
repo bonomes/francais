@@ -61,10 +61,12 @@
   cursor: pointer;
 }
 
+/* 🐛 CORRIGÉ : pas de cadre visible au focus clavier (non demandé, jugé
+   distrayant pendant la navigation aux flèches ← →) — l'élément reste
+   focusable (nécessaire pour que les raccourcis clavier du .js
+   continuent de fonctionner), seul l'anneau visuel est retiré. */
 .iden-personnages:focus-visible {
-  outline: 2px solid var(--peche-fonce);
-  outline-offset: 4px;
-  border-radius: 12px;
+  outline: none;
 }
 
 .iden-img {

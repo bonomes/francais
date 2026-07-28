@@ -272,31 +272,31 @@ const KebBekIdentite = (function () {
     return (t[cle] !== undefined) ? t[cle] : TEXTES_PAR_DEFAUT[cle];
   }
 
-  // ✅ CHEMINS CONFIRMÉS — les 11 .webp vivent dans images/identite/ à la
-  // racine du dépôt (à côté d'index.html), comme le reste des images du
-  // site. Repli toujours écrasable via options.images = { keb, bek, ... }
-  // si une future page héberge ces fichiers ailleurs, même principe que
-  // options.textes ci-dessus. Noms de fichiers inchangés depuis le zip
-  // fourni par Raphaël (l'un d'eux, "enchant és", avait un accent mal
-  // encodé dans le zip — renommé ici en "enchantes" sans accent, plus sûr
-  // pour un nom de fichier).
+  // ✅ CHEMINS CONFIRMÉS — les 11 .webp vivent dans images/accueil/ à la
+  // racine du dépôt (à côté d'index.html), déjà téléversés par Raphaël
+  // sur GitHub sous ce dossier. Repli toujours écrasable via
+  // options.images = { keb, bek, ... } si une future page héberge ces
+  // fichiers ailleurs, même principe que options.textes ci-dessus. Noms
+  // de fichiers inchangés depuis le zip fourni par Raphaël (l'un d'eux,
+  // "enchant és", avait un accent mal encodé dans le zip — renommé ici
+  // en "enchantes" sans accent, plus sûr pour un nom de fichier).
   const IMAGES_PAR_DEFAUT = {
-    keb: "images/identite/index_bonomes_keb_bek_je-m'appelle-Keb_01.webp",
-    bek: "images/identite/index_bonomes_keb_bek_je-m'appelle-Bek_01.webp",
-    question: 'images/identite/index_bonomes_keb_bek_tu-t-appelles_01.webp',
-    enchantes: 'images/identite/index_bonomes_keb_bek_enchantes_01.webp',
-    fille: 'images/identite/index_bonomes_keb_bek_fille_01.webp',
-    garcon: 'images/identite/index_bonomes_keb_bek_garcon_01.webp',
-    etToi: 'images/identite/index_bonomes_keb_bek_et-toi_01.webp',
-    // Carrousel de silhouettes (voir lancerSilhouettes) — noms distincts
-    // de 'fille'/'garcon' ci-dessus (déjà pris par les images de l'étape
-    // "Enchanté(e)") pour ne jamais les confondre : ce sont deux jeux
-    // d'images totalement différents (dialogue vs silhouette en pied à
-    // choisir).
-    silhouette_garcon: 'images/identite/index_garcon_01.webp',
-    silhouette_homme: 'images/identite/index_homme_01.webp',
-    silhouette_fille: 'images/identite/index_fille_01.webp',
-    silhouette_femme: 'images/identite/index_femme_01.webp'
+    keb: "images/accueil/index_bonomes_keb_bek_je-m'appelle-Keb_01.webp",
+    bek: "images/accueil/index_bonomes_keb_bek_je-m'appelle-Bek_01.webp",
+    question: 'images/accueil/index_bonomes_keb_bek_tu-t-appelles_01.webp',
+    enchantes: 'images/accueil/index_bonomes_keb_bek_enchantes_01.webp',
+    fille: 'images/accueil/index_bonomes_keb_bek_fille_01.webp',
+    garcon: 'images/accueil/index_bonomes_keb_bek_garcon_01.webp',
+    etToi: 'images/accueil/index_bonomes_keb_bek_et-toi_01.webp',
+    // 🆕 Carrousel de silhouettes (voir lancerSilhouettes) — noms
+    // distincts de 'fille'/'garcon' ci-dessus (déjà pris par les images
+    // de l'étape "Enchanté(e)") pour ne jamais les confondre : ce sont
+    // deux jeux d'images totalement différents (dialogue vs silhouette
+    // en pied à choisir).
+    silhouette_garcon: 'images/accueil/index_garcon_01.webp',
+    silhouette_homme: 'images/accueil/index_homme_01.webp',
+    silhouette_fille: 'images/accueil/index_fille_01.webp',
+    silhouette_femme: 'images/accueil/index_femme_01.webp'
   };
 
   function image(options, cle) {

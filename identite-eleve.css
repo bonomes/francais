@@ -87,17 +87,25 @@
    bulle de bande dessinée. Chaque mot est un <span class="iden-mot">
    cliquable (voir .js) — la lueur douce ci-dessous invite à interagir,
    même mécanisme que .pile-mot-vocab. */
+/* 🆕 v4 — width: max-content (plafonné en vw) au lieu de 92% du cadre
+   de l'image : la bulle prend sa largeur naturelle et ne passe à la
+   ligne que si elle dépasserait la largeur de l'écran, plus la
+   largeur du cadre — qui n'a jamais été la vraie contrainte, vu que
+   les personnages reposent directement sur le fond de la page en
+   situation réelle (voir note Raphaël). Toujours centrée par
+   left:50%/translateX(-50%), donc le débordement reste symétrique. */
 .iden-bulle {
   position: absolute;
   left: 50%;
   top: -14%;
-  width: 92%;
+  width: max-content;
+  max-width: min(94vw, 480px);
   transform: translateX(-50%);
   text-align: center;
   z-index: 2;
   font-family: 'Chewy', cursive;
   font-weight: 400;
-  font-size: clamp(1.3rem, 7vw, 2.4rem);
+  font-size: clamp(1.2rem, 6.2vw, 2.2rem);
   line-height: 1.15;
   color: var(--brun-fonce, #4A3B33);
   -webkit-text-stroke: 2px var(--fond);
@@ -134,6 +142,28 @@
   100% { text-shadow: 0 0 0 rgba(111, 174, 94, 0); }
 }
 .iden-mot.flash-ajout { animation: iden-flash-ajout 0.7s ease; }
+
+/* 🆕 Une ligne par réplique dans la bulle de l'étape "Enchanté(e)" —
+   utile quand Bek et Keb parlent "en même temps" (deux répliques dans la
+   même bulle, voir afficherBulleEnchantes dans le .js) ; sans marge sur
+   la première ligne pour ne pas déséquilibrer les bulles à une seule
+   réplique (fille/garcon/etToi). */
+.iden-bulle-ligne + .iden-bulle-ligne { margin-top: 0.15em; }
+
+/* 🆕 Couleur par locuteur plutôt que deux bulles séparées (voir
+   locuteurDeDialogue() dans le .js) — reprend seulement des teintes déjà
+   dans la palette du site, aucune couleur nouvelle introduite. Le
+   contour (-webkit-text-stroke, hérité de .iden-bulle) reste inchangé :
+   seul le remplissage change, la bulle garde son look uniforme. */
+.iden-bulle-ligne-bek { color: var(--peche-fonce, #E08867); }
+.iden-bulle-ligne-keb { color: var(--brun, #4A3B33); }
+
+/* 🆕 Icône de genre à côté du prénom, dans les boutons de repli (voir
+   lancerChoixNomRepli) — même esprit que .sac-cat-icone : trait simple,
+   couleur qui suit celle du bouton (--peche pour masculin, --peche-fonce
+   pour féminin, héritées via currentColor faute d'être redéfinies ici). */
+.iden-btn-nom { display: inline-flex; align-items: center; gap: 6px; }
+.iden-icone-genre-nom { display: inline-flex; flex-shrink: 0; }
 
 /* Petite bulle de traduction, affichée au clic simple sur un mot — ne
    s'affiche que si options.traductions connaît ce mot (voir .js) ; sinon
@@ -388,6 +418,85 @@
   border-style: dashed;
 }
 
+/* 🆕 Carrousel de cartes — remplace .iden-grille-silhouettes/
+   .iden-btn-silhouette ci-dessus (conservées inutilisées, pas de
+   raison de les retirer). Silhouettes en pied (~300×700), donc format
+   carte haute plutôt qu'un bouton carré, avec effet de grossissement
+   au centre (voir .iden-carte-active, piloté par IntersectionObserver
+   dans le .js). padding: 24px 45vw sur .iden-carrousel est le détail
+   qui fait tout marcher : ça force la première et la dernière carte à
+   pouvoir, elles aussi, atteindre le centre de l'écran au scroll —
+   sinon elles resteraient coincées sur le bord. */
+.iden-carrousel {
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  padding: 24px 45vw;
+  margin: 0 -20px;
+  scrollbar-width: none;
+  width: 100%;
+  box-sizing: border-box;
+}
+.iden-carrousel::-webkit-scrollbar { display: none; }
+
+.iden-carte {
+  flex: 0 0 auto;
+  scroll-snap-align: center;
+  width: 180px;
+  border: none;
+  background: none;
+  padding: 0;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+  opacity: 0.55;
+  transform: scale(0.85);
+  transition: transform 0.35s cubic-bezier(.34, 1.56, .64, 1), opacity 0.3s ease;
+}
+
+.iden-carte-active { opacity: 1; transform: scale(1); }
+
+.iden-carte-img {
+  width: 100%;
+  height: auto;
+  display: block;
+  filter: drop-shadow(0 6px 14px var(--ombre, rgba(102, 80, 69, 0.16)));
+}
+
+.iden-badge-age {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: #FFFFFF;
+  border: 1.5px solid var(--peche);
+  color: var(--brun);
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 100px;
+  z-index: 1;
+}
+
+.iden-carte-label {
+  font-weight: 700;
+  color: var(--brun);
+  font-size: 0.95rem;
+}
+
+.iden-carte-desactivee { opacity: 0.25; filter: grayscale(1); cursor: default; }
+.iden-carte-desactivee .iden-badge-age { display: none; }
+
+.iden-indice-carrousel {
+  text-align: center;
+  font-size: 0.76rem;
+  color: var(--brun-clair, #8A7364);
+  margin-top: 4px;
+}
+
 .iden-btn-changer-nom {
   font-family: inherit;
   font-size: 0.82rem;
@@ -407,3 +516,4 @@
   .iden-grille-silhouettes { grid-template-columns: 1fr 1fr; gap: 8px; }
   .iden-btn-silhouette { padding: 14px 8px; font-size: 0.88rem; }
 }
+

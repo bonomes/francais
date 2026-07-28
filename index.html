@@ -61,7 +61,25 @@
     padding: 0;
     height: 100%;
     background: var(--fond);
-    overflow: hidden;
+    /* 🐛 CORRIGÉ : overflow: hidden (sur les DEUX axes) empêchait tout
+       défilement, peu importe la hauteur réelle du contenu. Tant que la
+       scène de départ (Keb/Bek + "Oui"/"Non") tenait dans un seul écran,
+       ça ne posait pas de problème visible. Mais la séquence identité
+       (#sequenceIdentite, ajoutée À L'INTÉRIEUR de .scene — voir plus
+       bas) peut être bien plus haute qu'un écran une fois le carrousel de
+       silhouettes affiché (titre + carrousel + libellés + indice + bouton
+       "Traduire la phrase" + éventuel bouton "Annuler"). Comme .scene
+       utilise justify-content: center (voir plus bas), un contenu plus
+       haut que 100vh se faisait centrer PUIS rogner à parts égales en
+       haut ET en bas par ce overflow: hidden — sans aucun moyen de
+       défiler pour voir la partie coupée. C'est la cause réelle des mots
+       "invisibles"/coupés selon la fenêtre du fureteur (le rognage dépend
+       directement de la hauteur d'écran disponible). overflow-y: auto
+       (seulement caché sur X, pour ne jamais faire apparaître de barre de
+       défilement horizontale accidentelle) laisse le contenu qui dépasse
+       devenir défilable plutôt que rogné. */
+    overflow-x: hidden;
+    overflow-y: auto;
     font-family: 'Baloo 2', sans-serif;
   }
 
@@ -74,7 +92,22 @@
   .scene {
     position: relative;
     width: 100vw;
-    height: 100vh;
+    /* 🐛 CORRIGÉ (voir note ci-dessus) : height: 100vh (fixe) forçait
+       .scene à rester exactement à la taille d'un écran même quand son
+       contenu (maintenant que #sequenceIdentite y vit, voir plus bas)
+       dépasse largement ça — combiné à l'ancien overflow: hidden, tout
+       excédent disparaissait sans recours. min-height: 100vh garde
+       exactement le même rendu qu'avant tant que le contenu tient dans un
+       écran (la scène de départ Keb/Bek reste bien centrée verticalement,
+       comme conçu), mais laisse .scene grandir normalement — et donc
+       devenir défilable via le body ci-dessus — dès que le contenu réel
+       (la séquence identité) est plus haut que ça. Un peu de padding
+       vertical ajouté par la même occasion : espace demandé explicitement
+       en haut ET en bas, pour que rien ne colle jamais aux bords de
+       l'écran une fois le défilement en jeu. */
+    min-height: 100vh;
+    box-sizing: border-box;
+    padding: 32px 0;
     display: flex;
     flex-direction: column;
     align-items: center;

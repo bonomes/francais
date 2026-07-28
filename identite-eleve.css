@@ -20,6 +20,14 @@
   width: 100%;
   max-width: 420px;
   margin: 0 auto;
+  /* 🆕 Espace demandé explicitement en haut ET en bas de la séquence —
+     vient s'ajouter au padding déjà posé sur .scene (voir index.html) :
+     celui-là respire l'écran dans son ensemble, celui-ci garantit que le
+     DERNIER élément de la séquence (bouton "changer mon nom", bouton
+     "Annuler" après confirmation, etc.) ne colle jamais directement au
+     bord, même sur un écran très court où .scene serait déjà presque
+     entièrement rempli. */
+  padding: 8px 0 28px;
 }
 
 .iden-titre {

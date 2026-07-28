@@ -440,8 +440,21 @@
   scrollbar-width: none;
   width: 100%;
   box-sizing: border-box;
+  cursor: grab;
 }
 .iden-carrousel::-webkit-scrollbar { display: none; }
+
+/* 🆕 Curseur "en train de glisser" pendant un glissement actif (même
+   classe que celle qui coupe la transition ci-dessous, voir .js) — signal
+   discret que le carrousel répond au geste, cohérent avec le style
+   "grab/grabbing" déjà répandu pour les zones défilables au doigt/souris. */
+.iden-carrousel.iden-carrousel-glisse { cursor: grabbing; }
+
+/* 🆕 Une fois un choix confirmé (double-tap, voir confirmerChoix() dans le
+   .js), le carrousel se fige visuellement : plus la peine de suggérer
+   qu'on peut encore glisser vers un autre choix pendant que l'animation
+   de confirmation joue et que l'appelant prend la relève. */
+.iden-carrousel.iden-carrousel-verrouille { cursor: default; }
 
 .iden-carte {
   flex: 0 0 auto;
@@ -460,6 +473,15 @@
   transform: scale(0.85);
   transition: transform 0.35s cubic-bezier(.34, 1.56, .64, 1), opacity 0.3s ease;
 }
+
+/* 🆕 Pendant un glissement actif, la transition est coupée : l'échelle/
+   l'opacité (recalculées en continu par le .js selon la distance au
+   centre, voir majCarteActive()) doivent suivre le doigt 1:1, sans le
+   retard qu'ajouterait une transition de 0.35s à chaque frame. La
+   transition revient dès le glissement terminé (classe retirée ~120ms
+   après le dernier événement de scroll), pour l'effet d'arrivée en
+   douceur du scroll-snap. */
+.iden-carrousel-glisse .iden-carte { transition: none; }
 
 .iden-carte-active { opacity: 1; transform: scale(1); }
 
@@ -488,10 +510,61 @@
   font-weight: 700;
   color: var(--brun);
   font-size: 0.95rem;
+  transition: color 0.15s ease;
 }
 
 .iden-carte-desactivee { opacity: 0.25; filter: grayscale(1); cursor: default; }
 .iden-carte-desactivee .iden-badge-age { display: none; }
+
+/* 🆕 Confirmation visuelle discrète au double-tap (voir confirmerChoix()
+   dans le .js) — manquait ENTIÈREMENT avant : l'enregistrement
+   { prenom, genre, adulte } se faisait bien en arrière-plan, mais rien à
+   l'écran ne signalait que le geste avait été pris en compte. Même
+   famille visuelle que .iden-mot.flash-ajout dans identite-eleve.css/
+   .sac-item-copier.copie dans sac-a-dos.css : vert plutôt que pêche
+   (signal de succès/validation, cohérent avec le reste du site), rejoué
+   UNE seule fois, jamais en boucle. Badge ✓ en coin plutôt qu'un
+   encadré autour de toute la carte, pour rester discret comme demandé —
+   pas un gros changement visuel qui donnerait l'impression d'une
+   nouvelle étape. */
+.iden-carte-confirmee { cursor: default; }
+.iden-carte-confirmee .iden-carte-img {
+  animation: iden-carte-confirmee-pulse 0.5s ease;
+  filter:
+    drop-shadow(0 6px 14px var(--ombre, rgba(102, 80, 69, 0.16)))
+    drop-shadow(0 0 14px rgba(111, 174, 94, 0.55));
+}
+.iden-carte-confirmee .iden-carte-label { color: #4C8A3E; }
+.iden-carte-confirmee::after {
+  content: '\2713';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #4C8A3E;
+  color: #FFFFFF;
+  font-weight: 900;
+  font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.25);
+  z-index: 2;
+  animation: iden-carte-confirmee-badge 0.4s cubic-bezier(.34, 1.56, .64, 1);
+}
+
+@keyframes iden-carte-confirmee-pulse {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.08); }
+  100% { transform: scale(1); }
+}
+@keyframes iden-carte-confirmee-badge {
+  0% { transform: scale(0); opacity: 0; }
+  60% { transform: scale(1.15); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
 
 .iden-indice-carrousel {
   text-align: center;

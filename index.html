@@ -726,6 +726,16 @@
 <!-- Chargé AVANT le script principal ci-dessous : demarrerIdentiteSiPremiereFois()
      (voir plus bas) appelle KebBekIdentite.demarrerSequenceIdentite(), qui
      doit donc déjà exister au moment où ce script s'exécute. -->
+<!-- 🆕 progression.js — expose window.KebBekProgression, utilisé par
+     demarrerIdentiteSiPremiereFois() (voir plus bas) pour enregistrer
+     { prenom, genre, adulte } dès que la séquence identité se termine.
+     Aucune session n'est établie sur cette page (pas de login ici) :
+     KebBekProgression.enregistrerIdentite() retombe donc automatiquement
+     sur le mode invité (localStorage), sans besoin du CDN Supabase — à
+     ajouter ici plus tard si index.html gagne un jour son propre système
+     de connexion (voir note de tête de progression.js : "cas d'index.html,
+     qui gère sa propre connexion"). -->
+<script src="progression.js"></script>
 <script src="identite-eleve.js"></script>
 
 <script>
@@ -924,12 +934,30 @@
   function demarrerIdentiteSiPremiereFois() {
     if (modeSecretActif()) return; // case secrète prioritaire sur tout le reste
     scene.style.display = 'none';
+    // 🐛 CORRIGÉ : lienCoursPrives est maintenant un vrai frère de .scene
+    // (voir correctif de structure plus haut dans le HTML) — il ne se
+    // cache donc plus automatiquement avec elle comme avant (quand il en
+    // était un enfant par erreur). Caché explicitement ici pour laisser
+    // la séquence identité toute la place, comme c'était le cas
+    // (accidentellement) avant ce correctif.
+    lienCoursPrives.style.display = 'none';
     sequenceIdentite.style.display = '';
     KebBekIdentite.demarrerSequenceIdentite('sequenceIdentite', {}, {
       onComplet: function (identite) {
-        // identite = { prenom, genre, adulte } — à transmettre à
-        // KebBekProgression.creerProfil()/.enregistrerIdentite() une fois
-        // cette étape suivante définie, voir note ci-dessus.
+        // identite = { prenom, genre, adulte } — enregistré tout de suite
+        // via KebBekProgression (mode invité, localStorage : aucune
+        // session n'existe sur cette page, voir note du <script> plus
+        // haut). nationalite non transmise ici (undefined = ne pas
+        // modifier ce champ) : elle sera captée plus tard, à la Leçon 1
+        // (exercices.js "choix_identite"), sans écraser ce qu'on vient
+        // d'enregistrer.
+        if (window.KebBekProgression) {
+          window.KebBekProgression
+            .enregistrerIdentite(identite.genre, undefined, identite.prenom, identite.adulte)
+            .catch(function (e) { console.warn('Échec de l\'enregistrement de l\'identité (invité).', e); });
+        } else {
+          console.warn('KebBekProgression indisponible — identité non enregistrée.', identite);
+        }
         allerAuMenuPrincipal('oui');
       }
     });

@@ -1195,14 +1195,14 @@ const KebBekIdentite = (function () {
       // ci-dessous ; cliqué à temps, il annule TOUT (retire la
       // confirmation, déverrouille le carrousel, empêche onComplet
       // d'être appelé) et rend la main à l'élève exactement comme avant
-      // le double-tap. Fenêtre allongée à 1.6s (plutôt que les 480ms
-      // d'origine, pensés seulement pour laisser voir l'animation) pour
-      // que ce bouton ait le temps réel d'être vu ET cliqué avant que
-      // callbacks.onComplet ne parte — au-delà de ce délai, le choix est
-      // considéré définitif (annuler après coup sortirait du rôle de ce
-      // module : il faudrait revenir en arrière depuis la page hôte/le
-      // menu suivant, hors de sa portée ici).
-      const DUREE_CONFIRMATION_MS = 1600;
+      // le double-tap. 🐛 CORRIGÉ cette session : 1.6s (posé initialement)
+      // s'est avéré bien trop court en pratique pour remarquer le bouton
+      // ET avoir le temps de décider de cliquer dessus — Raphaël a
+      // explicitement demandé au moins 5 secondes. Passé ce délai, le
+      // choix est considéré définitif (annuler après coup sortirait du
+      // rôle de ce module : il faudrait revenir en arrière depuis la page
+      // hôte/le menu suivant, hors de sa portée ici).
+      const DUREE_CONFIRMATION_MS = 5000;
       let minuterieConfirmation = null;
 
       function confirmerChoix(carte, s) {

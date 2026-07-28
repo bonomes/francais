@@ -694,13 +694,25 @@
       </div>
     </div>
    </div>
+  </div>
+  <!-- 🐛 CORRIGÉ : .scene (ouverte plus haut) se referme ICI, juste après
+       .scene-rangee — avant cette correction, elle ne se refermait
+       qu'après le lien "cours privés" ci-dessous, ce qui plaçait
+       #sequenceIdentite ET ce lien À L'INTÉRIEUR de .scene plutôt qu'à
+       côté. Conséquence concrète : scene.style.display = 'none' (voir
+       demarrerIdentiteSiPremiereFois() plus bas) cachait aussi
+       #sequenceIdentite avec elle, puisqu'un parent display:none masque
+       tout ce qu'il contient — peu importe le display propre de l'enfant.
+       C'est la cause réelle de "rien n'apparaît" après le clic sur "Oui". -->
 
     <!-- 🆕 Séquence identité (nom + genre + tranche d'âge) — se substitue
          à la scène d'accueil ci-dessus quand l'élève répond "Oui" à
          "First time?" (voir demarrerIdentiteSiPremiereFois() plus bas).
          Masqué par défaut (display:none) plutôt que retiré du DOM, pour
          pouvoir y revenir sans tout reconstruire ; demarrerSequenceIdentite
-         (identite-eleve.js) réécrit tout son contenu à chaque étape. -->
+         (identite-eleve.js) réécrit tout son contenu à chaque étape.
+         Maintenant un VRAI FRÈRE de .scene (voir correctif ci-dessus),
+         plus un enfant caché avec elle. -->
     <div id="sequenceIdentite" style="display:none;"></div>
 
     <!-- Lien vers les cours privés — pensé pour un parent qui atterrit
@@ -710,7 +722,6 @@
          le parcours principal. Libellé traduit via DICO_COURS_PRIVES (JS
          plus bas), mis à jour au choix de langue par rafraichirLienCoursPrives(). -->
     <a class="lien-cours-prives" id="lienCoursPrives" href="cours-prives/">Information et cours privés</a>
-  </div>
 
 <!-- Chargé AVANT le script principal ci-dessous : demarrerIdentiteSiPremiereFois()
      (voir plus bas) appelle KebBekIdentite.demarrerSequenceIdentite(), qui

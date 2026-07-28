@@ -284,7 +284,14 @@ const KebBekIdentite = (function () {
     keb: "images/accueil/index_bonomes_keb_bek_je-m'appelle-Keb_01.webp",
     bek: "images/accueil/index_bonomes_keb_bek_je-m'appelle-Bek_01.webp",
     question: 'images/accueil/index_bonomes_keb_bek_tu-t-appelles_01.webp',
-    enchantes: 'images/accueil/index_bonomes_keb_bek_enchantes_01.webp',
+    // 🐛 CORRIGÉ : le fichier réellement présent dans images/accueil/ sur
+    // GitHub garde l'accent ("enchantés"), contrairement à l'hypothèse
+    // prise en début de session (le zip source avait un accent mal
+    // encodé, d'où la supposition qu'il faudrait le renommer sans accent
+    // — mais Raphaël l'a téléversé tel quel, avec l'accent). Corrigé pour
+    // pointer vers le vrai nom de fichier plutôt que d'exiger un
+    // renommage sur GitHub.
+    enchantes: 'images/accueil/index_bonomes_keb_bek_enchantés_01.webp',
     fille: 'images/accueil/index_bonomes_keb_bek_fille_01.webp',
     garcon: 'images/accueil/index_bonomes_keb_bek_garcon_01.webp',
     etToi: 'images/accueil/index_bonomes_keb_bek_et-toi_01.webp',

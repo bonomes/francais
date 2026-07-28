@@ -7,6 +7,10 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;700&family=Chewy&display=swap" rel="stylesheet">
+<!-- Séquence identité (nom + genre + tranche d'âge, chemin "Oui" de First
+     time?) — voir identite-eleve.js plus bas pour la logique et
+     #sequenceIdentite plus bas dans le body pour le conteneur. -->
+<link rel="stylesheet" href="identite-eleve.css">
 <style>
   /* ==================================================================
      index.html — page d'accueil officielle du site (voir BONOMES_v61,
@@ -691,6 +695,14 @@
     </div>
    </div>
 
+    <!-- 🆕 Séquence identité (nom + genre + tranche d'âge) — se substitue
+         à la scène d'accueil ci-dessus quand l'élève répond "Oui" à
+         "First time?" (voir demarrerIdentiteSiPremiereFois() plus bas).
+         Masqué par défaut (display:none) plutôt que retiré du DOM, pour
+         pouvoir y revenir sans tout reconstruire ; demarrerSequenceIdentite
+         (identite-eleve.js) réécrit tout son contenu à chaque étape. -->
+    <div id="sequenceIdentite" style="display:none;"></div>
+
     <!-- Lien vers les cours privés — pensé pour un parent qui atterrit
          ici en quête d'info, pas pour l'enfant en immersion : volontairement
          discret (petit lien, pas un bouton en évidence) pour ne pas
@@ -700,6 +712,10 @@
     <a class="lien-cours-prives" id="lienCoursPrives" href="cours-prives/">Information et cours privés</a>
   </div>
 
+<!-- Chargé AVANT le script principal ci-dessous : demarrerIdentiteSiPremiereFois()
+     (voir plus bas) appelle KebBekIdentite.demarrerSequenceIdentite(), qui
+     doit donc déjà exister au moment où ce script s'exécute. -->
+<script src="identite-eleve.js"></script>
 
 <script>
   // ================================================================
@@ -877,13 +893,35 @@
 
   // Destination du menu principal pas encore définie côté contenu (pas
   // de page suivante précisée) — laissé en point d'ancrage explicite
-  // plutôt que deviné, à brancher dès que la suite existe. "Oui" et
-  // "Non" y mènent tous les deux pour l'instant ; à distinguer plus
-  // tard si "Oui" (première visite) doit plutôt ouvrir la séquence de
-  // présentation de Keb & Bek avant le menu (évoqué séparément par
-  // Raphaël), une fois cette séquence construite.
+  // plutôt que deviné, à brancher dès que la suite existe.
   function allerAuMenuPrincipal(reponse) {
     console.info(`Bloc "First time?" — réponse "${reponse}", destination du menu principal à définir.`);
+  }
+
+  // 🆕 "Oui" (première visite) ouvre désormais la séquence identité
+  // (identite-eleve.js) avant le menu, comme évoqué par Raphaël — "Non"
+  // continue de mener directement à allerAuMenuPrincipal ci-dessus, rien
+  // de changé de ce côté. La scène d'accueil (personnages + bloc "First
+  // time?" + sélecteur de langue) est masquée pendant la séquence, puis
+  // ce sera au menu principal — pas à cette page — de prendre le relais
+  // une fois onComplet() déclenché (voir note de tête de identite-eleve.js :
+  // ce module ne fait que collecter { prenom, genre, adulte }, jamais de
+  // persistance Supabase/localStorage lui-même).
+  const sequenceIdentite = document.getElementById('sequenceIdentite');
+  const scene = document.querySelector('.scene');
+
+  function demarrerIdentiteSiPremiereFois() {
+    if (modeSecretActif()) return; // case secrète prioritaire sur tout le reste
+    scene.style.display = 'none';
+    sequenceIdentite.style.display = '';
+    KebBekIdentite.demarrerSequenceIdentite('sequenceIdentite', {}, {
+      onComplet: function (identite) {
+        // identite = { prenom, genre, adulte } — à transmettre à
+        // KebBekProgression.creerProfil()/.enregistrerIdentite() une fois
+        // cette étape suivante définie, voir note ci-dessus.
+        allerAuMenuPrincipal('oui');
+      }
+    });
   }
 
   // 🆕 Petite séquence animée au survol de "Non" : posture normale (01)
@@ -941,8 +979,9 @@
   [pfOui, pfNon].forEach(bouton => {
     bouton.addEventListener('mouseenter', () => apercuPremiereFois(bouton.dataset.cible));
     bouton.addEventListener('mouseleave', masquerApercuPremiereFois);
-    bouton.addEventListener('click', () => allerAuMenuPrincipal(bouton.dataset.cible));
   });
+  pfOui.addEventListener('click', demarrerIdentiteSiPremiereFois);
+  pfNon.addEventListener('click', () => allerAuMenuPrincipal('non'));
 
   const panneau = document.getElementById('slPanneau');
   const recherche = document.getElementById('slRecherche');

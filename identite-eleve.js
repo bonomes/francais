@@ -270,7 +270,16 @@ const KebBekIdentite = (function () {
     // sécurité en cas de double-tap accidentel. Comme les autres clés
     // ci-dessus, PLACEHOLDER anglais tant qu'aucune traduction n'est
     // fournie via options.textes pour la langue de l'élève.
-    labelAnnulerChoix: 'Cancel'
+    labelAnnulerChoix: 'Cancel',
+    // 🆕 alt (accessibilité) pour les 4 images de réaction de Keb/Bek à la
+    // silhouette choisie (voir lancerReactionSilhouette) — chrome
+    // descriptif traduisible normalement, comme altEnchantes/altFille/
+    // altGarcon/altEtToi ci-dessus (le texte PARLÉ lui-même reste toujours
+    // en français, voir DIALOGUES_FIXES plus bas).
+    altReactionGarcon: 'Keb reacts: you are a boy, fist bump!',
+    altReactionHomme: 'Keb reacts: you are a man, respect!',
+    altReactionFille: 'Bek reacts: you are a girl, yay!',
+    altReactionFemme: 'Bek reacts: you are a woman, great!'
   };
 
   function texte(options, cle) {
@@ -309,7 +318,15 @@ const KebBekIdentite = (function () {
     silhouette_garcon: 'images/accueil/index_garcon_01.webp',
     silhouette_homme: 'images/accueil/index_homme_01.webp',
     silhouette_fille: 'images/accueil/index_fille_01.webp',
-    silhouette_femme: 'images/accueil/index_femme_01.webp'
+    silhouette_femme: 'images/accueil/index_femme_01.webp',
+    // 🆕 Réaction de Keb/Bek à la silhouette choisie (voir
+    // lancerReactionSilhouette) — 4 fichiers fournis cette session par
+    // Raphaël, noms inchangés depuis le dossier livré (garder "toi_gars"
+    // tel quel, pas "toi_garcon" — c'est le vrai nom de fichier).
+    reactionGarcon: 'images/accueil/index_bonomes_keb_bek_toi_gars_01.webp',
+    reactionHomme: 'images/accueil/index_bonomes_keb_bek_toi_homme_01.webp',
+    reactionFille: 'images/accueil/index_bonomes_keb_bek_toi_fille_01.webp',
+    reactionFemme: 'images/accueil/index_bonomes_keb_bek_toi_femme_01.webp'
   };
 
   function image(options, cle) {
@@ -337,7 +354,17 @@ const KebBekIdentite = (function () {
     enchanteKeb: 'Enchanté, {prenom}.',
     continuonsBek: 'Continuons. Je suis une fille.',
     garconKeb: 'Moi, je suis un garçon.',
-    etToiBek: 'Et toi\u00A0? Tu es\u2026'
+    etToiBek: 'Et toi\u00A0? Tu es\u2026',
+    // 🆕 Réaction de Keb/Bek à la silhouette choisie (voir
+    // lancerReactionSilhouette) — dialogue fourni par Raphaël cette
+    // session, TOUJOURS en français comme le reste de DIALOGUES_FIXES.
+    // "Choc choc" : expression inventée par Keb pour "franciser" le
+    // "fist bump" — volontairement laissée telle quelle, ce n'est pas
+    // une coquille.
+    reactionGarcon: 'Tu es un garçon\u00A0! Choc choc\u00A0!',
+    reactionHomme: 'Tu es un homme. Respect\u00A0!',
+    reactionFille: 'Tu es une fille\u00A0! Youpie\u00A0!',
+    reactionFemme: 'Tu es une femme\u00A0! Chouette\u00A0!'
   };
 
   function remplacerPrenom(texteBrut, prenom) {
@@ -363,7 +390,15 @@ const KebBekIdentite = (function () {
     // autres clés (nom choisi avant l'ajout des couleurs), mais c'est
     // bien Bek qui pose la question ("Et toi, tu t'appelles comment ?"
     // — voir introAltQuestion : "Bek asks: what is your name?").
-    dialogueQuestion: 'bek'
+    dialogueQuestion: 'bek',
+    // 🆕 Réaction de Keb/Bek à la silhouette choisie — mêmes raisons que
+    // dialogueQuestion ci-dessus (clés nommées par silhouette, pas par
+    // locuteur) : garçon/homme réagissent par la voix de Keb, fille/femme
+    // par celle de Bek, comme précisé par Raphaël.
+    reactionGarcon: 'keb',
+    reactionHomme: 'keb',
+    reactionFille: 'bek',
+    reactionFemme: 'bek'
   };
   function locuteurDeDialogue(dialogueCle) {
     if (LOCUTEURS_EXCEPTIONS[dialogueCle] !== undefined) return LOCUTEURS_EXCEPTIONS[dialogueCle];
@@ -1231,9 +1266,12 @@ const KebBekIdentite = (function () {
 
         minuterieConfirmation = setTimeout(function () {
           btnAnnuler.remove();
-          if (typeof callbacks.onComplet === 'function') {
-            callbacks.onComplet({ prenom: prenomChoisi, genre: s.genre, adulte: s.adulte });
-          }
+          // 🆕 CORRIGÉ cette session : appelait directement onComplet ici
+          // — remplacé par la nouvelle étape de réaction (Keb/Bek réagit
+          // à la silhouette choisie, voir lancerReactionSilhouette
+          // ci-dessous), qui appelle elle-même onComplet une fois la
+          // réplique tapée/lue par l'élève.
+          lancerReactionSilhouette(s);
         }, DUREE_CONFIRMATION_MS);
       }
 
@@ -1366,6 +1404,117 @@ const KebBekIdentite = (function () {
         });
         action.appendChild(btnChanger);
       }
+    }
+
+    // ---- Étape 3 (🆕 cette session) : réaction de Keb/Bek à la
+    // silhouette choisie ----
+    // Jouée juste après la confirmation d'une silhouette (voir
+    // confirmerChoix ci-dessus), AVANT que callbacks.onComplet() ne soit
+    // finalement appelé — dialogue fourni par Raphaël : garçon → Keb dit
+    // "Choc choc !" (fist bump francisé) ; homme → Keb dit "Respect !" ;
+    // fille → Bek dit "Youpie !" ; femme → Bek dit "Chouette !". Une
+    // seule image/réplique par choix (contrairement à "Enchanté(e)",
+    // pas de séquence à faire défiler) : un seul tap/clic suffit à
+    // continuer, ce qui termine la séquence identité. Réutilise
+    // #idenPersonnages/#idenBulle comme les autres étapes de dialogue —
+    // même mot-à-mot cliquable (traduction + ajout au sac) et bouton
+    // "Traduire la phrase", pour que ce mécanisme reste disponible
+    // partout où du texte parlé apparaît, y compris ici.
+    const REACTIONS_SILHOUETTE = {
+      garcon: { cle: 'reactionGarcon', altCle: 'altReactionGarcon' },
+      homme:  { cle: 'reactionHomme',  altCle: 'altReactionHomme' },
+      fille:  { cle: 'reactionFille',  altCle: 'altReactionFille' },
+      femme:  { cle: 'reactionFemme',  altCle: 'altReactionFemme' }
+    };
+
+    function lancerReactionSilhouette(s) {
+      action.innerHTML = '';
+      // Une seule image : pas de "suivant"/"précédent" à proprement
+      // parler (contrairement à l'intro ou à "Enchanté(e)") — les
+      // chevrons resteraient trompeurs (ils suggèrent qu'il y a d'autres
+      // images à faire défiler). L'indice de tap générique
+      // (introIndiceTap, déjà traduit dans toutes les langues) suffit à
+      // signaler qu'on peut continuer.
+      chevron.style.display = 'none';
+      chevronGauche.style.display = 'none';
+      indice.style.display = '';
+      indice.textContent = texte(options, 'introIndiceTap');
+
+      const reaction = REACTIONS_SILHOUETTE[s.id];
+
+      Array.from(personnages.querySelectorAll('img.iden-img')).forEach(function (img) { img.remove(); });
+      const img = document.createElement('img');
+      img.className = 'iden-img actif';
+      img.src = image(options, reaction.cle);
+      img.alt = texte(options, reaction.altCle);
+      personnages.insertBefore(img, bulle);
+
+      // Même découpage mot-à-mot / mêmes écouteurs clic/clavier
+      // (traduction + ajout au sac) que afficherBulle()/
+      // afficherBulleEnchantes() ci-dessus — dupliqué ici plutôt que
+      // généralisé pour les mêmes raisons que afficherBulleEnchantes déjà
+      // documentées plus haut (une seule ligne ici, jamais deux).
+      function afficherBulleReaction() {
+        bulle.innerHTML = '';
+        const brut = remplacerPrenom(DIALOGUES_FIXES[reaction.cle], prenomChoisi || '');
+        const ligne = document.createElement('div');
+        const locuteur = locuteurDeDialogue(reaction.cle);
+        ligne.className = 'iden-bulle-ligne' + (locuteur ? ' iden-bulle-ligne-' + locuteur : '');
+        const motsBrutSepares = String(brut).split(/\s+/).filter(Boolean);
+        const PONCTUATION_SEULE = /^[.,!?;:'"«»\u2026]+$/;
+        const mots = [];
+        motsBrutSepares.forEach(function (tok) {
+          if (PONCTUATION_SEULE.test(tok) && mots.length > 0) {
+            mots[mots.length - 1] += '\u00A0' + tok;
+          } else {
+            mots.push(tok);
+          }
+        });
+        mots.forEach(function (motBrut, idx) {
+          const span = document.createElement('span');
+          span.className = 'iden-mot';
+          span.textContent = motBrut + (idx < mots.length - 1 ? '\u00A0' : '');
+          const motNettoye = motBrut.replace(/^[\s.,!?;:'"«»\u2026]+|[\s.,!?;:'"«»\u2026]+$/g, '');
+          span.tabIndex = 0;
+          span.addEventListener('click', function (e) {
+            e.stopPropagation();
+            afficherTraductionMot(span, motNettoye);
+            if (AJOUT_AUTOMATIQUE_TEMPORAIRE) ajouterMotAuSac(span, motNettoye);
+          });
+          span.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault(); e.stopPropagation();
+              afficherTraductionMot(span, motNettoye);
+              if (AJOUT_AUTOMATIQUE_TEMPORAIRE) ajouterMotAuSac(span, motNettoye);
+            }
+          });
+          ligne.appendChild(span);
+        });
+        bulle.appendChild(ligne);
+        majBoutonTraduirePhrase([reaction.cle]);
+      }
+
+      function terminerReaction() {
+        etapeScene = 'inactive';
+        chevron.style.display = 'none';
+        chevronGauche.style.display = 'none';
+        indice.style.display = 'none';
+        btnTraduirePhrase.style.display = 'none';
+        tooltipPhrase.classList.remove('visible');
+        if (typeof callbacks.onComplet === 'function') {
+          callbacks.onComplet({ prenom: prenomChoisi, genre: s.genre, adulte: s.adulte });
+        }
+      }
+
+      etapeScene = 'dialogue';
+      avancerActif = terminerReaction; // un seul tap/clic termine la séquence
+      reculerActif = function () {};   // rien à reculer (une seule image)
+      afficherBulleReaction();
+      // Même correctif de focus que lancerDialogueEnchantes ci-dessus :
+      // #idenPersonnages doit reprendre le focus explicitement à chaque
+      // fois que la scène redevient active, sinon les flèches/Entrée du
+      // clavier restent muettes pour cette étape.
+      personnages.focus();
     }
   }
 

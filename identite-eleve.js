@@ -279,7 +279,13 @@ const KebBekIdentite = (function () {
     altReactionGarcon: 'Keb reacts: you are a boy, fist bump!',
     altReactionHomme: 'Keb reacts: you are a man, respect!',
     altReactionFille: 'Bek reacts: you are a girl, yay!',
-    altReactionFemme: 'Bek reacts: you are a woman, great!'
+    altReactionFemme: 'Bek reacts: you are a woman, great!',
+    // 🆕 Scène de remise du sac (voir lancerRemiseSac) — SEULEMENT les
+    // 2 premières images à ce jour (les suivantes attendent leurs
+    // illustrations, voir IMAGES_DON_SAC plus bas). Chrome
+    // d'accessibilité, traduisible normalement (repli anglais ici).
+    altDonSacQuestion: 'Keb asks if you are ready',
+    altDonSacPresque: 'Bek remembers the bag'
   };
 
   function texte(options, cle) {
@@ -326,7 +332,14 @@ const KebBekIdentite = (function () {
     reactionGarcon: 'images/accueil/index_bonomes_keb_bek_toi_gars_01.webp',
     reactionHomme: 'images/accueil/index_bonomes_keb_bek_toi_homme_01.webp',
     reactionFille: 'images/accueil/index_bonomes_keb_bek_toi_fille_01.webp',
-    reactionFemme: 'images/accueil/index_bonomes_keb_bek_toi_femme_01.webp'
+    reactionFemme: 'images/accueil/index_bonomes_keb_bek_toi_femme_01.webp',
+    // 🆕 Scène de remise du sac (voir lancerRemiseSac / IMAGES_DON_SAC) —
+    // SEULEMENT les 2 premières images fournies à ce jour ; répliques 3 à
+    // 7 (Keb part chercher le sac, revient, "Tiens !", "Clique deux fois
+    // ici !" + mécanisme du double-tap, "tu es prêt/prête !") en attente
+    // de leurs illustrations — voir note détaillée sur IMAGES_DON_SAC.
+    donSacQuestion: 'images/accueil/index_bonomes_keb_bek_il-elle_est_pret-e_01.webp',
+    donSacPresque: 'images/accueil/index_bonomes_keb_bek_presque_01.webp'
   };
 
   function image(options, cle) {
@@ -364,7 +377,19 @@ const KebBekIdentite = (function () {
     reactionGarcon: 'Tu es un garçon\u00A0! Choc choc\u00A0!',
     reactionHomme: 'Tu es un homme. Respect\u00A0!',
     reactionFille: 'Tu es une fille\u00A0! Youpie\u00A0!',
-    reactionFemme: 'Tu es une femme\u00A0! Chouette\u00A0!'
+    reactionFemme: 'Tu es une femme\u00A0! Chouette\u00A0!',
+    // 🆕 Scène de remise du sac (voir lancerRemiseSac) — dialogue fourni
+    // par Raphaël cette session, TOUJOURS en français comme le reste de
+    // DIALOGUES_FIXES. La première réplique existe en 2 variantes
+    // accordées (donSacQuestionM/F) — pas de {prenom} ici, l'accord se
+    // fait plutôt sur le GENRE déjà collecté par la séquence identité
+    // (voir dialogueCleDonSac() plus bas, qui choisit la bonne variante).
+    // Répliques 3 à 7 (départ de Keb, retour avec le sac, remise du sac,
+    // enseignement du double-tap, clôture accordée "tu es prêt/prête")
+    // pas encore ajoutées — en attente des illustrations correspondantes.
+    donSacQuestionM: 'Bon\u00A0! Il est prêt\u00A0?',
+    donSacQuestionF: 'Bon\u00A0! Elle est prête\u00A0?',
+    donSacPresque: 'Presque\u00A0! Le sac\u00A0!'
   };
 
   function remplacerPrenom(texteBrut, prenom) {
@@ -398,7 +423,12 @@ const KebBekIdentite = (function () {
     reactionGarcon: 'keb',
     reactionHomme: 'keb',
     reactionFille: 'bek',
-    reactionFemme: 'bek'
+    reactionFemme: 'bek',
+    // 🆕 Scène de remise du sac — Keb pose la question ("Bon\u00A0! Il/
+    // Elle est prêt(e)\u00A0?"), Bek répond ("Presque\u00A0! Le sac\u00A0!").
+    donSacQuestionM: 'keb',
+    donSacQuestionF: 'keb',
+    donSacPresque: 'bek'
   };
   function locuteurDeDialogue(dialogueCle) {
     if (LOCUTEURS_EXCEPTIONS[dialogueCle] !== undefined) return LOCUTEURS_EXCEPTIONS[dialogueCle];
@@ -1495,15 +1525,13 @@ const KebBekIdentite = (function () {
       }
 
       function terminerReaction() {
-        etapeScene = 'inactive';
-        chevron.style.display = 'none';
-        chevronGauche.style.display = 'none';
-        indice.style.display = 'none';
-        btnTraduirePhrase.style.display = 'none';
-        tooltipPhrase.classList.remove('visible');
-        if (typeof callbacks.onComplet === 'function') {
-          callbacks.onComplet({ prenom: prenomChoisi, genre: s.genre, adulte: s.adulte });
-        }
+        // 🆕 CORRIGÉ cette session : appelait directement onComplet ici —
+        // remplacé par la nouvelle scène de remise du sac (voir
+        // lancerRemiseSac ci-dessous), qui appellera elle-même onComplet
+        // une fois complétée (pas encore le cas tant que les répliques 3+
+        // n'ont pas leurs illustrations — voir notes dans
+        // lancerRemiseSac).
+        lancerRemiseSac(s);
       }
 
       etapeScene = 'dialogue';
@@ -1514,6 +1542,151 @@ const KebBekIdentite = (function () {
       // #idenPersonnages doit reprendre le focus explicitement à chaque
       // fois que la scène redevient active, sinon les flèches/Entrée du
       // clavier restent muettes pour cette étape.
+      personnages.focus();
+    }
+
+    // ---- Étape 4 (🆕 cette session, EN COURS) : remise du sac ----
+    // Jouée juste après la réaction à la silhouette (voir
+    // terminerReaction ci-dessus). Dialogue complet convenu avec
+    // Raphaël (7 répliques) :
+    //   1. Keb : "Bon ! Il est prêt ?" / "Bon ! Elle est prête ?"
+    //   2. Bek : "Presque ! Le sac !"
+    //   3. Keb : "Oh ! Oui !" (part chercher le sac)
+    //   4. Keb revient avec le sac (pas de nouvelle réplique)
+    //   5. Keb : "Tiens ! C'est pour toi !"
+    //   6. Bek (pointe un mot) : "Clique deux fois ici !" — enseigne le
+    //      VRAI double-tap ; c'est à partir d'ici que le mécanisme change
+    //      définitivement (voir AJOUT_AUTOMATIQUE_TEMPORAIRE en tête de
+    //      fichier — à désactiver une fois cette étape construite).
+    //   7. Bek : "Voilà ! Maintenant, tu es prêt/prête !"
+    // 🚧 SEULES les répliques 1 et 2 sont câblées ci-dessous — Raphaël
+    // prépare encore les illustrations des répliques 3 à 7. IMAGES_DON_SAC
+    // est volontairement écrit pour qu'il suffise d'ajouter des entrées à
+    // ce tableau (+ leurs clés dans IMAGES_PAR_DEFAUT/DIALOGUES_FIXES/
+    // LOCUTEURS_EXCEPTIONS plus haut) quand elles seront prêtes — rien
+    // d'autre à restructurer. avancerDonSac() ci-dessous ne fait
+    // VOLONTAIREMENT rien de plus une fois la dernière image DISPONIBLE
+    // atteinte (jamais d'appel prématuré à callbacks.onComplet, qui doit
+    // attendre la vraie fin de cette scène, pas encore construite).
+    const IMAGES_DON_SAC = [
+      { cle: 'donSacQuestion', altCle: 'altDonSacQuestion', dialogueCleM: 'donSacQuestionM', dialogueCleF: 'donSacQuestionF' },
+      { cle: 'donSacPresque', altCle: 'altDonSacPresque', dialogueCle: 'donSacPresque' }
+      // 🚧 À AJOUTER ICI dès que les illustrations 3 à 7 sont fournies.
+    ];
+
+    function dialogueCleDonSac(entree, s) {
+      if (entree.dialogueCle) return entree.dialogueCle;
+      return (s.genre === 'f') ? entree.dialogueCleF : entree.dialogueCleM;
+    }
+
+    function lancerRemiseSac(s) {
+      action.innerHTML = '';
+      chevron.style.display = '';
+      chevronGauche.style.display = '';
+      indice.style.display = '';
+      indice.textContent = texte(options, 'introIndiceTap');
+
+      Array.from(personnages.querySelectorAll('img.iden-img')).forEach(function (img) { img.remove(); });
+      const imagesDonSac = IMAGES_DON_SAC.map(function (et, i) {
+        const img = document.createElement('img');
+        img.className = 'iden-img' + (i === 0 ? ' actif' : '');
+        img.src = image(options, et.cle);
+        img.alt = texte(options, et.altCle);
+        personnages.insertBefore(img, bulle);
+        return img;
+      });
+
+      let indexDonSac = 0;
+
+      function majChevronGaucheDonSac() {
+        chevronGauche.classList.toggle('iden-chevron-desactive', indexDonSac === 0);
+      }
+      // 🚧 Tant que la suite (répliques 3+) n'est pas branchée, la
+      // dernière image FOURNIE À CE JOUR ne mène nulle part encore — le
+      // chevron droit se grise donc lui aussi une fois qu'on l'atteint,
+      // plutôt que de suggérer qu'on peut continuer pour de vrai (même
+      // philosophie que .iden-silhouette-desactivee : visible, pas
+      // caché, pour que l'élève comprenne que ça ne bouge pas plutôt que
+      // de croire à un bug). À RETIRER dès que IMAGES_DON_SAC sera
+      // complété.
+      function majChevronDroitDonSac() {
+        chevron.classList.toggle('iden-chevron-desactive', indexDonSac === imagesDonSac.length - 1);
+      }
+
+      // Même découpage mot-à-mot / mêmes écouteurs clic/clavier
+      // (traduction + ajout au sac) que afficherBulle()/
+      // afficherBulleReaction() ci-dessus — dupliqué ici pour les mêmes
+      // raisons déjà documentées plus haut dans le fichier.
+      function afficherBulleDonSac(dialogueCle) {
+        bulle.innerHTML = '';
+        bulle.classList.remove('iden-bulle-ligne-bek', 'iden-bulle-ligne-keb');
+        const locuteur = locuteurDeDialogue(dialogueCle);
+        if (locuteur) bulle.classList.add('iden-bulle-ligne-' + locuteur);
+        const brut = remplacerPrenom(DIALOGUES_FIXES[dialogueCle], prenomChoisi || '');
+        const motsBrutSepares = String(brut).split(/\s+/).filter(Boolean);
+        const PONCTUATION_SEULE = /^[.,!?;:'"«»\u2026]+$/;
+        const mots = [];
+        motsBrutSepares.forEach(function (tok) {
+          if (PONCTUATION_SEULE.test(tok) && mots.length > 0) {
+            mots[mots.length - 1] += '\u00A0' + tok;
+          } else {
+            mots.push(tok);
+          }
+        });
+        mots.forEach(function (motBrut, idx) {
+          const span = document.createElement('span');
+          span.className = 'iden-mot';
+          span.textContent = motBrut + (idx < mots.length - 1 ? '\u00A0' : '');
+          const motNettoye = motBrut.replace(/^[\s.,!?;:'"«»\u2026]+|[\s.,!?;:'"«»\u2026]+$/g, '');
+          span.tabIndex = 0;
+          span.addEventListener('click', function (e) {
+            e.stopPropagation();
+            afficherTraductionMot(span, motNettoye);
+            if (AJOUT_AUTOMATIQUE_TEMPORAIRE) ajouterMotAuSac(span, motNettoye);
+          });
+          span.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault(); e.stopPropagation();
+              afficherTraductionMot(span, motNettoye);
+              if (AJOUT_AUTOMATIQUE_TEMPORAIRE) ajouterMotAuSac(span, motNettoye);
+            }
+          });
+          bulle.appendChild(span);
+        });
+        majBoutonTraduirePhrase([dialogueCle]);
+      }
+
+      function avancerDonSac() {
+        if (indexDonSac >= imagesDonSac.length - 1) {
+          // 🚧 Suite pas encore construite (voir notes ci-dessus) : on ne
+          // fait rien de plus ici plutôt que d'appeler callbacks.onComplet
+          // prématurément.
+          return;
+        }
+        imagesDonSac[indexDonSac].classList.remove('actif');
+        indexDonSac++;
+        imagesDonSac[indexDonSac].classList.add('actif');
+        afficherBulleDonSac(dialogueCleDonSac(IMAGES_DON_SAC[indexDonSac], s));
+        majChevronGaucheDonSac();
+        majChevronDroitDonSac();
+      }
+
+      function reculerDonSac() {
+        if (indexDonSac === 0) return;
+        imagesDonSac[indexDonSac].classList.remove('actif');
+        indexDonSac--;
+        imagesDonSac[indexDonSac].classList.add('actif');
+        afficherBulleDonSac(dialogueCleDonSac(IMAGES_DON_SAC[indexDonSac], s));
+        majChevronGaucheDonSac();
+        majChevronDroitDonSac();
+      }
+
+      etapeScene = 'dialogue';
+      avancerActif = avancerDonSac;
+      reculerActif = reculerDonSac;
+      majChevronGaucheDonSac();
+      majChevronDroitDonSac();
+      afficherBulleDonSac(dialogueCleDonSac(IMAGES_DON_SAC[0], s));
       personnages.focus();
     }
   }

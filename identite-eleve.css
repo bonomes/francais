@@ -694,7 +694,8 @@
 }
 
 .iden-debloque-sur,
-.iden-debloque-nom { display: block; }
+.iden-debloque-nom,
+.iden-debloque-tap { display: block; }
 
 .iden-debloque-sur {
   font-family: 'Baloo 2', sans-serif;
@@ -720,21 +721,38 @@
   50%      { text-shadow: 0 0 24px rgba(240, 169, 139, 0.95), 0 0 9px rgba(240, 169, 139, 0.65); }
 }
 
+/* 🆕 3e ligne du titre épique — "tap pour continuer", intégrée ici
+   plutôt que laissée à l'indice générique (#idenIndice) : évite la
+   collision visuelle signalée par Raphaël (les deux textes se
+   touchaient presque). Espacement propre via margin-top, police neutre
+   (pas Chewy) et opacité réduite pour rester nettement secondaire par
+   rapport au nom de l'objet juste au-dessus. */
+.iden-debloque-tap {
+  margin-top: 10px;
+  font-family: 'Baloo 2', sans-serif;
+  font-weight: 500;
+  font-size: 0.74rem;
+  color: var(--brun-clair, #8A7364);
+  -webkit-text-stroke: 0;
+  opacity: 0.85;
+}
+
 /* Déclenché au tap (voir declencherVol dans le .js) : l'image vole vers
-   le coin supérieur droit de l'ÉCRAN. Position de départ (calculée sur
-   la position réelle de l'image au moment du tap, via getBoundingClientRect)
-   et position cible (26px du coin, taille de #sacBouton) sont posées en
-   style inline par le JS — cette classe ne fournit QUE la transition,
-   plus fiable qu'un jeu de spécificité CSS pour animer vers une cible
-   dynamique. DELAI_VOL_SAC dans le .js doit rester en phase avec la
+   le coin supérieur droit de l'ÉCRAN.
+   🐛 CORRIGÉ : animait auparavant top/left/largeur/hauteur directement
+   (propriétés de mise en page, pas accélérées matériellement) — d'où le
+   passage jugé abrupt par Raphaël plutôt qu'un vol fluide. N'anime plus
+   que `transform` (translate+scale, posé en style inline par le JS,
+   calculé depuis la position/taille RÉELLE de l'image au moment du tap)
+   et `opacity` — beaucoup plus fluide. Courbe adoucie (ease-in-out
+   classique, sans overshoot) plutôt que l'ancienne cubic-bezier avec un
+   rebond négatif. DELAI_VOL_SAC dans le .js doit rester en phase avec la
    durée ci-dessous. */
 .iden-debloque-vol-anim {
   position: fixed;
   margin: 0;
   z-index: 500;
-  transition: top 0.7s cubic-bezier(.5, -0.2, .7, .3), left 0.7s cubic-bezier(.5, -0.2, .7, .3),
-              width 0.7s cubic-bezier(.5, -0.2, .7, .3), height 0.7s cubic-bezier(.5, -0.2, .7, .3),
-              opacity 0.5s ease 0.2s;
+  transition: transform 0.85s cubic-bezier(.65, 0, .35, 1), opacity 0.6s ease 0.28s;
 }
 
 .iden-debloque-halo-vol {
@@ -742,6 +760,7 @@
   transition: opacity 0.35s ease;
   opacity: 0;
 }
+
 
 .iden-debloque-titre-sortie {
   opacity: 0;

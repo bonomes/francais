@@ -309,7 +309,16 @@ const KebBekIdentite = (function () {
     // toi !", voir DIALOGUES_FIXES/IMAGES_DON_SAC plus bas). Deux images
     // : Bek's anticipation, puis Keb actually handing it over.
     altDonSacPourToi: 'Keb hands you the backpack',
-    altDonSacPourToi2: 'Keb gives you the backpack'
+    altDonSacPourToi2: 'Keb gives you the backpack',
+    // 🆕 Scène de déblocage du sac (voir lancerDeblocageSac) — jouée
+    // juste après la réplique 5 ("Tiens !"), avant les répliques 6-7 (pas
+    // encore illustrées). "debloqueTitre"/"debloqueNom" : chrome
+    // d'interface façon "objet débloqué", traduisible normalement — pas
+    // une réplique de personnage, donc PAS dans DIALOGUES_FIXES (qui
+    // reste toujours en français).
+    debloqueTitre: 'Item unlocked!',
+    debloqueNom: 'The first bag',
+    altDebloqueSac: 'The backpack, glowing and floating'
   };
 
   function texte(options, cle) {
@@ -377,7 +386,12 @@ const KebBekIdentite = (function () {
     // 🆕 2e image de la réplique 5 — utilisée pour la transition
     // automatique qui ajoute la réplique de Keb sous celle de Bek (voir
     // dialogueClesParFrame dans IMAGES_DON_SAC).
-    donSacPourToi2: 'images/accueil/index_bonomes_keb_bek_sac-pour-toi_02.webp'
+    donSacPourToi2: 'images/accueil/index_bonomes_keb_bek_sac-pour-toi_02.webp',
+    // 🆕 Scène de déblocage du sac (voir lancerDeblocageSac plus bas) —
+    // image fournie par Raphaël, déjà lumineuse/scintillante par
+    // elle-même : l'animation CSS n'a donc qu'à ajouter le flottement,
+    // pas à recréer la lueur.
+    debloqueSac: 'images/accueil/index_bonomes_keb_bek_sac-1-débloqué_01.webp'
   };
 
   function image(options, cle) {

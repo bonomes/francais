@@ -319,6 +319,7 @@ const KebBekIdentite = (function () {
     debloqueTitre: 'Item unlocked!',
     debloqueNom: 'The first bag',
     altDebloqueSac: 'The backpack, glowing and floating',
+    altIconeSac: 'Your backpack',
     // 🆕 Fiche "objet" (façon jeu vidéo) affichée au survol/tap du sac une
     // fois posé en haut à droite — remplace l'ancien plan de répliques 6-7
     // (dialogue Keb/Bek expliquant le mécanisme) : chrome d'interface,
@@ -401,7 +402,13 @@ const KebBekIdentite = (function () {
     // image fournie par Raphaël, déjà lumineuse/scintillante par
     // elle-même : l'animation CSS n'a donc qu'à ajouter le flottement,
     // pas à recréer la lueur.
-    debloqueSac: 'images/accueil/index_bonomes_keb_bek_sac-1-débloqué_01.webp'
+    debloqueSac: 'images/accueil/index_bonomes_keb_bek_sac-1-débloqué_01.webp',
+    // 🆕 Icône du sac une fois posé en haut à droite (#sacBouton) —
+    // DISTINCTE de debloqueSac ci-dessus : celle-ci sert UNIQUEMENT à
+    // l'icône permanente du bouton (ligne simple, pas de lueur), jamais
+    // à la scène de révélation/vol (qui garde debloqueSac, la version
+    // lumineuse) — demande explicite de Raphaël.
+    iconeSac: 'images/accueil/index_bonomes_icone_sac_01.webp'
   };
 
   function image(options, cle) {
@@ -1747,7 +1754,7 @@ const KebBekIdentite = (function () {
     // temps la fiche "objet" reste ouverte toute seule après l'atterrissage
     // avant de se refermer — assez long pour lire les 3 lignes, pas assez
     // pour agacer un élève qui voudrait continuer.
-    const DELAI_VOL_SAC = 700;
+    const DELAI_VOL_SAC = 850;
     const DELAI_CARTE_AUTO_SAC = 4200;
     const IMAGES_DON_SAC = [
       { cle: 'donSacQuestion', altCle: 'altDonSacQuestion', dialogueCleM: 'donSacQuestionM', dialogueCleF: 'donSacQuestionF' },
@@ -2131,8 +2138,15 @@ const KebBekIdentite = (function () {
       action.innerHTML = '';
       chevron.style.display = 'none';
       chevronGauche.style.display = 'none';
-      indice.style.display = '';
-      indice.textContent = texte(options, 'introIndiceTap');
+      // 🐛 CORRIGÉ : l'indice générique (#idenIndice, juste sous
+      // #idenPersonnages) collait visuellement contre le titre épique
+      // (lui-même positionné en léger débordement sous le cadre, voir
+      // .iden-debloque-titre) — les deux textes se touchaient presque,
+      // donnant une impression de superposition. Le "tap pour continuer"
+      // est maintenant une 3e ligne DANS le titre épique lui-même (voir
+      // .iden-debloque-tap plus bas), avec son propre espacement contrôlé
+      // ; l'indice générique reste donc masqué pour cette scène.
+      indice.style.display = 'none';
       btnTraduirePhrase.style.display = 'none';
       tooltipPhrase.classList.remove('visible');
 
@@ -2157,41 +2171,52 @@ const KebBekIdentite = (function () {
       titreEpique.className = 'iden-debloque-titre';
       titreEpique.innerHTML =
         '<span class="iden-debloque-sur">' + texte(options, 'debloqueTitre') + '</span>' +
-        '<span class="iden-debloque-nom">' + texte(options, 'debloqueNom') + '</span>';
+        '<span class="iden-debloque-nom">' + texte(options, 'debloqueNom') + '</span>' +
+        '<span class="iden-debloque-tap">' + texte(options, 'introIndiceTap') + '</span>';
       personnages.appendChild(titreEpique);
 
       function declencherVol() {
         avancerActif = function () {}; // un seul tap déclenche le vol, jamais deux
 
-        // Position de DÉPART = position réelle actuelle de l'image à
-        // l'écran (peu importe où #idenPersonnages se trouve selon la
-        // taille de fenêtre) — figée en style inline avant de basculer en
-        // position:fixed, pour que le passage ne saute pas d'un endroit à
-        // l'autre au moment où la classe est ajoutée.
+        // 🐛 CORRIGÉ : l'ancienne version animait top/left/largeur/hauteur
+        // directement — des propriétés de mise en page (reflow), pas
+        // accélérées matériellement, d'où l'impression de "saut" abrupt
+        // signalée par Raphaël plutôt qu'un vol fluide. Reprise en
+        // `transform` (translate + scale) uniquement : la position/taille
+        // de DÉPART reste figée en style inline (top/left/largeur/hauteur
+        // du rect réel), seul le `transform` bouge pendant la transition —
+        // beaucoup plus fluide (accéléré matériellement) qu'animer la
+        // boîte elle-même.
         const rect = imgSac.getBoundingClientRect();
+        const TAILLE_CIBLE = 48; // taille de #sacBouton, voir .iden-sac-bouton
+        const MARGE_CIBLE = 26;  // même marge que .iden-sac-bouton (top/right)
+        const topCible = MARGE_CIBLE;
+        const gaucheCible = window.innerWidth - MARGE_CIBLE - TAILLE_CIBLE;
+
         imgSac.style.animation = 'none'; // stoppe le flottement en boucle, la transition prend le relais
+        imgSac.style.position = 'fixed';
         imgSac.style.top = rect.top + 'px';
         imgSac.style.left = rect.left + 'px';
         imgSac.style.width = rect.width + 'px';
         imgSac.style.height = rect.height + 'px';
+        imgSac.style.margin = '0';
+        imgSac.style.transformOrigin = 'top left';
         imgSac.classList.add('iden-debloque-vol-anim');
         halo.classList.add('iden-debloque-halo-vol');
         titreEpique.classList.add('iden-debloque-titre-sortie');
 
-        // Force le navigateur à peindre la position de départ ci-dessus
-        // AVANT de fixer la cible juste en dessous — sans ce reflow forcé,
-        // les deux jeux de valeurs pourraient être fusionnés en un seul
-        // batch de rendu et la transition n'aurait rien à animer.
+        // Force le navigateur à peindre la position/taille de DÉPART
+        // ci-dessus AVANT de fixer le `transform` cible juste en dessous —
+        // sans ce reflow forcé, les deux états pourraient être fusionnés
+        // en un seul batch de rendu et la transition n'aurait rien à
+        // animer.
         void imgSac.offsetWidth;
 
-        // Position d'ARRIVÉE = coin supérieur droit, taille de
-        // #sacBouton (48px, voir .iden-sac-bouton) — même 26px de marge
-        // que .iden-sac-bouton dans le CSS, pour un atterrissage pile à
-        // l'endroit où le bouton va apparaître.
-        imgSac.style.top = '26px';
-        imgSac.style.left = 'calc(100% - 74px)';
-        imgSac.style.width = '48px';
-        imgSac.style.height = '48px';
+        const echelleX = TAILLE_CIBLE / rect.width;
+        const echelleY = TAILLE_CIBLE / rect.height;
+        const translationX = gaucheCible - rect.left;
+        const translationY = topCible - rect.top;
+        imgSac.style.transform = 'translate(' + translationX + 'px, ' + translationY + 'px) scale(' + echelleX + ', ' + echelleY + ')';
         imgSac.style.opacity = '0';
 
         setTimeout(atterrir, DELAI_VOL_SAC);
@@ -2234,8 +2259,8 @@ const KebBekIdentite = (function () {
       bouton.setAttribute('aria-label', texte(options, 'debloqueNom'));
       const icone = document.createElement('img');
       icone.className = 'iden-sac-bouton-icone';
-      icone.src = image(options, 'debloqueSac');
-      icone.alt = texte(options, 'altDebloqueSac');
+      icone.src = image(options, 'iconeSac');
+      icone.alt = texte(options, 'altIconeSac');
       bouton.appendChild(icone);
       document.body.appendChild(bouton);
 

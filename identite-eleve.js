@@ -238,13 +238,29 @@ const KebBekIdentite = (function () {
     // Raphaël fournit le vrai dialogue (voir note de tête de fichier).
     dialogueKeb: "Salut ! Moi, c'est Keb.",
     dialogueBek: "Et moi, c'est Bek !",
-    dialogueQuestion: "Et toi, tu t'appelles comment ?",
+    // 🐛 CORRIGÉ cette session (incohérence relevée par Raphaël) :
+    // "Et toi, tu t'appelles comment ?" rompait la structure "Moi,
+    // c'est .../Et moi, c'est ..." que Keb et Bek viennent d'utiliser
+    // pour se présenter — Bek posait sa question dans une forme
+    // grammaticale complètement différente. Alignée sur le même patron
+    // elliptique ("Et toi, c'est... ?"), repris ensuite par le préfixe du
+    // champ de saisie du nom (voir labelPrefixeNom/PREFIXE_NOM_FR plus
+    // bas) : l'élève complète littéralement la même phrase que Bek vient
+    // d'entamer.
+    dialogueQuestion: "Et toi, c'est\u2026\u00A0?",
     // 🆕 v3
     labelTraduirePhrase: 'Translate the sentence',
     labelMasquerTraduction: 'Hide translation',
     noteAjoutSac: "Tap a word to see its translation — it's added to your bag for now.",
-    labelPrefixeNom: 'My name is',
-    labelChampNom: '...',
+    // 🐛 CORRIGÉ cette session : labelPrefixeNom (retiré d'ici) était
+    // traduit dans la langue de l'élève, ce qui rompait la continuité
+    // avec les répliques françaises de Keb/Bek qui précèdent — voir
+    // PREFIXE_NOM_FR (toujours en français) plus haut dans le fichier,
+    // qui le remplace. Les traductions existantes de cette clé dans
+    // index.html restent inertes mais inoffensives.
+    // labelChampNom valait "..." (jamais un vrai texte) — repli anglais
+    // réel maintenant, comme le reste de ce dictionnaire.
+    labelChampNom: 'your first name',
     labelValider: 'OK',
     erreurVide: 'Please type your name.',
     erreurTropCourt: 'That name seems too short.',
@@ -285,7 +301,9 @@ const KebBekIdentite = (function () {
     // illustrations, voir IMAGES_DON_SAC plus bas). Chrome
     // d'accessibilité, traduisible normalement (repli anglais ici).
     altDonSacQuestion: 'Keb asks if you are ready',
-    altDonSacPresque: 'Bek remembers the bag'
+    altDonSacPresque: 'Bek remembers the bag',
+    altDonSacRealise: 'Keb suddenly remembers something',
+    altDonSacPart: 'Keb runs off to get the bag'
   };
 
   function texte(options, cle) {
@@ -339,7 +357,11 @@ const KebBekIdentite = (function () {
     // ici !" + mécanisme du double-tap, "tu es prêt/prête !") en attente
     // de leurs illustrations — voir note détaillée sur IMAGES_DON_SAC.
     donSacQuestion: 'images/accueil/index_bonomes_keb_bek_il-elle_est_pret-e_01.webp',
-    donSacPresque: 'images/accueil/index_bonomes_keb_bek_presque_01.webp'
+    donSacPresque: 'images/accueil/index_bonomes_keb_bek_presque_01.webp',
+    // 🆕 Réplique 3 ("Oh ! Oui !") — 2 images fournies cette session
+    // (Keb réalise, puis part chercher le sac), voir IMAGES_DON_SAC.
+    donSacRealise: 'images/accueil/index_bonomes_keb_bek_cest-vrai_01.webp',
+    donSacPart: 'images/accueil/index_bonomes_keb_bek_keb_part_01.webp'
   };
 
   function image(options, cle) {
@@ -356,6 +378,15 @@ const KebBekIdentite = (function () {
     fille: 'Une fille',
     femme: 'Une femme'
   };
+
+  // 🆕 Préfixe du champ de saisie du nom (voir lancerSaisieNom) —
+  // TOUJOURS en français, même principe que VOCABULAIRE_GENRE ci-dessus :
+  // l'élève complète littéralement la phrase que Bek vient d'entamer
+  // ("Et toi, c'est... ?", voir dialogueQuestion), donc "Moi, c'est"
+  // reste en français peu importe la langue de l'interface, contrairement
+  // à l'ancien labelPrefixeNom (traduit, retiré — voir note dans
+  // lancerSaisieNom).
+  const PREFIXE_NOM_FR = "Moi, c'est";
 
   // ---------- Répliques fixes de la nouvelle étape "Enchanté(e)"
   // (dialogue fourni par Raphaël) — TOUJOURS en français, même principe
@@ -389,7 +420,10 @@ const KebBekIdentite = (function () {
     // pas encore ajoutées — en attente des illustrations correspondantes.
     donSacQuestionM: 'Bon\u00A0! Il est prêt\u00A0?',
     donSacQuestionF: 'Bon\u00A0! Elle est prête\u00A0?',
-    donSacPresque: 'Presque\u00A0! Le sac\u00A0!'
+    donSacPresque: 'Presque\u00A0! Le sac\u00A0!',
+    // 🆕 Réplique 3 — même texte affiché sur les 2 images de ce groupe
+    // (Keb réalise, puis part), voir IMAGES_DON_SAC/construireFramesDonSac.
+    donSacOhOui: 'Oh\u00A0! Oui\u00A0!'
   };
 
   function remplacerPrenom(texteBrut, prenom) {
@@ -428,7 +462,8 @@ const KebBekIdentite = (function () {
     // Elle est prêt(e)\u00A0?"), Bek répond ("Presque\u00A0! Le sac\u00A0!").
     donSacQuestionM: 'keb',
     donSacQuestionF: 'keb',
-    donSacPresque: 'bek'
+    donSacPresque: 'bek',
+    donSacOhOui: 'keb'
   };
   function locuteurDeDialogue(dialogueCle) {
     if (LOCUTEURS_EXCEPTIONS[dialogueCle] !== undefined) return LOCUTEURS_EXCEPTIONS[dialogueCle];
@@ -910,14 +945,34 @@ const KebBekIdentite = (function () {
       const ligne = document.createElement('div');
       ligne.className = 'iden-ligne-nom';
 
+      // 🐛 CORRIGÉ cette session (demande de Raphaël, suite à la même
+      // incohérence relevée sur dialogueQuestion ci-dessus) : le préfixe
+      // était traduit dans la langue de l'élève ("My name is"/"Me
+      // llamo"/etc. selon options.textes), ce qui rompait la continuité
+      // avec "Moi, c'est Keb"/"Et moi, c'est Bek"/"Et toi, c'est... ?" —
+      // trois répliques en français que l'élève vient de lire. Le champ
+      // de saisie continue maintenant littéralement la même phrase que
+      // Bek vient d'entamer, donc TOUJOURS en français, peu importe la
+      // langue de l'interface — même principe que VOCABULAIRE_GENRE plus
+      // haut dans le fichier (jamais passé par texte()/options.textes).
+      // labelPrefixeNom (dans TEXTES_PAR_DEFAUT/options.textes) n'est
+      // donc plus consulté ici ; les traductions existantes de cette clé
+      // dans index.html restent inertes (aucun mal à les laisser, mais
+      // elles ne servent plus à rien pour ce champ précis).
       const prefixe = document.createElement('span');
       prefixe.className = 'iden-prefixe-nom';
-      prefixe.textContent = texte(options, 'labelPrefixeNom');
+      prefixe.textContent = PREFIXE_NOM_FR;
       ligne.appendChild(prefixe);
 
       const champ = document.createElement('input');
       champ.type = 'text';
       champ.className = 'iden-champ-nom';
+      // 🐛 CORRIGÉ cette session : labelChampNom valait "..." partout
+      // (jamais un vrai texte traduit) — remplacé par une vraie invite
+      // ("ton prénom"/"your first name"/etc.), CETTE FOIS bien traduite
+      // dans la langue de l'élève (contrairement au préfixe ci-dessus,
+      // qui reste toujours en français) : c'est un indice d'interface
+      // adressé à l'élève, pas une réplique des personnages.
       champ.placeholder = texte(options, 'labelChampNom');
       champ.autocomplete = 'off';
       champ.spellcheck = false;
@@ -1551,7 +1606,8 @@ const KebBekIdentite = (function () {
     // Raphaël (7 répliques) :
     //   1. Keb : "Bon ! Il est prêt ?" / "Bon ! Elle est prête ?"
     //   2. Bek : "Presque ! Le sac !"
-    //   3. Keb : "Oh ! Oui !" (part chercher le sac)
+    //   3. Keb : "Oh ! Oui !" (réalise, puis part chercher le sac —
+    //      2 images pour CETTE MÊME réplique, voir plus bas)
     //   4. Keb revient avec le sac (pas de nouvelle réplique)
     //   5. Keb : "Tiens ! C'est pour toi !"
     //   6. Bek (pointe un mot) : "Clique deux fois ici !" — enseigne le
@@ -1559,24 +1615,69 @@ const KebBekIdentite = (function () {
     //      définitivement (voir AJOUT_AUTOMATIQUE_TEMPORAIRE en tête de
     //      fichier — à désactiver une fois cette étape construite).
     //   7. Bek : "Voilà ! Maintenant, tu es prêt/prête !"
-    // 🚧 SEULES les répliques 1 et 2 sont câblées ci-dessous — Raphaël
-    // prépare encore les illustrations des répliques 3 à 7. IMAGES_DON_SAC
-    // est volontairement écrit pour qu'il suffise d'ajouter des entrées à
-    // ce tableau (+ leurs clés dans IMAGES_PAR_DEFAUT/DIALOGUES_FIXES/
-    // LOCUTEURS_EXCEPTIONS plus haut) quand elles seront prêtes — rien
-    // d'autre à restructurer. avancerDonSac() ci-dessous ne fait
-    // VOLONTAIREMENT rien de plus une fois la dernière image DISPONIBLE
-    // atteinte (jamais d'appel prématuré à callbacks.onComplet, qui doit
-    // attendre la vraie fin de cette scène, pas encore construite).
+    // 🚧 SEULES les répliques 1 à 3 sont câblées ci-dessous — Raphaël
+    // prépare encore les illustrations des répliques 4 à 7.
+    //
+    // 🆕 IMAGES_DON_SAC accepte maintenant deux formes d'entrée :
+    //   - { cle, altCle, dialogueCle(M/F) } — une seule image, comme
+    //     avant (répliques 1 et 2).
+    //   - { cles: [...], altCles: [...], dialogueCle } — PLUSIEURS
+    //     images pour UNE SEULE réplique (voir réplique 3 : Keb réalise
+    //     "Oh ! Oui !" puis part chercher le sac — deux images, mais un
+    //     seul texte affiché sur les deux, MÊME une fois Keb hors cadre
+    //     sur la 2e, comme demandé explicitement par Raphaël). La
+    //     transition entre les images d'un même groupe avance TOUTE
+    //     SEULE après DELAI_AUTO_DON_SAC, mais reste aussi tapable/
+    //     cliquable à tout moment comme le reste de la scène — l'un
+    //     n'empêche pas l'autre, ça ne fait que gagner du temps à qui ne
+    //     tape pas. construireFramesDonSac() ci-dessous aplatit les deux
+    //     formes en une seule liste de "frames" pour que la navigation
+    //     (avancer/reculer/chevrons) n'ait qu'un seul type d'objet à
+    //     traiter, peu importe le nombre d'images par réplique.
+    const DELAI_AUTO_DON_SAC = 3000;
     const IMAGES_DON_SAC = [
       { cle: 'donSacQuestion', altCle: 'altDonSacQuestion', dialogueCleM: 'donSacQuestionM', dialogueCleF: 'donSacQuestionF' },
-      { cle: 'donSacPresque', altCle: 'altDonSacPresque', dialogueCle: 'donSacPresque' }
-      // 🚧 À AJOUTER ICI dès que les illustrations 3 à 7 sont fournies.
+      { cle: 'donSacPresque', altCle: 'altDonSacPresque', dialogueCle: 'donSacPresque' },
+      { cles: ['donSacRealise', 'donSacPart'], altCles: ['altDonSacRealise', 'altDonSacPart'], dialogueCle: 'donSacOhOui' }
+      // 🚧 À AJOUTER ICI dès que les illustrations 4 à 7 sont fournies.
     ];
 
     function dialogueCleDonSac(entree, s) {
       if (entree.dialogueCle) return entree.dialogueCle;
       return (s.genre === 'f') ? entree.dialogueCleF : entree.dialogueCleM;
+    }
+
+    // Aplatit IMAGES_DON_SAC (entrées à 1 ou plusieurs images) en une
+    // liste plate de frames { cle, altCle, dialogueCle(M/F), auto } —
+    // "auto" = true seulement pour une frame qui doit enchaîner TOUTE
+    // SEULE vers la suivante après un délai (toutes les frames d'un
+    // groupe SAUF la dernière).
+    function construireFramesDonSac() {
+      const frames = [];
+      IMAGES_DON_SAC.forEach(function (entree) {
+        if (entree.cles) {
+          entree.cles.forEach(function (cle, i) {
+            frames.push({
+              cle: cle,
+              altCle: entree.altCles[i],
+              dialogueCle: entree.dialogueCle,
+              dialogueCleM: entree.dialogueCleM,
+              dialogueCleF: entree.dialogueCleF,
+              auto: i < entree.cles.length - 1
+            });
+          });
+        } else {
+          frames.push({
+            cle: entree.cle,
+            altCle: entree.altCle,
+            dialogueCle: entree.dialogueCle,
+            dialogueCleM: entree.dialogueCleM,
+            dialogueCleF: entree.dialogueCleF,
+            auto: false
+          });
+        }
+      });
+      return frames;
     }
 
     function lancerRemiseSac(s) {
@@ -1586,22 +1687,26 @@ const KebBekIdentite = (function () {
       indice.style.display = '';
       indice.textContent = texte(options, 'introIndiceTap');
 
+      const frames = construireFramesDonSac();
+
       Array.from(personnages.querySelectorAll('img.iden-img')).forEach(function (img) { img.remove(); });
-      const imagesDonSac = IMAGES_DON_SAC.map(function (et, i) {
+      const imagesDonSac = frames.map(function (f, i) {
         const img = document.createElement('img');
         img.className = 'iden-img' + (i === 0 ? ' actif' : '');
-        img.src = image(options, et.cle);
-        img.alt = texte(options, et.altCle);
+        img.src = image(options, f.cle);
+        img.alt = texte(options, f.altCle);
         personnages.insertBefore(img, bulle);
         return img;
       });
 
       let indexDonSac = 0;
+      let dialogueCleAffichee = null; // pour ne PAS rejouer/réinitialiser la bulle quand le texte ne change pas (voir plus bas)
+      let minuterieAutoDonSac = null;
 
       function majChevronGaucheDonSac() {
         chevronGauche.classList.toggle('iden-chevron-desactive', indexDonSac === 0);
       }
-      // 🚧 Tant que la suite (répliques 3+) n'est pas branchée, la
+      // 🚧 Tant que la suite (répliques 4+) n'est pas branchée, la
       // dernière image FOURNIE À CE JOUR ne mène nulle part encore — le
       // chevron droit se grise donc lui aussi une fois qu'on l'atteint,
       // plutôt que de suggérer qu'on peut continuer pour de vrai (même
@@ -1656,29 +1761,64 @@ const KebBekIdentite = (function () {
         majBoutonTraduirePhrase([dialogueCle]);
       }
 
+      // 🆕 N'affiche/ne réinitialise la bulle QUE si le texte change
+      // réellement d'une frame à l'autre — indispensable pour la
+      // réplique 3 (2 images, même dialogueCle) : sans ce garde-fou, la
+      // bulle se viderait puis se redessinerait à l'identique à chaque
+      // frame, provoquant un clignotement inutile (et perdant la
+      // traduction déjà affichée le cas échéant) alors que le texte reste
+      // MOT POUR MOT le même.
+      function afficherBulleDonSacSiChangee(dialogueCle) {
+        if (dialogueCle === dialogueCleAffichee) return;
+        dialogueCleAffichee = dialogueCle;
+        afficherBulleDonSac(dialogueCle);
+      }
+
+      function annulerMinuterieAutoDonSac() {
+        if (minuterieAutoDonSac) {
+          clearTimeout(minuterieAutoDonSac);
+          minuterieAutoDonSac = null;
+        }
+      }
+
+      // 🆕 Programme l'avance automatique si la frame CIBLE (celle qu'on
+      // vient d'afficher) le demande (frames[i].auto === true) — annulée
+      // et reprogrammée à chaque changement de frame, dans un sens comme
+      // dans l'autre, pour ne jamais avoir deux minuteries actives en
+      // même temps ni en laisser une survivre après un tap manuel.
+      function programmerAutoDonSacSiBesoin() {
+        annulerMinuterieAutoDonSac();
+        if (!frames[indexDonSac].auto) return;
+        minuterieAutoDonSac = setTimeout(function () {
+          minuterieAutoDonSac = null;
+          avancerDonSac();
+        }, DELAI_AUTO_DON_SAC);
+      }
+
+      function allerAFrameDonSac(nouvelIndex) {
+        imagesDonSac[indexDonSac].classList.remove('actif');
+        indexDonSac = nouvelIndex;
+        imagesDonSac[indexDonSac].classList.add('actif');
+        afficherBulleDonSacSiChangee(dialogueCleDonSac(frames[indexDonSac], s));
+        majChevronGaucheDonSac();
+        majChevronDroitDonSac();
+        programmerAutoDonSacSiBesoin();
+      }
+
       function avancerDonSac() {
         if (indexDonSac >= imagesDonSac.length - 1) {
           // 🚧 Suite pas encore construite (voir notes ci-dessus) : on ne
           // fait rien de plus ici plutôt que d'appeler callbacks.onComplet
           // prématurément.
+          annulerMinuterieAutoDonSac();
           return;
         }
-        imagesDonSac[indexDonSac].classList.remove('actif');
-        indexDonSac++;
-        imagesDonSac[indexDonSac].classList.add('actif');
-        afficherBulleDonSac(dialogueCleDonSac(IMAGES_DON_SAC[indexDonSac], s));
-        majChevronGaucheDonSac();
-        majChevronDroitDonSac();
+        allerAFrameDonSac(indexDonSac + 1);
       }
 
       function reculerDonSac() {
         if (indexDonSac === 0) return;
-        imagesDonSac[indexDonSac].classList.remove('actif');
-        indexDonSac--;
-        imagesDonSac[indexDonSac].classList.add('actif');
-        afficherBulleDonSac(dialogueCleDonSac(IMAGES_DON_SAC[indexDonSac], s));
-        majChevronGaucheDonSac();
-        majChevronDroitDonSac();
+        allerAFrameDonSac(indexDonSac - 1);
       }
 
       etapeScene = 'dialogue';
@@ -1686,7 +1826,8 @@ const KebBekIdentite = (function () {
       reculerActif = reculerDonSac;
       majChevronGaucheDonSac();
       majChevronDroitDonSac();
-      afficherBulleDonSac(dialogueCleDonSac(IMAGES_DON_SAC[0], s));
+      afficherBulleDonSacSiChangee(dialogueCleDonSac(frames[0], s));
+      programmerAutoDonSacSiBesoin();
       personnages.focus();
     }
   }

@@ -318,7 +318,17 @@ const KebBekIdentite = (function () {
     // reste toujours en français).
     debloqueTitre: 'Item unlocked!',
     debloqueNom: 'The first bag',
-    altDebloqueSac: 'The backpack, glowing and floating'
+    altDebloqueSac: 'The backpack, glowing and floating',
+    // 🆕 Fiche "objet" (façon jeu vidéo) affichée au survol/tap du sac une
+    // fois posé en haut à droite — remplace l'ancien plan de répliques 6-7
+    // (dialogue Keb/Bek expliquant le mécanisme) : chrome d'interface,
+    // traduisible normalement dans la langue de l'apprenant (PAS du
+    // français figé comme DIALOGUES_FIXES). Voir afficherCarteSacUneFois/
+    // creerSacBoutonSiAbsent plus bas.
+    sacCarteTitre: 'Your backpack',
+    sacCarteLigneMots: 'Double-tap (or double-click) a word to store it here.',
+    sacCarteLigneDejaSauvegardes: 'Good news: the words you already touched are already inside!',
+    sacCarteLigneObjets: 'It will also hold objects, secret codes, and surprises to unlock.'
   };
 
   function texte(options, cle) {
@@ -1729,6 +1739,16 @@ const KebBekIdentite = (function () {
     //     que l'élève a déjà navigué ailleurs.
     const DELAI_AUTO_DON_SAC = 3000;
     const DELAI_RETARD_DON_SAC = 1000; // « une seconde », demandé par Raphaël pour Bek qui réagit après Keb sur la même image (réplique 4)
+    // 🆕 Scène de déblocage du sac (voir lancerDeblocageSac plus bas) —
+    // DELAI_VOL_SAC doit correspondre à la durée de l'animation CSS
+    // .iden-debloque-vol (transition transform/opacity) : un décalage entre
+    // les deux ferait apparaître #sacBouton avant/après que l'image ait
+    // fini de "voler" jusqu'au coin. DELAI_CARTE_AUTO_SAC : combien de
+    // temps la fiche "objet" reste ouverte toute seule après l'atterrissage
+    // avant de se refermer — assez long pour lire les 3 lignes, pas assez
+    // pour agacer un élève qui voudrait continuer.
+    const DELAI_VOL_SAC = 700;
+    const DELAI_CARTE_AUTO_SAC = 4200;
     const IMAGES_DON_SAC = [
       { cle: 'donSacQuestion', altCle: 'altDonSacQuestion', dialogueCleM: 'donSacQuestionM', dialogueCleF: 'donSacQuestionF' },
       { cle: 'donSacPresque', altCle: 'altDonSacPresque', dialogueCle: 'donSacPresque' },
@@ -2043,11 +2063,15 @@ const KebBekIdentite = (function () {
 
       function avancerDonSac() {
         if (indexDonSac >= imagesDonSac.length - 1) {
-          // 🚧 Suite pas encore construite (voir notes ci-dessus) : on ne
-          // fait rien de plus ici plutôt que d'appeler callbacks.onComplet
-          // prématurément.
+          // 🆕 Fin de la remise du sac ("Tiens !") → enchaîne directement
+          // sur la scène de déblocage (révélation + vol vers le coin +
+          // atterrissage sur #sacBouton), voir lancerDeblocageSac plus bas.
+          // Remplace l'ancien plan de répliques 6-7 (dialogue expliquant le
+          // mécanisme) — voir décision de Raphaël : ce sera désormais la
+          // fiche "objet" au survol/tap du sac qui l'explique, pas Keb/Bek.
           annulerMinuterieAutoDonSac();
           annulerMinuterieRetardDonSac();
+          lancerDeblocageSac(s);
           return;
         }
         allerAFrameDonSac(indexDonSac + 1);
@@ -2067,6 +2091,202 @@ const KebBekIdentite = (function () {
       programmerAutoDonSacSiBesoin();
       programmerRetardDonSacSiBesoin();
       personnages.focus();
+    }
+
+    // ================================================================
+    // 🆕 Scène de déblocage du sac — jouée juste après la réplique 5
+    // ("Tiens !"). Remplace l'ancien plan de répliques 6-7 (dialogue
+    // Keb/Bek expliquant le double-tap) : décision de Raphaël, la
+    // fonction du sac s'apprend maintenant par une fiche "objet" façon
+    // jeu vidéo, au survol/tap du sac lui-même une fois posé en haut à
+    // droite — plus de texte de personnage à écrire/traduire pour ça.
+    //
+    // Déroulé en 4 temps, dans #idenPersonnages (zone persistante,
+    // comme le reste de la séquence) :
+    //   1. Révélation : l'image debloqueSac (déjà lumineuse) plein cadre,
+    //      halo qui pulse, léger flottement (voir .iden-img-debloque /
+    //      .iden-debloque-halo dans le CSS).
+    //   2. Titre épique superposé ("Objet débloqué !" / "Le premier
+    //      sac"), chrome d'interface traduisible (debloqueTitre/
+    //      debloqueNom), PAS une réplique de personnage.
+    //   3. Tap → déclencherVol() : l'image + le halo + le titre
+    //      s'animent vers le coin supérieur droit (.iden-debloque-vol),
+    //      DELAI_VOL_SAC ms plus tard on atterrit.
+    //   4. Atterrissage → creerSacBoutonSiAbsent() pose #sacBouton en
+    //      haut à droite (créé ici s'il n'existe pas encore — voir note
+    //      ⚠️ plus bas, sac-a-dos.js n'est toujours pas chargé dans
+    //      index.html à ce jour), petit éclat, puis la fiche "objet"
+    //      s'ouvre TOUTE SEULE une fois (DELAI_CARTE_AUTO_SAC, décidé
+    //      avec Raphaël) avant de se refermer — et reste disponible au
+    //      survol/tap volontaire par la suite. callbacks.onComplet(s)
+    //      est appelé à cet instant : la séquence identité proprement
+    //      dite se termine ici.
+    //
+    // ⚠️ #sacBouton créé ici est un repli AUTONOME (icône + fiche
+    // maison, id="sacBouton" pour rester compatible) — à remplacer par
+    // le vrai composant de sac-a-dos.js/.css le jour où ce fichier sera
+    // réellement chargé dans index.html (voir "reste à faire" du
+    // document de continuité) : creerSacBoutonSiAbsent() ne fait rien
+    // si un #sacBouton existe déjà sur la page, pour ne jamais entrer en
+    // conflit avec la vraie implémentation une fois branchée.
+    function lancerDeblocageSac(s) {
+      action.innerHTML = '';
+      chevron.style.display = 'none';
+      chevronGauche.style.display = 'none';
+      indice.style.display = '';
+      indice.textContent = texte(options, 'introIndiceTap');
+      btnTraduirePhrase.style.display = 'none';
+      tooltipPhrase.classList.remove('visible');
+
+      Array.from(personnages.querySelectorAll('img.iden-img')).forEach(function (img) { img.remove(); });
+      // Bulle volontairement vidée et laissée vide : ce n'est pas une
+      // réplique de personnage, le titre épique (voir plus bas) tient
+      // ce rôle visuellement à sa place.
+      bulle.innerHTML = '';
+
+      const imgSac = document.createElement('img');
+      imgSac.className = 'iden-img actif iden-img-debloque';
+      imgSac.id = 'idenImgDebloque';
+      imgSac.src = image(options, 'debloqueSac');
+      imgSac.alt = texte(options, 'altDebloqueSac');
+      personnages.insertBefore(imgSac, bulle);
+
+      const halo = document.createElement('div');
+      halo.className = 'iden-debloque-halo';
+      personnages.insertBefore(halo, imgSac);
+
+      const titreEpique = document.createElement('div');
+      titreEpique.className = 'iden-debloque-titre';
+      titreEpique.innerHTML =
+        '<span class="iden-debloque-sur">' + texte(options, 'debloqueTitre') + '</span>' +
+        '<span class="iden-debloque-nom">' + texte(options, 'debloqueNom') + '</span>';
+      personnages.appendChild(titreEpique);
+
+      function declencherVol() {
+        avancerActif = function () {}; // un seul tap déclenche le vol, jamais deux
+
+        // Position de DÉPART = position réelle actuelle de l'image à
+        // l'écran (peu importe où #idenPersonnages se trouve selon la
+        // taille de fenêtre) — figée en style inline avant de basculer en
+        // position:fixed, pour que le passage ne saute pas d'un endroit à
+        // l'autre au moment où la classe est ajoutée.
+        const rect = imgSac.getBoundingClientRect();
+        imgSac.style.animation = 'none'; // stoppe le flottement en boucle, la transition prend le relais
+        imgSac.style.top = rect.top + 'px';
+        imgSac.style.left = rect.left + 'px';
+        imgSac.style.width = rect.width + 'px';
+        imgSac.style.height = rect.height + 'px';
+        imgSac.classList.add('iden-debloque-vol-anim');
+        halo.classList.add('iden-debloque-halo-vol');
+        titreEpique.classList.add('iden-debloque-titre-sortie');
+
+        // Force le navigateur à peindre la position de départ ci-dessus
+        // AVANT de fixer la cible juste en dessous — sans ce reflow forcé,
+        // les deux jeux de valeurs pourraient être fusionnés en un seul
+        // batch de rendu et la transition n'aurait rien à animer.
+        void imgSac.offsetWidth;
+
+        // Position d'ARRIVÉE = coin supérieur droit, taille de
+        // #sacBouton (48px, voir .iden-sac-bouton) — même 26px de marge
+        // que .iden-sac-bouton dans le CSS, pour un atterrissage pile à
+        // l'endroit où le bouton va apparaître.
+        imgSac.style.top = '26px';
+        imgSac.style.left = 'calc(100% - 74px)';
+        imgSac.style.width = '48px';
+        imgSac.style.height = '48px';
+        imgSac.style.opacity = '0';
+
+        setTimeout(atterrir, DELAI_VOL_SAC);
+      }
+
+      function atterrir() {
+        imgSac.remove();
+        halo.remove();
+        titreEpique.remove();
+        indice.style.display = 'none';
+
+        creerSacBoutonSiAbsent();
+        const boutonSac = document.getElementById('sacBouton');
+        if (boutonSac) {
+          boutonSac.classList.add('iden-sac-eclat');
+          setTimeout(function () { boutonSac.classList.remove('iden-sac-eclat'); }, 700);
+        }
+        afficherCarteSacUneFois();
+
+        if (typeof callbacks.onComplet === 'function') callbacks.onComplet(s);
+      }
+
+      etapeScene = 'dialogue';
+      avancerActif = declencherVol;
+      reculerActif = function () {}; // rien à reculer, comme lancerReactionSilhouette
+      personnages.focus();
+    }
+
+    // Crée #sacBouton + sa fiche "objet" (#idenCarteSac) s'ils n'existent
+    // pas déjà sur la page — repli autonome, voir note ⚠️ au-dessus de
+    // lancerDeblocageSac. N'écrase jamais un #sacBouton déjà présent
+    // (venant d'une vraie intégration de sac-a-dos.js).
+    function creerSacBoutonSiAbsent() {
+      if (document.getElementById('sacBouton')) return;
+
+      const bouton = document.createElement('button');
+      bouton.type = 'button';
+      bouton.id = 'sacBouton';
+      bouton.className = 'iden-sac-bouton';
+      bouton.setAttribute('aria-label', texte(options, 'debloqueNom'));
+      const icone = document.createElement('img');
+      icone.className = 'iden-sac-bouton-icone';
+      icone.src = image(options, 'debloqueSac');
+      icone.alt = texte(options, 'altDebloqueSac');
+      bouton.appendChild(icone);
+      document.body.appendChild(bouton);
+
+      const carte = document.createElement('div');
+      carte.id = 'idenCarteSac';
+      carte.className = 'iden-sac-carte';
+      const titre = document.createElement('div');
+      titre.className = 'iden-sac-carte-titre';
+      titre.textContent = texte(options, 'sacCarteTitre');
+      carte.appendChild(titre);
+      const liste = document.createElement('ul');
+      liste.className = 'iden-sac-carte-liste';
+      [texte(options, 'sacCarteLigneMots'), texte(options, 'sacCarteLigneDejaSauvegardes'), texte(options, 'sacCarteLigneObjets')].forEach(function (ligne) {
+        const li = document.createElement('li');
+        li.textContent = ligne;
+        liste.appendChild(li);
+      });
+      carte.appendChild(liste);
+      document.body.appendChild(carte);
+
+      // Survol (souris) : ouvre/ferme directement. Tap (tactile, pas de
+      // survol) : bascule au clic sur le bouton, fermeture au tap
+      // ailleurs sur la page — même patron que le sélecteur de langue
+      // d'index.html (ouvrir/fermer + clic extérieur).
+      let carteOuverteManuel = false;
+      function ouvrirCarte() { carte.classList.add('visible'); }
+      function fermerCarte() { carte.classList.remove('visible'); carteOuverteManuel = false; }
+      bouton.addEventListener('mouseenter', ouvrirCarte);
+      bouton.addEventListener('mouseleave', function () { if (!carteOuverteManuel) fermerCarte(); });
+      bouton.addEventListener('click', function (e) {
+        e.stopPropagation();
+        if (carte.classList.contains('visible')) { fermerCarte(); }
+        else { ouvrirCarte(); carteOuverteManuel = true; }
+      });
+      document.addEventListener('click', function (e) {
+        if (carte.classList.contains('visible') && !bouton.contains(e.target) && !carte.contains(e.target)) fermerCarte();
+      });
+    }
+
+    // Ouvre la fiche "objet" une seule fois, toute seule, juste après
+    // l'atterrissage (décision de Raphaël : attire l'attention dessus
+    // sans attendre un survol/tap volontaire) puis se referme après
+    // DELAI_CARTE_AUTO_SAC — reste ensuite disponible normalement au
+    // survol/tap (voir creerSacBoutonSiAbsent ci-dessus).
+    function afficherCarteSacUneFois() {
+      const carte = document.getElementById('idenCarteSac');
+      if (!carte) return;
+      carte.classList.add('visible');
+      setTimeout(function () { carte.classList.remove('visible'); }, DELAI_CARTE_AUTO_SAC);
     }
   }
 

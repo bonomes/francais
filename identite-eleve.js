@@ -303,7 +303,8 @@ const KebBekIdentite = (function () {
     altDonSacQuestion: 'Keb asks if you are ready',
     altDonSacPresque: 'Bek remembers the bag',
     altDonSacRealise: 'Keb suddenly remembers something',
-    altDonSacPart: 'Keb runs off to get the bag'
+    altDonSacPart: 'Keb runs off to get the bag',
+    altDonSacRevient: 'Keb comes back with the bag'
   };
 
   function texte(options, cle) {
@@ -361,7 +362,9 @@ const KebBekIdentite = (function () {
     // 🆕 Réplique 3 ("Oh ! Oui !") — 2 images fournies cette session
     // (Keb réalise, puis part chercher le sac), voir IMAGES_DON_SAC.
     donSacRealise: 'images/accueil/index_bonomes_keb_bek_cest-vrai_01.webp',
-    donSacPart: 'images/accueil/index_bonomes_keb_bek_keb_part_01.webp'
+    donSacPart: 'images/accueil/index_bonomes_keb_bek_keb_part_01.webp',
+    // 🆕 Réplique 4 — Keb revient avec le sac (pas de nouvelle réplique).
+    donSacRevient: 'images/accueil/index_bonomes_keb_bek_keb_revient_sac_01.webp'
   };
 
   function image(options, cle) {
@@ -423,7 +426,13 @@ const KebBekIdentite = (function () {
     donSacPresque: 'Presque\u00A0! Le sac\u00A0!',
     // 🆕 Réplique 3 — même texte affiché sur les 2 images de ce groupe
     // (Keb réalise, puis part), voir IMAGES_DON_SAC/construireFramesDonSac.
-    donSacOhOui: 'Oh\u00A0! Oui\u00A0!'
+    donSacOhOui: 'Oh\u00A0! Oui\u00A0!',
+    // 🆕 Réplique 4 — Keb revient et annonce le sac, Bek réagit. Clés se
+    // terminant par "Keb"/"Bek" : pas besoin d'entrée dans
+    // LOCUTEURS_EXCEPTIONS, locuteurDeDialogue() les détecte déjà via son
+    // repli par défaut (/Bek$/, /Keb$/).
+    donSacRevientKeb: 'Voilà le sac\u00A0!',
+    donSacRevientBek: 'Génial\u00A0!'
   };
 
   function remplacerPrenom(texteBrut, prenom) {
@@ -1615,12 +1624,15 @@ const KebBekIdentite = (function () {
     //      définitivement (voir AJOUT_AUTOMATIQUE_TEMPORAIRE en tête de
     //      fichier — à désactiver une fois cette étape construite).
     //   7. Bek : "Voilà ! Maintenant, tu es prêt/prête !"
-    // 🚧 SEULES les répliques 1 à 3 sont câblées ci-dessous — Raphaël
-    // prépare encore les illustrations des répliques 4 à 7.
+    // 🚧 SEULES les répliques 1 à 4 sont câblées ci-dessous — Raphaël
+    // prépare encore les illustrations des répliques 5 à 7.
     //
     // 🆕 IMAGES_DON_SAC accepte maintenant deux formes d'entrée :
     //   - { cle, altCle, dialogueCle(M/F) } — une seule image, comme
-    //     avant (répliques 1 et 2).
+    //     avant (répliques 1 et 2). dialogueCle: null (explicitement,
+    //     voir réplique 4) signale une image SANS texte parlé — la bulle
+    //     reste vide (voir afficherBulleDonSac plus bas), plutôt que
+    //     d'essayer d'afficher une clé qui n'existe pas.
     //   - { cles: [...], altCles: [...], dialogueCle } — PLUSIEURS
     //     images pour UNE SEULE réplique (voir réplique 3 : Keb réalise
     //     "Oh ! Oui !" puis part chercher le sac — deux images, mais un
@@ -1638,12 +1650,25 @@ const KebBekIdentite = (function () {
     const IMAGES_DON_SAC = [
       { cle: 'donSacQuestion', altCle: 'altDonSacQuestion', dialogueCleM: 'donSacQuestionM', dialogueCleF: 'donSacQuestionF' },
       { cle: 'donSacPresque', altCle: 'altDonSacPresque', dialogueCle: 'donSacPresque' },
-      { cles: ['donSacRealise', 'donSacPart'], altCles: ['altDonSacRealise', 'altDonSacPart'], dialogueCle: 'donSacOhOui' }
-      // 🚧 À AJOUTER ICI dès que les illustrations 4 à 7 sont fournies.
+      { cles: ['donSacRealise', 'donSacPart'], altCles: ['altDonSacRealise', 'altDonSacPart'], dialogueCle: 'donSacOhOui' },
+      // 🆕 CORRIGÉ cette session (Raphaël a finalement voulu du dialogue
+      // ici plutôt qu'un silence) : dialogueCle accepte maintenant aussi
+      // un TABLEAU de clés — Keb ET Bek parlent l'un après l'autre sur
+      // la même image (voir DIALOGUES_FIXES/afficherBulleDonSac plus
+      // bas), même mécanisme que la première image de "Enchanté(e)".
+      { cle: 'donSacRevient', altCle: 'altDonSacRevient', dialogueCle: ['donSacRevientKeb', 'donSacRevientBek'] }
+      // 🚧 À AJOUTER ICI dès que les illustrations 5 à 7 sont fournies.
     ];
 
+    // 🐛 CORRIGÉ cette session : `if (entree.dialogueCle)` (test de
+    // vérité) traitait dialogueCle: null comme "absent" et retombait sur
+    // dialogueCleM/F (tous deux undefined pour la réplique 4, qui n'en a
+    // pas) — DIALOGUES_FIXES[undefined] aurait fait planter
+    // afficherBulleDonSac(). `!== undefined` distingue maintenant
+    // correctement "clé absente, résoudre M/F" de "null explicite, pas
+    // de bulle du tout".
     function dialogueCleDonSac(entree, s) {
-      if (entree.dialogueCle) return entree.dialogueCle;
+      if (entree.dialogueCle !== undefined) return entree.dialogueCle;
       return (s.genre === 'f') ? entree.dialogueCleF : entree.dialogueCleM;
     }
 
@@ -1700,7 +1725,14 @@ const KebBekIdentite = (function () {
       });
 
       let indexDonSac = 0;
-      let dialogueCleAffichee = null; // pour ne PAS rejouer/réinitialiser la bulle quand le texte ne change pas (voir plus bas)
+      // Sentinelle volontairement `undefined` (pas `null`) : `null` est
+      // maintenant une valeur RÉELLE et légitime de dialogueCle (voir
+      // réplique 4, "pas de nouvelle réplique") — si la sentinelle valait
+      // aussi `null`, la toute première frame d'une future séquence qui
+      // commencerait par un silence serait jugée à tort "déjà affichée
+      // telle quelle" et ne vidangerait jamais la bulle héritée de
+      // l'étape précédente.
+      let dialogueCleAffichee; // pour ne PAS rejouer/réinitialiser la bulle quand le texte ne change pas (voir plus bas)
       let minuterieAutoDonSac = null;
 
       function majChevronGaucheDonSac() {
@@ -1725,40 +1757,83 @@ const KebBekIdentite = (function () {
       function afficherBulleDonSac(dialogueCle) {
         bulle.innerHTML = '';
         bulle.classList.remove('iden-bulle-ligne-bek', 'iden-bulle-ligne-keb');
-        const locuteur = locuteurDeDialogue(dialogueCle);
-        if (locuteur) bulle.classList.add('iden-bulle-ligne-' + locuteur);
-        const brut = remplacerPrenom(DIALOGUES_FIXES[dialogueCle], prenomChoisi || '');
-        const motsBrutSepares = String(brut).split(/\s+/).filter(Boolean);
-        const PONCTUATION_SEULE = /^[.,!?;:'"«»\u2026]+$/;
-        const mots = [];
-        motsBrutSepares.forEach(function (tok) {
-          if (PONCTUATION_SEULE.test(tok) && mots.length > 0) {
-            mots[mots.length - 1] += '\u00A0' + tok;
-          } else {
-            mots.push(tok);
-          }
-        });
-        mots.forEach(function (motBrut, idx) {
-          const span = document.createElement('span');
-          span.className = 'iden-mot';
-          span.textContent = motBrut + (idx < mots.length - 1 ? '\u00A0' : '');
-          const motNettoye = motBrut.replace(/^[\s.,!?;:'"«»\u2026]+|[\s.,!?;:'"«»\u2026]+$/g, '');
-          span.tabIndex = 0;
-          span.addEventListener('click', function (e) {
-            e.stopPropagation();
-            afficherTraductionMot(span, motNettoye);
-            if (AJOUT_AUTOMATIQUE_TEMPORAIRE) ajouterMotAuSac(span, motNettoye);
-          });
-          span.addEventListener('keydown', function (e) {
-            if (e.key === 'Enter' || e.key === ' ') {
-              e.preventDefault(); e.stopPropagation();
-              afficherTraductionMot(span, motNettoye);
-              if (AJOUT_AUTOMATIQUE_TEMPORAIRE) ajouterMotAuSac(span, motNettoye);
+        // Frame sans réplique (dialogueCle: null explicite) : bulle
+        // vide, pas de bouton "Traduire la phrase"
+        // (majBoutonTraduirePhrase([]) le masque déjà correctement,
+        // aucun texte à y proposer).
+        if (!dialogueCle) {
+          majBoutonTraduirePhrase([]);
+          return;
+        }
+        // 🆕 dialogueCle accepte maintenant soit une seule clé (string,
+        // comme avant), soit un TABLEAU de clés — voir réplique 4 : Keb
+        // ET Bek parlent l'un après l'autre sur la même image, même
+        // mécanisme que la première image de "Enchanté(e)"
+        // (afficherBulleEnchantes plus haut).
+        const cles = Array.isArray(dialogueCle) ? dialogueCle : [dialogueCle];
+
+        // Découpe une réplique en mots cliquables (traduction + ajout au
+        // sac), à l'intérieur du conteneur fourni — factorisé ici pour
+        // servir aussi bien au cas 1 réplique (spans directement dans
+        // #idenBulle) qu'au cas 2+ répliques (spans dans une
+        // .iden-bulle-ligne par réplique, voir plus bas).
+        function decouperEtAjouterMots(brut, conteneurCible) {
+          const motsBrutSepares = String(brut).split(/\s+/).filter(Boolean);
+          const PONCTUATION_SEULE = /^[.,!?;:'"«»\u2026]+$/;
+          const mots = [];
+          motsBrutSepares.forEach(function (tok) {
+            if (PONCTUATION_SEULE.test(tok) && mots.length > 0) {
+              mots[mots.length - 1] += '\u00A0' + tok;
+            } else {
+              mots.push(tok);
             }
           });
-          bulle.appendChild(span);
-        });
-        majBoutonTraduirePhrase([dialogueCle]);
+          mots.forEach(function (motBrut, idx) {
+            const span = document.createElement('span');
+            span.className = 'iden-mot';
+            span.textContent = motBrut + (idx < mots.length - 1 ? '\u00A0' : '');
+            const motNettoye = motBrut.replace(/^[\s.,!?;:'"«»\u2026]+|[\s.,!?;:'"«»\u2026]+$/g, '');
+            span.tabIndex = 0;
+            span.addEventListener('click', function (e) {
+              e.stopPropagation();
+              afficherTraductionMot(span, motNettoye);
+              if (AJOUT_AUTOMATIQUE_TEMPORAIRE) ajouterMotAuSac(span, motNettoye);
+            });
+            span.addEventListener('keydown', function (e) {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault(); e.stopPropagation();
+                afficherTraductionMot(span, motNettoye);
+                if (AJOUT_AUTOMATIQUE_TEMPORAIRE) ajouterMotAuSac(span, motNettoye);
+              }
+            });
+            conteneurCible.appendChild(span);
+          });
+        }
+
+        if (cles.length > 1) {
+          // Plusieurs répliques dans la même bulle — une ligne par
+          // réplique, colorée selon son locuteur (même patron que
+          // afficherBulleEnchantes).
+          cles.forEach(function (cle) {
+            const brut = remplacerPrenom(DIALOGUES_FIXES[cle], prenomChoisi || '');
+            const ligne = document.createElement('div');
+            const locuteur = locuteurDeDialogue(cle);
+            ligne.className = 'iden-bulle-ligne' + (locuteur ? ' iden-bulle-ligne-' + locuteur : '');
+            decouperEtAjouterMots(brut, ligne);
+            bulle.appendChild(ligne);
+          });
+        } else {
+          // Une seule réplique — spans directement dans #idenBulle,
+          // couleur du locuteur posée sur la bulle elle-même (comme
+          // avant, inchangé pour les répliques 1/2/3).
+          const seuleCle = cles[0];
+          const locuteur = locuteurDeDialogue(seuleCle);
+          if (locuteur) bulle.classList.add('iden-bulle-ligne-' + locuteur);
+          const brut = remplacerPrenom(DIALOGUES_FIXES[seuleCle], prenomChoisi || '');
+          decouperEtAjouterMots(brut, bulle);
+        }
+
+        majBoutonTraduirePhrase(cles);
       }
 
       // 🆕 N'affiche/ne réinitialise la bulle QUE si le texte change

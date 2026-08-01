@@ -1887,17 +1887,15 @@ const KebBekIdentite = (function () {
       function majChevronGaucheDonSac() {
         chevronGauche.classList.toggle('iden-chevron-desactive', indexDonSac === 0);
       }
-      // 🚧 Tant que la suite (répliques 6+) n'est pas branchée, la
-      // dernière image FOURNIE À CE JOUR ne mène nulle part encore — le
-      // chevron droit se grise donc lui aussi une fois qu'on l'atteint,
-      // plutôt que de suggérer qu'on peut continuer pour de vrai (même
-      // philosophie que .iden-silhouette-desactivee : visible, pas
-      // caché, pour que l'élève comprenne que ça ne bouge pas plutôt que
-      // de croire à un bug). À RETIRER dès que IMAGES_DON_SAC sera
-      // complété.
+      // 🆕 RETIRÉ le grisage sur la dernière image (voir ancien commentaire
+      // "🚧 Tant que la suite n'est pas branchée...") — avancerDonSac()
+      // enchaîne maintenant sur lancerDeblocageSac() une fois la dernière
+      // image atteinte, ce n'est donc plus un point mort. Le chevron droit
+      // reste actif jusqu'au bout de cette étape.
       function majChevronDroitDonSac() {
-        chevron.classList.toggle('iden-chevron-desactive', indexDonSac === imagesDonSac.length - 1);
+        chevron.classList.remove('iden-chevron-desactive');
       }
+
 
       // Même découpage mot-à-mot / mêmes écouteurs clic/clavier
       // (traduction + ajout au sac) que afficherBulle()/

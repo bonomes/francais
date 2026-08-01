@@ -296,15 +296,20 @@ const KebBekIdentite = (function () {
     altReactionHomme: 'Keb reacts: you are a man, respect!',
     altReactionFille: 'Bek reacts: you are a girl, yay!',
     altReactionFemme: 'Bek reacts: you are a woman, great!',
-    // 🆕 Scène de remise du sac (voir lancerRemiseSac) — SEULEMENT les
-    // 2 premières images à ce jour (les suivantes attendent leurs
-    // illustrations, voir IMAGES_DON_SAC plus bas). Chrome
-    // d'accessibilité, traduisible normalement (repli anglais ici).
+    // 🆕 Scène de remise du sac (voir lancerRemiseSac) — répliques 1 à 5
+    // illustrées à ce jour (6 et 7 attendent encore leurs illustrations,
+    // voir IMAGES_DON_SAC plus bas). Chrome d'accessibilité, traduisible
+    // normalement (repli anglais ici).
     altDonSacQuestion: 'Keb asks if you are ready',
     altDonSacPresque: 'Bek remembers the bag',
     altDonSacRealise: 'Keb suddenly remembers something',
     altDonSacPart: 'Keb runs off to get the bag',
-    altDonSacRevient: 'Keb comes back with the bag'
+    altDonSacRevient: 'Keb comes back with the bag',
+    // 🆕 Réplique 5 — Keb hands over the backpack ("Tiens ! C'est pour
+    // toi !", voir DIALOGUES_FIXES/IMAGES_DON_SAC plus bas). Deux images
+    // : Bek's anticipation, puis Keb actually handing it over.
+    altDonSacPourToi: 'Keb hands you the backpack',
+    altDonSacPourToi2: 'Keb gives you the backpack'
   };
 
   function texte(options, cle) {
@@ -353,10 +358,10 @@ const KebBekIdentite = (function () {
     reactionFille: 'images/accueil/index_bonomes_keb_bek_toi_fille_01.webp',
     reactionFemme: 'images/accueil/index_bonomes_keb_bek_toi_femme_01.webp',
     // 🆕 Scène de remise du sac (voir lancerRemiseSac / IMAGES_DON_SAC) —
-    // SEULEMENT les 2 premières images fournies à ce jour ; répliques 3 à
-    // 7 (Keb part chercher le sac, revient, "Tiens !", "Clique deux fois
-    // ici !" + mécanisme du double-tap, "tu es prêt/prête !") en attente
-    // de leurs illustrations — voir note détaillée sur IMAGES_DON_SAC.
+    // répliques 1 à 5 illustrées à ce jour ; répliques 6 et 7 ("Clique
+    // deux fois ici !" + mécanisme du double-tap, "tu es prêt/prête !")
+    // en attente de leurs illustrations — voir note détaillée sur
+    // IMAGES_DON_SAC.
     donSacQuestion: 'images/accueil/index_bonomes_keb_bek_il-elle_est_pret-e_01.webp',
     donSacPresque: 'images/accueil/index_bonomes_keb_bek_presque_01.webp',
     // 🆕 Réplique 3 ("Oh ! Oui !") — 2 images fournies cette session
@@ -364,7 +369,14 @@ const KebBekIdentite = (function () {
     donSacRealise: 'images/accueil/index_bonomes_keb_bek_cest-vrai_01.webp',
     donSacPart: 'images/accueil/index_bonomes_keb_bek_keb_part_01.webp',
     // 🆕 Réplique 4 — Keb revient avec le sac (pas de nouvelle réplique).
-    donSacRevient: 'images/accueil/index_bonomes_keb_bek_keb_revient_sac_01.webp'
+    donSacRevient: 'images/accueil/index_bonomes_keb_bek_keb_revient_sac_01.webp',
+    // 🆕 Réplique 5 — Keb tend le sac : "Tiens ! C'est pour toi !"
+    // (illustration fournie cette session par Raphaël).
+    donSacPourToi: 'images/accueil/index_bonomes_keb_bek_sac-pour-toi_01.webp',
+    // 🆕 2e image de la réplique 5 (fournie cette session) — utilisée
+    // pour la transition automatique qui ajoute la réplique de Keb
+    // sous celle de Bek (voir dialogueClesParFrame dans IMAGES_DON_SAC).
+    donSacPourToi2: 'images/accueil/index_bonomes_keb_bek_sac-pour-toi_02.webp'
   };
 
   function image(options, cle) {
@@ -432,7 +444,11 @@ const KebBekIdentite = (function () {
     // LOCUTEURS_EXCEPTIONS, locuteurDeDialogue() les détecte déjà via son
     // repli par défaut (/Bek$/, /Keb$/).
     donSacRevientKeb: 'Voilà le sac\u00A0!',
-    donSacRevientBek: 'Génial\u00A0!'
+    donSacRevientBek: 'Génial\u00A0!',
+    // 🆕 Réplique 5 — Keb tend le sac. Clé se terminant par "Keb" : même
+    // remarque que ci-dessus, locuteurDeDialogue() la détecte déjà via
+    // son repli par défaut, pas besoin d'exception.
+    donSacTiensKeb: "Tiens\u00A0! C'est pour toi\u00A0!"
   };
 
   function remplacerPrenom(texteBrut, prenom) {
@@ -1617,15 +1633,23 @@ const KebBekIdentite = (function () {
     //   2. Bek : "Presque ! Le sac !"
     //   3. Keb : "Oh ! Oui !" (réalise, puis part chercher le sac —
     //      2 images pour CETTE MÊME réplique, voir plus bas)
-    //   4. Keb revient avec le sac (pas de nouvelle réplique)
-    //   5. Keb : "Tiens ! C'est pour toi !"
+    //   4. Keb revient avec le sac et annonce : "Voilà le sac !"
+    //   5. 🆕 En 2 temps sur la même paire d'images (illustrations
+    //      fournies cette session) : Bek réagit d'abord seule
+    //      ("Génial !", réutilise donSacRevientBek — déplacée depuis la
+    //      réplique 4 ci-dessus, où elle était affichée en même temps
+    //      que la réplique de Keb) ; 2 secondes plus tard, transition
+    //      automatique vers la 2e image où Keb tend le sac et ajoute
+    //      "Tiens ! C'est pour toi !" SOUS la réplique de Bek, qui reste
+    //      affichée (voir dialogueClesParFrame dans IMAGES_DON_SAC plus
+    //      bas).
     //   6. Bek (pointe un mot) : "Clique deux fois ici !" — enseigne le
     //      VRAI double-tap ; c'est à partir d'ici que le mécanisme change
     //      définitivement (voir AJOUT_AUTOMATIQUE_TEMPORAIRE en tête de
     //      fichier — à désactiver une fois cette étape construite).
     //   7. Bek : "Voilà ! Maintenant, tu es prêt/prête !"
-    // 🚧 SEULES les répliques 1 à 4 sont câblées ci-dessous — Raphaël
-    // prépare encore les illustrations des répliques 5 à 7.
+    // 🚧 Répliques 1 à 5 câblées ci-dessous — 6 et 7 attendent encore
+    // leurs illustrations.
     //
     // 🆕 IMAGES_DON_SAC accepte maintenant deux formes d'entrée :
     //   - { cle, altCle, dialogueCle(M/F) } — une seule image, comme
@@ -1639,25 +1663,60 @@ const KebBekIdentite = (function () {
     //     seul texte affiché sur les deux, MÊME une fois Keb hors cadre
     //     sur la 2e, comme demandé explicitement par Raphaël). La
     //     transition entre les images d'un même groupe avance TOUTE
-    //     SEULE après DELAI_AUTO_DON_SAC, mais reste aussi tapable/
-    //     cliquable à tout moment comme le reste de la scène — l'un
-    //     n'empêche pas l'autre, ça ne fait que gagner du temps à qui ne
-    //     tape pas. construireFramesDonSac() ci-dessous aplatit les deux
-    //     formes en une seule liste de "frames" pour que la navigation
-    //     (avancer/reculer/chevrons) n'ait qu'un seul type d'objet à
-    //     traiter, peu importe le nombre d'images par réplique.
+    //     SEULE après DELAI_AUTO_DON_SAC (ou entree.delaiAuto, voir plus
+    //     bas), mais reste aussi tapable/cliquable à tout moment comme
+    //     le reste de la scène — l'un n'empêche pas l'autre, ça ne fait
+    //     que gagner du temps à qui ne tape pas. construireFramesDonSac()
+    //     ci-dessous aplatit les deux formes en une seule liste de
+    //     "frames" pour que la navigation (avancer/reculer/chevrons)
+    //     n'ait qu'un seul type d'objet à traiter, peu importe le nombre
+    //     d'images par réplique.
+    //   - 🆕 { cles: [...], dialogueClesParFrame: [[...], [...]] } — pour
+    //     un groupe où le texte GRANDIT d'une image à l'autre plutôt que
+    //     de rester identique (à la différence de la réplique 3
+    //     "Oh ! Oui !" ci-dessus) : dialogueClesParFrame[i] est le jeu de
+    //     clés CUMULATIF affiché sur l'image i. Voir réplique 5 plus bas
+    //     — 1ʳᵉ image : seule la réplique de Bek déjà connue (« Génial
+    //     ! ») ; 2 secondes plus tard (transition automatique), la 2ᵉ
+    //     image AJOUTE la réplique de Keb (« Tiens ! ») sous celle de
+    //     Bek, qui reste affichée — jamais remplacée. Priorité sur
+    //     dialogueCle simple si les deux sont fournis (ne devrait pas
+    //     arriver en pratique, mais garde le comportement prévisible).
     const DELAI_AUTO_DON_SAC = 3000;
     const IMAGES_DON_SAC = [
       { cle: 'donSacQuestion', altCle: 'altDonSacQuestion', dialogueCleM: 'donSacQuestionM', dialogueCleF: 'donSacQuestionF' },
       { cle: 'donSacPresque', altCle: 'altDonSacPresque', dialogueCle: 'donSacPresque' },
       { cles: ['donSacRealise', 'donSacPart'], altCles: ['altDonSacRealise', 'altDonSacPart'], dialogueCle: 'donSacOhOui' },
-      // 🆕 CORRIGÉ cette session (Raphaël a finalement voulu du dialogue
-      // ici plutôt qu'un silence) : dialogueCle accepte maintenant aussi
-      // un TABLEAU de clés — Keb ET Bek parlent l'un après l'autre sur
-      // la même image (voir DIALOGUES_FIXES/afficherBulleDonSac plus
-      // bas), même mécanisme que la première image de "Enchanté(e)".
-      { cle: 'donSacRevient', altCle: 'altDonSacRevient', dialogueCle: ['donSacRevientKeb', 'donSacRevientBek'] }
-      // 🚧 À AJOUTER ICI dès que les illustrations 5 à 7 sont fournies.
+      // 🆕 CORRIGÉ cette session : ne montre plus que la réplique de Keb
+      // (« Voilà le sac ! ») — la réaction de Bek (« Génial ! ») est
+      // déplacée sur la 1ʳᵉ image de la réplique 5 juste en dessous, où
+      // elle reste affichée pendant que celle de Keb (« Tiens ! ») vient
+      // s'y ajouter deux secondes plus tard. Toujours un TABLEAU à un
+      // seul élément (pas une simple string) : afficherBulleDonSac()
+      // n'a donc rien de spécial à prévoir pour ce cas.
+      { cle: 'donSacRevient', altCle: 'altDonSacRevient', dialogueCle: ['donSacRevientKeb'] },
+      // 🆕 Réplique 5 (illustrations fournies cette session, en 2 temps
+      // sur demande de Raphaël) — Bek réagit d'abord seule (réutilise
+      // « Génial ! », déjà déplacée depuis la réplique 4 ci-dessus) ;
+      // 2 secondes plus tard, transition automatique vers la 2e image où
+      // Keb tend le sac et ajoute « Tiens ! C'est pour toi ! » SOUS la
+      // réplique de Bek, qui reste visible (voir dialogueClesParFrame,
+      // et afficherBulleDonSac plus bas qui sait déjà afficher plusieurs
+      // répliques dans la même bulle — même mécanisme que la 1ʳᵉ image
+      // de "Enchanté(e)", simplement étalé dans le temps ici plutôt que
+      // montré d'un coup).
+      {
+        cles: ['donSacPourToi', 'donSacPourToi2'],
+        altCles: ['altDonSacPourToi', 'altDonSacPourToi2'],
+        dialogueClesParFrame: [
+          ['donSacRevientBek'],
+          ['donSacRevientBek', 'donSacTiensKeb']
+        ],
+        delaiAuto: 2000 // « deux secondes », explicitement demandé par Raphaël pour CETTE transition (distincte de DELAI_AUTO_DON_SAC/3000 ailleurs)
+      }
+      // 🚧 À AJOUTER ICI dès que les illustrations 6 et 7 sont fournies
+      // (Bek enseigne le double-tap, puis clôture accordée "tu es
+      // prêt/prête !").
     ];
 
     // 🐛 CORRIGÉ cette session : `if (entree.dialogueCle)` (test de
@@ -1673,10 +1732,12 @@ const KebBekIdentite = (function () {
     }
 
     // Aplatit IMAGES_DON_SAC (entrées à 1 ou plusieurs images) en une
-    // liste plate de frames { cle, altCle, dialogueCle(M/F), auto } —
-    // "auto" = true seulement pour une frame qui doit enchaîner TOUTE
+    // liste plate de frames { cle, altCle, dialogueCle(M/F), auto, delai }
+    // — "auto" = true seulement pour une frame qui doit enchaîner TOUTE
     // SEULE vers la suivante après un délai (toutes les frames d'un
-    // groupe SAUF la dernière).
+    // groupe SAUF la dernière). "delai" reprend entree.delaiAuto si
+    // fourni, sinon retombe sur DELAI_AUTO_DON_SAC (voir
+    // programmerAutoDonSacSiBesoin plus bas).
     function construireFramesDonSac() {
       const frames = [];
       IMAGES_DON_SAC.forEach(function (entree) {
@@ -1685,10 +1746,16 @@ const KebBekIdentite = (function () {
             frames.push({
               cle: cle,
               altCle: entree.altCles[i],
-              dialogueCle: entree.dialogueCle,
+              // 🆕 dialogueClesParFrame (si présent) prime sur dialogueCle
+              // simple — un jeu de clés CUMULATIF différent par image,
+              // plutôt qu'un seul texte partagé identique sur tout le
+              // groupe (voir réplique 5, comparé à la réplique 3
+              // "Oh ! Oui !" qui n'utilise que dialogueCle).
+              dialogueCle: entree.dialogueClesParFrame ? entree.dialogueClesParFrame[i] : entree.dialogueCle,
               dialogueCleM: entree.dialogueCleM,
               dialogueCleF: entree.dialogueCleF,
-              auto: i < entree.cles.length - 1
+              auto: i < entree.cles.length - 1,
+              delai: entree.delaiAuto
             });
           });
         } else {
@@ -1698,7 +1765,8 @@ const KebBekIdentite = (function () {
             dialogueCle: entree.dialogueCle,
             dialogueCleM: entree.dialogueCleM,
             dialogueCleF: entree.dialogueCleF,
-            auto: false
+            auto: false,
+            delai: entree.delaiAuto
           });
         }
       });
@@ -1738,7 +1806,7 @@ const KebBekIdentite = (function () {
       function majChevronGaucheDonSac() {
         chevronGauche.classList.toggle('iden-chevron-desactive', indexDonSac === 0);
       }
-      // 🚧 Tant que la suite (répliques 4+) n'est pas branchée, la
+      // 🚧 Tant que la suite (répliques 6+) n'est pas branchée, la
       // dernière image FOURNIE À CE JOUR ne mène nulle part encore — le
       // chevron droit se grise donc lui aussi une fois qu'on l'atteint,
       // plutôt que de suggérer qu'on peut continuer pour de vrai (même
@@ -1867,7 +1935,7 @@ const KebBekIdentite = (function () {
         minuterieAutoDonSac = setTimeout(function () {
           minuterieAutoDonSac = null;
           avancerDonSac();
-        }, DELAI_AUTO_DON_SAC);
+        }, frames[indexDonSac].delai || DELAI_AUTO_DON_SAC);
       }
 
       function allerAFrameDonSac(nouvelIndex) {

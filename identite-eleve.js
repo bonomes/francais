@@ -536,7 +536,14 @@ const KebBekIdentite = (function () {
     // est la forme tutoiement (informelle) de l'impératif d'"essayer" —
     // voir MOTS_INFORMELS, qui le signale dans la bulle de traduction et
     // le sac, plus bas dans le .js.
-    essaieBek: 'Essaie\u00A0!'
+    essaieBek: 'Essaie\u00A0!',
+    // 🆕 Réplique de RÉUSSITE (voir reussirEssaie plus bas) — remplace
+    // "Essaie !" une fois le double-tap réussi, en même temps que l'image
+    // bascule sur tadam (voir image(options, 'tadam')). Dite par KEB
+    // (suffixe "Keb" → locuteurDeDialogue() l'attribue automatiquement),
+    // pas Bek — précision explicite de Raphaël, qui avait déjà mentionné
+    // ce texte lors d'une session antérieure.
+    tadamKeb: 'Tadam\u00A0!'
   };
 
   function remplacerPrenom(texteBrut, prenom) {
@@ -897,7 +904,17 @@ const KebBekIdentite = (function () {
     const DELAI_FERMETURE_SAC_APRES_RECEPTION = 350;
     function animerMotVersSac(span) {
       const bouton = document.getElementById('sacBouton');
-      if (!bouton || bouton.offsetParent === null) return; // pas de sac, ou sac pas encore révélé sur cette page
+      // 🐛 CORRIGÉ (signalé par Raphaël — "j'ai cliqué sur essaie et il
+      // n'y a eu aucun effet") : `bouton.offsetParent === null` est
+      // TOUJOURS vrai pour un élément `position: fixed` (comme
+      // #sacBouton, voir sac-a-dos.css), peu importe qu'il soit visible
+      // ou non — ce n'est pas un hasard de bug d'affichage, c'est le
+      // comportement standard des navigateurs pour ce type de
+      // positionnement. Cette fonction sortait donc TOUJOURS ici,
+      // silencieusement, et rien ne s'animait jamais. Remplacé par un
+      // vrai test de visibilité via getComputedStyle (fonctionne quel
+      // que soit le schéma de positionnement).
+      if (!bouton || getComputedStyle(bouton).display === 'none') return; // pas de sac, ou sac pas encore révélé sur cette page
       const depart = span.getBoundingClientRect();
       const arrivee = bouton.getBoundingClientRect();
       const clone = document.createElement('span');
@@ -2573,6 +2590,20 @@ const KebBekIdentite = (function () {
         fermerCarteSac(); // le sac qui s'ouvre pour de vrai (voir animerMotVersSac) démontre le geste, la fiche n'a plus besoin de rester
         img.src = image(options, 'tadam');
         img.alt = texte(options, 'altTadam');
+        // 🐛 CORRIGÉ (signalé par Raphaël) : l'image basculait déjà sur
+        // "tadam" mais la bulle gardait le texte "Essaie !" affiché — Keb
+        // ne disait jamais réellement "Tadam !" à l'écran. La bulle est
+        // maintenant reconstruite avec DIALOGUES_FIXES.tadamKeb, même
+        // couleur de locuteur que le reste (locuteurDeDialogue), à la
+        // place du mot "Essaie" (qui n'a plus lieu d'être cliquable une
+        // fois la scène terminée).
+        bulle.innerHTML = '';
+        bulle.classList.remove('iden-bulle-ligne-bek', 'iden-bulle-ligne-keb');
+        const locuteurTadam = locuteurDeDialogue('tadamKeb');
+        const ligneTadam = document.createElement('div');
+        ligneTadam.className = 'iden-bulle-ligne' + (locuteurTadam ? ' iden-bulle-ligne-' + locuteurTadam : '');
+        ligneTadam.textContent = DIALOGUES_FIXES.tadamKeb;
+        bulle.appendChild(ligneTadam);
         synchroniserMotsToucheSacUneFois();
         indice.textContent = texte(options, 'introIndiceTap');
         avancerActif = function () {

@@ -122,9 +122,19 @@
         fois ce mécanisme enseigné ailleurs — voir le drapeau
         AJOUT_AUTOMATIQUE_TEMPORAIRE ci-dessous, pensé pour être basculé à
         false ce jour-là sans autre chirurgie du fichier.
+     6. 🆕 CORRIGÉ cette session : ce jour est arrivé — voir la scène
+        "Essaie !" (lancerEssaieDoubleTap, jouée juste après l'atterrissage
+        du sac) qui enseigne et fait PRATIQUER le vrai double-tap/
+        double-clic. AJOUT_AUTOMATIQUE_TEMPORAIRE bascule donc à `false`
+        ci-dessous, exactement comme annoncé — le simple clic sur un mot
+        (n'importe où dans la séquence, y compris les répliques déjà vues
+        plus haut) n'ajoute plus rien au sac, seul le double-tap/
+        double-clic le fait désormais (voir afficherBulle plus haut, qui
+        n'a lui-même pas eu besoin de changer : il consultait déjà ce
+        drapeau).
    ================================================================== */
 
-const AJOUT_AUTOMATIQUE_TEMPORAIRE = true;
+const AJOUT_AUTOMATIQUE_TEMPORAIRE = false;
 
 const KebBekIdentite = (function () {
 
@@ -329,7 +339,14 @@ const KebBekIdentite = (function () {
     sacCarteTitre: 'Your backpack',
     sacCarteLigneMots: 'Double-tap (or double-click) a word to store it here.',
     sacCarteLigneDejaSauvegardes: 'Good news: the words you already touched are already inside!',
-    sacCarteLigneObjets: 'It will also hold objects, secret codes, and surprises to unlock.'
+    sacCarteLigneObjets: 'It will also hold objects, secret codes, and surprises to unlock.',
+    // 🆕 Scène "Essaie !" (voir lancerEssaieDoubleTap) — chrome
+    // d'interface, traduisible normalement (contrairement à essaieBek,
+    // la réplique de Bek elle-même, toujours en français dans
+    // DIALOGUES_FIXES).
+    altEssaie: 'Keb and Bek invite you to try double-tapping the word',
+    essaieInstruction: 'Double-tap the word',
+    etiquetteInformel: '(informal)'
   };
 
   function texte(options, cle) {
@@ -408,7 +425,10 @@ const KebBekIdentite = (function () {
     // l'icône permanente du bouton (ligne simple, pas de lueur), jamais
     // à la scène de révélation/vol (qui garde debloqueSac, la version
     // lumineuse) — demande explicite de Raphaël.
-    iconeSac: 'images/accueil/index_bonomes_icone_sac_01.webp'
+    iconeSac: 'images/accueil/index_bonomes_icone_sac_01.webp',
+    // 🆕 Scène "Essaie !" (voir lancerEssaieDoubleTap plus bas) — image
+    // fournie par Raphaël cette session.
+    essaie: 'images/accueil/index_bonomes_keb_bek_essaie_01.webp'
   };
 
   function image(options, cle) {
@@ -489,7 +509,12 @@ const KebBekIdentite = (function () {
     // terminant par "Keb"/"Bek" : même remarque que ci-dessus, pas
     // besoin d'exception.
     donSacPourToiBek: "C'est pour toi\u00A0!",
-    donSacTiensKeb: 'Tiens\u00A0!'
+    donSacTiensKeb: 'Tiens\u00A0!',
+    // 🆕 Scène "Essaie !" (voir lancerEssaieDoubleTap plus bas) — Bek
+    // invite l'élève à pratiquer le double-tap pour de vrai. "Essaie"
+    // est la forme tutoiement (informelle) de l'impératif d'"essayer" —
+    // voir le badge .iden-badge-informel qui le signale, dans le .js.
+    essaieBek: 'Essaie\u00A0!'
   };
 
   function remplacerPrenom(texteBrut, prenom) {
@@ -2236,7 +2261,14 @@ const KebBekIdentite = (function () {
         }
         afficherCarteSacUneFois();
 
-        if (typeof callbacks.onComplet === 'function') callbacks.onComplet(s);
+        // 🆕 CORRIGÉ cette session : callbacks.onComplet(s) était appelé
+        // ICI, juste après l'atterrissage — mais la fiche "objet" ne fait
+        // qu'EXPLIQUER le double-tap en mots (sacCarteLigneMots), rien ne
+        // le fait pratiquer pour de vrai. Enchaîne maintenant sur
+        // lancerEssaieDoubleTap(s) (voir plus bas), qui déplace
+        // onComplet(s) à la toute fin — une fois le geste réellement
+        // réussi une première fois par l'élève.
+        lancerEssaieDoubleTap(s);
       }
 
       etapeScene = 'dialogue';
@@ -2245,7 +2277,174 @@ const KebBekIdentite = (function () {
       personnages.focus();
     }
 
-    // Crée #sacBouton + sa fiche "objet" (#idenCarteSac) s'ils n'existent
+    // ================================================================
+    // 🆕 Scène "Essaie !" — pratique guidée du VRAI double-tap/double-clic
+    // (voir AJOUT_AUTOMATIQUE_TEMPORAIRE en tête de fichier : ce fichier
+    // est livré avec ce drapeau désormais à `false`, précisément parce que
+    // cette scène existe — c'est le point de raccordement demandé par
+    // Raphaël). Jouée juste après l'atterrissage du sac (voir atterrir()
+    // ci-dessus) : la fiche "objet" vient de DÉCRIRE le geste en mots,
+    // cette scène le fait PRATIQUER pour de vrai, une fois, avant de
+    // continuer.
+    //
+    // Déroulé :
+    //   1. Bek dit "Essaie !" (nouvelle réplique fixe essaieBek, TOUJOURS
+    //      en français — voir DIALOGUES_FIXES) — c'est le mot-cible du
+    //      double-tap, pas un mot séparé ailleurs dans la bulle.
+    //   2. Une instruction d'interface, traduite dans la langue de
+    //      l'élève (essaieInstruction), s'affiche sous la scène — même
+    //      emplacement que l'indice générique "tap pour continuer"
+    //      ailleurs, mais avec un texte différent ici : PAS un simple
+    //      tap n'importe où qui suffit cette fois, avancerActif reste
+    //      délibérément un no-op jusqu'au vrai double-tap sur le mot.
+    //   3. Un petit badge "sourire" (voir .iden-badge-informel dans le
+    //      CSS) apparaît juste après le mot "Essaie" : au survol (souris)
+    //      ou au tap (tactile), une bulle façon .iden-tooltip-mot indique
+    //      que ce mot est de registre INFORMEL (tutoiement) — traduit
+    //      dans la langue de l'élève (etiquetteInformel). Réutilise
+    //      directement la classe .iden-tooltip-mot pour la bulle elle-
+    //      même (même famille visuelle, aucun nouveau style de bulle à
+    //      maintenir), même si le contenu affiché n'est pas une
+    //      traduction de mot à proprement parler.
+    //   4. Double-tap/double-clic RÉUSSI sur "Essaie" → même confirmation
+    //      visuelle que .iden-mot.flash-ajout (déjà déclenchée par
+    //      ajouterMotAuSac, appelé par le double-clic natif — voir
+    //      afficherBulle plus haut) + le mot est réellement ajouté au sac
+    //      (comme n'importe quel autre mot désormais, AJOUT_AUTOMATIQUE_
+    //      TEMPORAIRE valant `false`) ; l'indice bascule alors sur "tap
+    //      pour continuer" (introIndiceTap, réutilisé) et avancerActif
+    //      devient enfin actif — un tap normal termine la séquence
+    //      identité (callbacks.onComplet(s)).
+    function lancerEssaieDoubleTap(s) {
+      action.innerHTML = '';
+      // Même raison que lancerReactionSilhouette/lancerDeblocageSac : une
+      // seule image, pas de carrousel — les chevrons resteraient trompeurs.
+      chevron.style.display = 'none';
+      chevronGauche.style.display = 'none';
+      indice.style.display = '';
+      indice.textContent = texte(options, 'essaieInstruction');
+      btnTraduirePhrase.style.display = 'none';
+      tooltipPhrase.classList.remove('visible');
+
+      Array.from(personnages.querySelectorAll('img.iden-img')).forEach(function (img) { img.remove(); });
+      bulle.innerHTML = '';
+      bulle.classList.remove('iden-bulle-ligne-bek', 'iden-bulle-ligne-keb');
+
+      const img = document.createElement('img');
+      img.className = 'iden-img actif';
+      img.src = image(options, 'essaie');
+      img.alt = texte(options, 'altEssaie');
+      personnages.insertBefore(img, bulle);
+
+      // Même découpage mot-à-mot que afficherBulleReaction — dupliqué
+      // plutôt que généralisé, pour la même raison déjà documentée
+      // ailleurs dans ce fichier : cette bulle a un besoin propre (le
+      // badge "informel" accroché au dernier mot) que le mécanisme
+      // générique afficherBulle() n'a pas à connaître.
+      const locuteur = locuteurDeDialogue('essaieBek');
+      const ligne = document.createElement('div');
+      ligne.className = 'iden-bulle-ligne' + (locuteur ? ' iden-bulle-ligne-' + locuteur : '');
+      const brut = DIALOGUES_FIXES.essaieBek;
+      const motsBrutSepares = String(brut).split(/\s+/).filter(Boolean);
+      const PONCTUATION_SEULE = /^[.,!?;:'"«»\u2026]+$/;
+      const mots = [];
+      motsBrutSepares.forEach(function (tok) {
+        if (PONCTUATION_SEULE.test(tok) && mots.length > 0) {
+          mots[mots.length - 1] += '\u00A0' + tok;
+        } else {
+          mots.push(tok);
+        }
+      });
+
+      let spanCible = null; // le mot "Essaie" — celui qu'il faut double-taper
+      let reussi = false;
+
+      mots.forEach(function (motBrut, idx) {
+        const span = document.createElement('span');
+        span.className = 'iden-mot';
+        span.textContent = motBrut + (idx < mots.length - 1 ? '\u00A0' : '');
+        const motNettoye = motBrut.replace(/^[\s.,!?;:'"«»\u2026]+|[\s.,!?;:'"«»\u2026]+$/g, '');
+        span.tabIndex = 0;
+        // 🆕 Simple clic/Entrée : traduction seulement, JAMAIS d'ajout
+        // automatique ici (contrairement à afficherBulle ailleurs) —
+        // cette scène existe justement pour enseigner que l'ajout exige
+        // désormais le double-tap/double-clic, plus le simple clic.
+        span.addEventListener('click', function (e) {
+          e.stopPropagation();
+          afficherTraductionMot(span, motNettoye);
+        });
+        span.addEventListener('keydown', function (e) {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault(); e.stopPropagation();
+            afficherTraductionMot(span, motNettoye);
+          }
+        });
+        span.addEventListener('dblclick', function (e) {
+          e.stopPropagation();
+          ajouterMotAuSac(span, motNettoye);
+          reussirEssaie();
+        });
+        if (motNettoye.toLowerCase() === 'essaie') spanCible = span;
+        ligne.appendChild(span);
+      });
+
+      // Badge "registre informel" — accroché après le mot-cible seul (pas
+      // sur la ponctuation qui le suit, déjà fusionnée dans son span).
+      if (spanCible) {
+        const badge = document.createElement('span');
+        badge.className = 'iden-badge-informel';
+        badge.tabIndex = 0;
+        badge.setAttribute('role', 'img');
+        badge.setAttribute('aria-label', texte(options, 'etiquetteInformel'));
+        badge.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8.5 10.5h.01"/><path d="M15.5 10.5h.01"/><path d="M8 14.5c1 1.5 2.5 2 4 2s3-.5 4-2"/></svg>';
+        function basculerEtiquetteInformelle(e) {
+          e.stopPropagation();
+          const dejaLa = badge.querySelector('.iden-tooltip-mot');
+          document.querySelectorAll('.iden-tooltip-mot').forEach(function (t) { t.remove(); });
+          if (dejaLa) return; // c'était déjà ouvert : on vient de le fermer, rien de plus à faire
+          const tip = document.createElement('span');
+          tip.className = 'iden-tooltip-mot';
+          tip.textContent = texte(options, 'etiquetteInformel');
+          badge.appendChild(tip);
+        }
+        badge.addEventListener('click', basculerEtiquetteInformelle);
+        badge.addEventListener('keydown', function (e) {
+          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); basculerEtiquetteInformelle(e); }
+        });
+        badge.addEventListener('mouseenter', function () {
+          if (badge.querySelector('.iden-tooltip-mot')) return;
+          const tip = document.createElement('span');
+          tip.className = 'iden-tooltip-mot';
+          tip.textContent = texte(options, 'etiquetteInformel');
+          badge.appendChild(tip);
+        });
+        badge.addEventListener('mouseleave', function () {
+          const tip = badge.querySelector('.iden-tooltip-mot');
+          if (tip) tip.remove();
+        });
+        ligne.appendChild(badge);
+      }
+
+      bulle.appendChild(ligne);
+
+      // Réussite : feedback déjà donné par .flash-ajout (voir dblclick
+      // ci-dessus, via ajouterMotAuSac) — reste seulement à débloquer la
+      // suite de la séquence, une seule fois (un second double-tap sur
+      // "Essaie" ne doit pas redéclencher tout ceci).
+      function reussirEssaie() {
+        if (reussi) return;
+        reussi = true;
+        indice.textContent = texte(options, 'introIndiceTap');
+        avancerActif = function () {
+          if (typeof callbacks.onComplet === 'function') callbacks.onComplet(s);
+        };
+      }
+
+      etapeScene = 'dialogue';
+      avancerActif = function () {}; // no-op tant que le double-tap n'a pas réussi (voir reussirEssaie)
+      reculerActif = function () {}; // rien à reculer, comme lancerReactionSilhouette
+      personnages.focus();
+    }    // Crée #sacBouton + sa fiche "objet" (#idenCarteSac) s'ils n'existent
     // pas déjà sur la page — repli autonome, voir note ⚠️ au-dessus de
     // lancerDeblocageSac. N'écrase jamais un #sacBouton déjà présent
     // (venant d'une vraie intégration de sac-a-dos.js).

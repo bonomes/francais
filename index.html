@@ -790,17 +790,18 @@
      au moment précis où le sac atterrit dans le coin après son animation
      de vol. Un style inline (élément.style.display = '') suffit alors à
      lever ce display:none une bonne fois pour toutes. -->
+<!-- 🆕 Icône du sac — remplace l'improvisation SVG précédente (jamais
+     validée par Raphaël) par les deux VRAIES images fournies : fermé par
+     défaut, ouvert affiché en superposition quand #sacBouton porte la
+     classe .ouvert (voir toggleSacADos() dans sac-a-dos.js). Même patron
+     de cross-fade que .iden-img/.actif dans identite-eleve.css : les
+     deux images restent toujours dans le DOM, seule leur opacité change,
+     jamais un changement de src (évite tout scintillement/rechargement). -->
 <button type="button" id="sacBouton" class="" style="display:none;" onclick="toggleSacADos()" aria-label="Backpack">
-  <svg id="iconeSac" viewBox="0 0 64 64" width="26" height="26" fill="none" stroke="var(--brun)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M20 30c0-8.8 5.4-15 12-15s12 6.2 12 15v20a4 4 0 0 1-4 4H24a4 4 0 0 1-4-4Z"/>
-    <path d="M26 30v-7a6 6 0 0 1 12 0v7"/>
-    <g class="rabat">
-      <path d="M18 32h28a4 4 0 0 1 4 4v3H14v-3a4 4 0 0 1 4-4Z" fill="var(--peche)" stroke="var(--peche-fonce)"/>
-    </g>
-    <g class="contenu-eclat">
-      <path d="M32 40l2 4 4 2-4 2-2 4-2-4-4-2 4-2Z" fill="var(--peche-fonce)" stroke="var(--peche-fonce)" stroke-width="1.5"/>
-    </g>
-  </svg>
+  <span id="iconeSac" class="sac-icone">
+    <img class="sac-icone-img sac-icone-fermee" src="images/accueil/index_bonomes_icone_sac_01.webp" alt="">
+    <img class="sac-icone-img sac-icone-ouverte" src="images/accueil/index_bonomes_icone_sac_01_ouvert.webp" alt="">
+  </span>
   <span class="sac-badge vide" id="sacBadge">0</span>
 </button>
 

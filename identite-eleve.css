@@ -235,30 +235,12 @@
   z-index: 1;
 }
 
-/* 🆕 Badge "registre informel" (voir lancerEssaieDoubleTap dans le .js) —
-   petit sourire accroché après le mot "Essaie", au survol (souris) ou au
-   tap (tactile) : indique que ce mot est du tutoiement, sans texte
-   permanent à l'écran. Réutilise DIRECTEMENT .iden-tooltip-mot pour sa
-   propre bulle (voir le .js, qui lui donne exactement la même classe) —
-   même famille visuelle que la traduction d'un mot, un seul style de
-   bulle à maintenir, même si le contenu affiché ici n'est pas une
-   traduction à proprement parler. */
-.iden-badge-informel {
-  position: relative;
-  display: inline-flex;
-  vertical-align: middle;
-  margin-left: 4px;
-  color: var(--peche-fonce);
-  cursor: pointer;
-  -webkit-text-stroke: 0; /* n'hérite pas du contour épais de .iden-bulle */
-  touch-action: manipulation;
-}
-.iden-badge-informel svg { display: block; width: 16px; height: 16px; }
-.iden-badge-informel:hover,
-.iden-badge-informel:focus-visible {
-  color: var(--brun-fonce, #4A3B33);
-  outline: none;
-}
+/* 🆕 CORRIGÉ cette session : le badge "registre informel" qui vivait ici
+   (accroché après le mot "Essaie") est retiré — Raphaël a précisé que
+   l'indication doit vivre dans la bulle de traduction elle-même
+   (.iden-tooltip-mot ci-dessus, inchangée, réutilisée telle quelle) et
+   dans le sac, pas comme un badge séparé à côté du mot. Voir
+   MOTS_INFORMELS/LANGUES_SANS_PRECISION_INFORMEL dans le .js.
 
 /* Chevron droit — indice visuel qu'on peut taper/cliquer/glisser pour
    avancer, sans dépendre uniquement du texte .iden-indice pour les

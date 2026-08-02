@@ -131,6 +131,15 @@
   display: inline-block;
   transition: color 0.15s ease, text-shadow 0.25s ease;
   animation: iden-lueur-mot 2.6s ease-in-out infinite;
+  /* 🆕 CORRIGÉ cette session : sans ceci, un double-tap tactile sur un mot
+     déclenche le zoom natif du navigateur (aucune balise <meta viewport>
+     avec maximum-scale/user-scalable=no sur cette page) au lieu de
+     déclencher l'événement dblclick attendu par le .js — ce qui aurait
+     rendu le double-tap "enseigné" dans la scène "Essaie !" silencieusement
+     cassé sur mobile, alors qu'il fonctionne à la souris. Désactive
+     seulement le double-tap-zoom natif SUR CE mot précis (pas toute la
+     page), le geste reste donc disponible partout ailleurs à l'écran. */
+  touch-action: manipulation;
 }
 @keyframes iden-lueur-mot {
   0%, 100% { text-shadow: 0 0 0 rgba(224, 136, 103, 0); }
@@ -224,6 +233,31 @@
   bottom: calc(100% - 1.5px);
   border-bottom: 6px solid #FFFFFF;
   z-index: 1;
+}
+
+/* 🆕 Badge "registre informel" (voir lancerEssaieDoubleTap dans le .js) —
+   petit sourire accroché après le mot "Essaie", au survol (souris) ou au
+   tap (tactile) : indique que ce mot est du tutoiement, sans texte
+   permanent à l'écran. Réutilise DIRECTEMENT .iden-tooltip-mot pour sa
+   propre bulle (voir le .js, qui lui donne exactement la même classe) —
+   même famille visuelle que la traduction d'un mot, un seul style de
+   bulle à maintenir, même si le contenu affiché ici n'est pas une
+   traduction à proprement parler. */
+.iden-badge-informel {
+  position: relative;
+  display: inline-flex;
+  vertical-align: middle;
+  margin-left: 4px;
+  color: var(--peche-fonce);
+  cursor: pointer;
+  -webkit-text-stroke: 0; /* n'hérite pas du contour épais de .iden-bulle */
+  touch-action: manipulation;
+}
+.iden-badge-informel svg { display: block; width: 16px; height: 16px; }
+.iden-badge-informel:hover,
+.iden-badge-informel:focus-visible {
+  color: var(--brun-fonce, #4A3B33);
+  outline: none;
 }
 
 /* Chevron droit — indice visuel qu'on peut taper/cliquer/glisser pour

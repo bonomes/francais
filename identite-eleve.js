@@ -2385,6 +2385,7 @@ const KebBekIdentite = (function () {
         indice.style.display = 'none';
 
         creerSacBoutonSiAbsent(); // repli seulement si sac-a-dos.js n'est pas chargé sur cette page
+        creerFicheSacSiAbsente(); // fiche explicative, branchée sur le bouton (repli ou vrai) qui existe
         const boutonSac = document.getElementById('sacBouton');
         if (boutonSac) {
           // 🆕 Révèle le VRAI #sacBouton — masqué par défaut (voir <style>
@@ -2396,7 +2397,20 @@ const KebBekIdentite = (function () {
           boutonSac.classList.add('iden-sac-eclat');
           setTimeout(function () { boutonSac.classList.remove('iden-sac-eclat'); }, 700);
         }
-        afficherApercuSacUneFois();
+        // 🐛 CORRIGÉ (signalé par Raphaël) : la version précédente préférait
+        // ouvrir automatiquement le VRAI #sacPanneau ici (via
+        // afficherApercuSacUneFois/toggleSacADos) — ça sautait purement et
+        // simplement l'explication du mécanisme (double-tap) et montrait
+        // le sac déjà "niveau 1" avec des mots dedans avant même que
+        // l'élève sache comment ça marche. Revenu à la fiche "objet"
+        // maison (afficherCarteSacUneFois) : elle EXPLIQUE le geste en
+        // mots, rien de plus — le vrai panneau reste fermé (icône fermée,
+        // voir sac-icone-fermee/ouverte dans le CSS) tant que l'élève ne
+        // clique pas dessus lui-même. C'est lancerEssaieDoubleTap()
+        // juste en dessous qui fait ensuite PRATIQUER le geste pour de
+        // vrai, une fois, avant que le sac ne reçoive son premier
+        // contenu réel.
+        afficherCarteSacUneFois();
 
         // 🆕 CORRIGÉ cette session : callbacks.onComplet(s) était appelé
         // ICI, juste après l'atterrissage — mais la fiche "objet" ne fait
@@ -2551,10 +2565,10 @@ const KebBekIdentite = (function () {
       avancerActif = function () {}; // no-op tant que le double-tap n'a pas réussi (voir reussirEssaie)
       reculerActif = function () {}; // rien à reculer, comme lancerReactionSilhouette
       personnages.focus();
-    }    // Crée #sacBouton + sa fiche "objet" (#idenCarteSac) s'ils n'existent
-    // pas déjà sur la page — repli autonome, voir note ⚠️ au-dessus de
-    // lancerDeblocageSac. N'écrase jamais un #sacBouton déjà présent
-    // (venant d'une vraie intégration de sac-a-dos.js).
+    }    // Crée #sacBouton s'il n'existe pas déjà sur la page — repli
+    // autonome, voir note ⚠️ au-dessus de lancerDeblocageSac. N'écrase
+    // jamais un #sacBouton déjà présent (venant d'une vraie intégration
+    // de sac-a-dos.js).
     function creerSacBoutonSiAbsent() {
       if (document.getElementById('sacBouton')) return;
 
@@ -2569,6 +2583,20 @@ const KebBekIdentite = (function () {
       icone.alt = texte(options, 'altIconeSac');
       bouton.appendChild(icone);
       document.body.appendChild(bouton);
+    }
+
+    // 🐛 CORRIGÉ : cette fiche vivait auparavant DANS
+    // creerSacBoutonSiAbsent(), qui s'arrête tout de suite dès que le
+    // VRAI #sacBouton existe déjà (ligne juste au-dessus) — la fiche
+    // explicative n'était donc plus JAMAIS créée une fois sac-a-dos.js
+    // vraiment intégré, silencieusement (afficherCarteSacUneFois ne
+    // trouvait rien et ne faisait rien). Extraite en fonction séparée,
+    // appelée dans TOUS les cas (repli ou vrai bouton) : la fiche doit
+    // brancher son survol/tap sur QUEL QUE SOIT le #sacBouton présent.
+    function creerFicheSacSiAbsente() {
+      if (document.getElementById('idenCarteSac')) return;
+      const bouton = document.getElementById('sacBouton');
+      if (!bouton) return;
 
       const carte = document.createElement('div');
       carte.id = 'idenCarteSac';
@@ -2597,9 +2625,19 @@ const KebBekIdentite = (function () {
       bouton.addEventListener('mouseenter', ouvrirCarte);
       bouton.addEventListener('mouseleave', function () { if (!carteOuverteManuel) fermerCarte(); });
       bouton.addEventListener('click', function (e) {
-        e.stopPropagation();
-        if (carte.classList.contains('visible')) { fermerCarte(); }
-        else { ouvrirCarte(); carteOuverteManuel = true; }
+        // 🆕 Distingue repli (classe .iden-sac-bouton, aucun vrai panneau
+        // à côté — le clic doit basculer la fiche lui-même) du VRAI
+        // #sacBouton (sac-a-dos.js), qui porte déjà son propre
+        // onclick="toggleSacADos()" dans le markup d'index.html : dans ce
+        // cas le clic ouvre le vrai panneau tout seul, la fiche n'a plus
+        // qu'à s'écarter pour ne pas rester superposée par-dessus.
+        if (bouton.classList.contains('iden-sac-bouton')) {
+          e.stopPropagation();
+          if (carte.classList.contains('visible')) { fermerCarte(); }
+          else { ouvrirCarte(); carteOuverteManuel = true; }
+        } else {
+          fermerCarte();
+        }
       });
       document.addEventListener('click', function (e) {
         if (carte.classList.contains('visible') && !bouton.contains(e.target) && !carte.contains(e.target)) fermerCarte();
@@ -2616,27 +2654,6 @@ const KebBekIdentite = (function () {
       if (!carte) return;
       carte.classList.add('visible');
       setTimeout(function () { carte.classList.remove('visible'); }, DELAI_CARTE_AUTO_SAC);
-    }
-
-    // 🆕 Aperçu automatique au moment de l'atterrissage — préfère
-    // désormais le VRAI panneau (sac-a-dos.js, #sacPanneau) quand il est
-    // présent sur la page : toggleSacADos() l'ouvre ET déclenche au
-    // passage sa propre bannière d'accueil (afficherIntroSacSiPremiereFois,
-    // "Some words you've already come across are here!"), qui remplace
-    // avantageusement la fiche "objet" maison — pas la peine de maintenir
-    // les deux en parallèle une fois la vraie intégration branchée. Repli
-    // sur afficherCarteSacUneFois() ci-dessus si sac-a-dos.js n'est pas
-    // chargé sur cette page (même prudence que creerSacBoutonSiAbsent).
-    function afficherApercuSacUneFois() {
-      const panneau = document.getElementById('sacPanneau');
-      if (panneau && typeof window.toggleSacADos === 'function') {
-        window.toggleSacADos();
-        setTimeout(function () {
-          if (panneau.classList.contains('ouvert')) window.toggleSacADos();
-        }, DELAI_CARTE_AUTO_SAC);
-        return;
-      }
-      afficherCarteSacUneFois();
     }
   }
 

@@ -74,13 +74,31 @@
 
 .sac-badge.vide { display: none; }
 
-#iconeSac .rabat {
-  transform-origin: 32px 34px;
-  transition: transform 0.35s cubic-bezier(.34, 1.56, .64, 1);
+/* 🆕 Icône du sac (fermé/ouvert) — remplace l'ancienne icône SVG
+   improvisée (règles .rabat/.contenu-eclat retirées, ces éléments
+   n'existent plus dans le markup). Deux vraies images superposées,
+   cross-fade selon #sacBouton.ouvert — même patron que .iden-img/.actif
+   dans identite-eleve.css : les deux images restent dans le DOM, seule
+   l'opacité change. */
+.sac-icone {
+  position: relative;
+  display: inline-block;
+  width: 26px;
+  height: 26px;
 }
-#sacBouton.ouvert #iconeSac .rabat { transform: rotate(-38deg) translate(-2px, -3px); }
-#iconeSac .contenu-eclat { opacity: 0; transition: opacity 0.25s ease 0.1s; }
-#sacBouton.ouvert #iconeSac .contenu-eclat { opacity: 1; }
+.sac-icone-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  pointer-events: none;
+}
+.sac-icone-fermee { opacity: 1; }
+#sacBouton.ouvert .sac-icone-fermee { opacity: 0; }
+#sacBouton.ouvert .sac-icone-ouverte { opacity: 1; }
 
 #sacPanneau {
   position: fixed;

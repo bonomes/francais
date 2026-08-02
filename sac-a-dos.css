@@ -97,8 +97,10 @@
   pointer-events: none;
 }
 .sac-icone-fermee { opacity: 1; }
-#sacBouton.ouvert .sac-icone-fermee { opacity: 0; }
-#sacBouton.ouvert .sac-icone-ouverte { opacity: 1; }
+#sacBouton.ouvert .sac-icone-fermee,
+#sacBouton.sac-recoit .sac-icone-fermee { opacity: 0; }
+#sacBouton.ouvert .sac-icone-ouverte,
+#sacBouton.sac-recoit .sac-icone-ouverte { opacity: 1; }
 
 #sacPanneau {
   position: fixed;

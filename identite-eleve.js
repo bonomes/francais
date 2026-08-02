@@ -132,6 +132,19 @@
         double-clic le fait désormais (voir afficherBulle plus haut, qui
         n'a lui-même pas eu besoin de changer : il consultait déjà ce
         drapeau).
+     7. 🆕 CORRIGÉ cette session, suite au retour de Raphaël : le badge
+        "sourire" accroché au mot "Essaie" (.iden-badge-informel) ne
+        correspondait pas à ce qui était demandé — retiré entièrement
+        (JS et CSS). L'indication du registre informel vit désormais à
+        deux endroits précis : (a) dans la bulle de traduction d'un mot
+        (afficherTraductionMot), accolée à la traduction elle-même,
+        seulement pour les langues qui en ont besoin (voir
+        LANGUES_SANS_PRECISION_INFORMEL — l'espagnol confirmé exempté par
+        Raphaël) ; (b) dans le sac lui-même, via un champ `informel`
+        désormais transmis à window.ajouterAuSac (voir ajouterMotAuSac) —
+        à sac-a-dos.js de l'afficher, ce module ne fait qu'émettre la
+        donnée. Voir MOTS_INFORMELS pour la liste des mots concernés
+        (un seul à ce jour : "essaie").
    ================================================================== */
 
 const AJOUT_AUTOMATIQUE_TEMPORAIRE = false;
@@ -513,7 +526,8 @@ const KebBekIdentite = (function () {
     // 🆕 Scène "Essaie !" (voir lancerEssaieDoubleTap plus bas) — Bek
     // invite l'élève à pratiquer le double-tap pour de vrai. "Essaie"
     // est la forme tutoiement (informelle) de l'impératif d'"essayer" —
-    // voir le badge .iden-badge-informel qui le signale, dans le .js.
+    // voir MOTS_INFORMELS, qui le signale dans la bulle de traduction et
+    // le sac, plus bas dans le .js.
     essaieBek: 'Essaie\u00A0!'
   };
 
@@ -787,13 +801,56 @@ const KebBekIdentite = (function () {
       return dico[mot.toLowerCase()];
     }
 
+    // 🆕 CORRIGÉ cette session — remplace l'ancien badge "sourire" accroché
+    // au mot "Essaie" (retiré, voir plus bas dans lancerEssaieDoubleTap) :
+    // Raphaël a précisé que l'indication du registre informel doit vivre à
+    // DEUX endroits précis, ni plus ni moins :
+    //   1. Dans le SAC lui-même, une fois le mot rangé dedans (voir
+    //      ajouterMotAuSac plus bas, qui transmet désormais un champ
+    //      `informel` à window.ajouterAuSac — à afficher par sac-a-dos.js
+    //      le jour où cette page sera vraiment branchée dessus, voir note
+    //      ⚠️ en tête de fichier : ce module ne fait qu'émettre la donnée,
+    //      pas l'afficher lui-même).
+    //   2. Dans la bulle de traduction d'un mot (afficherTraductionMot
+    //      ci-dessous), directement accolée à la traduction — PAS un badge
+    //      séparé à côté du mot dans le texte parlé.
+    // MOTS_INFORMELS : liste, en français minuscule, des mots de
+    // tutoiement/registre informel connus à ce jour — un seul pour
+    // l'instant ("essaie", impératif tutoiement d'"essayer" dans
+    // essaieBek), pensée pour grossir facilement à mesure que d'autres
+    // répliques introduisent du tutoiement.
+    const MOTS_INFORMELS = new Set(['essaie']);
+
+    // LANGUES_SANS_PRECISION_INFORMEL : langues de l'interface où la
+    // précision est jugée superflue — confirmé par Raphaël pour
+    // l'espagnol seulement ("en espagnol, par exemple, pas besoin !"),
+    // vraisemblablement parce que sa traduction du mot porte déjà elle-
+    // même la marque du tutoiement (contrairement à l'anglais, où "try"
+    // ne dit rien du registre). À compléter au cas par cas si Raphaël
+    // confirme d'autres langues (allemand, italien, portugais...), plutôt
+    // que de deviner ici.
+    const LANGUES_SANS_PRECISION_INFORMEL = new Set(['es']);
+
+    function motEstInformel(mot) {
+      return MOTS_INFORMELS.has(mot.toLowerCase());
+    }
+
+    function precisionInformelleUtile() {
+      const langue = (options && options.langue) || '';
+      return !LANGUES_SANS_PRECISION_INFORMEL.has(langue);
+    }
+
     function afficherTraductionMot(span, mot) {
       document.querySelectorAll('.iden-tooltip-mot').forEach(function (t) { t.remove(); });
       const trad = traductionDeMot(mot);
       if (!trad) return;
       const tip = document.createElement('span');
       tip.className = 'iden-tooltip-mot';
-      tip.textContent = trad;
+      let contenu = trad;
+      if (motEstInformel(mot) && precisionInformelleUtile()) {
+        contenu += ' ' + texte(options, 'etiquetteInformel');
+      }
+      tip.textContent = contenu;
       span.appendChild(tip);
     }
 
@@ -807,7 +864,10 @@ const KebBekIdentite = (function () {
     function ajouterMotAuSac(span, mot) {
       if (typeof window.ajouterAuSac !== 'function') return; // sac-a-dos.js absent de la page : repli silencieux
       const cle = mot.toLowerCase(); // forme canonique : "Moi" (début de phrase) et "moi" (ailleurs) sont le même mot de vocabulaire
-      window.ajouterAuSac('mots', { mot: cle, trad: traductionDeMot(mot) || '' });
+      // 🆕 `informel` transmis systématiquement (pas seulement si vrai) —
+      // à sac-a-dos.js de décider comment l'afficher (étiquette, icône...)
+      // le jour où il sera vraiment branché sur cette page.
+      window.ajouterAuSac('mots', { mot: cle, trad: traductionDeMot(mot) || '', informel: motEstInformel(mot) });
       if (motsDejaAjoutes.has(cle)) return; // déjà ajouté/flashé une fois : rien de plus à signaler
       motsDejaAjoutes.add(cle);
       span.classList.remove('flash-ajout');
@@ -2297,15 +2357,16 @@ const KebBekIdentite = (function () {
     //      ailleurs, mais avec un texte différent ici : PAS un simple
     //      tap n'importe où qui suffit cette fois, avancerActif reste
     //      délibérément un no-op jusqu'au vrai double-tap sur le mot.
-    //   3. Un petit badge "sourire" (voir .iden-badge-informel dans le
-    //      CSS) apparaît juste après le mot "Essaie" : au survol (souris)
-    //      ou au tap (tactile), une bulle façon .iden-tooltip-mot indique
-    //      que ce mot est de registre INFORMEL (tutoiement) — traduit
-    //      dans la langue de l'élève (etiquetteInformel). Réutilise
-    //      directement la classe .iden-tooltip-mot pour la bulle elle-
-    //      même (même famille visuelle, aucun nouveau style de bulle à
-    //      maintenir), même si le contenu affiché n'est pas une
-    //      traduction de mot à proprement parler.
+    //   3. 🆕 CORRIGÉ suite au retour de Raphaël : PLUS de badge séparé
+    //      accroché au mot. Un simple clic sur "Essaie" affiche sa
+    //      traduction normalement (afficherTraductionMot, mécanisme
+    //      générique) — celle-ci porte désormais elle-même la précision
+    //      "(informel)" quand le mot en fait partie et que la langue de
+    //      l'élève en a besoin (voir MOTS_INFORMELS/
+    //      LANGUES_SANS_PRECISION_INFORMEL, définis avec
+    //      afficherTraductionMot plus haut). Le mot ajouté au sac porte
+    //      lui aussi cette marque (voir ajouterMotAuSac) — à sac-a-dos.js
+    //      de l'afficher le jour venu.
     //   4. Double-tap/double-clic RÉUSSI sur "Essaie" → même confirmation
     //      visuelle que .iden-mot.flash-ajout (déjà déclenchée par
     //      ajouterMotAuSac, appelé par le double-clic natif — voir
@@ -2338,9 +2399,10 @@ const KebBekIdentite = (function () {
 
       // Même découpage mot-à-mot que afficherBulleReaction — dupliqué
       // plutôt que généralisé, pour la même raison déjà documentée
-      // ailleurs dans ce fichier : cette bulle a un besoin propre (le
-      // badge "informel" accroché au dernier mot) que le mécanisme
-      // générique afficherBulle() n'a pas à connaître.
+      // ailleurs dans ce fichier : cette bulle a un besoin propre (une
+      // seule réplique fixe, DIALOGUES_FIXES.essaieBek, plutôt qu'une clé
+      // texte() variable) que le mécanisme générique afficherBulle()
+      // n'a pas à connaître.
       const locuteur = locuteurDeDialogue('essaieBek');
       const ligne = document.createElement('div');
       ligne.className = 'iden-bulle-ligne' + (locuteur ? ' iden-bulle-ligne-' + locuteur : '');
@@ -2356,7 +2418,6 @@ const KebBekIdentite = (function () {
         }
       });
 
-      let spanCible = null; // le mot "Essaie" — celui qu'il faut double-taper
       let reussi = false;
 
       mots.forEach(function (motBrut, idx) {
@@ -2384,46 +2445,8 @@ const KebBekIdentite = (function () {
           ajouterMotAuSac(span, motNettoye);
           reussirEssaie();
         });
-        if (motNettoye.toLowerCase() === 'essaie') spanCible = span;
         ligne.appendChild(span);
       });
-
-      // Badge "registre informel" — accroché après le mot-cible seul (pas
-      // sur la ponctuation qui le suit, déjà fusionnée dans son span).
-      if (spanCible) {
-        const badge = document.createElement('span');
-        badge.className = 'iden-badge-informel';
-        badge.tabIndex = 0;
-        badge.setAttribute('role', 'img');
-        badge.setAttribute('aria-label', texte(options, 'etiquetteInformel'));
-        badge.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8.5 10.5h.01"/><path d="M15.5 10.5h.01"/><path d="M8 14.5c1 1.5 2.5 2 4 2s3-.5 4-2"/></svg>';
-        function basculerEtiquetteInformelle(e) {
-          e.stopPropagation();
-          const dejaLa = badge.querySelector('.iden-tooltip-mot');
-          document.querySelectorAll('.iden-tooltip-mot').forEach(function (t) { t.remove(); });
-          if (dejaLa) return; // c'était déjà ouvert : on vient de le fermer, rien de plus à faire
-          const tip = document.createElement('span');
-          tip.className = 'iden-tooltip-mot';
-          tip.textContent = texte(options, 'etiquetteInformel');
-          badge.appendChild(tip);
-        }
-        badge.addEventListener('click', basculerEtiquetteInformelle);
-        badge.addEventListener('keydown', function (e) {
-          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); basculerEtiquetteInformelle(e); }
-        });
-        badge.addEventListener('mouseenter', function () {
-          if (badge.querySelector('.iden-tooltip-mot')) return;
-          const tip = document.createElement('span');
-          tip.className = 'iden-tooltip-mot';
-          tip.textContent = texte(options, 'etiquetteInformel');
-          badge.appendChild(tip);
-        });
-        badge.addEventListener('mouseleave', function () {
-          const tip = badge.querySelector('.iden-tooltip-mot');
-          if (tip) tip.remove();
-        });
-        ligne.appendChild(badge);
-      }
 
       bulle.appendChild(ligne);
 

@@ -1086,6 +1086,13 @@
     const textesLangue = TEXTES_IDENTITE[codeLangue] || TEXTES_IDENTITE.en;
     const textesAnglais = TEXTES_IDENTITE.en;
     return {
+      // 🆕 `langue` transmis en plus des dictionnaires — identite-eleve.js
+      // s'en sert pour savoir si la précision "(informel)" doit
+      // s'ajouter à la traduction d'un mot comme "essaie" (voir
+      // LANGUES_SANS_PRECISION_INFORMEL côté .js — l'espagnol est exempté
+      // pour l'instant, sa traduction portant déjà la marque du
+      // tutoiement).
+      langue: codeLangue,
       textes: Object.assign({}, textesAnglais, textesLangue),
       traductions: Object.assign({}, motsAnglais, motsLangue),
       traductionsPhrases: Object.assign({}, phrasesAnglais, phrasesLangue)

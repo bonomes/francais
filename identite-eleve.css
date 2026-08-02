@@ -163,6 +163,30 @@
 }
 .iden-mot.flash-ajout { animation: iden-flash-ajout 0.7s ease; }
 
+/* 🆕 Clone volant d'un mot qui vient d'être ajouté au sac (voir
+   animerMotVersSac dans le .js) — élément fixe, indépendant du flux de
+   la page, positionné exactement sur le mot d'origine puis animé en
+   `transform` (translate + scale) vers #sacBouton, jamais en top/left
+   directement (même raison de fluidité que .iden-debloque-vol-anim plus
+   bas : accéléré matériellement). Se retire lui-même une fois la
+   transition finie (voir transitionend dans le .js). */
+.iden-mot-vole {
+  position: fixed;
+  z-index: 250; /* au-dessus de #sacBouton (200) et #sacPanneau (199) */
+  font-family: 'Chewy', cursive;
+  font-size: 1rem;
+  color: var(--peche-fonce);
+  pointer-events: none;
+  white-space: nowrap;
+  transition: transform 0.55s cubic-bezier(.4, 0, .3, 1), opacity 0.55s ease;
+  transform: translate(0, 0) scale(1);
+  opacity: 1;
+}
+.iden-mot-vole.en-vol {
+  transform: translate(var(--vol-dx), var(--vol-dy)) scale(0.3);
+  opacity: 0;
+}
+
 /* 🆕 Une ligne par réplique dans la bulle de l'étape "Enchanté(e)" —
    utile quand Bek et Keb parlent "en même temps" (deux répliques dans la
    même bulle, voir afficherBulleEnchantes dans le .js) ; sans marge sur

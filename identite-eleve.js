@@ -359,7 +359,10 @@ const KebBekIdentite = (function () {
     // DIALOGUES_FIXES).
     altEssaie: 'Keb and Bek invite you to try double-tapping the word',
     essaieInstruction: 'Double-tap the word',
-    etiquetteInformel: '(informal)'
+    etiquetteInformel: '(informal)',
+    // 🆕 Alt (accessibilité) de l'image "tadam" — voir tadam dans
+    // IMAGES_PAR_DEFAUT et reussirEssaie() dans lancerEssaieDoubleTap.
+    altTadam: 'Keb and Bek cheer: ta-dah!'
   };
 
   function texte(options, cle) {
@@ -441,7 +444,12 @@ const KebBekIdentite = (function () {
     iconeSac: 'images/accueil/index_bonomes_icone_sac_01.webp',
     // 🆕 Scène "Essaie !" (voir lancerEssaieDoubleTap plus bas) — image
     // fournie par Raphaël cette session.
-    essaie: 'images/accueil/index_bonomes_keb_bek_essaie_01.webp'
+    essaie: 'images/accueil/index_bonomes_keb_bek_essaie_01.webp',
+    // 🆕 Image affichée dès que le double-tap sur "Essaie" réussit (voir
+    // reussirEssaie dans lancerEssaieDoubleTap) — remplace l'image
+    // "essaie" à cet instant précis, en même temps que le mot vole vers
+    // le sac et que tous les mots déjà touchés y sont ajoutés d'un coup.
+    tadam: 'images/accueil/index_bonomes_keb_bek_tadam_01.webp'
   };
 
   function image(options, cle) {
@@ -844,6 +852,12 @@ const KebBekIdentite = (function () {
       document.querySelectorAll('.iden-tooltip-mot').forEach(function (t) { t.remove(); });
       const trad = traductionDeMot(mot);
       if (!trad) return;
+      // 🆕 Retient CE mot (traduit avec succès, simple clic ou pas) pour
+      // le déversement en bloc dans le vrai sac une fois qu'il devient
+      // pleinement actif — voir motsToucheSession/
+      // synchroniserMotsToucheSacUneFois plus bas, et reussirEssaie()
+      // dans lancerEssaieDoubleTap qui déclenche ce déversement.
+      motsToucheSession.set(mot.toLowerCase(), { trad: trad, informel: motEstInformel(mot) });
       const tip = document.createElement('span');
       tip.className = 'iden-tooltip-mot';
       let contenu = trad;
@@ -861,6 +875,62 @@ const KebBekIdentite = (function () {
     // clic, ce qui serait trompeur — elle ne doit signaler qu'un AJOUT).
     const motsDejaAjoutes = new Set();
 
+    // 🆕 TOUS les mots dont la traduction a été affichée pendant la
+    // séquence (voir afficherTraductionMot ci-dessus) — pas seulement
+    // ceux ajoutés au sac. Sert à remplir le sac d'un coup au moment où
+    // il devient pleinement actif (voir synchroniserMotsToucheSacUneFois
+    // plus bas, appelée par reussirEssaie() dans lancerEssaieDoubleTap).
+    const motsToucheSession = new Map();
+
+    // 🆕 Anime un CLONE du mot qui s'envole depuis sa position réelle
+    // jusqu'au bouton du sac (#sacBouton, réel ou de repli — voir
+    // creerSacBoutonSiAbsent) puis disparaît — retour visuel concret pour
+    // "ce mot vient d'être rangé", plutôt qu'un simple flash sur place
+    // (.flash-ajout, conservé par ailleurs, voir ajouterMotAuSac). Repli
+    // silencieux si #sacBouton est absent de la page (aucune animation),
+    // même prudence que partout ailleurs dans ce fichier.
+    const DUREE_VOL_MOT = 550;
+    function animerMotVersSac(span) {
+      const bouton = document.getElementById('sacBouton');
+      if (!bouton || bouton.offsetParent === null) return; // pas de sac, ou sac pas encore révélé sur cette page
+      const depart = span.getBoundingClientRect();
+      const arrivee = bouton.getBoundingClientRect();
+      const clone = document.createElement('span');
+      clone.className = 'iden-mot-vole';
+      clone.textContent = span.textContent;
+      clone.style.left = depart.left + 'px';
+      clone.style.top = depart.top + 'px';
+      document.body.appendChild(clone);
+      const dx = (arrivee.left + arrivee.width / 2) - (depart.left + depart.width / 2);
+      const dy = (arrivee.top + arrivee.height / 2) - (depart.top + depart.height / 2);
+      void clone.offsetWidth; // force le reflow avant de fixer la cible, voir même technique dans declencherVol
+      clone.style.setProperty('--vol-dx', dx + 'px');
+      clone.style.setProperty('--vol-dy', dy + 'px');
+      clone.classList.add('en-vol');
+      clone.addEventListener('transitionend', function () { clone.remove(); }, { once: true });
+      setTimeout(function () {
+        bouton.classList.remove('iden-sac-eclat');
+        void bouton.offsetWidth;
+        bouton.classList.add('iden-sac-eclat');
+      }, DUREE_VOL_MOT);
+    }
+
+    // 🆕 Déverse dans le VRAI sac (window.ajouterAuSac) tous les mots
+    // accumulés dans motsToucheSession depuis le début de la séquence —
+    // appelée UNE SEULE FOIS, par reussirEssaie() dans
+    // lancerEssaieDoubleTap : c'est le moment choisi par Raphaël où le
+    // sac cesse d'être une icône vide et devient pleinement actif. Le mot
+    // "essaie" lui-même n'a pas besoin d'y être ajouté séparément ici —
+    // ajouterMotAuSac() vient déjà de l'ajouter via le double-clic qui a
+    // déclenché reussirEssaie() (voir plus bas), et window.ajouterAuSac
+    // ignore de toute façon les doublons.
+    function synchroniserMotsToucheSacUneFois() {
+      if (typeof window.ajouterAuSac !== 'function') return;
+      motsToucheSession.forEach(function (info, cle) {
+        window.ajouterAuSac('mots', { mot: cle, trad: info.trad || '', informel: info.informel });
+      });
+    }
+
     function ajouterMotAuSac(span, mot) {
       if (typeof window.ajouterAuSac !== 'function') return; // sac-a-dos.js absent de la page : repli silencieux
       const cle = mot.toLowerCase(); // forme canonique : "Moi" (début de phrase) et "moi" (ailleurs) sont le même mot de vocabulaire
@@ -868,6 +938,7 @@ const KebBekIdentite = (function () {
       // à sac-a-dos.js de décider comment l'afficher (étiquette, icône...)
       // le jour où il sera vraiment branché sur cette page.
       window.ajouterAuSac('mots', { mot: cle, trad: traductionDeMot(mot) || '', informel: motEstInformel(mot) });
+      animerMotVersSac(span);
       if (motsDejaAjoutes.has(cle)) return; // déjà ajouté/flashé une fois : rien de plus à signaler
       motsDejaAjoutes.add(cle);
       span.classList.remove('flash-ajout');
@@ -2313,13 +2384,19 @@ const KebBekIdentite = (function () {
         titreEpique.remove();
         indice.style.display = 'none';
 
-        creerSacBoutonSiAbsent();
+        creerSacBoutonSiAbsent(); // repli seulement si sac-a-dos.js n'est pas chargé sur cette page
         const boutonSac = document.getElementById('sacBouton');
         if (boutonSac) {
+          // 🆕 Révèle le VRAI #sacBouton — masqué par défaut (voir <style>
+          // d'index.html) le temps que l'élève ne l'ait pas encore
+          // "gagné" ; ce style inline prend le dessus une seule fois, ici,
+          // au moment choisi de la révélation. Sans effet sur le bouton
+          // de repli (jamais masqué en premier lieu).
+          boutonSac.style.display = '';
           boutonSac.classList.add('iden-sac-eclat');
           setTimeout(function () { boutonSac.classList.remove('iden-sac-eclat'); }, 700);
         }
-        afficherCarteSacUneFois();
+        afficherApercuSacUneFois();
 
         // 🆕 CORRIGÉ cette session : callbacks.onComplet(s) était appelé
         // ICI, juste après l'atterrissage — mais la fiche "objet" ne fait
@@ -2450,13 +2527,20 @@ const KebBekIdentite = (function () {
 
       bulle.appendChild(ligne);
 
-      // Réussite : feedback déjà donné par .flash-ajout (voir dblclick
-      // ci-dessus, via ajouterMotAuSac) — reste seulement à débloquer la
-      // suite de la séquence, une seule fois (un second double-tap sur
-      // "Essaie" ne doit pas redéclencher tout ceci).
+      // Réussite : feedback déjà donné par .flash-ajout + le mot qui
+      // s'envole vers le sac (voir dblclick ci-dessus, via
+      // ajouterMotAuSac/animerMotVersSac) — reste à (1) basculer l'image
+      // des personnages sur la scène "tadam" (2) déverser tous les mots
+      // déjà touchés dans le vrai sac, d'un coup : c'est CE moment précis
+      // que Raphaël a choisi pour que le sac devienne pleinement actif,
+      // pas seulement décoratif. Le tout une seule fois (un second
+      // double-tap sur "Essaie" ne doit rien redéclencher de tout ceci).
       function reussirEssaie() {
         if (reussi) return;
         reussi = true;
+        img.src = image(options, 'tadam');
+        img.alt = texte(options, 'altTadam');
+        synchroniserMotsToucheSacUneFois();
         indice.textContent = texte(options, 'introIndiceTap');
         avancerActif = function () {
           if (typeof callbacks.onComplet === 'function') callbacks.onComplet(s);
@@ -2532,6 +2616,27 @@ const KebBekIdentite = (function () {
       if (!carte) return;
       carte.classList.add('visible');
       setTimeout(function () { carte.classList.remove('visible'); }, DELAI_CARTE_AUTO_SAC);
+    }
+
+    // 🆕 Aperçu automatique au moment de l'atterrissage — préfère
+    // désormais le VRAI panneau (sac-a-dos.js, #sacPanneau) quand il est
+    // présent sur la page : toggleSacADos() l'ouvre ET déclenche au
+    // passage sa propre bannière d'accueil (afficherIntroSacSiPremiereFois,
+    // "Some words you've already come across are here!"), qui remplace
+    // avantageusement la fiche "objet" maison — pas la peine de maintenir
+    // les deux en parallèle une fois la vraie intégration branchée. Repli
+    // sur afficherCarteSacUneFois() ci-dessus si sac-a-dos.js n'est pas
+    // chargé sur cette page (même prudence que creerSacBoutonSiAbsent).
+    function afficherApercuSacUneFois() {
+      const panneau = document.getElementById('sacPanneau');
+      if (panneau && typeof window.toggleSacADos === 'function') {
+        window.toggleSacADos();
+        setTimeout(function () {
+          if (panneau.classList.contains('ouvert')) window.toggleSacADos();
+        }, DELAI_CARTE_AUTO_SAC);
+        return;
+      }
+      afficherCarteSacUneFois();
     }
   }
 

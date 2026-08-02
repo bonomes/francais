@@ -890,6 +890,11 @@ const KebBekIdentite = (function () {
     // silencieux si #sacBouton est absent de la page (aucune animation),
     // même prudence que partout ailleurs dans ce fichier.
     const DUREE_VOL_MOT = 550;
+    // Combien de temps le sac reste ouvert APRÈS l'atterrissage du mot
+    // (voir animerMotVersSac ci-dessous) avant de se refermer tout seul —
+    // assez pour que "le mot glisse à l'intérieur" se voie clairement,
+    // sans laisser le sac ouvert indéfiniment après.
+    const DELAI_FERMETURE_SAC_APRES_RECEPTION = 350;
     function animerMotVersSac(span) {
       const bouton = document.getElementById('sacBouton');
       if (!bouton || bouton.offsetParent === null) return; // pas de sac, ou sac pas encore révélé sur cette page
@@ -908,11 +913,22 @@ const KebBekIdentite = (function () {
       clone.style.setProperty('--vol-dy', dy + 'px');
       clone.classList.add('en-vol');
       clone.addEventListener('transitionend', function () { clone.remove(); }, { once: true });
+      // 🆕 Le sac s'OUVRE (icône, voir sac-icone-fermee/ouverte dans le
+      // CSS) dès que le mot s'envole — le temps qu'il arrive, l'élève voit
+      // le mot glisser dans un sac déjà ouvert plutôt que disparaître
+      // dans un sac fermé. Classe DISTINCTE de `.ouvert` (réservée au vrai
+      // panneau, pilotée par toggleSacADos) pour ne jamais désynchroniser
+      // l'état réel du panneau — ce n'est qu'un geste visuel de réception,
+      // pas une vraie ouverture du panneau.
+      bouton.classList.add('sac-recoit');
       setTimeout(function () {
         bouton.classList.remove('iden-sac-eclat');
         void bouton.offsetWidth;
         bouton.classList.add('iden-sac-eclat');
       }, DUREE_VOL_MOT);
+      setTimeout(function () {
+        bouton.classList.remove('sac-recoit');
+      }, DUREE_VOL_MOT + DELAI_FERMETURE_SAC_APRES_RECEPTION);
     }
 
     // 🆕 Déverse dans le VRAI sac (window.ajouterAuSac) tous les mots
@@ -1906,12 +1922,11 @@ const KebBekIdentite = (function () {
     // DELAI_VOL_SAC doit correspondre à la durée de l'animation CSS
     // .iden-debloque-vol (transition transform/opacity) : un décalage entre
     // les deux ferait apparaître #sacBouton avant/après que l'image ait
-    // fini de "voler" jusqu'au coin. DELAI_CARTE_AUTO_SAC : combien de
-    // temps la fiche "objet" reste ouverte toute seule après l'atterrissage
-    // avant de se refermer — assez long pour lire les 3 lignes, pas assez
-    // pour agacer un élève qui voudrait continuer.
+    // fini de "voler" jusqu'au coin. (La fiche "objet" n'utilise plus de
+    // minuterie fixe depuis le retour de Raphaël — voir ouvrirCarteSac/
+    // fermerCarteSac plus bas, pilotées par le déroulé réel de la scène
+    // "Essaie !" plutôt que par un délai arbitraire.)
     const DELAI_VOL_SAC = 850;
-    const DELAI_CARTE_AUTO_SAC = 4200;
     const IMAGES_DON_SAC = [
       { cle: 'donSacQuestion', altCle: 'altDonSacQuestion', dialogueCleM: 'donSacQuestionM', dialogueCleF: 'donSacQuestionF' },
       { cle: 'donSacPresque', altCle: 'altDonSacPresque', dialogueCle: 'donSacPresque' },
@@ -2274,14 +2289,14 @@ const KebBekIdentite = (function () {
     //      s'animent vers le coin supérieur droit (.iden-debloque-vol),
     //      DELAI_VOL_SAC ms plus tard on atterrit.
     //   4. Atterrissage → creerSacBoutonSiAbsent() pose #sacBouton en
-    //      haut à droite (créé ici s'il n'existe pas encore — voir note
-    //      ⚠️ plus bas, sac-a-dos.js n'est toujours pas chargé dans
-    //      index.html à ce jour), petit éclat, puis la fiche "objet"
-    //      s'ouvre TOUTE SEULE une fois (DELAI_CARTE_AUTO_SAC, décidé
-    //      avec Raphaël) avant de se refermer — et reste disponible au
-    //      survol/tap volontaire par la suite. callbacks.onComplet(s)
-    //      est appelé à cet instant : la séquence identité proprement
-    //      dite se termine ici.
+    //      haut à droite (repli seulement si sac-a-dos.js n'est pas
+    //      chargé sur cette page — voir note ⚠️ plus bas ; sur index.html,
+    //      c'est désormais le VRAI bouton de sac-a-dos.js, simplement
+    //      révélé), petit éclat. callbacks.onComplet(s) n'est PLUS appelé
+    //      ici — voir lancerEssaieDoubleTap juste après : la fiche
+    //      "objet" n'apparaît qu'à CE moment-là (pas à l'atterrissage), le
+    //      sac restant fermé jusqu'à ce que l'élève réussisse le vrai
+    //      double-tap.
     //
     // ⚠️ #sacBouton créé ici est un repli AUTONOME (icône + fiche
     // maison, id="sacBouton" pour rester compatible) — à remplacer par
@@ -2397,20 +2412,16 @@ const KebBekIdentite = (function () {
           boutonSac.classList.add('iden-sac-eclat');
           setTimeout(function () { boutonSac.classList.remove('iden-sac-eclat'); }, 700);
         }
-        // 🐛 CORRIGÉ (signalé par Raphaël) : la version précédente préférait
-        // ouvrir automatiquement le VRAI #sacPanneau ici (via
-        // afficherApercuSacUneFois/toggleSacADos) — ça sautait purement et
-        // simplement l'explication du mécanisme (double-tap) et montrait
-        // le sac déjà "niveau 1" avec des mots dedans avant même que
-        // l'élève sache comment ça marche. Revenu à la fiche "objet"
-        // maison (afficherCarteSacUneFois) : elle EXPLIQUE le geste en
-        // mots, rien de plus — le vrai panneau reste fermé (icône fermée,
-        // voir sac-icone-fermee/ouverte dans le CSS) tant que l'élève ne
-        // clique pas dessus lui-même. C'est lancerEssaieDoubleTap()
-        // juste en dessous qui fait ensuite PRATIQUER le geste pour de
-        // vrai, une fois, avant que le sac ne reçoive son premier
-        // contenu réel.
-        afficherCarteSacUneFois();
+        // 🐛 CORRIGÉ (2e retour de Raphaël) : la fiche explicative
+        // apparaissait ICI, à l'atterrissage — donc AVANT que Bek ne dise
+        // "Essaie !", et se refermait toute seule après un délai fixe qui
+        // pouvait s'écouler avant même que l'élève ait vu la scène
+        // "Essaie !". Elle est déplacée dans lancerEssaieDoubleTap()
+        // ci-dessous : elle apparaît pile quand Bek dit "Essaie !", à
+        // CÔTÉ du sac (toujours fermé à ce stade), et reste ouverte tant
+        // que l'élève n'a pas réussi le double-tap — plus de minuterie
+        // arbitraire qui pourrait la refermer avant que l'élève ait eu le
+        // temps de comprendre.
 
         // 🆕 CORRIGÉ cette session : callbacks.onComplet(s) était appelé
         // ICI, juste après l'atterrissage — mais la fiche "objet" ne fait
@@ -2477,6 +2488,13 @@ const KebBekIdentite = (function () {
       indice.textContent = texte(options, 'essaieInstruction');
       btnTraduirePhrase.style.display = 'none';
       tooltipPhrase.classList.remove('visible');
+
+      // 🆕 La fiche "objet" apparaît PILE ici — au moment où Bek dit
+      // "Essaie !", à côté du sac (encore fermé, voir sac-icone-fermee/
+      // ouverte dans le CSS) — et reste ouverte jusqu'à la réussite du
+      // double-tap (voir fermerCarteSac() dans reussirEssaie ci-dessous),
+      // plutôt que de se refermer sur une minuterie arbitraire.
+      ouvrirCarteSac();
 
       Array.from(personnages.querySelectorAll('img.iden-img')).forEach(function (img) { img.remove(); });
       bulle.innerHTML = '';
@@ -2552,6 +2570,7 @@ const KebBekIdentite = (function () {
       function reussirEssaie() {
         if (reussi) return;
         reussi = true;
+        fermerCarteSac(); // le sac qui s'ouvre pour de vrai (voir animerMotVersSac) démontre le geste, la fiche n'a plus besoin de rester
         img.src = image(options, 'tadam');
         img.alt = texte(options, 'altTadam');
         synchroniserMotsToucheSacUneFois();
@@ -2623,7 +2642,7 @@ const KebBekIdentite = (function () {
       function ouvrirCarte() { carte.classList.add('visible'); }
       function fermerCarte() { carte.classList.remove('visible'); carteOuverteManuel = false; }
       bouton.addEventListener('mouseenter', ouvrirCarte);
-      bouton.addEventListener('mouseleave', function () { if (!carteOuverteManuel) fermerCarte(); });
+      bouton.addEventListener('mouseleave', function () { if (!carteOuverteManuel && !ficheSacForceeOuverte) fermerCarte(); });
       bouton.addEventListener('click', function (e) {
         // 🆕 Distingue repli (classe .iden-sac-bouton, aucun vrai panneau
         // à côté — le clic doit basculer la fiche lui-même) du VRAI
@@ -2631,6 +2650,7 @@ const KebBekIdentite = (function () {
         // onclick="toggleSacADos()" dans le markup d'index.html : dans ce
         // cas le clic ouvre le vrai panneau tout seul, la fiche n'a plus
         // qu'à s'écarter pour ne pas rester superposée par-dessus.
+        if (ficheSacForceeOuverte) return; // laisse lancerEssaieDoubleTap/reussirEssaie décider seuls, pendant cette scène
         if (bouton.classList.contains('iden-sac-bouton')) {
           e.stopPropagation();
           if (carte.classList.contains('visible')) { fermerCarte(); }
@@ -2640,20 +2660,34 @@ const KebBekIdentite = (function () {
         }
       });
       document.addEventListener('click', function (e) {
+        if (ficheSacForceeOuverte) return; // idem : pas de fermeture au clic extérieur pendant la scène Essaie
         if (carte.classList.contains('visible') && !bouton.contains(e.target) && !carte.contains(e.target)) fermerCarte();
       });
     }
 
-    // Ouvre la fiche "objet" une seule fois, toute seule, juste après
-    // l'atterrissage (décision de Raphaël : attire l'attention dessus
-    // sans attendre un survol/tap volontaire) puis se referme après
-    // DELAI_CARTE_AUTO_SAC — reste ensuite disponible normalement au
-    // survol/tap (voir creerSacBoutonSiAbsent ci-dessus).
-    function afficherCarteSacUneFois() {
+    // 🆕 Drapeau partagé avec creerFicheSacSiAbsente() plus bas : pendant
+    // que la fiche est "forcée ouverte" par lancerEssaieDoubleTap
+    // (ci-dessous), le survol/le clic-extérieur ne doivent PAS pouvoir la
+    // refermer prématurément — cliquer sur le mot "Essaie" lui-même est
+    // un clic "extérieur" à la fiche/au bouton, et la fermerait sinon
+    // avant même que l'élève ait fini de lire.
+    let ficheSacForceeOuverte = false;
+
+    // Ouvre/ferme la fiche "objet" explicitement — remplace l'ancienne
+    // afficherCarteSacUneFois() (minuterie fixe de DELAI_CARTE_AUTO_SAC,
+    // retirée) : la fiche est maintenant pilotée par le déroulé réel de
+    // la scène "Essaie !" (voir lancerEssaieDoubleTap/reussirEssaie plus
+    // bas) plutôt que par un délai arbitraire déconnecté de ce que
+    // l'élève fait réellement à l'écran.
+    function ouvrirCarteSac() {
       const carte = document.getElementById('idenCarteSac');
-      if (!carte) return;
-      carte.classList.add('visible');
-      setTimeout(function () { carte.classList.remove('visible'); }, DELAI_CARTE_AUTO_SAC);
+      if (carte) carte.classList.add('visible');
+      ficheSacForceeOuverte = true;
+    }
+    function fermerCarteSac() {
+      const carte = document.getElementById('idenCarteSac');
+      if (carte) carte.classList.remove('visible');
+      ficheSacForceeOuverte = false;
     }
   }
 

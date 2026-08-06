@@ -405,7 +405,10 @@ const KebBekIdentite = (function () {
     // 🆕 Option "continuer en invité" (voir lancerCreationCompte) —
     // demande de Raphaël.
     creationCompteLienInvite: 'Continue without an account',
-    creationCompteAvertissementInvite: 'Your progress could be lost if your browser data is cleared.'
+    creationCompteAvertissementInvite: 'Your progress could be lost if your browser data is cleared.',
+    // 🆕 Bouton "quitter" persistant (voir callbacks.onQuitter) —
+    // demande de Raphaël.
+    quitterAriaLabel: 'Close and go back'
   };
 
   function texte(options, cle) {
@@ -773,6 +776,29 @@ const KebBekIdentite = (function () {
     personnages.appendChild(chevronGauche);
 
     conteneur.appendChild(personnages);
+
+    // 🆕 Bouton "quitter" persistant (demande de Raphaël) — contrairement
+    // à chevronGauche/reculerActif (qui ne remontent qu'un pas à la
+    // fois), celui-ci est visible à TOUTE étape de la séquence et ramène
+    // directement à l'écran d'avant, en un seul clic. Sert de filet de
+    // sécurité si "Oui" a été cliqué par erreur à l'écran "First time ?".
+    // callbacks.onQuitter est OPTIONNEL : ce module ne sait rien de la
+    // page qui l'héberge (ni comment "revenir à la première page" s'y
+    // traduit concrètement) — voir demarrerIdentiteSiPremiereFois dans
+    // index.html, qui la fournit. Sans elle, aucun bouton n'apparaît
+    // (repli silencieux), plutôt qu'un bouton qui ne ferait rien au clic.
+    if (typeof callbacks.onQuitter === 'function') {
+      const btnQuitter = document.createElement('button');
+      btnQuitter.type = 'button';
+      btnQuitter.className = 'iden-btn-quitter';
+      btnQuitter.setAttribute('aria-label', texte(options, 'quitterAriaLabel'));
+      btnQuitter.textContent = '\u00D7'; // ×
+      btnQuitter.addEventListener('click', function (e) {
+        e.stopPropagation(); // ne doit jamais aussi déclencher avancerActif via #idenPersonnages
+        callbacks.onQuitter();
+      });
+      conteneur.appendChild(btnQuitter);
+    }
 
     const indice = document.createElement('div');
     indice.className = 'iden-indice';

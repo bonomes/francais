@@ -363,6 +363,10 @@ const KebBekIdentite = (function () {
     // 🆕 Alt (accessibilité) de l'image "tadam" — voir tadam dans
     // IMAGES_PAR_DEFAUT et reussirEssaie() dans lancerEssaieDoubleTap.
     altTadam: 'Keb and Bek cheer: ta-dah!',
+    // 🆕 Remplace introIndiceTap à l'étape "Tadam !" — taper la scène ne
+    // fait plus rien à ce stade (voir reussirEssaie), seul un clic sur le
+    // sac fait avancer.
+    introIndiceTapSac: 'Tap the bag to continue',
     altPretBek: 'Bek turns to Keb, smiling',
     altPretKeb: 'Keb looks at you, asking a question',
     // 🆕 Écran de confirmation (voir lancerConfirmationIdentite) — chrome
@@ -1660,12 +1664,17 @@ const KebBekIdentite = (function () {
 
         minuterieConfirmation = setTimeout(function () {
           btnAnnuler.remove();
-          // 🆕 CORRIGÉ cette session : appelait directement onComplet ici
-          // — remplacé par la nouvelle étape de réaction (Keb/Bek réagit
-          // à la silhouette choisie, voir lancerReactionSilhouette
-          // ci-dessous), qui appelle elle-même onComplet une fois la
-          // réplique tapée/lue par l'élève.
-          lancerReactionSilhouette(s);
+          // 🐛 CORRIGÉ (signalé par Raphaël — "le nom n'apparaît pas") :
+          // `s` ici est l'entrée BRUTE de SILHOUETTES (id/genre/adulte/
+          // vocabCle) — le prénom n'y a jamais été rattaché, malgré le
+          // commentaire ci-dessus qui l'affirmait à tort. Un nouvel objet
+          // est construit ici (jamais une mutation directe de `s`, qui
+          // pointe vers l'entrée PARTAGÉE et RÉUTILISÉE de la constante
+          // SILHOUETTES — la muter aurait fait fuiter le prénom d'un
+          // élève vers la prochaine exécution de la séquence sur la même
+          // page). C'est CET objet qui voyage ensuite dans toutes les
+          // étapes suivantes (remise du sac, Essaie, confirmation, etc.).
+          lancerReactionSilhouette(Object.assign({}, s, { prenom: prenomChoisi }));
         }, DUREE_CONFIRMATION_MS);
       }
 
@@ -2646,23 +2655,45 @@ const KebBekIdentite = (function () {
         img.alt = texte(options, 'altTadam');
         // 🐛 CORRIGÉ (signalé par Raphaël) : l'image basculait déjà sur
         // "tadam" mais la bulle gardait le texte "Essaie !" affiché — Keb
-        // ne disait jamais réellement "Tadam !" à l'écran. La bulle est
-        // maintenant reconstruite avec DIALOGUES_FIXES.tadamKeb, même
-        // couleur de locuteur que le reste (locuteurDeDialogue), à la
-        // place du mot "Essaie" (qui n'a plus lieu d'être cliquable une
-        // fois la scène terminée).
-        bulle.innerHTML = '';
-        bulle.classList.remove('iden-bulle-ligne-bek', 'iden-bulle-ligne-keb');
-        const locuteurTadam = locuteurDeDialogue('tadamKeb');
-        const ligneTadam = document.createElement('div');
-        ligneTadam.className = 'iden-bulle-ligne' + (locuteurTadam ? ' iden-bulle-ligne-' + locuteurTadam : '');
-        ligneTadam.textContent = DIALOGUES_FIXES.tadamKeb;
-        bulle.appendChild(ligneTadam);
+        // ne disait jamais réellement "Tadam !" à l'écran. 🆕 CORRIGÉ à
+        // nouveau cette session : la première correction construisait la
+        // bulle "à la main" (simple <div>, texte brut) plutôt que par
+        // afficherLigneBulleUnique() — "Tadam !" n'était donc PAS
+        // cliquable comme le reste du dialogue, et n'affichait jamais sa
+        // traduction même une fois ajoutée au dictionnaire (voir
+        // index.html, TRADUCTIONS_MOTS_IDENTITE). Remplacé par le même
+        // helper que lancerPretBek/lancerConfirmationIdentite : mot-à-mot
+        // cliquable, traduction + ajout au sac comme partout ailleurs.
+        afficherLigneBulleUnique('tadamKeb');
         synchroniserMotsToucheSacUneFois();
-        indice.textContent = texte(options, 'introIndiceTap');
-        avancerActif = function () {
-          lancerPretBek(s);
-        };
+
+        // 🆕 CORRIGÉ (demande de Raphaël) : taper n'importe où sur la
+        // scène ne fait PLUS avancer — pour "s'assurer qu'on utilise la
+        // fonction" du sac, c'est désormais un clic sur #sacBouton
+        // lui-même qui fait office de "continuer" (en plus d'ouvrir le
+        // sac normalement, ce qui est justement le but). Une flèche
+        // discrète apparaît à côté du sac pour inviter ce clic — voir
+        // afficherFlecheVersSac/masquerFlecheVersSac plus bas.
+        indice.textContent = texte(options, 'introIndiceTapSac');
+        avancerActif = function () {}; // plus de tap générique sur la scène à cette étape
+        reculerActif = function () {};
+
+        const boutonSac = document.getElementById('sacBouton');
+        if (boutonSac) {
+          afficherFlecheVersSac();
+          const continuerDepuisSac = function () {
+            boutonSac.removeEventListener('click', continuerDepuisSac);
+            masquerFlecheVersSac();
+            lancerPretBek(s);
+          };
+          boutonSac.addEventListener('click', continuerDepuisSac);
+        } else {
+          // Filet de sécurité : si #sacBouton est introuvable pour une
+          // raison quelconque, ne pas bloquer l'élève indéfiniment sans
+          // aucune façon d'avancer.
+          avancerActif = function () { lancerPretBek(s); };
+          indice.textContent = texte(options, 'introIndiceTap');
+        }
       }
 
       etapeScene = 'dialogue';
@@ -3149,6 +3180,28 @@ const KebBekIdentite = (function () {
     // autonome, voir note ⚠️ au-dessus de lancerDeblocageSac. N'écrase
     // jamais un #sacBouton déjà présent (venant d'une vraie intégration
     // de sac-a-dos.js).
+    // 🆕 Flèche discrète invitant à cliquer sur #sacBouton (voir
+    // reussirEssaie) — créée une seule fois puis réutilisée (comme
+    // #idenCarteSac), positionnée en `fixed` indépendamment de
+    // #idenPersonnages puisque #sacBouton lui-même est ailleurs sur la
+    // page (coin supérieur droit).
+    function afficherFlecheVersSac() {
+      let fleche = document.getElementById('idenFlecheSac');
+      if (!fleche) {
+        fleche = document.createElement('div');
+        fleche.id = 'idenFlecheSac';
+        fleche.className = 'iden-fleche-sac';
+        fleche.setAttribute('aria-hidden', 'true');
+        fleche.textContent = '\u2197'; // ↗
+        document.body.appendChild(fleche);
+      }
+      fleche.classList.add('visible');
+    }
+    function masquerFlecheVersSac() {
+      const fleche = document.getElementById('idenFlecheSac');
+      if (fleche) fleche.classList.remove('visible');
+    }
+
     function creerSacBoutonSiAbsent() {
       if (document.getElementById('sacBouton')) return;
 

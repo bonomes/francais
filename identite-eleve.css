@@ -3,7 +3,7 @@
    identite-eleve.css — habillage visuel de identite-eleve.js.
    Mêmes conventions que exercices.css / sac-a-dos.css : var(--x, repli)
    sur chaque couleur pas garantie définie partout sur toutes les
-   pages, pour fonctionner même avec le strict minimum (--fond, --brun,
+   pages, pour fonctionner  même avec le strict minimum (--fond, --brun,
    --peche, --peche-fonce).
 
    ⚠️ Première passe visuelle, pas encore vue contre un vrai gabarit

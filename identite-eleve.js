@@ -401,7 +401,11 @@ const KebBekIdentite = (function () {
     creationCompteErreurCodeVide: 'Please enter the code.',
     creationCompteEnvoiEnCours: 'Sending…',
     creationCompteVerificationEnCours: 'Checking…',
-    creationCompteErreurIndisponible: "Account creation isn't available right now."
+    creationCompteErreurIndisponible: "Account creation isn't available right now.",
+    // 🆕 Option "continuer en invité" (voir lancerCreationCompte) —
+    // demande de Raphaël.
+    creationCompteLienInvite: 'Continue without an account',
+    creationCompteAvertissementInvite: 'Your progress could be lost if your browser data is cleared.'
   };
 
   function texte(options, cle) {
@@ -3086,6 +3090,40 @@ const KebBekIdentite = (function () {
         msgDiv.classList.toggle('iden-msg-succes', !estErreur);
       }
 
+      // 🆕 Option "continuer en invité" (demande de Raphaël) — reste
+      // volontairement en retrait sous le bouton principal (voir
+      // .iden-lien-invite dans le CSS : simple lien texte, pas une
+      // pilule pleine comme .iden-btn-valider) pour ne jamais concurrencer
+      // visuellement la création de compte. N'écrit RIEN de plus que ce
+      // que la séquence fait déjà pour un invité normalement — même appel
+      // à enregistrerIdentite() que la branche compte plus bas
+      // (dessinerEtapeCode), qui route automatiquement vers le stockage
+      // local quand aucune session n'est active (voir sa propre
+      // implémentation dans progression.js) — rien de spécifique à coder
+      // ici pour le mode invité lui-même.
+      const btnInvite = document.createElement('button');
+      btnInvite.type = 'button';
+      btnInvite.className = 'iden-lien-invite';
+      btnInvite.textContent = texte(options, 'creationCompteLienInvite');
+      action.appendChild(btnInvite);
+
+      const avertissementInvite = document.createElement('p');
+      avertissementInvite.className = 'iden-avertissement-invite';
+      avertissementInvite.textContent = texte(options, 'creationCompteAvertissementInvite');
+      action.appendChild(avertissementInvite);
+
+      btnInvite.addEventListener('click', async function () {
+        btnInvite.disabled = true;
+        if (window.KebBekProgression) {
+          try {
+            await window.KebBekProgression.enregistrerIdentite(s.genre, undefined, undefined, s.adulte);
+          } catch (e) {
+            console.warn('lancerCreationCompte : enregistrerIdentite (invité) a échoué.', e);
+          }
+        }
+        if (typeof callbacks.onComplet === 'function') callbacks.onComplet(s);
+      });
+
       btnEnvoyer.addEventListener('click', async function () {
         const email = champEmail.value.trim();
         if (!email) { afficherMsg(texte(options, 'creationCompteErreurCourrielVide'), true); return; }
@@ -3199,24 +3237,108 @@ const KebBekIdentite = (function () {
     // de sac-a-dos.js).
     // 🆕 Flèche discrète invitant à cliquer sur #sacBouton (voir
     // reussirEssaie) — créée une seule fois puis réutilisée (comme
-    // #idenCarteSac), positionnée en `fixed` indépendamment de
-    // #idenPersonnages puisque #sacBouton lui-même est ailleurs sur la
-    // page (coin supérieur droit).
+    // #idenCarteSac). 🐛 CORRIGÉ cette session : les deux tentatives
+    // précédentes (glyphe → tourné par un angle CSS deviné à l'œil,
+    // rotate(-108deg)) restaient "croche" (retour direct de Raphaël) —
+    // un angle fixe ne peut de toute façon jamais viser le VRAI centre
+    // de #sacBouton, qui dépend de la taille d'écran. Remplacé par un
+    // vrai SVG : une ligne dont les deux extrémités sont calculées à
+    // partir de #sacBouton.getBoundingClientRect() à chaque affichage, et
+    // une pointe de flèche posée dessus via un <marker orient="auto"> —
+    // orient="auto" fait tourner la pointe SEULE, géométriquement, pour
+    // suivre la direction réelle de la ligne : plus aucun angle à deviner
+    // ni à ajuster à l'œil, quelle que soit la taille de fenêtre.
+    const NS_SVG = 'http://www.w3.org/2000/svg';
+    const DECALAGE_DEPART_FLECHE = 58; // distance (px) entre le départ de la flèche et le centre du sac — même intention que l'ancien top:85px/right:36px codé en dur, mais dérivée de la vraie position du bouton plutôt que devinée
+
+    function creerFlecheVersSacSiAbsente() {
+      const existante = document.getElementById('idenFlecheSac');
+      if (existante) return existante;
+
+      const svg = document.createElementNS(NS_SVG, 'svg');
+      svg.id = 'idenFlecheSac';
+      svg.setAttribute('class', 'iden-fleche-sac');
+      svg.setAttribute('aria-hidden', 'true');
+
+      const defs = document.createElementNS(NS_SVG, 'defs');
+      const marker = document.createElementNS(NS_SVG, 'marker');
+      marker.id = 'idenFlecheSacPointe';
+      marker.setAttribute('markerWidth', '8');
+      marker.setAttribute('markerHeight', '8');
+      marker.setAttribute('refX', '6');
+      marker.setAttribute('refY', '4');
+      marker.setAttribute('orient', 'auto'); // 🆕 le cœur du correctif : orientation calculée par le SVG lui-même, le long de la ligne
+      const pointe = document.createElementNS(NS_SVG, 'path');
+      pointe.setAttribute('d', 'M0,0 L8,4 L0,8 Z');
+      pointe.setAttribute('class', 'iden-fleche-sac-pointe');
+      marker.appendChild(pointe);
+      defs.appendChild(marker);
+      svg.appendChild(defs);
+
+      const ligne = document.createElementNS(NS_SVG, 'line');
+      ligne.id = 'idenFlecheSacLigne';
+      ligne.setAttribute('class', 'iden-fleche-sac-ligne');
+      ligne.setAttribute('marker-end', 'url(#idenFlecheSacPointe)');
+      svg.appendChild(ligne);
+
+      document.body.appendChild(svg);
+      return svg;
+    }
+
+    // Recalcule le tracé à partir de la position RÉELLE de #sacBouton —
+    // appelée à l'affichage ET au redimensionnement (voir
+    // flecheRepositionnerSiVisible), jamais figée une fois pour toutes.
+    function positionnerFlecheVersSac(svg, bouton) {
+      const rectBouton = bouton.getBoundingClientRect();
+      const cibleX = rectBouton.left + rectBouton.width / 2;
+      const cibleY = rectBouton.top + rectBouton.height / 2;
+      const departX = cibleX - DECALAGE_DEPART_FLECHE;
+      const departY = cibleY + DECALAGE_DEPART_FLECHE;
+      const dx = cibleX - departX;
+      const dy = cibleY - departY;
+      const longueur = Math.hypot(dx, dy) || 1;
+      // La ligne s'arrête un peu AVANT le centre réel (rayon du bouton +
+      // petite marge) pour que la pointe touche le bord du cercle plutôt
+      // que de s'enfoncer dedans.
+      const marge = rectBouton.width / 2 + 4;
+      const finX = cibleX - (dx / longueur) * marge;
+      const finY = cibleY - (dy / longueur) * marge;
+
+      svg.setAttribute('width', window.innerWidth);
+      svg.setAttribute('height', window.innerHeight);
+      svg.setAttribute('viewBox', '0 0 ' + window.innerWidth + ' ' + window.innerHeight);
+      const ligne = document.getElementById('idenFlecheSacLigne');
+      ligne.setAttribute('x1', departX);
+      ligne.setAttribute('y1', departY);
+      ligne.setAttribute('x2', finX);
+      ligne.setAttribute('y2', finY);
+
+      // Petit rebond animé le long de CE MÊME axe (voir .iden-fleche-sac
+      // dans le CSS) — un vecteur unitaire × quelques px, plutôt qu'un
+      // simple translate(4px,0) qui ne pointait, avant, que par hasard
+      // dans une direction cohérente avec l'ancien rotate() codé en dur.
+      svg.style.setProperty('--iden-fleche-dx', (dx / longueur * 5) + 'px');
+      svg.style.setProperty('--iden-fleche-dy', (dy / longueur * 5) + 'px');
+    }
+
+    function flecheRepositionnerSiVisible() {
+      const svg = document.getElementById('idenFlecheSac');
+      const bouton = document.getElementById('sacBouton');
+      if (svg && bouton && svg.classList.contains('visible')) positionnerFlecheVersSac(svg, bouton);
+    }
+
     function afficherFlecheVersSac() {
-      let fleche = document.getElementById('idenFlecheSac');
-      if (!fleche) {
-        fleche = document.createElement('div');
-        fleche.id = 'idenFlecheSac';
-        fleche.className = 'iden-fleche-sac';
-        fleche.setAttribute('aria-hidden', 'true');
-        fleche.textContent = '\u2192'; // → tourné par CSS (voir .iden-fleche-sac, rotate calculé)
-        document.body.appendChild(fleche);
-      }
-      fleche.classList.add('visible');
+      const bouton = document.getElementById('sacBouton');
+      if (!bouton) return;
+      const svg = creerFlecheVersSacSiAbsente();
+      positionnerFlecheVersSac(svg, bouton);
+      svg.classList.add('visible');
+      window.addEventListener('resize', flecheRepositionnerSiVisible);
     }
     function masquerFlecheVersSac() {
-      const fleche = document.getElementById('idenFlecheSac');
-      if (fleche) fleche.classList.remove('visible');
+      const svg = document.getElementById('idenFlecheSac');
+      if (svg) svg.classList.remove('visible');
+      window.removeEventListener('resize', flecheRepositionnerSiVisible);
     }
 
     function creerSacBoutonSiAbsent() {

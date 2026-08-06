@@ -1043,20 +1043,26 @@
 }
 
 /* ---------- Flèche invitant à cliquer sur le sac (voir reussirEssaie) ----------
-   Positionnée juste sous/à gauche de #sacBouton (top:24px; right:24px;
-   48×48, voir sac-a-dos.css) — pointe vers le coin supérieur droit,
-   rebondit doucement en boucle pour attirer l'œil sans être agressive. */
+   🐛 CORRIGÉ (signalé par Raphaël, "mal orientée") : le glyphe Unicode
+   ↗ pointe TOUJOURS à 45°, peu importe où il est positionné — pas de
+   raison que ça tombe pile sur le sac. Remplacé par un simple "→"
+   tourné à un angle CALCULÉ (rotate(-108deg)) pour viser le centre réel
+   de #sacBouton (top:24px;right:24px;48×48, voir sac-a-dos.css) depuis
+   la position choisie ci-dessous — les deux étant ancrés en top/right
+   (jamais en pourcentage), l'angle reste correct quelle que soit la
+   taille de fenêtre, W s'annulant dans le calcul. */
 .iden-fleche-sac {
   position: fixed;
-  top: 76px;
-  right: 30px;
+  top: 85px;
+  right: 36px;
   z-index: 201;
   font-size: 1.7rem;
   line-height: 1;
   color: var(--peche-fonce);
   pointer-events: none;
   opacity: 0;
-  transform: translate(-6px, 6px);
+  transform: rotate(-108deg) translate(0, 0);
+  transform-origin: center;
   transition: opacity 0.3s ease;
   text-shadow: 0 2px 6px rgba(255,255,255,0.9), 0 2px 6px rgba(255,255,255,0.9);
 }
@@ -1064,11 +1070,15 @@
   opacity: 1;
   animation: iden-fleche-sac-rebond 1.2s ease-in-out infinite;
 }
+/* Rebond le long du MÊME axe que la rotation ci-dessus (translate AVANT
+   rotate dans la valeur transform, donc exprimé dans le repère NON
+   tourné : une petite avancée vers le haut-gauche, cohérente avec la
+   direction visée une fois le rotate appliqué par-dessus). */
 @keyframes iden-fleche-sac-rebond {
-  0%, 100% { transform: translate(-6px, 6px); }
-  50%      { transform: translate(-2px, 2px); }
+  0%, 100% { transform: rotate(-108deg) translate(0, 0); }
+  50%      { transform: rotate(-108deg) translate(4px, 0); }
 }
 
 @media (max-width: 480px) {
-  .iden-fleche-sac { top: 60px; right: 22px; font-size: 1.4rem; }
+  .iden-fleche-sac { top: 68px; right: 26px; font-size: 1.4rem; }
 }

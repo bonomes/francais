@@ -830,6 +830,13 @@
      ajouter ici plus tard si index.html gagne un jour son propre système
      de connexion (voir note de tête de progression.js : "cas d'index.html,
      qui gère sa propre connexion"). -->
+<!-- 🆕 CDN Supabase — DOIT être chargé avant progression.js (voir son
+     en-tête) pour que clientOuAutoCree() puisse créer un client réel ;
+     sans lui, KebBekProgression retombe silencieusement en mode invité
+     (localStorage), ce qui aurait empêché la création de compte de
+     fonctionner. Requis par lancerCreationCompte() dans identite-eleve.js
+     (courriel + code, voir ce fichier). -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script src="sac-a-dos.js"></script>
 <script src="progression.js"></script>
 <script src="identite-eleve.js"></script>

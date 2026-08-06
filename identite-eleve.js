@@ -362,7 +362,42 @@ const KebBekIdentite = (function () {
     etiquetteInformel: '(informal)',
     // 🆕 Alt (accessibilité) de l'image "tadam" — voir tadam dans
     // IMAGES_PAR_DEFAUT et reussirEssaie() dans lancerEssaieDoubleTap.
-    altTadam: 'Keb and Bek cheer: ta-dah!'
+    altTadam: 'Keb and Bek cheer: ta-dah!',
+    altPretBek: 'Bek turns to Keb, smiling',
+    altPretKeb: 'Keb looks at you, asking a question',
+    // 🆕 Écran de confirmation (voir lancerConfirmationIdentite) — chrome
+    // d'interface, traduisible normalement. Les VALEURS affichées à côté
+    // (prénom, mot de vocabulaire garçon/homme/fille/femme) ne passent
+    // jamais par ces clés — seules les ÉTIQUETTES le font.
+    confirmationLabelNom: 'Name',
+    confirmationLabelGenreAge: 'You are',
+    // 🆕 Écran d'édition (voir lancerEditionIdentite) — Raphaël a demandé
+    // un menu BILINGUE (langue de l'apprenant + français), pour la
+    // clarté : chaque étiquette existe donc en deux versions ici, la
+    // version française (xxxFr) étant TOUJOURS en français peu importe
+    // options.textes (même principe que labelPrefixeNom), affichée en
+    // plus petit sous la version traduite.
+    editionTitre: 'Change your details',
+    editionLabelNomFr: 'Nom',
+    editionLabelGenreAgeFr: 'Tu es',
+    editionBtnModifier: 'Change',
+    editionBtnConfirmer: 'Confirm',
+    // 🆕 Création de compte (voir lancerCreationCompte) — même mécanisme
+    // que l'ancien index.html fourni par Raphaël (courriel + code reçu
+    // par courriel, sans mot de passe), UI reconstruite dans le style du
+    // site plutôt que copiée telle quelle.
+    creationCompteTitre: 'Create your account',
+    creationCompteTexte: "Enter your email — we'll send you a code, no password needed.",
+    creationCompteLabelEmail: 'Email',
+    creationCompteBtnEnvoyer: 'Send code',
+    creationCompteLabelCode: 'Code',
+    creationCompteBtnVerifier: 'Confirm',
+    creationCompteCodeEnvoye: 'Code sent! Check your email.',
+    creationCompteErreurCourrielVide: 'Please enter your email.',
+    creationCompteErreurCodeVide: 'Please enter the code.',
+    creationCompteEnvoiEnCours: 'Sending…',
+    creationCompteVerificationEnCours: 'Checking…',
+    creationCompteErreurIndisponible: "Account creation isn't available right now."
   };
 
   function texte(options, cle) {
@@ -449,7 +484,13 @@ const KebBekIdentite = (function () {
     // reussirEssaie dans lancerEssaieDoubleTap) — remplace l'image
     // "essaie" à cet instant précis, en même temps que le mot vole vers
     // le sac et que tous les mots déjà touchés y sont ajoutés d'un coup.
-    tadam: 'images/accueil/index_bonomes_keb_bek_tadam_01.webp'
+    tadam: 'images/accueil/index_bonomes_keb_bek_tadam_01.webp',
+    // 🆕 Séquence "Prêt(e) ?" (voir lancerPretBek/lancerConfirmationIdentite
+    // plus bas) — deux images distinctes fournies par Raphaël : pretBek
+    // (Bek affirme, sourire) pour "Bon, là, il/elle est prêt(e).", pretKeb
+    // (expression neutre/interrogative) pour la vraie question "Prêt(e) ?".
+    pretBek: 'images/accueil/index_bonomes_keb_bek_affirme_pret_01.webp',
+    pretKeb: 'images/accueil/index_bonomes_keb_bek_pret_pas_pret_01.webp'
   };
 
   function image(options, cle) {
@@ -543,7 +584,14 @@ const KebBekIdentite = (function () {
     // (suffixe "Keb" → locuteurDeDialogue() l'attribue automatiquement),
     // pas Bek — précision explicite de Raphaël, qui avait déjà mentionné
     // ce texte lors d'une session antérieure.
-    tadamKeb: 'Tadam\u00A0!'
+    tadamKeb: 'Tadam\u00A0!',
+    // 🆕 Séquence "Prêt(e) ?" — Bek se tourne vers Keb pour constater que
+    // l'élève est prêt (accord de genre sur s.genre, voir lancerPretBek),
+    // puis Keb pose la vraie question à l'élève (lancerConfirmationIdentite).
+    pretCompteBekM: 'Bon, l\u00e0, il est pr\u00eat.',
+    pretCompteBekF: 'Bon, l\u00e0, elle est pr\u00eate.',
+    pretCompteKebM: 'Pr\u00eat\u00a0?',
+    pretCompteKebF: 'Pr\u00eate\u00a0?'
   };
 
   function remplacerPrenom(texteBrut, prenom) {
@@ -583,7 +631,13 @@ const KebBekIdentite = (function () {
     donSacQuestionM: 'keb',
     donSacQuestionF: 'keb',
     donSacPresque: 'bek',
-    donSacOhOui: 'keb'
+    donSacOhOui: 'keb',
+    // 🆕 Séquence "Prêt(e) ?" — mêmes raisons que ci-dessus (suffixe M/F
+    // après Bek/Keb, donc hors de portée de la regex /Bek$|Keb$/).
+    pretCompteBekM: 'bek',
+    pretCompteBekF: 'bek',
+    pretCompteKebM: 'keb',
+    pretCompteKebF: 'keb'
   };
   function locuteurDeDialogue(dialogueCle) {
     if (LOCUTEURS_EXCEPTIONS[dialogueCle] !== undefined) return LOCUTEURS_EXCEPTIONS[dialogueCle];
@@ -2607,13 +2661,489 @@ const KebBekIdentite = (function () {
         synchroniserMotsToucheSacUneFois();
         indice.textContent = texte(options, 'introIndiceTap');
         avancerActif = function () {
-          if (typeof callbacks.onComplet === 'function') callbacks.onComplet(s);
+          lancerPretBek(s);
         };
       }
 
       etapeScene = 'dialogue';
       avancerActif = function () {}; // no-op tant que le double-tap n'a pas réussi (voir reussirEssaie)
       reculerActif = function () {}; // rien à reculer, comme lancerReactionSilhouette
+      personnages.focus();
+    }
+
+    // ================================================================
+    // 🆕 Séquence "Prêt(e) ?" — jouée juste après "Tadam !" (voir
+    // reussirEssaie ci-dessus). Convenue avec Raphaël :
+    //   1. Bek se tourne vers Keb : "Bon, là, il/elle est prêt(e)."
+    //      (lancerPretBek)
+    //   2. Keb regarde l'élève et demande "Prêt(e) ?", avec en dessous
+    //      une liste (nom, genre+âge) et un choix Oui/Non
+    //      (lancerConfirmationIdentite)
+    //   3. "Oui" → création de compte (lancerCreationCompte)
+    //      "Non" → menu bilingue groupé pour changer nom/genre+âge
+    //      (lancerEditionIdentite), puis retour à l'étape 2
+    // ================================================================
+
+    // Bulle à UNE seule ligne, mot-à-mot cliquable (traduction + ajout au
+    // sac) — même mécanique que afficherBulleReaction plus haut,
+    // généralisée ici pour être réutilisée par lancerPretBek ET la ligne
+    // de Keb dans lancerConfirmationIdentite, plutôt que redupliquée une
+    // troisième fois pour deux répliques aussi courtes.
+    function afficherLigneBulleUnique(cle) {
+      bulle.innerHTML = '';
+      const brut = DIALOGUES_FIXES[cle];
+      const locuteur = locuteurDeDialogue(cle);
+      const ligne = document.createElement('div');
+      ligne.className = 'iden-bulle-ligne' + (locuteur ? ' iden-bulle-ligne-' + locuteur : '');
+      const motsBrutSepares = String(brut).split(/\s+/).filter(Boolean);
+      const PONCTUATION_SEULE = /^[.,!?;:'"«»\u2026]+$/;
+      const mots = [];
+      motsBrutSepares.forEach(function (tok) {
+        if (PONCTUATION_SEULE.test(tok) && mots.length > 0) {
+          mots[mots.length - 1] += '\u00A0' + tok;
+        } else {
+          mots.push(tok);
+        }
+      });
+      mots.forEach(function (motBrut, idx) {
+        const span = document.createElement('span');
+        span.className = 'iden-mot';
+        span.textContent = motBrut + (idx < mots.length - 1 ? '\u00A0' : '');
+        const motNettoye = motBrut.replace(/^[\s.,!?;:'"«»\u2026]+|[\s.,!?;:'"«»\u2026]+$/g, '');
+        span.tabIndex = 0;
+        span.addEventListener('click', function (e) {
+          e.stopPropagation();
+          afficherTraductionMot(span, motNettoye);
+          if (AJOUT_AUTOMATIQUE_TEMPORAIRE) ajouterMotAuSac(span, motNettoye);
+        });
+        span.addEventListener('keydown', function (e) {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault(); e.stopPropagation();
+            afficherTraductionMot(span, motNettoye);
+            if (AJOUT_AUTOMATIQUE_TEMPORAIRE) ajouterMotAuSac(span, motNettoye);
+          }
+        });
+        ligne.appendChild(span);
+      });
+      bulle.appendChild(ligne);
+      majBoutonTraduirePhrase([cle]);
+    }
+
+    // 'm'/adulte:false → 'garcon', 'm'/adulte:true → 'homme', etc. — même
+    // table que SILHOUETTES, mais indexée par genre+adulte plutôt que par
+    // id, pour retrouver le mot de vocabulaire à partir de s.genre/s.adulte
+    // (déjà connus à ce stade) sans reparcourir tout le tableau à chaque
+    // fois.
+    function vocabCleDepuisGenreAge(genre, adulte) {
+      if (genre === 'm') return adulte ? 'homme' : 'garcon';
+      return adulte ? 'femme' : 'fille';
+    }
+
+    function lancerPretBek(s) {
+      action.innerHTML = '';
+      chevron.style.display = 'none';
+      chevronGauche.style.display = 'none';
+      indice.style.display = '';
+      indice.textContent = texte(options, 'introIndiceTap');
+      btnTraduirePhrase.style.display = 'none';
+      tooltipPhrase.classList.remove('visible');
+
+      Array.from(personnages.querySelectorAll('img.iden-img')).forEach(function (img) { img.remove(); });
+      const img = document.createElement('img');
+      img.className = 'iden-img actif';
+      img.src = image(options, 'pretBek');
+      img.alt = texte(options, 'altPretBek');
+      personnages.insertBefore(img, bulle);
+
+      afficherLigneBulleUnique(s.genre === 'f' ? 'pretCompteBekF' : 'pretCompteBekM');
+
+      etapeScene = 'dialogue';
+      avancerActif = function () { lancerConfirmationIdentite(s); }; // un seul tap termine cette réplique
+      reculerActif = function () {};
+      personnages.focus();
+    }
+
+    function lancerConfirmationIdentite(s) {
+      action.innerHTML = '';
+      chevron.style.display = 'none';
+      chevronGauche.style.display = 'none';
+      // Pas de "tap pour continuer" ici — ce sont les boutons Oui/Non
+      // ci-dessous qui pilotent la suite, pas un tap générique sur la
+      // scène (qui resterait ambigu : oui ou non ?).
+      indice.style.display = 'none';
+      btnTraduirePhrase.style.display = 'none';
+      tooltipPhrase.classList.remove('visible');
+
+      Array.from(personnages.querySelectorAll('img.iden-img')).forEach(function (img) { img.remove(); });
+      const img = document.createElement('img');
+      img.className = 'iden-img actif';
+      img.src = image(options, 'pretKeb');
+      img.alt = texte(options, 'altPretKeb');
+      personnages.insertBefore(img, bulle);
+
+      afficherLigneBulleUnique(s.genre === 'f' ? 'pretCompteKebF' : 'pretCompteKebM');
+
+      const liste = document.createElement('div');
+      liste.className = 'iden-confirmation-liste';
+
+      function ajouterLigne(etiquetteCle, valeur) {
+        const ligne = document.createElement('div');
+        ligne.className = 'iden-confirmation-ligne';
+        const etiquette = document.createElement('span');
+        etiquette.className = 'iden-confirmation-etiquette';
+        etiquette.textContent = texte(options, etiquetteCle);
+        const valeurSpan = document.createElement('span');
+        valeurSpan.className = 'iden-confirmation-valeur';
+        valeurSpan.textContent = valeur;
+        ligne.appendChild(etiquette);
+        ligne.appendChild(valeurSpan);
+        liste.appendChild(ligne);
+      }
+
+      // Les VALEURS affichées ne passent jamais par texte()/options.textes
+      // : le prénom est tel que saisi, et le mot garçon/homme/fille/femme
+      // est un mot de vocabulaire TOUJOURS en français (VOCABULAIRE_GENRE),
+      // même principe que dans lancerSilhouettes.
+      ajouterLigne('confirmationLabelNom', s.prenom);
+      ajouterLigne('confirmationLabelGenreAge', VOCABULAIRE_GENRE[vocabCleDepuisGenreAge(s.genre, s.adulte)]);
+
+      action.appendChild(liste);
+
+      const boutons = document.createElement('div');
+      boutons.className = 'iden-confirmation-boutons';
+
+      // 🆕 "Oui"/"Non" volontairement en français, jamais traduits — même
+      // principe que le bloc "First time?" d'index.html (pf-bouton) : ce
+      // sont eux-mêmes des mots de vocabulaire exposés par immersion.
+      const btnOui = document.createElement('button');
+      btnOui.type = 'button';
+      btnOui.className = 'iden-btn-confirmation iden-btn-oui';
+      btnOui.textContent = 'Oui';
+      btnOui.addEventListener('click', function () { lancerCreationCompte(s); });
+      boutons.appendChild(btnOui);
+
+      const btnNon = document.createElement('button');
+      btnNon.type = 'button';
+      btnNon.className = 'iden-btn-confirmation iden-btn-non';
+      btnNon.textContent = 'Non';
+      btnNon.addEventListener('click', function () { lancerEditionIdentite(s); });
+      boutons.appendChild(btnNon);
+
+      action.appendChild(boutons);
+
+      etapeScene = 'inactive';
+      avancerActif = function () {};
+      reculerActif = function () {};
+      personnages.focus();
+    }
+
+    // 🆕 Menu d'édition BILINGUE (langue de l'apprenant + français),
+    // demandé par Raphaël plutôt qu'une réouverture séquentielle des
+    // écrans de saisie du nom/silhouettes — un seul écran groupé, chaque
+    // ligne modifiable indépendamment, retour ici après chaque
+    // modification pour relire l'ensemble avant de confirmer. La version
+    // française des étiquettes (xxxFr) est TOUJOURS en français, peu
+    // importe options.textes — même principe que labelPrefixeNom.
+    function lancerEditionIdentite(s) {
+      indice.style.display = 'none';
+      btnTraduirePhrase.style.display = 'none';
+      tooltipPhrase.classList.remove('visible');
+
+      function dessinerMenu() {
+        action.innerHTML = '';
+
+        const titre = document.createElement('div');
+        titre.className = 'iden-titre';
+        titre.textContent = texte(options, 'editionTitre');
+        action.appendChild(titre);
+
+        const bloc = document.createElement('div');
+        bloc.className = 'iden-edition-bloc';
+
+        function ajouterLigneEdition(etiquetteCle, etiquetteFrCle, valeur, onModifier) {
+          const ligne = document.createElement('div');
+          ligne.className = 'iden-edition-ligne';
+
+          const etiquettes = document.createElement('div');
+          etiquettes.className = 'iden-edition-etiquettes';
+          const etiquette = document.createElement('span');
+          etiquette.className = 'iden-edition-etiquette';
+          etiquette.textContent = texte(options, etiquetteCle);
+          const etiquetteFr = document.createElement('span');
+          etiquetteFr.className = 'iden-edition-etiquette-fr';
+          etiquetteFr.textContent = texte(options, etiquetteFrCle);
+          etiquettes.appendChild(etiquette);
+          etiquettes.appendChild(etiquetteFr);
+          ligne.appendChild(etiquettes);
+
+          const valeurSpan = document.createElement('span');
+          valeurSpan.className = 'iden-edition-valeur';
+          valeurSpan.textContent = valeur;
+          ligne.appendChild(valeurSpan);
+
+          const btnModifier = document.createElement('button');
+          btnModifier.type = 'button';
+          btnModifier.className = 'iden-edition-btn-modifier';
+          btnModifier.textContent = texte(options, 'editionBtnModifier');
+          btnModifier.addEventListener('click', onModifier);
+          ligne.appendChild(btnModifier);
+
+          bloc.appendChild(ligne);
+        }
+
+        ajouterLigneEdition('confirmationLabelNom', 'editionLabelNomFr', s.prenom, dessinerEditionNom);
+        ajouterLigneEdition(
+          'confirmationLabelGenreAge', 'editionLabelGenreAgeFr',
+          VOCABULAIRE_GENRE[vocabCleDepuisGenreAge(s.genre, s.adulte)],
+          dessinerEditionGenre
+        );
+
+        action.appendChild(bloc);
+
+        const btnConfirmer = document.createElement('button');
+        btnConfirmer.type = 'button';
+        btnConfirmer.className = 'iden-btn-valider';
+        btnConfirmer.textContent = texte(options, 'editionBtnConfirmer');
+        btnConfirmer.addEventListener('click', function () { lancerConfirmationIdentite(s); });
+        action.appendChild(btnConfirmer);
+      }
+
+      // Sous-vue : modifier le nom — réutilise validerNom/messageErreur
+      // (mêmes règles qu'à la saisie initiale), mais revient à ce même
+      // menu groupé au lieu d'enchaîner sur les silhouettes.
+      function dessinerEditionNom() {
+        action.innerHTML = '';
+
+        const ligne = document.createElement('div');
+        ligne.className = 'iden-ligne-nom';
+        const prefixe = document.createElement('span');
+        prefixe.className = 'iden-prefixe-nom';
+        prefixe.textContent = texte(options, 'labelPrefixeNom');
+        ligne.appendChild(prefixe);
+        const champ = document.createElement('input');
+        champ.type = 'text';
+        champ.className = 'iden-champ-nom';
+        champ.value = s.prenom;
+        champ.autocomplete = 'off';
+        champ.spellcheck = false;
+        ligne.appendChild(champ);
+        action.appendChild(ligne);
+
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'iden-btn-valider';
+        btn.textContent = texte(options, 'labelValider');
+        action.appendChild(btn);
+
+        const erreurDiv = document.createElement('div');
+        erreurDiv.className = 'iden-erreur';
+        action.appendChild(erreurDiv);
+
+        function tenter() {
+          const resultat = validerNom(champ.value);
+          if (!resultat.valide) {
+            erreurDiv.textContent = messageErreur(resultat.raison);
+            erreurDiv.classList.add('in');
+            return;
+          }
+          s.prenom = champ.value.trim();
+          dessinerMenu();
+        }
+        btn.addEventListener('click', tenter);
+        champ.addEventListener('keydown', function (e) { if (e.key === 'Enter') tenter(); });
+        champ.focus();
+      }
+
+      // Sous-vue : modifier le genre/tranche d'âge — réutilise
+      // .iden-grille-silhouettes/.iden-btn-silhouette (conservées
+      // inutilisées dans le CSS depuis le passage au carrousel, voir
+      // identite-eleve.css) : parfaites pour ce menu simplifié, pas
+      // besoin du carrousel complet (images/badges d'âge) pour un simple
+      // changement rapide.
+      function dessinerEditionGenre() {
+        action.innerHTML = '';
+
+        const titre = document.createElement('div');
+        titre.className = 'iden-titre';
+        titre.textContent = texte(options, 'titreSilhouettes');
+        action.appendChild(titre);
+
+        const grille = document.createElement('div');
+        grille.className = 'iden-grille-silhouettes';
+        SILHOUETTES.forEach(function (sil) {
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'iden-btn-silhouette';
+          btn.textContent = VOCABULAIRE_GENRE[sil.vocabCle];
+          btn.addEventListener('click', function () {
+            s.genre = sil.genre;
+            s.adulte = sil.adulte;
+            dessinerMenu();
+          });
+          grille.appendChild(btn);
+        });
+        action.appendChild(grille);
+      }
+
+      etapeScene = 'inactive';
+      avancerActif = function () {};
+      reculerActif = function () {};
+      dessinerMenu();
+      personnages.focus();
+    }
+
+    // 🆕 Création de compte — même mécanisme que l'ancien index.html
+    // fourni par Raphaël (courriel + code reçu par courriel, sans mot de
+    // passe, via Supabase Auth signInWithOtp/verifyOtp), UI reconstruite
+    // dans le style du site plutôt que copiée telle quelle. Utilise
+    // KebBekProgression.client (progression.js doit être chargé, et le
+    // CDN Supabase avant lui — voir index.html) plutôt que de créer son
+    // propre client, pour ne jamais désynchroniser deux instances
+    // différentes du SDK sur la même page.
+    function lancerCreationCompte(s) {
+      action.innerHTML = '';
+      indice.style.display = 'none';
+
+      const titre = document.createElement('div');
+      titre.className = 'iden-titre';
+      titre.textContent = texte(options, 'creationCompteTitre');
+      action.appendChild(titre);
+
+      const intro = document.createElement('p');
+      intro.className = 'iden-indice';
+      intro.style.margin = '-6px 0 0';
+      intro.textContent = texte(options, 'creationCompteTexte');
+      action.appendChild(intro);
+
+      const champEmail = document.createElement('input');
+      champEmail.type = 'email';
+      champEmail.className = 'iden-champ-nom';
+      champEmail.placeholder = texte(options, 'creationCompteLabelEmail');
+      champEmail.autocomplete = 'email';
+      action.appendChild(champEmail);
+
+      const btnEnvoyer = document.createElement('button');
+      btnEnvoyer.type = 'button';
+      btnEnvoyer.className = 'iden-btn-valider';
+      btnEnvoyer.textContent = texte(options, 'creationCompteBtnEnvoyer');
+      action.appendChild(btnEnvoyer);
+
+      const msgDiv = document.createElement('div');
+      msgDiv.className = 'iden-erreur';
+      action.appendChild(msgDiv);
+
+      function afficherMsg(txt, estErreur) {
+        msgDiv.textContent = txt;
+        msgDiv.classList.add('in');
+        msgDiv.classList.toggle('iden-msg-succes', !estErreur);
+      }
+
+      btnEnvoyer.addEventListener('click', async function () {
+        const email = champEmail.value.trim();
+        if (!email) { afficherMsg(texte(options, 'creationCompteErreurCourrielVide'), true); return; }
+        if (!window.KebBekProgression) { afficherMsg(texte(options, 'creationCompteErreurIndisponible'), true); return; }
+
+        btnEnvoyer.disabled = true;
+        afficherMsg(texte(options, 'creationCompteEnvoiEnCours'), false);
+        await window.KebBekProgression.initSession(); // s'assure qu'un client Supabase existe (le crée si besoin, voir progression.js)
+        const client = window.KebBekProgression.client;
+        if (!client) {
+          afficherMsg(texte(options, 'creationCompteErreurIndisponible'), true);
+          btnEnvoyer.disabled = false;
+          return;
+        }
+        const { error } = await client.auth.signInWithOtp({ email: email, options: { shouldCreateUser: true } });
+        btnEnvoyer.disabled = false;
+        if (error) { afficherMsg(error.message, true); return; }
+        afficherMsg(texte(options, 'creationCompteCodeEnvoye'), false);
+        dessinerEtapeCode(email);
+      });
+
+      function dessinerEtapeCode(email) {
+        action.innerHTML = '';
+
+        const titreCode = document.createElement('div');
+        titreCode.className = 'iden-titre';
+        titreCode.textContent = texte(options, 'creationCompteTitre');
+        action.appendChild(titreCode);
+
+        const msgEnvoye = document.createElement('p');
+        msgEnvoye.className = 'iden-indice';
+        msgEnvoye.style.margin = '-6px 0 0';
+        msgEnvoye.textContent = texte(options, 'creationCompteCodeEnvoye');
+        action.appendChild(msgEnvoye);
+
+        const champCode = document.createElement('input');
+        champCode.type = 'text';
+        champCode.className = 'iden-champ-nom';
+        champCode.placeholder = texte(options, 'creationCompteLabelCode');
+        champCode.autocomplete = 'one-time-code';
+        champCode.inputMode = 'numeric';
+        action.appendChild(champCode);
+
+        const btnVerifier = document.createElement('button');
+        btnVerifier.type = 'button';
+        btnVerifier.className = 'iden-btn-valider';
+        btnVerifier.textContent = texte(options, 'creationCompteBtnVerifier');
+        action.appendChild(btnVerifier);
+
+        const erreurDiv = document.createElement('div');
+        erreurDiv.className = 'iden-erreur';
+        action.appendChild(erreurDiv);
+
+        btnVerifier.addEventListener('click', async function () {
+          const token = champCode.value.trim();
+          if (!token) {
+            erreurDiv.textContent = texte(options, 'creationCompteErreurCodeVide');
+            erreurDiv.classList.add('in');
+            return;
+          }
+          btnVerifier.disabled = true;
+          erreurDiv.textContent = texte(options, 'creationCompteVerificationEnCours');
+          erreurDiv.classList.add('in');
+
+          const client = window.KebBekProgression.client;
+          const { data, error } = await client.auth.verifyOtp({ email: email, token: token, type: 'email' });
+          btnVerifier.disabled = false;
+          if (error) {
+            erreurDiv.textContent = error.message;
+            erreurDiv.classList.add('in');
+            return;
+          }
+
+          window.KebBekProgression.definirSession(data.session);
+          // ⚠️ Clé DUPLIQUÉE depuis CLE_INVITE_LOCALE dans progression.js
+          // (non exposée par l'API du module) — à garder synchronisée si
+          // jamais son nom change là-bas.
+          try { localStorage.removeItem('kebbek_invite'); } catch (e) {}
+
+          const resultat = await window.KebBekProgression.creerProfil(s.prenom);
+          if (resultat && resultat.profil && resultat.profil.id) {
+            window.KebBekProgression.definirProfilActif(resultat.profil.id);
+            if (resultat.estNouveau) {
+              await window.KebBekProgression.migrerProgressionInviteVersCompte(resultat.profil.id);
+              await window.KebBekProgression.migrerIdentiteInviteVersCompte(resultat.profil.id);
+            }
+            // prenom/nationalite non touchés ici (undefined) : le prénom
+            // est déjà écrit via creerProfil ci-dessus, la nationalité
+            // n'est pas encore collectée à ce stade de la séquence.
+            await window.KebBekProgression.enregistrerIdentite(s.genre, undefined, undefined, s.adulte);
+          } else {
+            console.warn('lancerCreationCompte : creerProfil n\'a pas retourné de profil exploitable.', resultat);
+          }
+
+          if (typeof callbacks.onComplet === 'function') callbacks.onComplet(s);
+        });
+        champCode.addEventListener('keydown', function (e) { if (e.key === 'Enter') btnVerifier.click(); });
+        champCode.focus();
+      }
+
+      champEmail.addEventListener('keydown', function (e) { if (e.key === 'Enter') btnEnvoyer.click(); });
+      champEmail.focus();
+
+      etapeScene = 'inactive';
+      avancerActif = function () {};
+      reculerActif = function () {};
       personnages.focus();
     }    // Crée #sacBouton s'il n'existe pas déjà sur la page — repli
     // autonome, voir note ⚠️ au-dessus de lancerDeblocageSac. N'écrase

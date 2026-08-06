@@ -28,37 +28,50 @@
      bord, même sur un écran très court où .scene serait déjà presque
      entièrement rempli. */
   padding: 8px 0 28px;
-  /* 🆕 Contexte de positionnement pour .iden-btn-quitter ci-dessous —
-     seule raison de ce changement, n'affecte pas la mise en page en
-     flux normal du reste (tout le reste de .iden-conteneur reste en
-     flex, jamais en position:absolute). */
-  position: relative;
 }
 
 /* 🆕 Bouton "quitter" (×) — persistant, visible à toute étape (voir
-   callbacks.onQuitter dans le .js). En coin plutôt que dans le flux :
-   ne doit jamais pousser le contenu de l'étape en cours ni disparaître
-   quand #idenAction est réécrit. */
+   callbacks.onQuitter dans le .js). Volontairement `position: fixed`
+   et non `absolute` : Raphaël a précisé qu'il veut le coin supérieur
+   GAUCHE DE LA PAGE (viewport), pas juste le coin de #sequenceIdentite
+   (qui lui reste centré et étroit — max-width: 420px — donc "son" coin
+   se retrouve au milieu de l'écran, pas au bord). `fixed` l'ancre une
+   fois pour toutes au coin réel de l'écran, quel que soit l'endroit où
+   #sequenceIdentite est monté dans la page, et quel que soit le défilement
+   (voir commentaire sur .scene/min-height dans index.html — la séquence
+   peut désormais dépasser un écran). z-index sous .iden-debloque-vol-anim
+   (500, animation de déblocage plein écran) mais au-dessus de tout le
+   reste — ne doit jamais disparaître derrière le contenu normal du
+   module. Fond + contour repris du style bouton "Annuler" du reste du
+   module (pêche léger) plutôt qu'un simple glyphe flottant — plus fini,
+   moins "oublié là". */
 .iden-btn-quitter {
-  position: absolute;
-  top: 2px;
-  right: 2px;
-  width: 30px;
-  height: 30px;
+  position: fixed;
+  top: 14px;
+  left: 14px;
+  width: 42px;
+  height: 42px;
   border-radius: 50%;
-  border: none;
-  background: none;
+  border: 1.5px solid var(--peche, #E8B4A0);
+  background: var(--fond, #F2EDE3);
   color: var(--brun-clair, #8A7364);
   font-size: 1.3rem;
+  font-weight: 700;
   line-height: 1;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background 0.15s ease, color 0.15s ease;
-  z-index: 5;
+  box-shadow: 0 1px 4px rgba(102, 80, 69, 0.15);
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
+  z-index: 100;
 }
-.iden-btn-quitter:hover { background: rgba(102, 80, 69, 0.08); color: var(--brun); }
+.iden-btn-quitter:hover {
+  background: var(--peche, #E8B4A0);
+  color: var(--brun, #665045);
+  border-color: var(--peche-fonce, #D99A82);
+  transform: scale(1.05);
+}
 
 .iden-titre {
   font-weight: 700;

@@ -28,7 +28,37 @@
      bord, même sur un écran très court où .scene serait déjà presque
      entièrement rempli. */
   padding: 8px 0 28px;
+  /* 🆕 Contexte de positionnement pour .iden-btn-quitter ci-dessous —
+     seule raison de ce changement, n'affecte pas la mise en page en
+     flux normal du reste (tout le reste de .iden-conteneur reste en
+     flex, jamais en position:absolute). */
+  position: relative;
 }
+
+/* 🆕 Bouton "quitter" (×) — persistant, visible à toute étape (voir
+   callbacks.onQuitter dans le .js). En coin plutôt que dans le flux :
+   ne doit jamais pousser le contenu de l'étape en cours ni disparaître
+   quand #idenAction est réécrit. */
+.iden-btn-quitter {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: none;
+  background: none;
+  color: var(--brun-clair, #8A7364);
+  font-size: 1.3rem;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s ease, color 0.15s ease;
+  z-index: 5;
+}
+.iden-btn-quitter:hover { background: rgba(102, 80, 69, 0.08); color: var(--brun); }
 
 .iden-titre {
   font-weight: 700;

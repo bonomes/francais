@@ -400,6 +400,34 @@
 }
 .iden-btn-valider:hover { opacity: 0.88; }
 
+/* 🆕 Option "continuer en invité" sur l'écran de création de compte —
+   volontairement discrète (simple lien texte souligné, pas une pilule
+   pleine comme .iden-btn-valider ci-dessus) pour rester clairement
+   secondaire par rapport à la création de compte, l'action mise en avant. */
+.iden-lien-invite {
+  display: block;
+  margin: 14px auto 0;
+  font-family: inherit;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--brun-clair, #8A7364);
+  background: none;
+  border: none;
+  text-decoration: underline;
+  cursor: pointer;
+  transition: color 0.15s ease;
+}
+.iden-lien-invite:hover { color: var(--brun); }
+.iden-lien-invite:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.iden-avertissement-invite {
+  font-size: 0.72rem;
+  color: var(--brun-clair, #8A7364);
+  text-align: center;
+  margin: 4px 0 0;
+  line-height: 1.35;
+}
+
 .iden-erreur {
   min-height: 1.2em;
   font-size: 0.82rem;
@@ -1051,34 +1079,41 @@
    la position choisie ci-dessous — les deux étant ancrés en top/right
    (jamais en pourcentage), l'angle reste correct quelle que soit la
    taille de fenêtre, W s'annulant dans le calcul. */
+/* 🆕 CORRIGÉ cette session : remplace le glyphe → tourné par un angle
+   CSS deviné à l'œil (rotate(-108deg), resté "croche" selon Raphaël même
+   après un premier ajustement) — le SVG lui-même porte maintenant la
+   ligne et la pointe (voir afficherFlecheVersSac/positionnerFlecheVersSac
+   dans le .js), calculées à partir de la position réelle de #sacBouton.
+   L'élément couvre tout le viewport (coordonnées en page, pas relatives
+   à une boîte) pour ne jamais avoir à repositionner le SVG lui-même —
+   seule la ligne qu'il contient bouge. */
 .iden-fleche-sac {
   position: fixed;
-  top: 85px;
-  right: 36px;
+  inset: 0;
   z-index: 201;
-  font-size: 1.7rem;
-  line-height: 1;
-  color: var(--peche-fonce);
   pointer-events: none;
   opacity: 0;
-  transform: rotate(-108deg) translate(0, 0);
-  transform-origin: center;
   transition: opacity 0.3s ease;
-  text-shadow: 0 2px 6px rgba(255,255,255,0.9), 0 2px 6px rgba(255,255,255,0.9);
 }
 .iden-fleche-sac.visible {
   opacity: 1;
   animation: iden-fleche-sac-rebond 1.2s ease-in-out infinite;
 }
-/* Rebond le long du MÊME axe que la rotation ci-dessus (translate AVANT
-   rotate dans la valeur transform, donc exprimé dans le repère NON
-   tourné : une petite avancée vers le haut-gauche, cohérente avec la
-   direction visée une fois le rotate appliqué par-dessus). */
+/* Rebond le long du MÊME axe que la ligne — --iden-fleche-dx/dy sont un
+   vecteur unitaire × quelques px, posés en JS à chaque positionnement
+   (voir positionnerFlecheVersSac), jamais une direction codée en dur. */
 @keyframes iden-fleche-sac-rebond {
-  0%, 100% { transform: rotate(-108deg) translate(0, 0); }
-  50%      { transform: rotate(-108deg) translate(4px, 0); }
+  0%, 100% { transform: translate(0, 0); }
+  50%      { transform: translate(var(--iden-fleche-dx, 0px), var(--iden-fleche-dy, 0px)); }
 }
+.iden-fleche-sac-ligne {
+  stroke: var(--peche-fonce);
+  stroke-width: 3;
+  stroke-linecap: round;
+  filter: drop-shadow(0 1px 2px rgba(255,255,255,0.9)) drop-shadow(0 1px 2px rgba(255,255,255,0.9));
+}
+.iden-fleche-sac-pointe { fill: var(--peche-fonce); }
 
 @media (max-width: 480px) {
-  .iden-fleche-sac { top: 68px; right: 26px; font-size: 1.4rem; }
+  .iden-fleche-sac-ligne { stroke-width: 2.5; }
 }

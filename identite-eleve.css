@@ -906,3 +906,138 @@
   .iden-sac-bouton { top: 16px; right: 16px; width: 40px; height: 40px; }
   .iden-sac-carte { top: 66px; right: 16px; width: min(84vw, 240px); }
 }
+
+/* ==================================================================
+   🆕 Séquence "Prêt(e) ?" — écrans de confirmation, d'édition bilingue,
+   et de création de compte (voir lancerConfirmationIdentite/
+   lancerEditionIdentite/lancerCreationCompte dans le .js).
+   ================================================================== */
+
+/* ---------- Confirmation (nom + genre/âge, boutons Oui/Non) ---------- */
+
+.iden-confirmation-liste {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background: #FFFFFF;
+  border: 1.5px solid var(--peche);
+  border-radius: 14px;
+  padding: 10px 14px;
+}
+
+.iden-confirmation-ligne {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 4px 0;
+}
+.iden-confirmation-ligne + .iden-confirmation-ligne { border-top: 1px dotted rgba(102, 80, 69, 0.18); }
+
+.iden-confirmation-etiquette {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--brun-clair, #8A7364);
+}
+
+.iden-confirmation-valeur {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--brun-fonce, #4A3B33);
+  text-align: right;
+}
+
+.iden-confirmation-boutons {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+}
+
+/* "Oui"/"Non" volontairement en français, jamais traduits (voir .js) —
+   même famille visuelle que .pf-bouton dans index.html, mais adaptée aux
+   couleurs déjà en place ici plutôt que dupliquée telle quelle. */
+.iden-btn-confirmation {
+  flex: 1;
+  font-family: 'Baloo 2', sans-serif;
+  font-weight: 700;
+  font-size: 0.95rem;
+  padding: 10px;
+  border-radius: 100px;
+  cursor: pointer;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+.iden-btn-confirmation:hover { transform: translateY(-1px); }
+.iden-btn-confirmation:active { transform: translateY(1px); }
+
+.iden-btn-oui { border: none; background: var(--peche-fonce); color: #FFFFFF; }
+.iden-btn-non { border: 1.5px solid var(--brun-clair, #8A7364); background: none; color: var(--brun-clair, #8A7364); }
+
+/* ---------- Édition bilingue (menu groupé, "Non") ---------- */
+
+.iden-edition-bloc {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.iden-edition-ligne {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #FFFFFF;
+  border: 1.5px solid var(--peche);
+  border-radius: 12px;
+  padding: 8px 10px;
+}
+
+.iden-edition-etiquettes {
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  min-width: 72px;
+}
+
+.iden-edition-etiquette { font-size: 0.78rem; font-weight: 700; color: var(--brun); }
+/* Toujours en français (voir editionLabelNomFr/editionLabelGenreAgeFr
+   dans le .js) — en plus petit et en italique sous la version traduite,
+   pour la clarté demandée par Raphaël sans dominer visuellement. */
+.iden-edition-etiquette-fr { font-size: 0.66rem; font-style: italic; color: var(--brun-clair, #8A7364); }
+
+.iden-edition-valeur {
+  flex: 1;
+  min-width: 0;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--brun-fonce, #4A3B33);
+  overflow-wrap: break-word;
+}
+
+.iden-edition-btn-modifier {
+  flex-shrink: 0;
+  font-family: inherit;
+  font-size: 0.74rem;
+  font-weight: 700;
+  padding: 6px 12px;
+  border-radius: 100px;
+  border: 1.5px solid var(--peche);
+  background: none;
+  color: var(--peche-fonce);
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+.iden-edition-btn-modifier:hover { background: var(--peche-pale, #FBEAE2); }
+
+/* ---------- Message de succès (création de compte) ----------
+   .iden-erreur sert déjà de zone de message générique (voir lancerSaisieNom) ;
+   cette classe additionnelle bascule sa couleur vers un ton positif
+   quand le message n'est PAS une erreur (ex. "Code envoyé !"). */
+.iden-msg-succes { color: #3d5c2c; }
+
+@media (max-width: 480px) {
+  .iden-confirmation-valeur { text-align: left; }
+  .iden-confirmation-ligne { flex-direction: column; align-items: flex-start; gap: 2px; }
+  .iden-edition-ligne { flex-wrap: wrap; }
+  .iden-edition-valeur { width: 100%; order: 3; }
+}

@@ -2770,6 +2770,23 @@ const KebBekIdentite = (function () {
       return adulte ? 'femme' : 'fille';
     }
 
+    // 🆕 Affiche le mot de vocabulaire garçon/homme/fille/femme (TOUJOURS
+    // en français, voir VOCABULAIRE_GENRE) suivi de sa traduction entre
+    // parenthèses quand options.traductions la connaît — demande de
+    // Raphaël : plus besoin de cliquer pour la voir sur les écrans de
+    // confirmation/édition (contrairement au dialogue Keb/Bek, où la
+    // traduction reste au clic — ici c'est un résumé à lire d'un coup
+    // d'œil, pas une réplique à explorer mot à mot). Réutilise
+    // traductionDeMot() telle quelle : le nom (dernier mot de "Un
+    // garçon"/"Une femme"/etc.) est déjà exactement la clé utilisée dans
+    // TRADUCTIONS_MOTS_IDENTITE.
+    function libelleGenreAgeAvecTraduction(genre, adulte) {
+      const brut = VOCABULAIRE_GENRE[vocabCleDepuisGenreAge(genre, adulte)];
+      const mots = brut.trim().split(/\s+/);
+      const trad = traductionDeMot(mots[mots.length - 1]);
+      return trad ? brut + ' (' + trad + ')' : brut;
+    }
+
     function lancerPretBek(s) {
       action.innerHTML = '';
       chevron.style.display = 'none';
@@ -2836,7 +2853,7 @@ const KebBekIdentite = (function () {
       // est un mot de vocabulaire TOUJOURS en français (VOCABULAIRE_GENRE),
       // même principe que dans lancerSilhouettes.
       ajouterLigne('confirmationLabelNom', s.prenom);
-      ajouterLigne('confirmationLabelGenreAge', VOCABULAIRE_GENRE[vocabCleDepuisGenreAge(s.genre, s.adulte)]);
+      ajouterLigne('confirmationLabelGenreAge', libelleGenreAgeAvecTraduction(s.genre, s.adulte));
 
       action.appendChild(liste);
 
@@ -2925,7 +2942,7 @@ const KebBekIdentite = (function () {
         ajouterLigneEdition('confirmationLabelNom', 'editionLabelNomFr', s.prenom, dessinerEditionNom);
         ajouterLigneEdition(
           'confirmationLabelGenreAge', 'editionLabelGenreAgeFr',
-          VOCABULAIRE_GENRE[vocabCleDepuisGenreAge(s.genre, s.adulte)],
+          libelleGenreAgeAvecTraduction(s.genre, s.adulte),
           dessinerEditionGenre
         );
 
@@ -3192,7 +3209,7 @@ const KebBekIdentite = (function () {
         fleche.id = 'idenFlecheSac';
         fleche.className = 'iden-fleche-sac';
         fleche.setAttribute('aria-hidden', 'true');
-        fleche.textContent = '\u2197'; // ↗
+        fleche.textContent = '\u2192'; // → tourné par CSS (voir .iden-fleche-sac, rotate calculé)
         document.body.appendChild(fleche);
       }
       fleche.classList.add('visible');

@@ -130,6 +130,26 @@
      (order:-1, gap, etc.) à l'intérieur de cette ligne. */
   .scene-rangee {
     display: flex;
+    /* 🐛 CORRIGÉ (signalé par Raphaël, capture mobile à l'appui) :
+       .scene-rangee empile le sélecteur de langue (.selecteur-langue,
+       flex-shrink: 0) et le groupe personnages + "First time?"
+       (.personnages-groupe, flex-shrink: 0 lui aussi) sur UNE SEULE
+       ligne, sans possibilité de rétrécir ni de passer à la ligne. Sur
+       un écran large, la somme de leurs largeurs tient toujours dans
+       la fenêtre — aucun symptôme visible. Sur mobile, cette somme
+       dépasse la largeur de l'écran, et comme rien ne peut ni rétrécir
+       ni s'enrouler, l'excédent déborde de part et d'autre — puis se
+       fait purement et simplement rogner par le overflow-x: hidden du
+       body (voir plus haut) : ni visible, ni atteignable par un
+       défilement quelconque. C'est exactement ce que montrait la
+       capture (déclencheur de langue tronché à gauche, bloc "First
+       time?" tronché à droite).
+       flex-wrap: wrap laisse le sélecteur de langue passer sur sa
+       propre ligne dès que la place manque, plutôt que de déborder —
+       toujours centré (justify-content: center hérité), sans rien
+       changer au rendu déjà correct des écrans larges où une seule
+       ligne suffit. */
+    flex-wrap: wrap;
     align-items: center;
     justify-content: center;
     gap: clamp(16px, 4vw, 32px);

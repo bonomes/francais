@@ -192,6 +192,26 @@
 .sac-cat-liste { padding: 2px 8px 6px 40px; }
 .sac-categorie.repliee .sac-cat-liste { display: none; }
 
+/* 🆕 Sous-groupement par nature grammaticale — catégorie "mots"
+   uniquement (voir NATURES_MOTS / rendreItemsMotsParNature dans le .js).
+   Discret par construction : un simple libellé au-dessus de chaque
+   sous-liste, pas un second niveau de carte imbriquée — la hiérarchie
+   catégorie > nature doit rester lisible sans alourdir visuellement un
+   panneau déjà dense. */
+.sac-nature-groupe { margin-top: 8px; }
+.sac-nature-groupe:first-child { margin-top: 0; }
+
+.sac-nature-titre {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--brun-clair, #8A7364);
+  padding: 2px 0 3px;
+  border-bottom: 1px dotted rgba(102, 80, 69, 0.18);
+  margin-bottom: 2px;
+}
+
 .sac-item {
   display: flex;
   align-items: center;

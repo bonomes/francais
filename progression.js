@@ -155,6 +155,23 @@
     return localStorage.getItem(CLE_DERNIER_PROFIL);
   }
 
+  // 🆕 Déconnexion — nécessaire pour le nouveau menu principal ("Ma
+  // fiche" → Se déconnecter). Symétrique de definirProfilActif() : vide
+  // la session ET le profil actif, et oublie le dernier profil connu
+  // (sinon dernierProfilConnu() reproposerait ce profil à la prochaine
+  // visite malgré la déconnexion). N'échoue jamais bruyamment côté
+  // appelant : si le signOut réseau échoue, l'état LOCAL est quand même
+  // nettoyé (repli sûr, voir même philosophie que clientOuAutoCree()).
+  async function deconnecter() {
+    if (clientSupabase && sessionActuelle) {
+      try { await clientSupabase.auth.signOut(); }
+      catch (e) { console.warn('progression.js : deconnecter (signOut réseau) a échoué — état local nettoyé quand même.', e); }
+    }
+    sessionActuelle = null;
+    profilActifId = null;
+    try { localStorage.removeItem(CLE_DERNIER_PROFIL); } catch (e) {}
+  }
+
   // ---------- Progression : lecture ----------
 
   function progressionInviteLocale() {
@@ -378,6 +395,7 @@
     creerProfil,
     definirProfilActif,
     dernierProfilConnu,
+    deconnecter,
     lireProgression,
     marquerChapitreComplete,
     migrerProgressionInviteVersCompte,

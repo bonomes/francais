@@ -18,6 +18,7 @@
      time?) — voir identite-eleve.js plus bas pour la logique et
      #sequenceIdentite plus bas dans le body pour le conteneur. -->
 <link rel="stylesheet" href="identite-eleve.css?v=2">
+<link rel="stylesheet" href="menu-principal.css">
 <style>
   /* ==================================================================
      index.html — page d'accueil officielle du site (voir BONOMES_v61,
@@ -766,6 +767,12 @@
        (identite-eleve.js) réécrit tout son contenu à chaque étape. -->
   <div id="sequenceIdentite" style="display:none;"></div>
 
+  <!-- 🆕 Menu principal (menu-principal.js) — se substitue à son tour à
+       la séquence identité une fois celle-ci terminée (onComplet, voir
+       plus bas). Même patron que #sequenceIdentite juste au-dessus :
+       masqué par défaut, rempli/vidé par demarrerMenuPrincipal(). -->
+  <div id="menuPrincipal" style="display:none;"></div>
+
   <!-- Lien vers les cours privés — pensé pour un parent qui atterrit
        ici en quête d'info, pas pour l'enfant en immersion : volontairement
        discret (petit lien, pas un bouton en évidence) pour ne pas
@@ -842,6 +849,7 @@
 <script src="sac-a-dos.js"></script>
 <script src="progression.js"></script>
 <script src="identite-eleve.js"></script>
+<script src="menu-principal.js"></script>
 
 <script>
   // ================================================================
@@ -1136,8 +1144,26 @@
   // Destination du menu principal pas encore définie côté contenu (pas
   // de page suivante précisée) — laissé en point d'ancrage explicite
   // plutôt que deviné, à brancher dès que la suite existe.
+  // 🆕 allerAuMenuPrincipal() n'est plus un stub — branché sur le
+  // nouveau module menu-principal.js. sequenceIdentite (ou sceneRangee,
+  // selon la réponse "Non" à "First time?") se cache, menuPrincipal
+  // prend sa place. onCreerCompte n'est câblé que si l'élève est
+  // effectivement en mode invité (voir demarrerMenuPrincipal) : relance
+  // la séquence identité à l'étape compte plutôt que de tout reprendre
+  // depuis le début — TODO : identite-eleve.js ne permet pas encore de
+  // démarrer directement à cette étape, à ajouter si ce bouton doit
+  // vraiment fonctionner (pour l'instant, il relance toute la séquence).
   function allerAuMenuPrincipal(reponse) {
-    console.info(`Bloc "First time?" — réponse "${reponse}", destination du menu principal à définir.`);
+    sequenceIdentite.style.display = 'none';
+    sceneRangee.style.display = 'none';
+    lienCoursPrives.style.display = 'none';
+    document.getElementById('menuPrincipal').style.display = '';
+    KebBekMenu.demarrerMenuPrincipal('menuPrincipal', {
+      onHistoires: function () { console.info('Menu — "Histoires et leçons" : destination à définir.'); },
+      onPrives: function () { window.location.href = 'cours-prives/'; },
+      onContact: function () { console.info('Menu — "Contact" : destination à définir.'); },
+      onCreerCompte: function () { demarrerIdentiteSiPremiereFois(); }
+    });
   }
 
   // 🆕 "Oui" (première visite) ouvre désormais la séquence identité

@@ -1,0 +1,185 @@
+/* ==================================================================
+   menu-principal.css — habillage du module menu-principal.js.
+
+   Garde le langage visuel déjà établi sur le site (boutons-pilules,
+   palette beige/brun/pêche, Baloo 2 semi-gras — voir identite-eleve.css
+   et sac-a-dos.css) plutôt que d'introduire une esthétique parallèle.
+   Ombres douces (var(--ombre)) façon identite-eleve.css plutôt que les
+   ombres dures de l'ancien .carte-menu (index_01.html) — cohérence avec
+   le reste du site tel qu'il a évolué depuis.
+   ================================================================== */
+
+.kbm-carte {
+  width: min(90vw, 340px);
+  background: #FFFFFF;
+  border-radius: 26px;
+  border: 2px solid var(--peche);
+  padding: 20px 18px 16px;
+  box-shadow: 8px 8px 26px var(--ombre, rgba(102, 80, 69, 0.16));
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  font-family: 'Baloo 2', sans-serif;
+}
+
+.kbm-salutation {
+  font-weight: 700;
+  font-size: 1.15rem;
+  color: var(--brun-fonce, var(--brun));
+  text-align: center;
+  padding: 0 4px;
+}
+
+.kbm-liste {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* ---------- Entrée en cascade (voir demarrerMenuPrincipal, JS) ---------- */
+.kbm-bouton,
+#kbmFichePanneau {
+  transition: opacity 0.32s ease, transform 0.32s cubic-bezier(.2,.8,.3,1.2), background 0.15s ease, box-shadow 0.15s ease;
+}
+.kbm-entree-cachee {
+  opacity: 0;
+  transform: translateY(8px);
+}
+
+.kbm-bouton {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 0.92rem;
+  border: 1.5px solid var(--peche);
+  border-radius: 999px;
+  padding: 12px 16px;
+  background: var(--fond);
+  color: var(--brun-fonce, var(--brun));
+  cursor: pointer;
+  text-align: left;
+}
+
+.kbm-bouton:hover { background: var(--peche-pale, rgba(240, 169, 139, 0.16)); }
+.kbm-bouton:active { transform: scale(0.97); }
+
+.kbm-icone {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  stroke: var(--peche-fonce);
+  fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: transform 0.16s ease;
+}
+
+.kbm-bouton:hover .kbm-icone { transform: translateX(1.5px); }
+
+/* "Bravo & récompenses" — pas encore prêt : en retrait, jamais un bouton
+   pleinement actif (évite l'effet "je clique, rien de crédible ne se
+   passe") — même intention que .a-venir dans l'ancien menu. */
+.kbm-a-venir {
+  opacity: 0.55;
+  cursor: default;
+}
+.kbm-a-venir:hover { background: var(--fond); }
+.kbm-a-venir:hover .kbm-icone { transform: none; }
+.kbm-a-venir:active { transform: none; }
+
+.kbm-badge {
+  margin-left: auto;
+  font-size: 0.6rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--brun-clair, #8A7364);
+  background: rgba(102, 80, 69, 0.09);
+  border: 1.5px solid rgba(102, 80, 69, 0.2);
+  border-radius: 999px;
+  padding: 3px 9px;
+  white-space: nowrap;
+}
+
+/* "Ma fiche" — bouton pêche plein, se distingue des autres entrées
+   (même intention que .ma-fiche dans l'ancien menu, ombre adoucie). */
+.kbm-ma-fiche {
+  background: var(--peche-fonce);
+  color: #FFFFFF;
+  border-color: var(--peche-fonce);
+  box-shadow: 4px 4px 14px var(--ombre, rgba(102, 80, 69, 0.16));
+}
+.kbm-ma-fiche .kbm-icone { stroke: #FFFFFF; }
+.kbm-ma-fiche:hover { background: #d97c5c; }
+
+.kbm-chevron {
+  margin-left: auto;
+  font-size: 0.7rem;
+  transition: transform 0.2s ease;
+}
+.kbm-ma-fiche.kbm-ouvert .kbm-chevron { transform: rotate(180deg); }
+
+/* Panneau "Ma fiche" — s'étend en ligne sous le bouton, pas un panneau
+   flottant (même choix que l'ancien menu : cohérent avec la liste
+   verticale environnante). */
+#kbmFichePanneau {
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  background: var(--peche-pale, rgba(240, 169, 139, 0.16));
+  border-radius: 16px;
+}
+#kbmFichePanneau.kbm-ouvert {
+  max-height: 200px;
+  opacity: 1;
+  margin-top: -2px;
+}
+
+.kbm-fiche-texte {
+  margin: 0;
+  padding: 12px 14px 4px;
+  font-size: 0.82rem;
+  color: var(--brun-fonce, var(--brun));
+  line-height: 1.4;
+}
+
+.kbm-fiche-statut {
+  display: inline-block;
+  font-weight: 700;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: #3d5c2c;
+  background: var(--vert-clair, #EAF3DE);
+  border-radius: 999px;
+  padding: 3px 10px;
+}
+
+.kbm-fiche-btn {
+  display: block;
+  width: calc(100% - 28px);
+  margin: 6px 14px 12px;
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 0.82rem;
+  padding: 9px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+}
+.kbm-fiche-btn:hover:not(:disabled) { opacity: 0.85; }
+.kbm-fiche-btn:disabled { opacity: 0.5; cursor: default; }
+
+.kbm-fiche-btn-principal { border: none; background: var(--peche-fonce); color: #FFFFFF; }
+.kbm-fiche-btn-discret { border: 1.5px solid var(--brun-clair, #8A7364); background: none; color: var(--brun-clair, #8A7364); }
+
+@media (max-width: 460px) {
+  .kbm-carte { padding: 16px 14px 14px; border-radius: 22px; }
+  .kbm-salutation { font-size: 1.05rem; }
+  .kbm-bouton { font-size: 0.86rem; padding: 11px 14px; }
+}

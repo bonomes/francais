@@ -58,8 +58,8 @@ function langueActuelleSac() {
 }
 
 const DICO_SAC = {
-  fr: { catMots: "Mots appris", catCodes: "Codes", catSucces: "Réussites", catTrophees: "Trophées", catCartes: "Cartes", sacVide: "rien pour l'instant", sacRienIci: "Rien ici pour l'instant.", sacRetirer: "Retirer", sacCopier: "Copier", sacUnItem: "{n} élément enregistré", sacPlusieursItems: "{n} éléments enregistrés", sacIntroPremiereFois: "Des mots que tu as déjà croisés sont ici ! Tu peux les copier ou les enlever — bientôt, tu pourras cocher les nouveaux mots que tu veux garder.", sacIntroCompris: "Compris !", sacViderCategorie: "Vider", sacViderTout: "Tout vider", sacConfirmViderCategorie: "Vider complètement « {categorie} » ? Cette action est irréversible.", sacConfirmViderTout: "Vider complètement le sac à dos ? Cette action est irréversible.", sacCopierCategorie: "Copier la catégorie", sacCopierTout: "Copier tout le sac", sacRienACopier: "Rien à copier dans cette catégorie.", sacModalCopierPuisVider: "Copier, puis vider", sacModalViderSansCopier: "Vider sans copier", sacModalAnnuler: "Annuler" },
-  en: { catMots: "Words learned", catCodes: "Codes", catSucces: "Achievements", catTrophees: "Trophies", catCartes: "Cards", sacVide: "nothing yet", sacRienIci: "Nothing here yet.", sacRetirer: "Remove", sacCopier: "Copy", sacUnItem: "{n} item saved", sacPlusieursItems: "{n} items saved", sacIntroPremiereFois: "Some words you've already come across are here! You can copy them or remove them — soon, you'll be able to check off any new word you want to keep.", sacIntroCompris: "Got it!", sacViderCategorie: "Clear", sacViderTout: "Clear everything", sacConfirmViderCategorie: "Completely clear \"{categorie}\"? This can't be undone.", sacConfirmViderTout: "Completely clear the whole backpack? This can't be undone.", sacCopierCategorie: "Copy this category", sacCopierTout: "Copy the whole backpack", sacRienACopier: "Nothing to copy in this category.", sacModalCopierPuisVider: "Copy, then clear", sacModalViderSansCopier: "Clear without copying", sacModalAnnuler: "Cancel" },
+  fr: { catMots: "Mots appris", catCodes: "Codes", catSucces: "Réussites", catTrophees: "Trophées", catCartes: "Cartes", sacVide: "rien pour l'instant", sacRienIci: "Rien ici pour l'instant.", sacRetirer: "Retirer", sacCopier: "Copier", sacUnItem: "{n} élément enregistré", sacPlusieursItems: "{n} éléments enregistrés", sacIntroPremiereFois: "Des mots que tu as déjà croisés sont ici ! Tu peux les copier ou les enlever — bientôt, tu pourras cocher les nouveaux mots que tu veux garder.", sacIntroCompris: "Compris !", sacViderCategorie: "Vider", sacViderTout: "Tout vider", sacConfirmViderCategorie: "Vider complètement « {categorie} » ? Cette action est irréversible.", sacConfirmViderTout: "Vider complètement le sac à dos ? Cette action est irréversible.", sacCopierCategorie: "Copier la catégorie", sacCopierTout: "Copier tout le sac", sacRienACopier: "Rien à copier dans cette catégorie.", sacModalCopierPuisVider: "Copier, puis vider", sacModalViderSansCopier: "Vider sans copier", sacModalAnnuler: "Annuler", natureNom: "Noms", natureVerbe: "Verbes", natureAdjectif: "Adjectifs", natureAdverbe: "Adverbes", naturePreposition: "Prépositions", natureExpression: "Expressions", natureAutre: "Autres" },
+  en: { catMots: "Words learned", catCodes: "Codes", catSucces: "Achievements", catTrophees: "Trophies", catCartes: "Cards", sacVide: "nothing yet", sacRienIci: "Nothing here yet.", sacRetirer: "Remove", sacCopier: "Copy", sacUnItem: "{n} item saved", sacPlusieursItems: "{n} items saved", sacIntroPremiereFois: "Some words you've already come across are here! You can copy them or remove them — soon, you'll be able to check off any new word you want to keep.", sacIntroCompris: "Got it!", sacViderCategorie: "Clear", sacViderTout: "Clear everything", sacConfirmViderCategorie: "Completely clear \"{categorie}\"? This can't be undone.", sacConfirmViderTout: "Completely clear the whole backpack? This can't be undone.", sacCopierCategorie: "Copy this category", sacCopierTout: "Copy the whole backpack", sacRienACopier: "Nothing to copy in this category.", sacModalCopierPuisVider: "Copy, then clear", sacModalViderSansCopier: "Clear without copying", sacModalAnnuler: "Cancel", natureNom: "Nouns", natureVerbe: "Verbs", natureAdjectif: "Adjectives", natureAdverbe: "Adverbs", naturePreposition: "Prepositions", natureExpression: "Expressions", natureAutre: "Other" },
   es: { catMots: "Palabras aprendidas", catCodes: "Códigos", catSucces: "Logros", catTrophees: "Trofeos", catCartes: "Cartas", sacVide: "nada todavía", sacRienIci: "Todavía no hay nada aquí.", sacRetirer: "Quitar", sacCopier: "Copiar", sacUnItem: "{n} elemento guardado", sacPlusieursItems: "{n} elementos guardados", sacIntroPremiereFois: "Algunas palabras que ya has visto están aquí. Puedes copiarlas o quitarlas — pronto podrás marcar las palabras nuevas que quieras conservar.", sacIntroCompris: "¡Entendido!" },
   pt: { catMots: "Palavras aprendidas", catCodes: "Códigos", catSucces: "Sucessos", catTrophees: "Troféus", catCartes: "Cartas", sacVide: "nada ainda", sacRienIci: "Ainda não há nada aqui.", sacRetirer: "Remover", sacCopier: "Copiar", sacUnItem: "{n} item guardado", sacPlusieursItems: "{n} itens guardados", sacIntroPremiereFois: "Algumas palavras que já viste estão aqui. Podes copiá-las ou removê-las — em breve, vais poder assinalar as novas palavras que queres guardar.", sacIntroCompris: "Entendido!" },
   it: { catMots: "Parole imparate", catCodes: "Codici", catSucces: "Traguardi", catTrophees: "Trofei", catCartes: "Carte", sacVide: "ancora niente", sacRienIci: "Ancora niente qui.", sacRetirer: "Rimuovi", sacCopier: "Copia", sacUnItem: "{n} elemento salvato", sacPlusieursItems: "{n} elementi salvati", sacIntroPremiereFois: "Alcune parole che hai già incontrato sono qui. Puoi copiarle o rimuoverle — presto potrai selezionare le nuove parole che vuoi conservare.", sacIntroCompris: "Capito!" },
@@ -86,6 +86,24 @@ const CATEGORIES_SAC = [
   { id: 'succes',   cle: 'catSucces',   nomParDefaut: 'Achievements',  icone: iconeSacEtoile() },
   { id: 'trophees', cle: 'catTrophees', nomParDefaut: 'Trophies',      icone: iconeSacTrophee() },
   { id: 'cartes',   cle: 'catCartes',   nomParDefaut: 'Cards',         icone: iconeSacCarte() }
+];
+
+// 🆕 Sous-groupement par nature grammaticale — UNIQUEMENT à l'intérieur de
+// la catégorie "mots" (demande de Raphaël : actuellement les mots y sont
+// listés dans l'ordre d'ajout, "au hasard"). Champ `type` NOUVEAU sur les
+// items de mots (ex. { mot: 'papillon', trad: 'butterfly', type: 'nom' }) —
+// n'existe encore nulle part ailleurs dans le site (confirmé par Raphaël) :
+// tant qu'un item de mot n'a pas ce champ, il tombe dans le seau "autre"
+// ci-dessous plutôt que de disparaître ou de faire planter l'affichage.
+// L'ordre de ce tableau EST l'ordre d'affichage des sous-groupes.
+const NATURES_MOTS = [
+  { id: 'nom',         cle: 'natureNom',         nomParDefaut: 'Nouns' },
+  { id: 'verbe',       cle: 'natureVerbe',       nomParDefaut: 'Verbs' },
+  { id: 'adjectif',    cle: 'natureAdjectif',    nomParDefaut: 'Adjectives' },
+  { id: 'adverbe',     cle: 'natureAdverbe',     nomParDefaut: 'Adverbs' },
+  { id: 'preposition', cle: 'naturePreposition', nomParDefaut: 'Prepositions' },
+  { id: 'expression',  cle: 'natureExpression',  nomParDefaut: 'Expressions' },
+  { id: 'autre',       cle: 'natureAutre',        nomParDefaut: 'Other' }
 ];
 
 // Traduit via le système du site si cette page en a un (index.html,
@@ -428,6 +446,51 @@ function compterToutSac(sac) {
   return CATEGORIES_SAC.reduce((total, cat) => total + (sac[cat.id] ? sac[cat.id].length : 0), 0);
 }
 
+// Rendu d'une ligne d'item — extrait tel quel de l'ancien code inline de
+// rafraichirAffichageSac() (aucun changement de comportement), pour être
+// réutilisable à la fois par le rendu simple (autres catégories) et par le
+// rendu groupé par nature (catégorie "mots" seulement, voir plus bas).
+function rendreLigneItemSac(i, categorieId) {
+  const identifiant = i.mot || i.code || i.titre || i.nom || '';
+  const nomAffiche = i.nom || i.mot || i.code || '—';
+  const detailAffiche = i.trad || i.description || i.titre || '';
+  const texteACopier = detailAffiche ? (nomAffiche + ' : ' + detailAffiche) : nomAffiche;
+  return '<div class="sac-item">' +
+    '<span class="sac-item-principal">' +
+      '<span class="sac-item-nom">' + nomAffiche + '</span>' +
+      '<span class="sac-item-detail">' + detailAffiche + '</span>' +
+    '</span>' +
+    '<button type="button" class="sac-item-copier" title="' + echapperAttribut(tSacOuDefaut('sacCopier', 'Copy')) + '" ' +
+      'data-texte="' + echapperAttribut(texteACopier) + '" ' +
+      'onclick="copierDepuisSac(this)">&#10697;</button>' +
+    '<button type="button" class="sac-item-retirer" title="' + echapperAttribut(tSacOuDefaut('sacRetirer', 'Remove')) + '" ' +
+      'data-cat="' + categorieId + '" data-id="' + echapperAttribut(identifiant) + '" ' +
+      'onclick="retirerDuSac(this.dataset.cat, this.dataset.id)">&times;</button>' +
+  '</div>';
+}
+
+// Rendu d'origine, sans sous-groupement — toujours utilisé pour codes/
+// succès/trophées/cartes, qui n'ont pas de nature grammaticale.
+function rendreItemsSacSimple(items, categorieId) {
+  return items.map(i => rendreLigneItemSac(i, categorieId)).join('');
+}
+
+// 🆕 Rendu groupé par nature grammaticale — catégorie "mots" uniquement.
+// Un item sans champ `type` (tout le vocabulaire existant, voir note sur
+// NATURES_MOTS plus haut) tombe dans le sous-groupe "autre" plutôt que de
+// disparaître. Un sous-groupe entièrement vide n'est simplement pas rendu
+// (pas de "Verbes (0)" vide qui encombrerait la liste pour rien).
+function rendreItemsMotsParNature(items, categorieId) {
+  return NATURES_MOTS.map(nature => {
+    const itemsDuGroupe = items.filter(i => (i.type || 'autre') === nature.id);
+    if (itemsDuGroupe.length === 0) return '';
+    return '<div class="sac-nature-groupe">' +
+      '<div class="sac-nature-titre">' + tSacOuDefaut(nature.cle, nature.nomParDefaut) + '</div>' +
+      itemsDuGroupe.map(i => rendreLigneItemSac(i, categorieId)).join('') +
+    '</div>';
+  }).join('');
+}
+
 function rafraichirAffichageSac() {
   const boutonEl = document.getElementById('sacBouton');
   if (!boutonEl) return; // page sans sac à dos : rien à faire
@@ -481,24 +544,7 @@ function rafraichirAffichageSac() {
       '<div class="sac-cat-liste">' +
         (items.length === 0
           ? '<div class="sac-vide">' + tSacOuDefaut('sacRienIci', 'Nothing here yet.') + '</div>'
-          : items.map(i => {
-              const identifiant = i.mot || i.code || i.titre || i.nom || '';
-              const nomAffiche = i.nom || i.mot || i.code || '—';
-              const detailAffiche = i.trad || i.description || i.titre || '';
-              const texteACopier = detailAffiche ? (nomAffiche + ' : ' + detailAffiche) : nomAffiche;
-              return '<div class="sac-item">' +
-                '<span class="sac-item-principal">' +
-                  '<span class="sac-item-nom">' + nomAffiche + '</span>' +
-                  '<span class="sac-item-detail">' + detailAffiche + '</span>' +
-                '</span>' +
-                '<button type="button" class="sac-item-copier" title="' + echapperAttribut(tSacOuDefaut('sacCopier', 'Copy')) + '" ' +
-                  'data-texte="' + echapperAttribut(texteACopier) + '" ' +
-                  'onclick="copierDepuisSac(this)">&#10697;</button>' +
-                '<button type="button" class="sac-item-retirer" title="' + echapperAttribut(tSacOuDefaut('sacRetirer', 'Remove')) + '" ' +
-                  'data-cat="' + cat.id + '" data-id="' + echapperAttribut(identifiant) + '" ' +
-                  'onclick="retirerDuSac(this.dataset.cat, this.dataset.id)">&times;</button>' +
-              '</div>';
-            }).join('')
+          : (cat.id === 'mots' ? rendreItemsMotsParNature(items, cat.id) : rendreItemsSacSimple(items, cat.id))
         ) +
       '</div>';
     corps.appendChild(div);
@@ -582,8 +628,8 @@ function iconeSacCarte() {
 // ---------- Bouton de test optionnel (présent seulement sur les pages qui le souhaitent) ----------
 
 const EXEMPLES_SAC = [
-  { categorie: 'mots', item: { mot: 'papillon', trad: 'butterfly' } },
-  { categorie: 'mots', item: { mot: 'gentil', trad: 'kind' } },
+  { categorie: 'mots', item: { mot: 'papillon', trad: 'butterfly', type: 'nom' } },
+  { categorie: 'mots', item: { mot: 'gentil', trad: 'kind', type: 'adjectif' } },
   { categorie: 'codes', item: { code: 'A7K2', description: 'bonus access — lesson 3' } },
   { categorie: 'succes', item: { titre: 'First lesson completed' } },
   { categorie: 'trophees', item: { titre: 'Trophy: 7-day streak' } },

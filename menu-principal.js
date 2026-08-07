@@ -1,0 +1,226 @@
+/* ==================================================================
+   menu-principal.js — module autonome du menu principal (post-tutoriel
+   / post-identité), même patron d'architecture que identite-eleve.js :
+   window.KebBekMenu.demarrerMenuPrincipal(idConteneur, options, callbacks)
+   rend tout le menu dans le conteneur donné, communique avec la page
+   hôte uniquement via callbacks — ce module ne navigue nulle part
+   lui-même et ne connaît rien de la structure de la page.
+
+   Remplace l'ancien menu inline de index_01.html (.carte-menu) — repris
+   ici comme base visuelle (langage "boutons-pilules", palette
+   beige/brun/pêche déjà en place sur le site) mais reconstruit :
+     - "Ma fiche" n'est plus un panneau vide à remplir manuellement :
+       il lit l'identité réelle via window.KebBekProgression
+       (lireIdentite / estInvite), affiche prénom + avatar Keb/Bek
+       selon le genre déjà choisi, et permet de se déconnecter
+       (nouvelle fonction progression.js : deconnecter()).
+     - Entrée animée en cascade des boutons (plus vivant que l'apparition
+       statique d'origine), micro-interaction au clic (pression réelle,
+       pas juste hover).
+     - "Bravo & sac" reste "Bientôt" (l'écran n'existe pas encore) — le
+       vrai sac (sac-a-dos.js, #sacBouton) continue de vivre en dehors
+       de cette carte, exactement comme avant, ce module ne le
+       remplace pas.
+
+   Suppose sac-a-dos.js déjà chargé si la page utilise #sacBouton (pas
+   une dépendance dure de CE fichier). Dépend en revanche de
+   window.KebBekProgression (progression.js) pour "Ma fiche" — si
+   absent, la carte se rend quand même (mode dégradé : "Ma fiche"
+   affiche juste un état invité générique, jamais une carte cassée).
+   ================================================================== */
+
+const CLE_LANGUE_MENU = 'kebbek_langue'; // même clé que sac-a-dos.js (langueActuelleSac) — un seul réglage de langue pour tout le site
+function langueActuelleMenu() {
+  try { return localStorage.getItem(CLE_LANGUE_MENU) || 'en'; }
+  catch (e) { return 'en'; }
+}
+
+// Traductions minimales pour l'instant (fr + en, comme sac-a-dos.js à sa
+// création) — les 17 autres langues du site retombent automatiquement sur
+// l'anglais (voir tMenuOuDefaut). À étoffer plus tard, même mécanique que
+// DICO_SAC.
+const DICO_MENU = {
+  fr: {
+    salutation: 'Salut, {prenom} !',
+    salutationInvite: 'Bienvenue !',
+    menuHistoires: 'Histoires et leçons',
+    menuBravo: 'Bravo et récompenses',
+    badgeBientot: 'Bientôt',
+    menuMaFiche: 'Ma fiche',
+    menuPrives: 'Cours privés',
+    menuContact: 'Contact',
+    ficheInvite: 'Tu explores en mode invité pour l\u2019instant.',
+    ficheBtnCompte: 'Créer un compte',
+    ficheConnecte: 'Connecté(e)',
+    ficheBtnDeconnexion: 'Se déconnecter',
+    ficheDeconnexionEnCours: 'Déconnexion…'
+  },
+  en: {
+    salutation: 'Hi, {prenom}!',
+    salutationInvite: 'Welcome!',
+    menuHistoires: 'Stories & lessons',
+    menuBravo: 'Bravo & rewards',
+    badgeBientot: 'Soon',
+    menuMaFiche: 'My profile',
+    menuPrives: 'Private lessons',
+    menuContact: 'Contact',
+    ficheInvite: 'You\u2019re exploring as a guest for now.',
+    ficheBtnCompte: 'Create an account',
+    ficheConnecte: 'Signed in',
+    ficheBtnDeconnexion: 'Sign out',
+    ficheDeconnexionEnCours: 'Signing out…'
+  }
+};
+
+function tMenuOuDefaut(cle, defaut) {
+  const dict = DICO_MENU[langueActuelleMenu()] || DICO_MENU.en;
+  if (dict && dict[cle] !== undefined) return dict[cle];
+  return defaut;
+}
+
+function tMenuAvecVariables(cle, variables) {
+  let texte = tMenuOuDefaut(cle, cle);
+  Object.keys(variables || {}).forEach(k => {
+    texte = texte.replace('{' + k + '}', variables[k]);
+  });
+  return texte;
+}
+
+// ---------- Icônes (mêmes tracés SVG que l'ancien menu — réutilisés tels
+// quels : déjà cohérents avec le reste du site, aucune raison de les
+// réinventer) ----------
+const ICONES_MENU = {
+  histoires: '<path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H12v18H6.5A2.5 2.5 0 0 1 4 18.5v-13Z"/><path d="M20 5.5A2.5 2.5 0 0 0 17.5 3H12v18h5.5a2.5 2.5 0 0 0 2.5-2.5v-13Z"/>',
+  bravo: '<path d="M6 6h15l-1.5 9h-12Z"/><path d="M6 6 5 3H2"/><circle cx="9.5" cy="19" r="1.4"/><circle cx="17.5" cy="19" r="1.4"/>',
+  fiche: '<circle cx="12" cy="8" r="3.5"/><path d="M4.5 20a7.5 7.5 0 0 1 15 0"/>',
+  prives: '<rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8M12 17v4"/>',
+  contact: '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/>'
+};
+
+function svgIconeMenu(id) {
+  return '<svg class="kbm-icone" viewBox="0 0 24 24">' + ICONES_MENU[id] + '</svg>';
+}
+
+/**
+ * Rend le menu principal dans le conteneur donné.
+ *
+ * @param {string} idConteneur - id de l'élément hôte (vidé puis rempli).
+ * @param {object} callbacks - { onHistoires, onPrives, onContact,
+ *   onCreerCompte } — chacun optionnel ; non fourni = bouton inactif
+ *   plutôt qu'une erreur. onCreerCompte est appelé depuis "Ma fiche" en
+ *   mode invité (destination — probablement relancer la séquence
+ *   identité — décidée par la page hôte, ce module ne le sait pas).
+ */
+async function demarrerMenuPrincipal(idConteneur, callbacks) {
+  callbacks = callbacks || {};
+  const conteneur = document.getElementById(idConteneur);
+  if (!conteneur) { console.warn('menu-principal.js : conteneur introuvable.', idConteneur); return; }
+
+  const progression = window.KebBekProgression || null;
+  const invite = !progression || progression.estInvite() || !progression.session;
+  const identite = progression ? await progression.lireIdentite() : { prenom: null, genre: null };
+
+  conteneur.innerHTML =
+    '<div class="kbm-carte">' +
+      '<div class="kbm-salutation">' +
+        (identite.prenom
+          ? tMenuAvecVariables('salutation', { prenom: identite.prenom })
+          : tMenuOuDefaut('salutationInvite', 'Welcome!')) +
+      '</div>' +
+      '<div class="kbm-liste" id="kbmListe">' +
+
+        '<button type="button" class="kbm-bouton kbm-entree-cachee" data-menu="histoires">' +
+          svgIconeMenu('histoires') +
+          '<span>' + tMenuOuDefaut('menuHistoires', 'Stories & lessons') + '</span>' +
+        '</button>' +
+
+        '<button type="button" class="kbm-bouton kbm-a-venir kbm-entree-cachee" data-menu="bravo" aria-disabled="true">' +
+          svgIconeMenu('bravo') +
+          '<span>' + tMenuOuDefaut('menuBravo', 'Bravo & rewards') + '</span>' +
+          '<span class="kbm-badge">' + tMenuOuDefaut('badgeBientot', 'Soon') + '</span>' +
+        '</button>' +
+
+        '<button type="button" class="kbm-bouton kbm-ma-fiche kbm-entree-cachee" id="kbmBtnFiche" aria-expanded="false">' +
+          svgIconeMenu('fiche') +
+          '<span>' + tMenuOuDefaut('menuMaFiche', 'My profile') + '</span>' +
+          '<span class="kbm-chevron">&#9660;</span>' +
+        '</button>' +
+        '<div class="kbm-fiche-panneau" id="kbmFichePanneau"></div>' +
+
+        '<button type="button" class="kbm-bouton kbm-entree-cachee" data-menu="prives">' +
+          svgIconeMenu('prives') +
+          '<span>' + tMenuOuDefaut('menuPrives', 'Private lessons') + '</span>' +
+        '</button>' +
+
+        '<button type="button" class="kbm-bouton kbm-entree-cachee" data-menu="contact">' +
+          svgIconeMenu('contact') +
+          '<span>' + tMenuOuDefaut('menuContact', 'Contact') + '</span>' +
+        '</button>' +
+
+      '</div>' +
+    '</div>';
+
+  // ---------- Entrée en cascade ----------
+  // Chaque bouton démarre invisible/décalé (.kbm-entree-cachee, voir CSS),
+  // puis la classe est retirée avec un léger délai croissant — effet de
+  // liste qui "s'installe" plutôt qu'un bloc figé qui apparaît d'un coup.
+  const entrees = conteneur.querySelectorAll('.kbm-entree-cachee');
+  entrees.forEach((el, i) => {
+    setTimeout(() => el.classList.remove('kbm-entree-cachee'), 70 + i * 60);
+  });
+
+  // ---------- Callbacks des boutons simples ----------
+  const brancher = (selecteur, cb) => {
+    const el = conteneur.querySelector(selecteur);
+    if (el && typeof cb === 'function') el.addEventListener('click', cb);
+  };
+  brancher('[data-menu="histoires"]', callbacks.onHistoires);
+  brancher('[data-menu="prives"]', callbacks.onPrives);
+  brancher('[data-menu="contact"]', callbacks.onContact);
+
+  // ---------- "Ma fiche" ----------
+  const btnFiche = document.getElementById('kbmBtnFiche');
+  const panneauFiche = document.getElementById('kbmFichePanneau');
+
+  function rendreFiche() {
+    if (invite) {
+      panneauFiche.innerHTML =
+        '<p class="kbm-fiche-texte">' + tMenuOuDefaut('ficheInvite', 'You\u2019re exploring as a guest for now.') + '</p>' +
+        '<button type="button" class="kbm-fiche-btn kbm-fiche-btn-principal" id="kbmBtnCreerCompte">' +
+          tMenuOuDefaut('ficheBtnCompte', 'Create an account') +
+        '</button>';
+      const btnCompte = document.getElementById('kbmBtnCreerCompte');
+      if (btnCompte && typeof callbacks.onCreerCompte === 'function') {
+        btnCompte.addEventListener('click', callbacks.onCreerCompte);
+      }
+    } else {
+      panneauFiche.innerHTML =
+        '<p class="kbm-fiche-texte">' +
+          '<span class="kbm-fiche-statut">' + tMenuOuDefaut('ficheConnecte', 'Signed in') + '</span>' +
+        '</p>' +
+        '<button type="button" class="kbm-fiche-btn kbm-fiche-btn-discret" id="kbmBtnDeconnexion">' +
+          tMenuOuDefaut('ficheBtnDeconnexion', 'Sign out') +
+        '</button>';
+      const btnDeco = document.getElementById('kbmBtnDeconnexion');
+      if (btnDeco) {
+        btnDeco.addEventListener('click', async function () {
+          btnDeco.disabled = true;
+          btnDeco.textContent = tMenuOuDefaut('ficheDeconnexionEnCours', 'Signing out…');
+          if (progression) await progression.deconnecter();
+          window.location.reload();
+        });
+      }
+    }
+  }
+  rendreFiche();
+
+  if (btnFiche) {
+    btnFiche.addEventListener('click', function () {
+      const ouvert = panneauFiche.classList.toggle('kbm-ouvert');
+      btnFiche.setAttribute('aria-expanded', String(ouvert));
+      btnFiche.classList.toggle('kbm-ouvert', ouvert);
+    });
+  }
+}
+
+window.KebBekMenu = { demarrerMenuPrincipal };

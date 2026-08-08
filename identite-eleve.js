@@ -149,6 +149,16 @@
 
 const AJOUT_AUTOMATIQUE_TEMPORAIRE = false;
 
+// 🆕 Indice ponctuel "touche/clique un mot pour voir sa traduction" —
+// demande de Raphaël (session du 06-08-2026) : un petit message sur la
+// première page, après le "Oui" de "First time?", qui n'apparaît qu'une
+// fois et disparaît dès qu'un mot est touché/cliqué. Clé localStorage
+// PARTAGÉE (pas remise à zéro par étape ni par page) : une fois vu une
+// fois nulle part dans le site, plus jamais revu — voir
+// masquerIndiceMotSiPresent()/afficherTraductionMot() plus bas, seul
+// point d'entrée de TOUS les clics de mot de toute la séquence.
+const CLE_INDICE_MOT_VU = 'keb_bek_indice_mot_vu';
+
 const KebBekIdentite = (function () {
 
   // ---------- Banque de noms de repli (toujours en français, peu
@@ -274,7 +284,19 @@ const KebBekIdentite = (function () {
     // 🆕 v3
     labelTraduirePhrase: 'Translate the sentence',
     labelMasquerTraduction: 'Hide translation',
+    // ⚠️ OBSOLÈTE (jamais affichée nulle part, confirmé par grep) : décrit
+    // encore l'ancien comportement où un simple clic ajoutait le mot au
+    // sac, retiré depuis (voir point 6 de l'en-tête de fichier — seul le
+    // double-tap/double-clic le fait désormais). Laissée telle quelle
+    // (pas supprimée, au cas où une page l'utiliserait par son propre
+    // t()), mais indiceMotTraduction ci-dessous est la bonne clé pour
+    // tout nouvel usage — ne pas réutiliser celle-ci.
     noteAjoutSac: "Tap a word to see its translation — it's added to your bag for now.",
+    // 🆕 Indice ponctuel affiché une seule fois (voir CLE_INDICE_MOT_VU) —
+    // reflète le comportement RÉEL du simple tap/clic (traduction
+    // seulement, voir afficherTraductionMot), contrairement à
+    // noteAjoutSac ci-dessus.
+    indiceMotTraduction: 'Tap or click a word to see its translation.',
     // 🐛 CORRIGÉ cette session : labelPrefixeNom (retiré d'ici) était
     // traduit dans la langue de l'élève, ce qui rompait la continuité
     // avec les répliques françaises de Keb/Bek qui précèdent — voir
@@ -806,6 +828,40 @@ const KebBekIdentite = (function () {
     indice.textContent = texte(options, 'introIndiceTap');
     conteneur.appendChild(indice);
 
+    // 🆕 Indice ponctuel "touche/clique un mot pour voir sa traduction"
+    // (voir CLE_INDICE_MOT_VU en tête de fichier) — créé seulement s'il
+    // n'a encore jamais été vu, où que ce soit sur le site. localStorage
+    // absent/bloqué (navigation privée stricte, quotas) : indiceMotDejaVu
+    // reste à true par défaut, donc l'indice ne s'affiche simplement pas
+    // plutôt que de faire planter la séquence.
+    let indiceMotDejaVu = true;
+    try { indiceMotDejaVu = localStorage.getItem(CLE_INDICE_MOT_VU) === '1'; }
+    catch (e) { indiceMotDejaVu = true; }
+
+    let indiceMot = null;
+    if (!indiceMotDejaVu) {
+      indiceMot = document.createElement('div');
+      indiceMot.className = 'iden-indice-mot';
+      indiceMot.id = 'idenIndiceMot';
+      indiceMot.textContent = texte(options, 'indiceMotTraduction');
+      conteneur.appendChild(indiceMot);
+    }
+
+    // Retire l'indice ET retient définitivement qu'il a été vu — appelée
+    // depuis afficherTraductionMot() plus bas, seul point d'entrée de
+    // TOUS les clics de mot dans TOUTE la séquence (dialogue d'intro,
+    // "Enchanté(e)", silhouettes, etc.) : le tout premier mot touché,
+    // n'importe où, suffit à ne plus jamais revoir cet indice. Ne fait
+    // rien si l'indice n'existe pas/plus (déjà vu ce chargement, ou vu
+    // lors d'une session précédente) — sûr à appeler à chaque clic de mot
+    // sans vérification préalable côté appelant.
+    function masquerIndiceMotSiPresent() {
+      if (!indiceMot) return;
+      try { localStorage.setItem(CLE_INDICE_MOT_VU, '1'); } catch (e) {}
+      indiceMot.remove();
+      indiceMot = null;
+    }
+
     // 🆕 v3 — bouton de traduction de la PHRASE entière (en plus du
     // mot-à-mot déjà en place) + la traduction elle-même, affichée/
     // masquée en dessous au clic. btnTraduirePhrase.style.display est
@@ -944,6 +1000,12 @@ const KebBekIdentite = (function () {
     }
 
     function afficherTraductionMot(span, mot) {
+      // 🆕 Un mot a été touché/cliqué — l'indice ponctuel a rempli son
+      // rôle, qu'une traduction soit trouvée ou non pour CE mot précis
+      // (voir masquerIndiceMotSiPresent : demande de Raphaël, "disparaît
+      // après qu'on ait cliqué ou touché" un mot, pas seulement après
+      // avoir VU une traduction).
+      masquerIndiceMotSiPresent();
       document.querySelectorAll('.iden-tooltip-mot').forEach(function (t) { t.remove(); });
       const trad = traductionDeMot(mot);
       if (!trad) return;

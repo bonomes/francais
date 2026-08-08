@@ -551,6 +551,34 @@ function rafraichirAffichageSac() {
   });
 }
 
+// ---------- Solde (P$ / PB) ----------
+//
+// 🆕 Demande de Raphaël : afficher dans le sac la quantité de piasses et
+// de points bonis dont l'élève dispose (eleves.piasses / points_bonis,
+// déjà existantes côté Supabase — voir progression.js:lireSolde()).
+// Séparée de rafraichirAffichageSac() (qui reste 100% synchrone, elle) :
+// le solde vient du réseau, pas de localStorage, donc async par nature,
+// et n'a besoin d'être rafraîchi qu'à l'ouverture du sac / au chargement
+// de la page — jamais à chaque ajout/retrait local d'un mot (qui ne
+// change aucune piasse). Repli silencieux (0/0) si KebBekProgression
+// est absent (page qui n'aurait pas chargé progression.js) ou si les
+// éléments d'affichage n'existent pas encore dans le HTML de la page —
+// même philosophie que rafraichirAffichageSac() : jamais d'erreur
+// bloquante pour une page qui n'a pas (encore) ce composant.
+async function rafraichirSoldeSac() {
+  const elPiasses = document.getElementById('sacSoldePiasses');
+  const elPointsBonis = document.getElementById('sacSoldePointsBonis');
+  if (!elPiasses || !elPointsBonis) return; // page sans bloc solde dans le HTML : rien à faire
+
+  let solde = { piasses: 0, points_bonis: 0 };
+  if (window.KebBekProgression && typeof window.KebBekProgression.lireSolde === 'function') {
+    try { solde = await window.KebBekProgression.lireSolde(); }
+    catch (e) { console.warn('sac-a-dos.js : rafraichirSoldeSac a échoué.', e); }
+  }
+  elPiasses.textContent = solde.piasses;
+  elPointsBonis.textContent = solde.points_bonis;
+}
+
 function toggleCategorieSac(entete) {
   entete.parentElement.classList.toggle('repliee');
 }
@@ -592,7 +620,10 @@ function toggleSacADos() {
   const panneau = document.getElementById('sacPanneau');
   const ouvert = panneau.classList.toggle('ouvert');
   bouton.classList.toggle('ouvert', ouvert);
-  if (ouvert) afficherIntroSacSiPremiereFois();
+  if (ouvert) {
+    afficherIntroSacSiPremiereFois();
+    rafraichirSoldeSac(); // 🆕 à jour à chaque ouverture (des piasses ont pu être dépensées/gagnées ailleurs entre-temps)
+  }
 }
 
 document.addEventListener('click', (e) => {
@@ -644,3 +675,4 @@ function ajouterExempleAleatoireSac() {
 }
 
 rafraichirAffichageSac();
+rafraichirSoldeSac(); // 🆕 pré-rempli dès le chargement (pas seulement à l'ouverture) : si KebBekProgression n'est pas encore prêt, retombe simplement sur 0/0 puis se corrigera à la première ouverture réelle

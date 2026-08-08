@@ -9,6 +9,26 @@
    le reste du site tel qu'il a évolué depuis.
    ================================================================== */
 
+/* 🆕 #menuPrincipal (le conteneur passé à demarrerMenuPrincipal) est un
+   simple <div> dans index.html, sans layout propre — .scene le centre
+   comme item flex, mais le titre + .kbm-carte à l'intérieur de LUI ont
+   besoin de leur propre empilement vertical centré. */
+#menuPrincipal {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+}
+
+.kbm-titre-img {
+  width: min(46vw, 200px);
+  height: auto;
+}
+
+@media (max-width: 460px) {
+  .kbm-titre-img { width: min(58vw, 170px); }
+}
+
 .kbm-carte {
   width: min(90vw, 340px);
   background: #FFFFFF;

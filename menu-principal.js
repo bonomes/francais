@@ -396,7 +396,7 @@ async function demarrerMenuPrincipal(idConteneur, callbacks) {
     // du site (voir .ecran-titre-img dans index.html), pas une nouvelle
     // image : même fichier, juste affiché plus petit et en continu ici
     // (pas de "pop" ni de disparition, contrairement à l'écran-titre).
-    '<img class="kbm-titre-img" src="images/accueil/index_bonomes_titre_01.webp" alt="Le fran\u00e7ais avec les Bonomes">' +
+    '<img class="kbm-titre-img" src="images/accueil/index_bonomes_titre_01.webp" width="509" height="489" alt="Le fran\u00e7ais avec les Bonomes">' +
     '<div class="kbm-carte">' +
       '<div class="kbm-salutation">' +
         (identite.prenom

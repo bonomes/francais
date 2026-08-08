@@ -119,10 +119,29 @@
   transition: max-height 0.3s ease, opacity 0.25s ease;
 }
 
-/* Généreux à dessein (voir note de tête de fichier) : la limite qui
-   compte vraiment est maintenant celle de .sac-corps ci-dessous, pas
-   celle-ci — celle-ci n'existe que pour l'animation d'ouverture. */
-#sacPanneau.ouvert { max-height: min(88vh, 640px); opacity: 1; pointer-events: auto; }
+/* 🐛 CORRIGÉ (signalé par Raphaël) : min(88vh, 640px) ne tenait pas
+   compte du décalage top:78px du panneau — sur un écran mobile pas très
+   haut, en-tête + solde + bannière d'intro + .sac-corps (jusqu'à 300px)
+   + pied dépassaient facilement le bas de l'écran réel. Le panneau
+   entier étant en overflow:hidden, le pied (derniers boutons) se
+   retrouvait simplement invisible, sans aucun moyen de le faire
+   apparaître : .sac-corps a bien son propre défilement, mais lui seul
+   — le panneau qui le contient, non. calc(100vh - 100px) plafonne
+   maintenant la hauteur du panneau à ce qui tient réellement sous son
+   point d'ancrage (78px de décalage + marge de sécurité), et
+   overflow-y:auto + touch-action/-webkit-overflow-scrolling rendent le
+   panneau lui-même glissable au doigt dès que son contenu dépasse —
+   sans ajouter de barre de défilement visible, juste la possibilité de
+   glisser. */
+#sacPanneau.ouvert {
+  max-height: min(88vh, 640px, calc(100vh - 100px));
+  opacity: 1;
+  pointer-events: auto;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
+  overscroll-behavior: contain;
+}
 
 .sac-entete { padding: 14px 18px; background: var(--peche); color: #FFFFFF; font-weight: 700; font-size: 1rem; }
 .sac-sous-titre { font-size: 0.72rem; font-weight: 500; opacity: 0.9; margin-top: 1px; }

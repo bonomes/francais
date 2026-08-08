@@ -256,6 +256,33 @@
     return identiteInviteLocale();
   }
 
+  // 🆕 Solde (piasses / points bonis) — demande de Raphaël : afficher dans
+  // le sac la quantité de P$/PB dont l'élève dispose. Même patron que
+  // lireIdentite() juste au-dessus (colonnes déjà présentes sur `eleves`,
+  // lues directement, aucune RPC nécessaire — ce sont de simples valeurs à
+  // afficher, pas des écritures qui doivent vérifier l'appartenance du
+  // profil). Contrairement à lireIdentite()/lireProgression(), un invité
+  // n'a ICI aucun équivalent local : rien n'accumule de piasses/points
+  // bonis tant qu'il n'y a pas de compte (pas de ligne `eleves` du tout
+  // pour un invité), donc { piasses: 0, points_bonis: 0 } est un repli
+  // honnête, pas une approximation — un invité n'a simplement encore rien
+  // gagné.
+  async function lireSolde() {
+    if (sessionActuelle && profilActifId && clientSupabase) {
+      const { data, error } = await clientSupabase
+        .from('eleves')
+        .select('piasses, points_bonis')
+        .eq('id', profilActifId)
+        .single();
+      if (error) {
+        console.warn('progression.js : lireSolde a échoué.', error);
+        return { piasses: 0, points_bonis: 0 };
+      }
+      return { piasses: data.piasses || 0, points_bonis: data.points_bonis || 0 };
+    }
+    return { piasses: 0, points_bonis: 0 };
+  }
+
   function enregistrerIdentiteInvite(genre, nationalite, prenom, adulte) {
     const actuel = identiteInviteLocale();
     const suivant = {
@@ -400,6 +427,7 @@
     marquerChapitreComplete,
     migrerProgressionInviteVersCompte,
     lireIdentite,
+    lireSolde,
     enregistrerIdentite,
     migrerIdentiteInviteVersCompte,
     get client() { return clientSupabase; },

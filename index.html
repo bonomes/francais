@@ -97,6 +97,62 @@
     justify-content: center;
   }
 
+  /* ==================================================================
+     🆕 Écran-titre ("Le français avec les Bonomes") — demande de
+     Raphaël : la toute première chose vue en arrivant sur le site,
+     avant même Keb/Bek. Superposé en position: fixed plutôt qu'inséré
+     dans .scene : la scène en dessous se construit normalement, EN
+     MÊME TEMPS, pendant que l'écran-titre est encore affiché par-
+     dessus — rien à attendre, rien à séquencer côté JS, juste une
+     couche opaque (même --fond que le reste, donc invisible en soi) qui
+     se retire après coup. Couvre tout le viewport (inset: 0), fond
+     --fond plein (pas de transparence : doit vraiment cacher la scène
+     en dessous tant qu'il est là).
+     z-index 500 : au-dessus de la modale de confirmation du sac (300,
+     voir sac-a-dos.css) et de tout le reste de la page — rien ne doit
+     jamais passer devant l'écran-titre pendant les quelques instants où
+     il est affiché.
+     Disparition demandée par Raphaël : "en éclatant comme une bulle".
+     .ecran-titre-sortie (ajoutée en JS, voir plus bas) anime l'image en
+     grossissant rapidement tout en s'estompant (cubic-bezier avec léger
+     dépassement, façon bulle qui gonfle puis crève) — PAS un simple
+     fondu, qui aurait été visuellement plat pour "éclater". Le fond
+     lui-même s'estompe un peu plus lentement pour laisser le temps à
+     l'œil de suivre le "pop" de l'image avant que la scène du dessous
+     ne devienne cliquable. */
+  #ecranTitre {
+    position: fixed;
+    inset: 0;
+    z-index: 500;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--fond);
+    opacity: 1;
+    transition: opacity 0.5s ease 0.15s; /* le petit délai laisse le "pop" de l'image démarrer avant que le fond commence lui-même à s'effacer */
+    cursor: pointer; /* invite implicitement à toucher pour passer plus vite, cohérent avec le reste du site (tap pour avancer) */
+  }
+
+  #ecranTitre.ecran-titre-sortie {
+    opacity: 0;
+    pointer-events: none; /* dès le déclenchement de la sortie, ne bloque plus les clics vers la scène en dessous, même avant la fin des 0.5s de transition */
+  }
+
+  .ecran-titre-img {
+    width: min(62vw, 320px);
+    height: auto;
+    transition: transform 0.5s cubic-bezier(.25, .8, .3, 1.6), opacity 0.4s ease;
+  }
+
+  #ecranTitre.ecran-titre-sortie .ecran-titre-img {
+    transform: scale(1.35);
+    opacity: 0;
+  }
+
+  @media (max-width: 460px) {
+    .ecran-titre-img { width: min(72vw, 260px); }
+  }
+
   .scene {
     position: relative;
     width: 100vw;
@@ -130,26 +186,6 @@
      (order:-1, gap, etc.) à l'intérieur de cette ligne. */
   .scene-rangee {
     display: flex;
-    /* 🐛 CORRIGÉ (signalé par Raphaël, capture mobile à l'appui) :
-       .scene-rangee empile le sélecteur de langue (.selecteur-langue,
-       flex-shrink: 0) et le groupe personnages + "First time?"
-       (.personnages-groupe, flex-shrink: 0 lui aussi) sur UNE SEULE
-       ligne, sans possibilité de rétrécir ni de passer à la ligne. Sur
-       un écran large, la somme de leurs largeurs tient toujours dans
-       la fenêtre — aucun symptôme visible. Sur mobile, cette somme
-       dépasse la largeur de l'écran, et comme rien ne peut ni rétrécir
-       ni s'enrouler, l'excédent déborde de part et d'autre — puis se
-       fait purement et simplement rogner par le overflow-x: hidden du
-       body (voir plus haut) : ni visible, ni atteignable par un
-       défilement quelconque. C'est exactement ce que montrait la
-       capture (déclencheur de langue tronché à gauche, bloc "First
-       time?" tronché à droite).
-       flex-wrap: wrap laisse le sélecteur de langue passer sur sa
-       propre ligne dès que la place manque, plutôt que de déborder —
-       toujours centré (justify-content: center hérité), sans rien
-       changer au rendu déjà correct des écrans larges où une seule
-       ligne suffit. */
-    flex-wrap: wrap;
     align-items: center;
     justify-content: center;
     gap: clamp(16px, 4vw, 32px);
@@ -680,6 +716,19 @@
 </head>
 <body>
 
+  <!-- 🆕 Écran-titre — voir #ecranTitre dans le CSS pour le détail du
+       raisonnement (superposition, timing, animation "bulle qui
+       éclate"). role="button"/tabindex/aria-label : cliquable/tapable
+       pour passer plus vite (voir masquerEcranTitre() plus bas), donc
+       doit rester accessible comme un vrai bouton, pas juste une image
+       décorative — au clavier aussi (Entrée/Espace, même patron que
+       #idenPersonnages dans identite-eleve.js). aria-hidden basculé à
+       "true" au moment de la sortie (voir JS) : un lecteur d'écran ne
+       doit plus s'y arrêter une fois qu'il a commencé à disparaître. -->
+  <div id="ecranTitre" role="button" tabindex="0" aria-label="Le français avec les Bonomes">
+    <img class="ecran-titre-img" src="images/accueil/index_bonomes_titre_01.webp" alt="Le français avec les Bonomes">
+  </div>
+
   <div class="scene">
    <div class="scene-rangee" id="sceneRangee">
     <div class="personnages-groupe">
@@ -839,6 +888,14 @@
     <span id="sacEnteteTitre">Your backpack</span>
     <div class="sac-sous-titre" id="sacSousTitre"></div>
   </div>
+  <!-- 🆕 Solde P$/PB — rempli par rafraichirSoldeSac() dans sac-a-dos.js
+       (voir progression.js:lireSolde()). Toujours à 0/0 pour un invité
+       (aucune ligne `eleves` tant qu'il n'a pas de compte), à jour pour
+       un élève connecté. -->
+  <div class="sac-solde" id="sacSolde">
+    <span class="sac-solde-item"><span class="sac-solde-valeur" id="sacSoldePiasses">0</span><span class="sac-solde-etiquette">P$</span></span>
+    <span class="sac-solde-item"><span class="sac-solde-valeur" id="sacSoldePointsBonis">0</span><span class="sac-solde-etiquette">PB</span></span>
+  </div>
   <div class="sac-corps" id="sacCorps"></div>
   <div class="sac-pied">
     <button type="button" id="btnCopierToutSac" onclick="copierToutSac(this)">Copy the whole backpack</button>
@@ -872,6 +929,51 @@
 <script src="menu-principal.js"></script>
 
 <script>
+  // ================================================================
+  // 🆕 Écran-titre — voir #ecranTitre dans le <style> pour le CSS/le
+  // raisonnement de superposition. Placé tout en haut de ce script,
+  // avant tout le reste : indépendant de la langue, de l'identité, du
+  // sac, etc. — ne doit dépendre de rien d'autre pour se déclencher.
+  //
+  // Timing choisi : 1600ms affiché tel quel (assez pour être lu, pas
+  // assez pour agacer qui revient sur le site), PUIS ~500ms d'animation
+  // de sortie (voir .ecran-titre-sortie, doit correspondre à la durée
+  // des transitions CSS ci-dessus) avant de retirer l'élément du DOM
+  // pour de bon. Le clic/tap ou une touche (Entrée/Espace) sur l'écran-
+  // titre lui-même saute directement à l'étape de sortie — cohérent
+  // avec le reste du site, où taper la scène fait toujours avancer
+  // (voir #idenPersonnages dans identite-eleve.js).
+  //
+  // Aucune dépendance à un "déjà vu" façon localStorage (à la
+  // différence de l'intro du sac ou de l'indice des mots) : demande de
+  // Raphaël, "la toute première chose quand on arrive sur le site" —
+  // sans préciser "une seule fois", et un écran-titre qui se répète à
+  // chaque visite est un choix délibéré courant (générique/splash),
+  // pas un oubli. Si Raphaël préfère qu'il ne joue qu'une fois par
+  // navigateur, un simple drapeau localStorage suffira à ajouter ici.
+  (function () {
+    const ecran = document.getElementById('ecranTitre');
+    if (!ecran) return;
+
+    const DUREE_AFFICHAGE_MS = 1600;
+    const DUREE_SORTIE_MS = 500; // doit rester ≥ à la plus longue transition CSS de #ecranTitre/.ecran-titre-img
+    let dejaSorti = false;
+
+    function masquerEcranTitre() {
+      if (dejaSorti) return;
+      dejaSorti = true;
+      ecran.classList.add('ecran-titre-sortie');
+      ecran.setAttribute('aria-hidden', 'true');
+      setTimeout(function () { ecran.remove(); }, DUREE_SORTIE_MS);
+    }
+
+    setTimeout(masquerEcranTitre, DUREE_AFFICHAGE_MS);
+    ecran.addEventListener('click', masquerEcranTitre);
+    ecran.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); masquerEcranTitre(); }
+    });
+  })();
+
   // ================================================================
   // 19 langues : nom natif (affiché en priorité) + libellé français
   // (affiché en plus petit, sert aussi à la recherche). Le code est

@@ -139,7 +139,13 @@
   }
 
   .ecran-titre-img {
-    width: min(62vw, 320px);
+    /* 🆕 Largeur réduite pour compenser le recadrage plus serré du
+       fichier (canevas 509×489, contenu à ~97% du canevas — avant, une
+       marge interne dans l'image elle-même donnait de facto une taille
+       affichée plus petite que la largeur déclarée ; cette marge n'existe
+       plus, donc la largeur déclarée doit diminuer pour garder le même
+       poids visuel qu'avant, plutôt que de soudain paraître plus gros). */
+    width: min(50vw, 260px);
     height: auto;
     transition: transform 0.5s cubic-bezier(.25, .8, .3, 1.6), opacity 0.4s ease;
   }
@@ -150,7 +156,7 @@
   }
 
   @media (max-width: 460px) {
-    .ecran-titre-img { width: min(72vw, 260px); }
+    .ecran-titre-img { width: min(60vw, 210px); }
   }
 
   .scene {
@@ -726,7 +732,7 @@
        "true" au moment de la sortie (voir JS) : un lecteur d'écran ne
        doit plus s'y arrêter une fois qu'il a commencé à disparaître. -->
   <div id="ecranTitre" role="button" tabindex="0" aria-label="Le français avec les Bonomes">
-    <img class="ecran-titre-img" src="images/accueil/index_bonomes_titre_01.webp" alt="Le français avec les Bonomes">
+    <img class="ecran-titre-img" src="images/accueil/index_bonomes_titre_01.webp" width="509" height="489" alt="Le français avec les Bonomes">
   </div>
 
   <div class="scene">

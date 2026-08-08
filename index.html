@@ -1290,7 +1290,7 @@
       onHistoires: function () { console.info('Menu — "Histoires et leçons" : destination à définir.'); },
       onPrives: function () { window.location.href = 'cours-prives/'; },
       onContact: function () { console.info('Menu — "Contact" : destination à définir.'); },
-      onCreerCompte: function () { demarrerIdentiteSiPremiereFois(); }
+      onCreerCompte: function () { demarrerIdentiteSiPremiereFois('menu'); }
     });
   }
 
@@ -1344,7 +1344,20 @@
   // point du JS qui devait s'en servir.
   const sceneRangee = document.getElementById('sceneRangee');
 
-  function demarrerIdentiteSiPremiereFois() {
+  // 🐛 CORRIGÉ (signalé par Raphaël) : depuis le bouton "Créer un compte"
+  // du menu (mode invité), cliquer démarrait bien la séquence identité
+  // (Keb/Bek apparaissaient), mais #menuPrincipal restait affiché en
+  // dessous — jamais caché, contrairement à sceneRangee/lienCoursPrives —
+  // donc on ne "quittait" jamais vraiment la page du menu, les deux
+  // panneaux coexistant à l'écran. De plus, onQuitter (annuler en cours
+  // de route) ramenait toujours vers sceneRangee (l'écran de bienvenue
+  // Keb/Bek du tout début), même quand on venait du menu — donc annuler
+  // depuis le menu affichait la scène d'accueil au lieu de redonner le
+  // menu. `origine` ('accueil' par défaut, ou 'menu') permet à
+  // demarrerIdentiteSiPremiereFois() de cacher le bon panneau de départ
+  // ET de savoir vers lequel revenir si l'élève annule.
+  function demarrerIdentiteSiPremiereFois(origine) {
+    origine = origine || 'accueil';
     if (modeSecretActif()) return; // case secrète prioritaire sur tout le reste
     sceneRangee.style.display = 'none';
     // 🐛 CORRIGÉ : lienCoursPrives est maintenant un vrai frère de
@@ -1354,6 +1367,9 @@
     // Caché explicitement ici pour laisser la séquence identité toute la
     // place, comme c'était le cas (accidentellement) avant ce correctif.
     lienCoursPrives.style.display = 'none';
+    // 🆕 Cache aussi le menu, si jamais c'est de là qu'on vient (no-op
+    // sans effet si le menu était déjà caché, ex. premier passage).
+    document.getElementById('menuPrincipal').style.display = 'none';
     sequenceIdentite.style.display = '';
     // 🐛 CORRIGÉ : options vides ({}) remplacées par le vrai contenu de
     // traduction pour la langue actuellement choisie — voir
@@ -1386,11 +1402,17 @@
       // qu'onComplet() n'a pas été appelé, rien n'a été enregistré (voir
       // ce callback ci-dessus) — quitter en cours de route ne laisse donc
       // aucune trace d'identité partielle.
+      // 🐛 CORRIGÉ : ramenait toujours vers sceneRangee, même venant du
+      // menu (origine === 'menu') — voir note de tête de fonction.
       onQuitter: function () {
         sequenceIdentite.style.display = 'none';
-        sceneRangee.style.display = '';
-        lienCoursPrives.style.display = '';
-        afficherPremiereFois();
+        if (origine === 'menu') {
+          document.getElementById('menuPrincipal').style.display = '';
+        } else {
+          sceneRangee.style.display = '';
+          lienCoursPrives.style.display = '';
+          afficherPremiereFois();
+        }
       }
     });
   }

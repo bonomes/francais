@@ -35,10 +35,10 @@ function langueActuelleMenu() {
   catch (e) { return 'en'; }
 }
 
-// Traductions minimales pour l'instant (fr + en, comme sac-a-dos.js à sa
-// création) — les 17 autres langues du site retombent automatiquement sur
-// l'anglais (voir tMenuOuDefaut). À étoffer plus tard, même mécanique que
-// DICO_SAC.
+// 🆕 Les 19 langues du site (mêmes codes que TEXTES_IDENTITE dans
+// index.html) sont maintenant toutes couvertes — plus de repli silencieux
+// sur l'anglais pour ce menu. tMenuOuDefaut() garde son filet de sécurité
+// (defaut passé par l'appelant) pour toute clé qui manquerait malgré tout.
 const DICO_MENU = {
   fr: {
     salutation: 'Salut, {prenom} !',
@@ -69,6 +69,276 @@ const DICO_MENU = {
     ficheConnecte: 'Signed in',
     ficheBtnDeconnexion: 'Sign out',
     ficheDeconnexionEnCours: 'Signing out…'
+  },
+  es: {
+    salutation: '\u00a1Hola, {prenom}!',
+    salutationInvite: '\u00a1Bienvenido!',
+    menuHistoires: 'Historias y lecciones',
+    menuBravo: 'Bravo y recompensas',
+    badgeBientot: 'Pronto',
+    menuMaFiche: 'Mi perfil',
+    menuPrives: 'Clases privadas',
+    menuContact: 'Contacto',
+    ficheInvite: 'Por ahora est\u00e1s explorando como invitado.',
+    ficheBtnCompte: 'Crear una cuenta',
+    ficheConnecte: 'Sesi\u00f3n iniciada',
+    ficheBtnDeconnexion: 'Cerrar sesi\u00f3n',
+    ficheDeconnexionEnCours: 'Cerrando sesi\u00f3n\u2026'
+  },
+  it: {
+    salutation: 'Ciao, {prenom}!',
+    salutationInvite: 'Benvenuto!',
+    menuHistoires: 'Storie e lezioni',
+    menuBravo: 'Bravo e premi',
+    badgeBientot: 'Presto',
+    menuMaFiche: 'Il mio profilo',
+    menuPrives: 'Lezioni private',
+    menuContact: 'Contatto',
+    ficheInvite: 'Per ora stai esplorando come ospite.',
+    ficheBtnCompte: 'Crea un account',
+    ficheConnecte: 'Accesso effettuato',
+    ficheBtnDeconnexion: 'Disconnetti',
+    ficheDeconnexionEnCours: 'Disconnessione\u2026'
+  },
+  pt: {
+    salutation: 'Oi, {prenom}!',
+    salutationInvite: 'Bem-vindo!',
+    menuHistoires: 'Hist\u00f3rias e li\u00e7\u00f5es',
+    menuBravo: 'Bravo e recompensas',
+    badgeBientot: 'Em breve',
+    menuMaFiche: 'Meu perfil',
+    menuPrives: 'Aulas particulares',
+    menuContact: 'Contato',
+    ficheInvite: 'Voc\u00ea est\u00e1 explorando como convidado por enquanto.',
+    ficheBtnCompte: 'Criar uma conta',
+    ficheConnecte: 'Sess\u00e3o iniciada',
+    ficheBtnDeconnexion: 'Sair',
+    ficheDeconnexionEnCours: 'Saindo\u2026'
+  },
+  ca: {
+    salutation: 'Hola, {prenom}!',
+    salutationInvite: 'Benvingut!',
+    menuHistoires: 'Hist\u00f2ries i llic\u00f3ns',
+    menuBravo: 'Bravo i recompenses',
+    badgeBientot: 'Aviat',
+    menuMaFiche: 'El meu perfil',
+    menuPrives: 'Classes privades',
+    menuContact: 'Contacte',
+    ficheInvite: 'Ara mateix estàs explorant com a convidat.',
+    ficheBtnCompte: 'Crear un compte',
+    ficheConnecte: 'Sessi\u00f3 iniciada',
+    ficheBtnDeconnexion: 'Tancar sessi\u00f3',
+    ficheDeconnexionEnCours: 'Tancant sessi\u00f3\u2026'
+  },
+  eo: {
+    salutation: 'Saluton, {prenom}!',
+    salutationInvite: 'Bonvenon!',
+    menuHistoires: 'Rakontoj kaj lecionoj',
+    menuBravo: 'Bravo kaj rekompencoj',
+    badgeBientot: 'Bald\u0227u',
+    menuMaFiche: 'Mia profilo',
+    menuPrives: 'Privataj lecionoj',
+    menuContact: 'Kontakto',
+    ficheInvite: 'Vi nun esploras kiel gasto.',
+    ficheBtnCompte: 'Krei konton',
+    ficheConnecte: 'Ensalutinta',
+    ficheBtnDeconnexion: 'Elsaluti',
+    ficheDeconnexionEnCours: 'Elsalutante\u2026'
+  },
+  zh: {
+    salutation: '\u4f60\u597d\uff0c{prenom}\uff01',
+    salutationInvite: '\u6b22\u8fce\uff01',
+    menuHistoires: '\u6545\u4e8b\u548c\u8bfe\u7a0b',
+    menuBravo: 'Bravo \u4e0e\u5956\u52b1',
+    badgeBientot: '\u5373\u5c06\u63a8\u51fa',
+    menuMaFiche: '\u6211\u7684\u8d44\u6599',
+    menuPrives: '\u79c1\u4eba\u8bfe\u7a0b',
+    menuContact: '\u8054\u7cfb\u6211\u4eec',
+    ficheInvite: '\u4f60\u76ee\u524d\u4ee5\u8bbf\u5ba2\u8eab\u4efd\u6d4f\u89c8\u3002',
+    ficheBtnCompte: '\u521b\u5efa\u8d26\u53f7',
+    ficheConnecte: '\u5df2\u767b\u5f55',
+    ficheBtnDeconnexion: '\u9000\u51fa\u767b\u5f55',
+    ficheDeconnexionEnCours: '\u6b63\u5728\u9000\u51fa\u2026'
+  },
+  ja: {
+    salutation: '\u3084\u3042\u3001{prenom}\uff01',
+    salutationInvite: '\u3088\u3046\u3053\u305d\uff01',
+    menuHistoires: '\u304a\u8a71\u3068\u30ec\u30c3\u30b9\u30f3',
+    menuBravo: 'Bravo\u3068\u3054\u307b\u3046\u3073',
+    badgeBientot: '\u8fd1\u65e5\u516c\u958b',
+    menuMaFiche: '\u30de\u30a4\u30d7\u30ed\u30d5\u30a3\u30fc\u30eb',
+    menuPrives: '\u30d7\u30e9\u30a4\u30d9\u30fc\u30c8\u30ec\u30c3\u30b9\u30f3',
+    menuContact: '\u304a\u554f\u3044\u5408\u308f\u305b',
+    ficheInvite: '\u4eca\u306f\u30b2\u30b9\u30c8\u3068\u3057\u3066\u5229\u7528\u3057\u3066\u3044\u307e\u3059\u3002',
+    ficheBtnCompte: '\u30a2\u30ab\u30a6\u30f3\u30c8\u3092\u4f5c\u6210',
+    ficheConnecte: '\u30ed\u30b0\u30a4\u30f3\u4e2d',
+    ficheBtnDeconnexion: '\u30ed\u30b0\u30a2\u30a6\u30c8',
+    ficheDeconnexionEnCours: '\u30ed\u30b0\u30a2\u30a6\u30c8\u4e2d\u2026'
+  },
+  ko: {
+    salutation: '\uc548\ub155, {prenom}!',
+    salutationInvite: '\ud658\uc601\ud574\uc694!',
+    menuHistoires: '\uc774\uc57c\uae30\uc640 \uc218\uc5c5',
+    menuBravo: 'Bravo\uc640 \ubcf4\uc0c1',
+    badgeBientot: '\uacf5 \uacf5\uac1c',
+    menuMaFiche: '\ub0b4 \ud504\ub85c\ud544',
+    menuPrives: '\uac1c\uc778 \uc218\uc5c5',
+    menuContact: '\ubb38\uc758\ud558\uae30',
+    ficheInvite: '\uc9c0\uae08\uc740 \uac8c\uc2a4\ud2b8\ub85c \ub458\ub7ec\ubcf4\uace0 \uc788\uc5b4\uc694.',
+    ficheBtnCompte: '\uacc4\uc815 \ub9cc\ub4e4\uae30',
+    ficheConnecte: '\ub85c\uadf8\uc778\ub428',
+    ficheBtnDeconnexion: '\ub85c\uadf8\uc544\uc6c3',
+    ficheDeconnexionEnCours: '\ub85c\uadf8\uc544\uc6c3 \uc911\u2026'
+  },
+  vi: {
+    salutation: 'Ch\u00e0o, {prenom}!',
+    salutationInvite: 'Ch\u00e0o m\u1eebng!',
+    menuHistoires: 'C\u00e2u chuy\u1ec7n v\u00e0 b\u00e0i h\u1ecdc',
+    menuBravo: 'Bravo v\u00e0 ph\u1ea7n th\u01b0\u1edfng',
+    badgeBientot: 'S\u1eafp ra m\u1eaft',
+    menuMaFiche: 'H\u1ed3 s\u01a1 c\u1ee7a t\u00f4i',
+    menuPrives: 'B\u00e0i h\u1ecdc ri\u00eang',
+    menuContact: 'Li\u00ean h\u1ec7',
+    ficheInvite: 'B\u1ea1n \u0111ang kh\u00e1m ph\u00e1 v\u1edbi t\u01b0 c\u00e1ch kh\u00e1ch.',
+    ficheBtnCompte: 'T\u1ea1o t\u00e0i kho\u1ea3n',
+    ficheConnecte: '\u0110\u00e3 \u0111\u0103ng nh\u1eadp',
+    ficheBtnDeconnexion: '\u0110\u0103ng xu\u1ea5t',
+    ficheDeconnexionEnCours: '\u0110ang \u0111\u0103ng xu\u1ea5t\u2026'
+  },
+  ht: {
+    salutation: 'Alo, {prenom}!',
+    salutationInvite: 'Byenveni!',
+    menuHistoires: 'Istwa ak leson',
+    menuBravo: 'Bravo ak rekonpans',
+    badgeBientot: 'Byento',
+    menuMaFiche: 'Pwofil mwen',
+    menuPrives: 'Kou priv\u00e9',
+    menuContact: 'Kontak',
+    ficheInvite: 'Kounye a ou ap eksplore k\u00f2m envite.',
+    ficheBtnCompte: 'Kreye yon kont',
+    ficheConnecte: 'Konekte',
+    ficheBtnDeconnexion: 'Dekonekte',
+    ficheDeconnexionEnCours: 'Ap dekonekte\u2026'
+  },
+  tl: {
+    salutation: 'Kamusta, {prenom}!',
+    salutationInvite: 'Maligayang pagdating!',
+    menuHistoires: 'Mga kuwento at aralin',
+    menuBravo: 'Bravo at gantimpala',
+    badgeBientot: 'Malapit na',
+    menuMaFiche: 'Aking profile',
+    menuPrives: 'Pribadong aralin',
+    menuContact: 'Makipag-ugnayan',
+    ficheInvite: 'Kasalukuyan kang naggagalugad bilang bisita.',
+    ficheBtnCompte: 'Gumawa ng account',
+    ficheConnecte: 'Naka-sign in',
+    ficheBtnDeconnexion: 'Mag-sign out',
+    ficheDeconnexionEnCours: 'Nagsa-sign out\u2026'
+  },
+  id: {
+    salutation: 'Hai, {prenom}!',
+    salutationInvite: 'Selamat datang!',
+    menuHistoires: 'Cerita dan pelajaran',
+    menuBravo: 'Bravo & hadiah',
+    badgeBientot: 'Segera',
+    menuMaFiche: 'Profilku',
+    menuPrives: 'Les privat',
+    menuContact: 'Kontak',
+    ficheInvite: 'Kamu sedang menjelajah sebagai tamu.',
+    ficheBtnCompte: 'Buat akun',
+    ficheConnecte: 'Sudah masuk',
+    ficheBtnDeconnexion: 'Keluar',
+    ficheDeconnexionEnCours: 'Sedang keluar\u2026'
+  },
+  nl: {
+    salutation: 'Hoi, {prenom}!',
+    salutationInvite: 'Welkom!',
+    menuHistoires: 'Verhalen en lessen',
+    menuBravo: 'Bravo & beloningen',
+    badgeBientot: 'Binnenkort',
+    menuMaFiche: 'Mijn profiel',
+    menuPrives: 'Priv\u00e9lessen',
+    menuContact: 'Contact',
+    ficheInvite: 'Je verkent nu als gast.',
+    ficheBtnCompte: 'Account aanmaken',
+    ficheConnecte: 'Ingelogd',
+    ficheBtnDeconnexion: 'Uitloggen',
+    ficheDeconnexionEnCours: 'Bezig met uitloggen\u2026'
+  },
+  de: {
+    salutation: 'Hallo, {prenom}!',
+    salutationInvite: 'Willkommen!',
+    menuHistoires: 'Geschichten & Lektionen',
+    menuBravo: 'Bravo & Belohnungen',
+    badgeBientot: 'Bald',
+    menuMaFiche: 'Mein Profil',
+    menuPrives: 'Privatunterricht',
+    menuContact: 'Kontakt',
+    ficheInvite: 'Du erkundest gerade als Gast.',
+    ficheBtnCompte: 'Konto erstellen',
+    ficheConnecte: 'Angemeldet',
+    ficheBtnDeconnexion: 'Abmelden',
+    ficheDeconnexionEnCours: 'Wird abgemeldet\u2026'
+  },
+  fa: {
+    salutation: '\u0633\u0644\u0627\u0645\u060c {prenom}!',
+    salutationInvite: '\u062e\u0648\u0634 \u0622\u0645\u062f\u06cc!',
+    menuHistoires: '\u062f\u0627\u0633\u062a\u0627\u0646\u200c\u0647\u0627 \u0648 \u062f\u0631\u0633\u200c\u0647\u0627',
+    menuBravo: '\u0628\u0631\u0627\u0648\u0648 \u0648 \u062c\u0627\u06cc\u0632\u0647\u200c\u0647\u0627',
+    badgeBientot: '\u0628\u0647\u200c\u0632\u0648\u062f\u06cc',
+    menuMaFiche: '\u067e\u0631\u0648\u0641\u0627\u06cc\u0644 \u0645\u0646',
+    menuPrives: '\u06a9\u0644\u0627\u0633\u200c\u0647\u0627\u06cc \u062e\u0635\u0648\u0635\u06cc',
+    menuContact: '\u062a\u0645\u0627\u0633',
+    ficheInvite: '\u0627\u0644\u0627\u0646 \u0628\u0647\u200c\u0635\u0648\u0631\u062a \u0645\u0647\u0645\u0627\u0646 \u062f\u0631 \u062d\u0627\u0644 \u06a9\u0627\u0648\u0634 \u0647\u0633\u062a\u06cc.',
+    ficheBtnCompte: '\u0633\u0627\u062e\u062a \u062d\u0633\u0627\u0628 \u06a9\u0627\u0631\u0628\u0631\u06cc',
+    ficheConnecte: '\u0648\u0627\u0631\u062f \u0634\u062f\u0647',
+    ficheBtnDeconnexion: '\u062e\u0631\u0648\u062c',
+    ficheDeconnexionEnCours: '\u062f\u0631 \u062d\u0627\u0644 \u062e\u0631\u0648\u062c\u2026'
+  },
+  sv: {
+    salutation: 'Hej, {prenom}!',
+    salutationInvite: 'V\u00e4lkommen!',
+    menuHistoires: 'Ber\u00e4ttelser & lektioner',
+    menuBravo: 'Bravo & bel\u00f6ningar',
+    badgeBientot: 'Snart',
+    menuMaFiche: 'Min profil',
+    menuPrives: 'Privatlektioner',
+    menuContact: 'Kontakt',
+    ficheInvite: 'Du utforskar just nu som g\u00e4st.',
+    ficheBtnCompte: 'Skapa ett konto',
+    ficheConnecte: 'Inloggad',
+    ficheBtnDeconnexion: 'Logga ut',
+    ficheDeconnexionEnCours: 'Loggar ut\u2026'
+  },
+  no: {
+    salutation: 'Hei, {prenom}!',
+    salutationInvite: 'Velkommen!',
+    menuHistoires: 'Historier og leksjoner',
+    menuBravo: 'Bravo og bel\u00f8nninger',
+    badgeBientot: 'Snart',
+    menuMaFiche: 'Min profil',
+    menuPrives: 'Privattimer',
+    menuContact: 'Kontakt',
+    ficheInvite: 'Du utforsker n\u00e5 som gjest.',
+    ficheBtnCompte: 'Opprett konto',
+    ficheConnecte: 'Logget inn',
+    ficheBtnDeconnexion: 'Logg ut',
+    ficheDeconnexionEnCours: 'Logger ut\u2026'
+  },
+  ru: {
+    salutation: '\u041f\u0440\u0438\u0432\u0435\u0442, {prenom}!',
+    salutationInvite: '\u0414\u043e\u0431\u0440\u043e \u043f\u043e\u0436\u0430\u043b\u043e\u0432\u0430\u0442\u044c!',
+    menuHistoires: '\u0418\u0441\u0442\u043e\u0440\u0438\u0438 \u0438 \u0443\u0440\u043e\u043a\u0438',
+    menuBravo: 'Bravo \u0438 \u043d\u0430\u0433\u0440\u0430\u0434\u044b',
+    badgeBientot: '\u0421\u043a\u043e\u0440\u043e',
+    menuMaFiche: '\u041c\u043e\u0439 \u043f\u0440\u043e\u0444\u0438\u043b\u044c',
+    menuPrives: '\u0427\u0430\u0441\u0442\u043d\u044b\u0435 \u0443\u0440\u043e\u043a\u0438',
+    menuContact: '\u041a\u043e\u043d\u0442\u0430\u043a\u0442\u044b',
+    ficheInvite: '\u0421\u0435\u0439\u0447\u0430\u0441 \u0442\u044b \u0432 \u0433\u043e\u0441\u0442\u0435\u0432\u043e\u043c \u0440\u0435\u0436\u0438\u043c\u0435.',
+    ficheBtnCompte: '\u0421\u043e\u0437\u0434\u0430\u0442\u044c \u0430\u043a\u043a\u0430\u0443\u043d\u0442',
+    ficheConnecte: '\u0412\u044b \u0432\u043e\u0448\u043b\u0438 \u0432 \u0441\u0438\u0441\u0442\u0435\u043c\u0443',
+    ficheBtnDeconnexion: '\u0412\u044b\u0439\u0442\u0438',
+    ficheDeconnexionEnCours: '\u0412\u044b\u0445\u043e\u0434\u2026'
   }
 };
 
@@ -121,6 +391,12 @@ async function demarrerMenuPrincipal(idConteneur, callbacks) {
   const identite = progression ? await progression.lireIdentite() : { prenom: null, genre: null };
 
   conteneur.innerHTML =
+    // 🆕 Titre au-dessus du menu, demande de Raphaël — réutilise
+    // exactement l'image déjà chargée pour l'écran-titre du tout début
+    // du site (voir .ecran-titre-img dans index.html), pas une nouvelle
+    // image : même fichier, juste affiché plus petit et en continu ici
+    // (pas de "pop" ni de disparition, contrairement à l'écran-titre).
+    '<img class="kbm-titre-img" src="images/accueil/index_bonomes_titre_01.webp" alt="Le fran\u00e7ais avec les Bonomes">' +
     '<div class="kbm-carte">' +
       '<div class="kbm-salutation">' +
         (identite.prenom

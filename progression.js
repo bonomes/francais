@@ -413,6 +413,44 @@
     localStorage.removeItem(CLE_IDENTITE_INVITE);
   }
 
+  // ---------- Récompenses (P$/PB) — première complétion seulement ----------
+  //
+  // 🆕 AJOUT (session du 09-08-2026) — Raphaël : "la première complétion
+  // donne des P$ assurément et parfois des PB", 5 P$ confirmés pour d1 (voir
+  // dialogue-d1.html). Fonction VOLONTAIREMENT séparée de
+  // marquerChapitreComplete() ci-dessus (jamais modifiée pour ceci) : la
+  // progression elle-même est déjà fonctionnelle et ne doit courir aucun
+  // risque pendant qu'on câble un système de récompense encore neuf.
+  //
+  // ⚠️ SUPPOSE une fonction SQL attribuer_recompense_premiere_fois(
+  // p_eleve_id, p_chapitre_id, p_piasses, p_points_bonis) — voir
+  // bravo_schema_v08 fourni à part, PAS ENCORE exécutée sur Supabase à ma
+  // connaissance (pas d'accès direct au schéma depuis cet outil). Tant
+  // qu'elle n'existe pas, l'appel échoue proprement et l'appelant reçoit
+  // simplement `false` — jamais d'exception qui remonte.
+  //
+  // Aucun effet en mode invité (repli volontaire, même logique que
+  // lireSolde() : un invité n'a pas de ligne `eleves` à créditer).
+  async function attribuerRecompensePremiereFois(chapitreId, piasses, pointsBonis) {
+    if (!sessionActuelle || !profilActifId || !clientSupabase) return false;
+    try {
+      const { data, error } = await clientSupabase.rpc('attribuer_recompense_premiere_fois', {
+        p_eleve_id: profilActifId,
+        p_chapitre_id: chapitreId,
+        p_piasses: piasses || 0,
+        p_points_bonis: pointsBonis || 0
+      });
+      if (error) {
+        console.warn('progression.js : attribuerRecompensePremiereFois a échoué (RPC pas encore créée côté Supabase ?).', error);
+        return false;
+      }
+      return !!data;
+    } catch (e) {
+      console.warn('progression.js : attribuerRecompensePremiereFois a échoué.', e);
+      return false;
+    }
+  }
+
   window.KebBekProgression = {
     initSession,
     definirClient,
@@ -425,6 +463,7 @@
     deconnecter,
     lireProgression,
     marquerChapitreComplete,
+    attribuerRecompensePremiereFois,
     migrerProgressionInviteVersCompte,
     lireIdentite,
     lireSolde,

@@ -201,8 +201,7 @@
     height: 100%;
     object-fit: contain;
     display: block;
-    transform: scale(1.18); /* 🆕 (ajusté, 5e échange) : moins agressif qu'avant */
-    transform-origin: center 84%; /* 🆕 ancré près des pieds : le recadrage retire le vide en haut sans couper les pieds en bas */
+    transform: none; /* 🆕 (6e échange) : le zoom coupait la queue de cheval de Bek — annulé, priorité à ne jamais rogner les personnages */
     -webkit-mask-image: radial-gradient(ellipse 94% 90% at center, #000 74%, transparent 100%);
     mask-image: radial-gradient(ellipse 94% 90% at center, #000 74%, transparent 100%);
   }
@@ -588,6 +587,19 @@
   const MOTS_INFORMELS = new Set(['mange']);
   const ETIQUETTE_INFORMEL = { fr: '(tutoiement)', en: '(informal)' };
 
+  // 🆕 (6e échange) : textes d'interface (boutons, titres de pile) dans la
+  // langue de l'apprenant — même repli minimal fr/en que GRAMMAIRE et
+  // TRADUCTIONS ci-dessus (anglais par défaut pour toute autre langue).
+  const INTERFACE = {
+    fr: { precedent: 'Précédent', continuer: 'Continuer', terminer: 'Terminer', ceQuiAEteDit: 'Ce qui a été dit', aRetenir: 'À retenir' },
+    en: { precedent: 'Back', continuer: 'Continue', terminer: 'Finish', ceQuiAEteDit: 'What was said', aRetenir: 'Good to know' }
+  };
+
+  function texteInterface(cle) {
+    const dict = INTERFACE[langueActuelle()] || INTERFACE.en;
+    return dict[cle] || INTERFACE.en[cle];
+  }
+
   function traductionDeMot(mot) {
     const dico = TRADUCTIONS[langueActuelle()] || TRADUCTIONS.en;
     return dico[mot.toLowerCase()];
@@ -801,7 +813,9 @@
     }
 
     btnPrecedent.disabled = (etape === 0);
-    btnSuivant.textContent = (etape === ETAPES.length - 1) ? 'Terminer ›' : 'Continuer ›';
+    btnSuivant.textContent = (etape === ETAPES.length - 1)
+      ? texteInterface('terminer') + ' \u203a'
+      : texteInterface('continuer') + ' \u203a';
   }
 
   // ---------- Séquence automatique (b→c→d) — exception ponctuelle pour
@@ -875,8 +889,8 @@
     }
     elPileDialogue.querySelectorAll('.pile-item').forEach(el => el.classList.add('in'));
     elPileGrammaire.querySelectorAll('.grammaire-item').forEach(el => el.classList.add('in'));
-    reconstructionEnCours = false;
-    rendreEtape();
+    rendreEtape(); // 🆕 (6e échange) : appelé AVANT de repasser reconstructionEnCours à false
+    reconstructionEnCours = false; // sinon rendreEtape() ci-dessus rajoute une 2e fois la ligne courante
   }
 
   // Fin de la leçon — enregistre la progression réelle (voir
@@ -916,6 +930,13 @@
     if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); suivant(); }
     if (e.key === 'ArrowLeft') { e.preventDefault(); precedent(); }
   });
+
+  // Textes d'interface dans la langue de l'apprenant — voir INTERFACE plus
+  // haut. rendreEtape() gère déjà btnSuivant (Continuer/Terminer varie par
+  // étape) ; ceux-ci sont fixes, donc réglés une seule fois ici.
+  btnPrecedent.textContent = '\u2039 ' + texteInterface('precedent');
+  document.getElementById('titrePileDialogue').textContent = texteInterface('ceQuiAEteDit');
+  document.getElementById('titrePileGrammaire').textContent = texteInterface('aRetenir');
 
   rendreEtape();
 </script>

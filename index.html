@@ -1031,6 +1031,20 @@
   // sur la présence même de la clé, pas sur sa valeur.
   let langueActuelle = langueSauvegardee() || 'en';
 
+  // 🆕 Direction RTL — demande de Raphaël : le farsi (fa) s'écrit de
+  // droite à gauche. Appliquée sur <html> plutôt que sur un conteneur
+  // précis (bulle, traduction...) : ça couvre d'un coup tout le texte
+  // de la page ET celui injecté dynamiquement par identite-eleve.js/
+  // sac-a-dos.js (dir est hérité en CSS, sauf override explicite), sans
+  // avoir à traquer chaque conteneur de texte un par un. Volontairement
+  // minimal — pas un vrai miroir RTL de toute la mise en page (icônes,
+  // ordre des boutons, etc.), juste le sens de lecture du texte comme
+  // demandé ; un vrai miroir complet serait un chantier à part.
+  function appliquerDirectionLangue(codeLangue) {
+    document.documentElement.setAttribute('dir', codeLangue === 'fa' ? 'rtl' : 'ltr');
+  }
+  appliquerDirectionLangue(langueActuelle); // dès le chargement, si le farsi était déjà le choix d'une visite précédente
+
   // ==================================================================
   // Libellé du lien "Information et cours privés" — traduit pour
   // chacune des 19 langues du sélecteur (voir LANGUES plus haut). Pas
@@ -1700,6 +1714,7 @@
   function choisir(codeLangue) {
     langueActuelle = codeLangue;
     sauvegarderLangue(codeLangue);
+    appliquerDirectionLangue(codeLangue);
     rafraichirSelection();
     code.style.transform = 'scale(0.7)';
     requestAnimationFrame(() => {

@@ -6,13 +6,13 @@
 <title>J'ai faim — Keb &amp; Bek</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/sac-a-dos.css">
+<link rel="stylesheet" href="../../sac-a-dos.css">
 <!-- Page à part entière, même situation que parcours.html/intro-bonomes.html
      (voir COMPTES_ELEVES_v10/v11) : aucun état JS partagé avec index.html,
      donc son propre client Supabase — progression.js en crée un lui-même
      au premier appel qui en a besoin. -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-<script src="/progression.js"></script>
+<script src="../../progression.js"></script>
 <style>
   /* ==================================================================
      dialogue-d1.html — PREMIÈRE vraie leçon de dialogue du site (id
@@ -386,7 +386,7 @@
 </head>
 <body>
 
-<a class="retour" href="/parcours.html" aria-label="Retour au parcours">‹</a>
+<a class="retour" href="../../parcours.html" aria-label="Retour au parcours">‹</a>
 
 <!-- Sac à dos : structure EXACTEMENT celle attendue par sac-a-dos.js/.css
      (voir index.html) — PAS l'ancien balisage SVG encore présent sur
@@ -397,8 +397,8 @@
      qu'après ce déblocage — donc toujours déjà acquis ici. -->
 <button type="button" id="sacBouton" onclick="toggleSacADos()" aria-label="Backpack">
   <span id="iconeSac" class="sac-icone">
-    <img class="sac-icone-img sac-icone-fermee" src="/images/accueil/index_bonomes_icone_sac_01.webp" width="26" height="26" alt="">
-    <img class="sac-icone-img sac-icone-ouverte" src="/images/accueil/index_bonomes_icone_sac_01_ouvert.webp" width="26" height="26" alt="">
+    <img class="sac-icone-img sac-icone-fermee" src="../../images/accueil/index_bonomes_icone_sac_01.webp" width="26" height="26" alt="">
+    <img class="sac-icone-img sac-icone-ouverte" src="../../images/accueil/index_bonomes_icone_sac_01_ouvert.webp" width="26" height="26" alt="">
   </span>
   <span class="sac-badge vide" id="sacBadge">0</span>
 </button>
@@ -422,7 +422,7 @@
 <!-- sac-a-dos.js (fichier partagé, voir sa note de tête) : chargé ici,
      avant le script de la leçon plus bas, pour que window.ajouterAuSac
      et toggleSacADos existent déjà quand un mot est touché. -->
-<script src="/sac-a-dos.js"></script>
+<script src="../../sac-a-dos.js"></script>
 
 <div class="compteur" id="compteur">1 / 5</div>
 
@@ -455,11 +455,11 @@
   // les étapes n'en ont pas (ici : seulement 1 et 2).
   // ================================================================
   const ETAPES = [
-    { speaker: 'keb', texte: 'J\u2019ai faim.', img: '/images/dialogues/d1/d1_01_bonomes_keb_bek_jai-faim_.png', grammaire: 'gJai' },
-    { speaker: 'bek', texte: 'Mange\u00A0!', img: '/images/dialogues/d1/d1_02_bonomes_keb_bek_mange_.png', grammaire: 'gImperatif' },
-    { speaker: 'keb', texte: 'Mange quoi\u00A0?', img: '/images/dialogues/d1/d1_03_bonomes_keb_bek_mange-quoi_.png', grammaire: 'gQuoi' },
-    { speaker: 'bek', texte: 'Mange... mon sandwich\u00A0?', img: '/images/dialogues/d1/d1_04_bonomes_keb_bek_sandwich_.png' },
-    { speaker: 'keb', texte: 'Oh, merci\u00A0!', img: '/images/dialogues/d1/d1_05_bonomes_keb_bek_merci_.png' }
+    { speaker: 'keb', texte: 'J\u2019ai faim.', img: '../../images/dialogues/d1/d1_01_bonomes_keb_bek_jai-faim_.png', grammaire: 'gJai' },
+    { speaker: 'bek', texte: 'Mange\u00A0!', img: '../../images/dialogues/d1/d1_02_bonomes_keb_bek_mange_.png', grammaire: 'gImperatif' },
+    { speaker: 'keb', texte: 'Mange quoi\u00A0?', img: '../../images/dialogues/d1/d1_03_bonomes_keb_bek_mange-quoi_.png', grammaire: 'gQuoi' },
+    { speaker: 'bek', texte: 'Mange... mon sandwich\u00A0?', img: '../../images/dialogues/d1/d1_04_bonomes_keb_bek_sandwich_.png' },
+    { speaker: 'keb', texte: 'Oh, merci\u00A0!', img: '../../images/dialogues/d1/d1_05_bonomes_keb_bek_merci_.png' }
   ];
 
   // Notes grammaticales dans la langue de l'apprenant. Seules fr/en sont

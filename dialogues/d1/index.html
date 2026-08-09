@@ -207,6 +207,42 @@
     mask-image: radial-gradient(ellipse 94% 90% at center, #000 74%, transparent 100%);
   }
 
+  /* ---------- Sandwich greffé (étape "Ton sandwich ?", dernier temps de
+     la séquence auto) — flotte doucement avec une lueur chaude pulsante
+     autour, à l'emplacement de l'étoile déjà présente dans l'image de
+     base. Voir creerImageComposite(). ---------- */
+  .sandwich-greffe {
+    position: absolute;
+    left: 52.7%;
+    top: 37%;
+    width: 19%;
+    transform: translate(-50%, -50%);
+    animation: sandwichFlotte 2.6s ease-in-out infinite;
+  }
+  .sandwich-greffe-lueur {
+    position: absolute;
+    inset: -35%;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255, 209, 128, 0.65) 0%, rgba(255, 209, 128, 0) 72%);
+    animation: sandwichLueur 2.6s ease-in-out infinite;
+    z-index: 0;
+  }
+  .sandwich-greffe-img {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    display: block;
+    filter: drop-shadow(0 6px 12px rgba(120, 80, 40, 0.35));
+  }
+  @keyframes sandwichFlotte {
+    0%, 100% { transform: translate(-50%, -50%); }
+    50% { transform: translate(-50%, calc(-50% - 9px)); }
+  }
+  @keyframes sandwichLueur {
+    0%, 100% { opacity: 0.75; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.1); }
+  }
+
   .repli-image-manquante {
     position: absolute;
     inset: 0;
@@ -468,9 +504,38 @@
   const ETAPES = [
     { speaker: 'keb', texte: 'J\u2019ai faim.', img: '../../images/dialogues/d1/d1_01_bonomes_keb_bek_jai-faim_.png', grammaire: 'gJai' },
     { speaker: 'bek', texte: 'Mange\u00A0!', img: '../../images/dialogues/d1/d1_02_bonomes_keb_bek_mange_.png', grammaire: 'gImperatif' },
-    { speaker: 'keb', texte: 'Mange quoi\u00A0?', img: '../../images/dialogues/d1/d1_03_bonomes_keb_bek_mange-quoi_.png', grammaire: 'gQuoi' },
-    { speaker: 'bek', texte: 'Mange... mon sandwich\u00A0?', img: '../../images/dialogues/d1/d1_04_bonomes_keb_bek_sandwich_.png' },
-    { speaker: 'keb', texte: 'Oh, merci\u00A0!', img: '../../images/dialogues/d1/d1_05_bonomes_keb_bek_merci_.png' }
+    { speaker: 'keb', texte: 'Mange quoi\u00A0?', img: '../../images/dialogues/d1/d1_03_bonomes_keb_bek_mange_quoi.png', grammaire: 'gQuoi' },
+    { speaker: 'bek', texte: 'Mange... mon sandwich\u00A0?', img: '../../images/dialogues/d1/d1_04_bonomes_keb_bek_mange-mon-mange_.png' },
+    // 🆕 (session du 08-08-2026, 4e échange) : étape 5a — Keb réalise que
+    // Bek n'a pas de sandwich sur elle. 'sequenceAuto' : liste d'images qui
+    // s'enchaînent SEULES (pas de clic entre elles) dès que l'élève clique
+    // Continuer depuis CETTE étape — voir jouerSequenceAuto() plus bas.
+    // Confirmé par Raphaël : ce défilement automatique est une exception
+    // ponctuelle (pour montrer d'où viennent le calepin et le crayon), pas
+    // un patron réutilisé pour les prochaines apparitions d'objets.
+    // Noms de fichiers ci-dessous DEVINÉS en attendant les vraies images
+    // (même repli "Image not ready yet" que partout ailleurs) — à corriger
+    // dès que Raphaël fournit les vrais noms, comme pour 01-04.
+    {
+      speaker: 'keb',
+      texte: 'Ton sandwich\u00A0?',
+      img: '../../images/dialogues/d1/d1_05a_bonomes_keb_bek_ton-sandwich_.png',
+      sequenceAuto: [
+        '../../images/dialogues/d1/d1_05b_bonomes_keb_bek_ton-sandwich_.png',
+        '../../images/dialogues/d1/d1_05c_bonomes_keb_bek_ton-sandwich_.png',
+        // 🆕 dernier temps : image de base (la lueur/étoile y est déjà) +
+        // le sandwich greffé par-dessus en superposition flottante — voir
+        // creerImageComposite() plus bas. Position en % estimée par
+        // analyse de pixels de l'image fournie (centre de la lueur ≈ 52,7%
+        // largeur / 37% hauteur) — à ajuster si ça ne tombe pas pile une
+        // fois vu en vrai dans le navigateur.
+        {
+          img: '../../images/dialogues/d1/d1_05d_bonomes_keb_bek_ton-sandwich_.png',
+          superposition: '../../images/dialogues/d1/d1_05d_sandwich_.png'
+        }
+      ]
+    },
+    { speaker: 'keb', texte: 'Oh, merci\u00A0!', img: '../../images/dialogues/d1/d1_06_bonomes_keb_bek_merci.png' }
   ];
 
   // Notes grammaticales dans la langue de l'apprenant. Seules fr/en sont
@@ -561,6 +626,26 @@
       img.replaceWith(repli);
     };
     wrapper.appendChild(img);
+    return wrapper;
+  }
+
+  // ---------- Image de base + sandwich greffé par-dessus, flottant avec
+  // lueur (voir CSS .sandwich-greffe*). Même repli "pas encore prête" que
+  // creerImage() pour les deux images. ----------
+  function creerImageComposite(cheminBase, cheminSuperposition) {
+    const wrapper = creerImage(cheminBase);
+    const greffe = document.createElement('div');
+    greffe.className = 'sandwich-greffe';
+    const lueur = document.createElement('div');
+    lueur.className = 'sandwich-greffe-lueur';
+    const imgSandwich = document.createElement('img');
+    imgSandwich.className = 'sandwich-greffe-img';
+    imgSandwich.src = cheminSuperposition;
+    imgSandwich.alt = 'Le sandwich';
+    imgSandwich.onerror = function () { greffe.style.display = 'none'; };
+    greffe.appendChild(lueur);
+    greffe.appendChild(imgSandwich);
+    wrapper.appendChild(greffe);
     return wrapper;
   }
 
@@ -718,8 +803,48 @@
     btnSuivant.textContent = (etape === ETAPES.length - 1) ? 'Terminer ›' : 'Continuer ›';
   }
 
+  // ---------- Séquence automatique (b→c→d) — exception ponctuelle pour
+  // l'étape "Ton sandwich ?" (voir commentaire sur ETAPES), pas un patron
+  // réutilisé ailleurs. Enchaîne les images avec un léger fondu, SANS
+  // attendre de clic, pendant que la navigation est désactivée pour éviter
+  // qu'un clic mal placé saute une étape ou casse l'état. ----------
+  function jouerSequenceAuto(chemins, auTermine) {
+    let i = 0;
+    function etapeSuivante() {
+      if (i >= chemins.length) {
+        auTermine();
+        return;
+      }
+      const item = chemins[i];
+      const nouveau = (typeof item === 'string')
+        ? creerImage(item)
+        : creerImageComposite(item.img, item.superposition);
+      nouveau.style.opacity = '0';
+      nouveau.style.transition = 'opacity 0.3s ease';
+      elScene.innerHTML = '';
+      elScene.appendChild(nouveau);
+      requestAnimationFrame(() => requestAnimationFrame(() => { nouveau.style.opacity = '1'; }));
+      i++;
+      setTimeout(etapeSuivante, 1000);
+    }
+    etapeSuivante();
+  }
+
   function suivant() {
     if (etape < ETAPES.length - 1) {
+      const def = ETAPES[etape];
+      if (def.sequenceAuto) {
+        btnPrecedent.disabled = true;
+        btnSuivant.disabled = true;
+        elScene.removeEventListener('click', suivant);
+        jouerSequenceAuto(def.sequenceAuto, function () {
+          etape++;
+          rendreEtape();
+          btnSuivant.disabled = false;
+          elScene.addEventListener('click', suivant);
+        });
+        return;
+      }
       etape++;
       rendreEtape();
     } else {

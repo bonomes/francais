@@ -6,13 +6,13 @@
 <title>J'ai faim — Keb &amp; Bek</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="sac-a-dos.css">
+<link rel="stylesheet" href="/sac-a-dos.css">
 <!-- Page à part entière, même situation que parcours.html/intro-bonomes.html
      (voir COMPTES_ELEVES_v10/v11) : aucun état JS partagé avec index.html,
      donc son propre client Supabase — progression.js en crée un lui-même
      au premier appel qui en a besoin. -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-<script src="progression.js"></script>
+<script src="/progression.js"></script>
 <style>
   /* ==================================================================
      dialogue-d1.html — PREMIÈRE vraie leçon de dialogue du site (id
@@ -135,14 +135,16 @@
     letter-spacing: 0.02em;
   }
 
-  /* ---------- Bulle unique, au-dessus des personnages ---------- */
-  /* Contrairement à .legende-intro (intro-bonomes.html), qui vit SOUS
-     l'image pour une raison historique propre à cette page-là (bug de
-     chevauchement déjà corrigé là-bas), Raphaël demande explicitement ICI
-     une bulle AU-DESSUS des personnages. Pas de superposition en absolute
-     pour autant (même piège que le bug déjà rencontru ailleurs) : la bulle
-     vit simplement AVANT l'image dans le flux normal du document, donc
-     "au-dessus" sans jamais recouvrir quoi que ce soit. */
+  /* ---------- Légende unique, au-dessus des personnages ---------- */
+  /* 🆕 (session du 08-08-2026, 2e échange) : Raphaël ne veut PAS l'habillage
+     "bulle de BD" (encadré + pointe triangulaire vers le personnage) —
+     juste du texte présenté comme dans intro-bonomes.html (.legende-intro :
+     encadré doux coloré selon le personnage, SANS pointe). Donc même boîte
+     que .legende-intro, mais SANS le ::after qui existait ici avant. Le
+     positionnement au-dessus des personnages, lui, reste : la légende vit
+     simplement AVANT l'image dans le flux normal du document (pas de
+     superposition en absolute), donc "au-dessus" sans jamais rien
+     recouvrir — c'est cette partie-là qui n'a pas changé. */
   .zone-bulle {
     display: flex;
     width: min(92vw, 560px);
@@ -168,25 +170,11 @@
 
   .bulle-dialogue.cote-keb { margin-right: auto; text-align: left; border: 2.5px solid var(--keb-couleur); color: var(--keb-couleur); }
   .bulle-dialogue.cote-bek { margin-left: auto; text-align: right; border: 2.5px solid var(--bek-couleur); color: var(--bek-couleur); }
-
-  /* Petite pointe triangulaire vers le personnage qui parle — même idée
-     qu'une vraie bulle de bande dessinée, absente de .legende-intro dans
-     intro-bonomes.html (qui n'en avait pas besoin, positionnée sous
-     l'image plutôt qu'au-dessus d'un personnage précis). */
-  .bulle-dialogue::after {
-    content: "";
-    position: absolute;
-    bottom: -9px;
-    width: 16px;
-    height: 16px;
-    background: #FFFFFF;
-    border-right: 2.5px solid;
-    border-bottom: 2.5px solid;
-    border-color: inherit;
-    transform: rotate(45deg);
-  }
-  .bulle-dialogue.cote-keb::after { left: 28px; }
-  .bulle-dialogue.cote-bek::after { right: 28px; }
+  /* Pas de pointe triangulaire (::after) ici — c'était le seul élément qui
+     faisait "bulle de BD" plutôt que simple texte encadré ; retiré à la
+     demande de Raphaël. cote-keb reste aligné à gauche (margin-right:auto),
+     donc la légende continue de tomber au-dessus de la tête de Keb, qui est
+     à gauche sur l'image d1_keb_faim_01.png. */
 
   /* ---------- Scène (personnages) ---------- */
   .scene-dialogue {
@@ -398,7 +386,7 @@
 </head>
 <body>
 
-<a class="retour" href="parcours.html" aria-label="Retour au parcours">‹</a>
+<a class="retour" href="/parcours.html" aria-label="Retour au parcours">‹</a>
 
 <!-- Sac à dos : structure EXACTEMENT celle attendue par sac-a-dos.js/.css
      (voir index.html) — PAS l'ancien balisage SVG encore présent sur
@@ -409,8 +397,8 @@
      qu'après ce déblocage — donc toujours déjà acquis ici. -->
 <button type="button" id="sacBouton" onclick="toggleSacADos()" aria-label="Backpack">
   <span id="iconeSac" class="sac-icone">
-    <img class="sac-icone-img sac-icone-fermee" src="images/accueil/index_bonomes_icone_sac_01.webp" width="26" height="26" alt="">
-    <img class="sac-icone-img sac-icone-ouverte" src="images/accueil/index_bonomes_icone_sac_01_ouvert.webp" width="26" height="26" alt="">
+    <img class="sac-icone-img sac-icone-fermee" src="/images/accueil/index_bonomes_icone_sac_01.webp" width="26" height="26" alt="">
+    <img class="sac-icone-img sac-icone-ouverte" src="/images/accueil/index_bonomes_icone_sac_01_ouvert.webp" width="26" height="26" alt="">
   </span>
   <span class="sac-badge vide" id="sacBadge">0</span>
 </button>
@@ -434,7 +422,7 @@
 <!-- sac-a-dos.js (fichier partagé, voir sa note de tête) : chargé ici,
      avant le script de la leçon plus bas, pour que window.ajouterAuSac
      et toggleSacADos existent déjà quand un mot est touché. -->
-<script src="sac-a-dos.js"></script>
+<script src="/sac-a-dos.js"></script>
 
 <div class="compteur" id="compteur">1 / 5</div>
 
@@ -467,11 +455,11 @@
   // les étapes n'en ont pas (ici : seulement 1 et 2).
   // ================================================================
   const ETAPES = [
-    { speaker: 'keb', texte: 'J\u2019ai faim.', img: 'images/dialogue-d1/d1_keb_faim_01.png', grammaire: 'gJai' },
-    { speaker: 'bek', texte: 'Mange\u00A0!', img: 'images/dialogue-d1/d1_bek_mange_01.png', grammaire: 'gImperatif' },
-    { speaker: 'keb', texte: 'Mange quoi\u00A0?', img: 'images/dialogue-d1/d1_keb_mange_quoi_01.png', grammaire: 'gQuoi' },
-    { speaker: 'bek', texte: 'Mange... mon sandwich\u00A0?', img: 'images/dialogue-d1/d1_bek_sandwich_01.png' },
-    { speaker: 'keb', texte: 'Oh, merci\u00A0!', img: 'images/dialogue-d1/d1_keb_merci_01.png' }
+    { speaker: 'keb', texte: 'J\u2019ai faim.', img: '/images/dialogues/d1/d1_01_bonomes_keb_bek_jai-faim_.png', grammaire: 'gJai' },
+    { speaker: 'bek', texte: 'Mange\u00A0!', img: '/images/dialogues/d1/d1_02_bonomes_keb_bek_mange_.png', grammaire: 'gImperatif' },
+    { speaker: 'keb', texte: 'Mange quoi\u00A0?', img: '/images/dialogues/d1/d1_03_bonomes_keb_bek_mange-quoi_.png', grammaire: 'gQuoi' },
+    { speaker: 'bek', texte: 'Mange... mon sandwich\u00A0?', img: '/images/dialogues/d1/d1_04_bonomes_keb_bek_sandwich_.png' },
+    { speaker: 'keb', texte: 'Oh, merci\u00A0!', img: '/images/dialogues/d1/d1_05_bonomes_keb_bek_merci_.png' }
   ];
 
   // Notes grammaticales dans la langue de l'apprenant. Seules fr/en sont

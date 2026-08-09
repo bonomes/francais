@@ -1283,9 +1283,6 @@
     afficherPremiereFois();
   }
 
-  // Destination du menu principal pas encore définie côté contenu (pas
-  // de page suivante précisée) — laissé en point d'ancrage explicite
-  // plutôt que deviné, à brancher dès que la suite existe.
   // 🆕 allerAuMenuPrincipal() n'est plus un stub — branché sur le
   // nouveau module menu-principal.js. sequenceIdentite (ou sceneRangee,
   // selon la réponse "Non" à "First time?") se cache, menuPrincipal
@@ -1301,7 +1298,7 @@
     lienCoursPrives.style.display = 'none';
     document.getElementById('menuPrincipal').style.display = '';
     KebBekMenu.demarrerMenuPrincipal('menuPrincipal', {
-      onHistoires: function () { console.info('Menu — "Histoires et leçons" : destination à définir.'); },
+      onHistoires: function () { window.location.href = 'parcours.html'; },
       onPrives: function () { window.location.href = 'cours-prives/'; },
       onContact: function () { console.info('Menu — "Contact" : destination à définir.'); },
       onCreerCompte: function () { demarrerIdentiteSiPremiereFois('menu'); }

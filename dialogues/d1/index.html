@@ -201,8 +201,8 @@
     height: 100%;
     object-fit: contain;
     display: block;
-    transform: scale(1.22); /* 🆕 recadre la marge vide haut/bas des images sources */
-    transform-origin: center center;
+    transform: scale(1.18); /* 🆕 (ajusté, 5e échange) : moins agressif qu'avant */
+    transform-origin: center 84%; /* 🆕 ancré près des pieds : le recadrage retire le vide en haut sans couper les pieds en bas */
     -webkit-mask-image: radial-gradient(ellipse 94% 90% at center, #000 74%, transparent 100%);
     mask-image: radial-gradient(ellipse 94% 90% at center, #000 74%, transparent 100%);
   }
@@ -756,6 +756,7 @@
 
   let etape = 0;
   let reconstructionEnCours = false;
+  const sequencesJouees = new Set(); // 🆕 (5e échange) : étapes dont la séquence auto a déjà joué
 
   function ajouterLigneDialogue(def) {
     const div = document.createElement('div');
@@ -820,12 +821,12 @@
         ? creerImage(item)
         : creerImageComposite(item.img, item.superposition);
       nouveau.style.opacity = '0';
-      nouveau.style.transition = 'opacity 0.3s ease';
+      nouveau.style.transition = 'opacity 0.55s ease'; /* 🆕 (5e échange) : plus lent qu'avant */
       elScene.innerHTML = '';
       elScene.appendChild(nouveau);
       requestAnimationFrame(() => requestAnimationFrame(() => { nouveau.style.opacity = '1'; }));
       i++;
-      setTimeout(etapeSuivante, 1000);
+      setTimeout(etapeSuivante, 1700); /* 🆕 (5e échange) : 1000 → 1700 ms */
     }
     etapeSuivante();
   }
@@ -833,13 +834,17 @@
   function suivant() {
     if (etape < ETAPES.length - 1) {
       const def = ETAPES[etape];
-      if (def.sequenceAuto) {
+      // 🆕 (5e échange) : la séquence s'arrête maintenant à 5d — elle ne
+      // fait PLUS avancer automatiquement jusqu'à l'étape 6. Une fois
+      // jouée, sequencesJouees empêche de la rejouer : le clic Continuer
+      // suivant se comporte alors comme une avance normale vers l'étape 6.
+      if (def.sequenceAuto && !sequencesJouees.has(etape)) {
         btnPrecedent.disabled = true;
         btnSuivant.disabled = true;
         elScene.removeEventListener('click', suivant);
         jouerSequenceAuto(def.sequenceAuto, function () {
-          etape++;
-          rendreEtape();
+          sequencesJouees.add(etape);
+          btnPrecedent.disabled = (etape === 0);
           btnSuivant.disabled = false;
           elScene.addEventListener('click', suivant);
         });
@@ -855,6 +860,7 @@
   function precedent() {
     if (etape === 0) return;
     etape--;
+    if (ETAPES[etape].sequenceAuto) sequencesJouees.delete(etape); // 🆕 rejoue si on repasse par ici
     // Reconstruit les deux piles depuis le début plutôt que de retirer
     // juste le dernier élément — même stratégie que precedent() dans
     // intro-bonomes.html : plus simple et sans risque de désynchronisation

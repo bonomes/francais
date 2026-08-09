@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Ton parcours — Keb &amp; Bek</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700&family=Fuzzy+Bubbles:wght@400;700&family=Caveat+Brush&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="sac-a-dos.css">
 <!-- Page à part entière (voir COMPTES_ELEVES_v10) : aucun état JS partagé
      avec index.html, donc son propre client Supabase — progression.js en
@@ -176,19 +176,42 @@
   }
 
   .entete-parcours h1 {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
     margin: 0;
-    font-family: 'Fuzzy Bubbles', cursive;
-    font-weight: 700;
-    font-size: clamp(1.9rem, 7vw, 2.6rem);
-    background: linear-gradient(100deg, var(--peche-ombre) 20%, var(--or-ombre) 80%);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-    -webkit-text-stroke: 1.6px var(--brun-fonce);
-    paint-order: stroke fill;
+    font-family: 'Baloo 2', sans-serif;
+    font-weight: 800;
+    font-size: clamp(2.1rem, 8vw, 3rem);
+    color: var(--peche-fonce);
+    text-shadow: 2px 3px 0 rgba(102, 80, 69, 0.16);
     letter-spacing: 0.01em;
     animation: titre-entree 0.6s cubic-bezier(.2,.9,.3,1.3);
   }
+
+  /* Petit symbole-signature (boussole) plutôt qu'une illustration —
+     demande explicite : "pas une illustration énorme, un petit
+     symbole-signature". Statique, pas d'animation permanente sur le
+     titre lui-même (les deux avis convergent : éviter l'effet "jeu
+     mobile" par excès d'animation). */
+  .titre-boussole {
+    width: 0.78em;
+    height: 0.78em;
+    flex-shrink: 0;
+    color: var(--or-ombre);
+  }
+
+  .sous-titre-parcours {
+    margin: 2px 0 0;
+    font-family: 'Baloo 2', sans-serif;
+    font-weight: 700;
+    font-size: 0.78rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--brun-clair, #8A7364);
+  }
+  .sous-titre-parcours span { margin: 0 6px; opacity: 0.6; }
 
   @keyframes titre-entree {
     0% { transform: translateY(-10px) scale(0.94); opacity: 0; }
@@ -223,91 +246,117 @@
   }
   .note-provisoire b { color: var(--brun); font-style: normal; }
 
-  /* ---------- Prologue « Les Bonomes » ---------- */
-
-  .prologue-bonomes {
-    width: min(94vw, 440px);
-    margin: 26px auto 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-
-  .prologue-carte {
+  /* ---------- Recherche ---------- */
+  .recherche-parcours {
     position: relative;
-    width: 100%;
-    cursor: pointer;
-    background: linear-gradient(160deg, #FFF9F5 0%, var(--fond-carte) 65%);
-    border: 2.5px solid var(--peche-fonce);
-    border-radius: 24px;
-    padding: 20px 22px 18px;
-    text-align: center;
-    box-shadow: 0 10px 26px var(--ombre);
-    transition: box-shadow 0.15s ease;
+    max-width: 360px;
+    margin: 16px auto 0;
   }
 
-  /* Sélection clavier — même anneau que .noeud-niveau.selection, ajouté à
-     l'ombre existante plutôt qu'à sa place. curseurNiveau = -1 représente
-     le prologue : une position virtuelle juste au-dessus du niveau 1 dans
-     la navigation clavier (voir window.addEventListener('keydown', ...)). */
-  .prologue-carte.selection {
-    box-shadow: 0 0 0 5px rgba(224, 136, 103, 0.3), 0 10px 26px var(--ombre);
-  }
-
-  .prologue-badge {
+  .recherche-icone {
     position: absolute;
-    top: -12px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: var(--peche-fonce);
-    color: #FFFFFF;
-    font-size: 0.62rem;
-    font-weight: 700;
-    letter-spacing: 0.03em;
-    text-transform: uppercase;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 16px;
+    height: 16px;
+    color: var(--gris-verrou-texte);
+    pointer-events: none;
+  }
+
+  #rechercheInput {
+    width: 100%;
+    font-family: inherit;
+    font-size: 0.86rem;
+    padding: 10px 14px 10px 38px;
     border-radius: 999px;
-    padding: 4px 14px;
-    box-shadow: 0 3px 8px rgba(102, 80, 69, 0.25);
-  }
-
-  .prologue-titre {
-    font-family: 'Fuzzy Bubbles', cursive;
-    font-weight: 700;
-    font-size: 1.2rem;
-    color: var(--peche-ombre);
-    margin-top: 6px;
-  }
-
-  .prologue-texte {
-    margin: 8px auto 14px;
-    max-width: 300px;
-    font-size: 0.8rem;
+    border: 1.5px solid var(--peche);
+    background: #FFFFFF;
     color: var(--brun);
-    line-height: 1.4;
+    box-sizing: border-box;
+  }
+  #rechercheInput:focus { outline: none; box-shadow: 0 0 0 3px rgba(240, 169, 139, 0.3); }
+
+  .recherche-resultats {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: calc(100% + 6px);
+    background: #FFFFFF;
+    border: 1.5px solid var(--peche);
+    border-radius: 16px;
+    box-shadow: 0 10px 26px var(--ombre);
+    overflow: hidden;
+    display: none;
+    z-index: 40;
+    max-height: 280px;
+    overflow-y: auto;
+  }
+  .recherche-resultats.visible { display: block; }
+
+  .recherche-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    text-align: left;
+    padding: 10px 14px;
+    background: none;
+    border: none;
+    border-bottom: 1px solid rgba(102, 80, 69, 0.1);
+    cursor: pointer;
+    font-family: inherit;
+    color: var(--brun);
+  }
+  .recherche-item:last-child { border-bottom: none; }
+  .recherche-item:hover { background: var(--fond); }
+  .recherche-item .recherche-item-titre { font-weight: 700; font-size: 0.84rem; }
+  .recherche-item .recherche-item-niveau { font-size: 0.68rem; color: var(--gris-verrou-texte); }
+  .recherche-item svg { width: 16px; height: 16px; flex-shrink: 0; color: var(--peche-fonce, var(--peche)); }
+
+  .recherche-aucun { padding: 14px; font-size: 0.8rem; color: var(--gris-verrou-texte); text-align: center; }
+
+  /* ---------- Résumé + image (carte-info) ---------- */
+  .carte-info-image {
+    width: 100%;
+    aspect-ratio: 1408 / 768; /* même convention que les scènes de dialogue (dialogues/d1/) */
+    border-radius: 14px;
+    overflow: hidden;
+    margin-bottom: 12px;
+    background: var(--fond);
+  }
+  .carte-info-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .carte-info-image .repli-image-manquante {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 10px;
+    font-size: 0.76rem;
+    font-weight: 700;
+    color: var(--peche-fonce, var(--peche));
+    opacity: 0.8;
   }
 
-  .prologue-bouton {
-    display: inline-block;
-    font-family: 'Caveat Brush', cursive;
-    font-size: 1.2rem;
-    text-decoration: none;
-    border-radius: 999px;
-    padding: 9px 32px;
-    background: var(--peche-fonce);
-    color: #FFFFFF;
-    box-shadow: 0 4px 0 var(--peche-ombre);
-    transition: transform 0.12s ease, box-shadow 0.12s ease;
+  .carte-info-resume {
+    font-size: 0.82rem;
+    line-height: 1.45;
+    color: var(--brun);
+    text-align: left;
+    margin: 0 0 12px;
   }
-  .prologue-bouton:hover { transform: translateY(2px); box-shadow: 0 2px 0 var(--peche-ombre); }
-  .prologue-bouton:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--peche-ombre); }
 
-  .prologue-connecteur {
-    width: 4px;
-    height: 22px;
-    margin-top: 4px;
-    background: repeating-linear-gradient(to bottom, var(--gris-verrou) 0 7px, transparent 7px 15px);
-    border-radius: 4px;
-  }
+  /* 🆕 (9e échange) : bloc CSS "Prologue « Les Bonomes »" retiré — la
+     carte est supprimée de cette page (le prologue reste accessible
+     depuis index.html, "première fois ?" ; voir aussi la suppression du
+     HTML/JS correspondant plus bas). */
 
   /* ---------- Colonne du parcours ---------- */
 
@@ -480,9 +529,38 @@
     border-color: var(--peche-fonce);
     background: var(--peche-fonce);
     box-shadow: 0 5px 0 var(--peche-ombre);
+    /* 🆕 Légèrement agrandi par rapport aux autres niveaux (86px) — le
+       niveau actuel doit se distinguer par sa taille, pas seulement par
+       sa couleur (retour Raphaël + ChatGPT, point 5 : "le niveau actuel
+       devrait être beaucoup plus spectaculaire"). Complété par le
+       mini-bandeau de progression juste en dessous, voir
+       .bandeau-continuer plus bas. */
+    width: 100px;
+    height: 100px;
+    border-radius: 30px;
   }
+  .noeud-niveau.actuel .num { font-size: 1.55rem; }
+  .noeud-niveau.actuel .lib { font-size: 0.64rem; }
+  .noeud-niveau.actuel .anneau-progres { inset: -8px; }
   .noeud-niveau.actuel .num,
   .noeud-niveau.actuel .lib { color: #FFFFFF; }
+
+  /* 🆕 Étincelle discrète sur le niveau actuel — la SEULE touche
+     "aventure" ajoutée cette fois-ci (les deux avis insistent : avec
+     parcimonie, pas une décoration à chaque élément). Un unique petit
+     éclat statique en coin, pas une pluie d'étoiles ni une animation en
+     boucle permanente. */
+  .noeud-niveau.actuel::after {
+    content: "";
+    position: absolute;
+    top: -9px;
+    right: -6px;
+    width: 16px;
+    height: 16px;
+    background: var(--or);
+    clip-path: polygon(50% 0%, 63% 38%, 100% 50%, 63% 62%, 50% 100%, 37% 62%, 0% 50%, 37% 38%);
+    filter: drop-shadow(0 1px 2px rgba(102, 80, 69, 0.3));
+  }
 
   .noeud-niveau.verrouille { cursor: not-allowed; }
   .noeud-niveau.verrouille:hover { transform: none; }
@@ -494,10 +572,55 @@
     box-shadow: 0 0 0 5px rgba(224, 136, 103, 0.3), 0 5px 0 var(--peche-ombre);
   }
 
-  .noeud-niveau.ouvert { border-radius: 26px 26px 8px 8px; }
+  .noeud-niveau.ouvert { border-radius: 26px 26px 16px 16px; }
 
   .noeud-niveau:not(.verrouille):hover { transform: translateY(-2px); }
   .noeud-niveau:not(.verrouille):active { transform: translateY(1px); }
+
+  /* ---------- Mini-bandeau de progression du niveau actuel ---------- */
+  /* 🆕 N'existe que pour le niveau actuel (voir construireDOM) — "X/Y
+     leçons" + un bouton Continuer, pour donner un vrai point d'entrée
+     plutôt qu'un badge recoloré parmi d'autres (retour Raphaël +
+     ChatGPT, point 5). Volontairement discret : un bandeau, pas une
+     nouvelle grosse carte — les deux avis mettent en garde contre la
+     surcharge décorative. */
+  .bandeau-continuer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin: 10px auto 0;
+    width: fit-content;
+    max-width: 100%;
+  }
+
+  .bandeau-continuer-texte {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--brun);
+    white-space: nowrap;
+  }
+
+  .bandeau-continuer-bouton {
+    font-family: inherit;
+    font-weight: 700;
+    font-size: 0.78rem;
+    color: #FFFFFF;
+    background: var(--peche-fonce);
+    border: none;
+    border-radius: 999px;
+    padding: 7px 18px;
+    cursor: pointer;
+    box-shadow: 0 3px 0 var(--peche-ombre);
+    transition: transform 0.12s ease, box-shadow 0.12s ease;
+    white-space: nowrap;
+  }
+  .bandeau-continuer-bouton:hover { transform: translateY(1px); box-shadow: 0 2px 0 var(--peche-ombre); }
+  .bandeau-continuer-bouton:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--peche-ombre); }
+
+  @media (max-width: 360px) {
+    .bandeau-continuer { flex-direction: column; gap: 6px; }
+  }
 
   /* ---------- Rangée de chapitres (dépliée) ---------- */
 
@@ -573,7 +696,7 @@
     width: 56px;
     height: 56px;
     border-radius: 50%;
-    background: var(--fond);
+    background: var(--fond-carte);
     border: 3px solid var(--gris-verrou);
     display: flex;
     align-items: center;
@@ -581,7 +704,50 @@
     color: var(--gris-verrou-texte);
     cursor: default;
     position: relative;
+    z-index: 1;
     transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease, background 0.15s ease, opacity 0.4s ease;
+  }
+
+  /* 🆕 Chapitres verrouillés : montrent maintenant leur type (bulle de
+     dialogue / livre / étoile), pas seulement un cadenas — "ce qui
+     m'attend derrière", pas "je n'ai pas accès". Le cadenas devient un
+     petit badge en coin (même patron visuel que .badge-brouillon) plutôt
+     que l'icône entière. Icône légèrement plus visible qu'avant
+     (--gris-verrou-texte reste la couleur, mais le fond passe de --fond
+     à --fond-carte ci-dessus : un chapitre verrouillé ne se fond plus
+     dans la même teinte que la page derrière lui). */
+  .badge-verrou-mini {
+    position: absolute;
+    bottom: -4px;
+    right: -4px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--gris-verrou-texte);
+    color: #FFFFFF;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid var(--fond-carte);
+  }
+  .badge-verrou-mini svg { width: 11px; height: 11px; }
+
+  /* 🆕 Chemin reliant les chapitres d'un même niveau — même intention que
+     .ligne-parcours-fond entre les niveaux, à l'échelle d'une rangée :
+     une ligne pointillée discrète derrière les cercles plutôt qu'une
+     simple rangée d'icônes flottantes sans lien visuel entre elles. */
+  .rangee-chapitres {
+    position: relative;
+  }
+  .rangee-chapitres::before {
+    content: "";
+    position: absolute;
+    left: 34px;
+    right: 34px;
+    top: 48px; /* centre vertical des cercles de 56px, compte tenu du padding-top de .deployee */
+    height: 0;
+    border-top: 2.5px dashed var(--gris-verrou);
+    z-index: 0;
   }
 
   /* ---------- Apparition graduelle des chapitres à l'ouverture d'un niveau ---------- */
@@ -727,13 +893,28 @@
     animation: socle-pulse 2.2s ease-in-out infinite;
   }
 
-  .bonomes-marqueur .flotte {
-    width: 100%;
-    animation: flottement 2.2s ease-in-out infinite;
-    filter: drop-shadow(0 6px 8px rgba(102, 80, 69, 0.22));
-  }
+  .bonomes-marqueur .flotte { width: 100%; animation: flottement 2.2s ease-in-out infinite; filter: drop-shadow(0 6px 8px rgba(102, 80, 69, 0.22)); }
 
   .bonomes-marqueur img { width: 100%; height: auto; display: block; }
+
+  /* 🆕 Repli si l'image n'existe pas encore — même esprit que le repli
+     "Image not ready yet" ailleurs sur le site (dialogues/d1/, carte-info),
+     mais ici un simple médaillon plutôt qu'un texte : le marqueur est
+     petit et flotte au-dessus du parcours, un bloc de texte y serait
+     illisible à cette taille. */
+  .bonomes-marqueur.image-manquante .flotte { display: none; }
+  .bonomes-marqueur.image-manquante::before {
+    content: "";
+    display: block;
+    width: 44px;
+    height: 44px;
+    margin: 0 auto;
+    border-radius: 50%;
+    background: var(--peche-fonce);
+    border: 3px solid #FFFFFF;
+    box-shadow: 0 6px 8px rgba(102, 80, 69, 0.22);
+    animation: flottement 2.2s ease-in-out infinite;
+  }
 
   @keyframes flottement {
     0%, 100% { transform: translateY(0); }
@@ -804,7 +985,7 @@
   }
 
   .carte-info .titre {
-    font-family: 'Fuzzy Bubbles', cursive;
+    font-family: 'Baloo 2', sans-serif;
     font-size: 1.15rem;
     font-weight: 700;
     color: var(--brun-fonce);
@@ -821,11 +1002,13 @@
   .carte-info .titre-trad:empty { display: none; margin: 0 0 8px; }
 
   .carte-info button {
-    font-family: 'Caveat Brush', cursive;
-    font-size: 1.25rem;
+    font-family: 'Baloo 2', sans-serif;
+    font-size: 0.98rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
     border: none;
     border-radius: 999px;
-    padding: 9px 30px;
+    padding: 10px 30px;
     cursor: pointer;
     background: var(--peche-fonce);
     color: #FFFFFF;
@@ -954,32 +1137,40 @@
   <script src="sac-a-dos.js"></script>
 
   <div class="entete-parcours">
-    <h1 id="titrePage">Ton parcours</h1>
+    <h1 id="titrePage">
+      <svg class="titre-boussole" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <circle cx="12" cy="12" r="9.5"/>
+        <path d="M15 9l-2 6-6 2 2-6z" fill="currentColor" stroke="none"/>
+      </svg>
+      <span id="titrePageTexte">Ton parcours</span>
+    </h1>
+    <p class="sous-titre-parcours" id="sousTitreParcours">Apprends<span>•</span>Explore<span>•</span>Grandis</p>
     <p id="instructionNiveau">
       Clique sur un <b>niveau</b> pour déployer ses chapitres.
       <br>
       <kbd>↑</kbd> <kbd>↓</kbd> <kbd>←</kbd> <kbd>→</kbd> <span id="texteDeplacer">pour se déplacer,</span> <kbd id="toucheEntree">Entrée</kbd> <span id="texteChoisir">pour choisir.</span>
     </p>
-    <p class="note-provisoire" id="noteProvisoire">✎ Seule l'introduction <b>Les Bonomes</b> est confirmée pour l'instant — les titres suivis d'un <b>*</b> sont provisoires, en attente du contenu final.</p>
+    <p class="note-provisoire" id="noteProvisoire">✎ Le dialogue <b>J'ai faim</b> est confirmé pour l'instant — les titres suivis d'un <b>*</b> sont provisoires, en attente du contenu final.</p>
+
+    <!-- 🆕 Recherche — portée : titre + mots-clés/contenu associé par
+         chapitre (voir ch.motsCles dans NIVEAUX), pas plein texte sur tout
+         le site. Volontairement une liste de résultats séparée plutôt que
+         de cacher/estomper les nœuds du parcours lui-même : le parcours a
+         déjà son propre système d'animation en cascade (ouverture/
+         fermeture de niveau, marqueur qui glisse) — y superposer un filtre
+         en place aurait beaucoup plus de chances de casser une animation
+         existante que d'ajouter un composant à côté qui n'y touche pas. -->
+    <div class="recherche-parcours">
+      <svg class="recherche-icone" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+      <input type="search" id="rechercheInput" placeholder="Rechercher une leçon…" autocomplete="off">
+      <div class="recherche-resultats" id="rechercheResultats"></div>
+    </div>
   </div>
 
-  <!-- ==================================================================
-       Prologue « Les Bonomes » — volontairement en dehors de la structure
-       NIVEAUX/JS : c'est le seul contenu narratif réellement confirmé à
-       ce jour (voir BONOMES_v33/v34), donc il vit à part, avec son propre
-       traitement visuel, plutôt que comme un chapitre de plus dans un
-       niveau encore provisoire. Lien réel vers intro-bonomes.html — pas
-       un console.log comme les chapitres encore à écrire.
-       ================================================================== -->
-  <div class="prologue-bonomes">
-    <div class="prologue-carte">
-      <span class="prologue-badge" id="prologueBadge">✓ confirmé</span>
-      <div class="prologue-titre" id="prologueTitre">Prologue — Les Bonomes</div>
-      <p class="prologue-texte" id="prologueTexte">Fais connaissance avec Keb, Bek… et Kloé, qui t'accompagnera partout.</p>
-      <a class="prologue-bouton" id="prologueBouton" href="intro-bonomes.html">Découvrir</a>
-    </div>
-    <div class="prologue-connecteur"></div>
-  </div>
+  <!-- 🆕 (9e échange) : bloc "Prologue « Les Bonomes »" retiré de cette
+       page — le prologue reste accessible depuis index.html ("première
+       fois ?"), mais n'apparaît plus ici. Voir aussi le CSS et le JS
+       correspondants, retirés ailleurs dans ce fichier. -->
 
   <div class="parcours" id="parcours">
     <div class="ligne-parcours-fond"></div>
@@ -987,15 +1178,32 @@
   </div>
 
   <div class="bonomes-marqueur" id="marqueurBonomes">
-    <img class="flotte" id="imgMarqueur" src="images/bonomes_keb_bek_parcours_01.png" alt="Keb et Bek">
+    <img class="flotte" id="imgMarqueur" src="images/bonomes_keb_bek_parcours_01.png" alt="Keb et Bek"
+      onerror="this.closest('.bonomes-marqueur').classList.add('image-manquante')">
     <div class="socle"></div>
   </div>
 
   <div class="carte-info" id="carteInfo">
     <div class="carte-info-corps" id="carteInfoCorps">
+      <!-- 🆕 Résumé + image — demande de Raphaël : "voir, en plus du
+           titre, un résumé... et une image avec les personnages qui
+           apparaissent dans l'histoire". N'apparaît QUE pour les
+           chapitres qui ont vraiment ce contenu (voir ch.resume/ch.image
+           dans NIVEAUX) — pour les chapitres "À venir *", ce bloc reste
+           simplement absent plutôt que d'afficher un cadre vide/un texte
+           "à venir" répété sur chaque case, ce qui alourdirait le
+           panneau sans rien apporter. Format horizontal, cadrage resserré
+           (mi-corps) sur Keb/Bek — même convention que les scènes de
+           dialogue (voir dialogues/d1/, ratio 1408:768) — avec le même
+           repli visuel "Image not ready yet" que le reste du site tant
+           que l'image réelle n'existe pas encore. -->
+      <div class="carte-info-image" id="carteInfoImageZone" style="display:none;">
+        <img id="carteInfoImage" alt="">
+      </div>
       <div class="type" id="carteInfoType">—</div>
       <div class="titre" id="carteInfoTitre">—</div>
       <div class="titre-trad" id="carteInfoTitreTrad"></div>
+      <p class="carte-info-resume" id="carteInfoResume" style="display:none;"></p>
       <button id="carteInfoBouton">Commencer</button>
       <div class="indice" id="carteInfoIndice" style="display:none;">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="10.5" width="14" height="9" rx="2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg>
@@ -1035,26 +1243,26 @@
   }
 
   const DICO = {
-    fr: { titre_page: "Ton parcours", instruction_niveau_html: "Clique sur un <b>niveau</b> pour déployer ses chapitres.", pour_deplacer: "pour se déplacer,", pour_choisir: "pour choisir.", touche_entree: "Entrée", note_provisoire_html: "L'introduction <b>Les Bonomes</b> et le dialogue <b>Premier échange</b> sont confirmés — les titres suivis d'un <b>*</b> restent provisoires, en attente du contenu final.", badge_confirme: "confirmé", prologue_titre: "Prologue — Les Bonomes", prologue_texte: "Fais connaissance avec Keb, Bek… et Kloé, qui t'accompagnera partout.", prologue_bouton: "Découvrir", retour_aria: "Retour", type_niveau: "Niveau", type_dialogue: "Dialogue", type_histoire: "Histoire", type_examen: "Examen", bouton_commencer: "Commencer", bouton_revoir: "Revoir", bouton_examen: "Passer l'examen", indice_chapitre_verrouille: "Termine les étapes précédentes pour débloquer ceci.", indice_niveau_ouvrir: "Clique pour déployer les chapitres.", indice_niveau_verrouille: "Termine le niveau précédent pour débloquer celui-ci.", avis_revoir: "Tu revois ce chapitre (démo) ✏️", avis_niveau_debloque: "✨ Niveau terminé — le suivant est débloqué !", avis_chapitre_debloque: "✨ Chapitre débloqué !", avis_preparation: "Ce chapitre est encore en préparation ✏️", marqueur_alt: "Keb et Bek", son_actif: "Son activé", son_inactif: "Son désactivé", sacTitre: "Mon sac à dos", sacVide: "rien pour l'instant", sacUnItem: "{n} élément enregistré", sacPlusieursItems: "{n} éléments enregistrés", sacAvertissement: "Ce sac à dos est enregistré uniquement sur cet appareil. Connecte-toi pour le garder pour de bon, même si tu changes d'appareil.", sacConnexion: "Se connecter", sacTestItem: "+ élément test", sacRienIci: "Rien ici pour l'instant.", catMots: "Mots appris", catCodes: "Codes", catSucces: "Réussites", catTrophees: "Trophées", catCartes: "Cartes" },
-    en: { titre_page: "Your journey", instruction_niveau_html: "Click on a <b>level</b> to open its chapters.", pour_deplacer: "to move,", pour_choisir: "to choose.", touche_entree: "Enter", note_provisoire_html: "The <b>Les Bonomes</b> introduction and the <b>Premier échange</b> dialogue are confirmed — titles with a <b>*</b> are still placeholders, pending final content.", badge_confirme: "confirmed", prologue_titre: "Prologue — Les Bonomes", prologue_texte: "Meet Keb, Bek… and Kloé, who will be with you every step of the way.", prologue_bouton: "Discover", retour_aria: "Back", type_niveau: "Level", type_dialogue: "Dialogue", type_histoire: "Story", type_examen: "Exam", bouton_commencer: "Start", bouton_revoir: "Review", bouton_examen: "Take the exam", indice_chapitre_verrouille: "Finish the previous steps to unlock this.", indice_niveau_ouvrir: "Click to open the chapters.", indice_niveau_verrouille: "Finish the previous level to unlock this one.", avis_revoir: "Reviewing this chapter (demo) ✏️", avis_niveau_debloque: "✨ Level complete — the next one is unlocked!", avis_chapitre_debloque: "✨ Chapter unlocked!", avis_preparation: "This chapter is still being prepared ✏️", marqueur_alt: "Keb and Bek", son_actif: "Sound on", son_inactif: "Sound off", sacTitre: "My backpack", sacVide: "nothing yet", sacUnItem: "{n} item saved", sacPlusieursItems: "{n} items saved", sacAvertissement: "This backpack is saved on this device only. Sign in to keep it for good, even if you switch devices.", sacConnexion: "Sign in", sacTestItem: "+ test item", sacRienIci: "Nothing here yet.", catMots: "Words learned", catCodes: "Codes", catSucces: "Achievements", catTrophees: "Trophies", catCartes: "Cards" },
-    es: { titre_page: "Tu recorrido", instruction_niveau_html: "Haz clic en un <b>nivel</b> para desplegar sus capítulos.", pour_deplacer: "para moverte,", pour_choisir: "para elegir.", touche_entree: "Intro", note_provisoire_html: "Solo la introducción <b>Les Bonomes</b> está confirmada por ahora — los títulos con un <b>*</b> son provisionales, a la espera del contenido final.", badge_confirme: "confirmado", prologue_titre: "Prólogo — Les Bonomes", prologue_texte: "Conoce a Keb, Bek… y a Kloé, que te acompañará en todo momento.", prologue_bouton: "Descubrir", retour_aria: "Volver", type_niveau: "Nivel", type_dialogue: "Diálogo", type_histoire: "Historia", type_examen: "Examen", bouton_commencer: "Empezar", bouton_revoir: "Repasar", bouton_examen: "Hacer el examen", indice_chapitre_verrouille: "Termina los pasos anteriores para desbloquear esto.", indice_niveau_ouvrir: "Haz clic para desplegar los capítulos.", indice_niveau_verrouille: "Termina el nivel anterior para desbloquear este.", avis_revoir: "Estás repasando este capítulo (demo) ✏️", avis_niveau_debloque: "✨ ¡Nivel completado, se ha desbloqueado el siguiente!", avis_chapitre_debloque: "✨ ¡Capítulo desbloqueado!", avis_preparation: "Este capítulo todavía se está preparando ✏️", marqueur_alt: "Keb y Bek", son_actif: "Sonido activado", son_inactif: "Sonido desactivado", sacTitre: "Mi mochila", sacVide: "nada todavía", sacUnItem: "{n} elemento guardado", sacPlusieursItems: "{n} elementos guardados", sacAvertissement: "Esta mochila se guarda solo en este dispositivo. Inicia sesión para conservarla siempre, incluso si cambias de dispositivo.", sacConnexion: "Iniciar sesión", sacTestItem: "+ elemento de prueba", sacRienIci: "Todavía no hay nada aquí.", catMots: "Palabras aprendidas", catCodes: "Códigos", catSucces: "Logros", catTrophees: "Trofeos", catCartes: "Cartas" },
-    pt: { titre_page: "O teu percurso", instruction_niveau_html: "Clica num <b>nível</b> para abrir os seus capítulos.", pour_deplacer: "para te moveres,", pour_choisir: "para escolheres.", touche_entree: "Enter", note_provisoire_html: "Apenas a introdução <b>Les Bonomes</b> está confirmada por agora — os títulos seguidos de <b>*</b> são provisórios, à espera do conteúdo final.", badge_confirme: "confirmado", prologue_titre: "Prólogo — Les Bonomes", prologue_texte: "Conhece o Keb, a Bek… e a Kloé, que te vai acompanhar sempre.", prologue_bouton: "Descobrir", retour_aria: "Voltar", type_niveau: "Nível", type_dialogue: "Diálogo", type_histoire: "História", type_examen: "Exame", bouton_commencer: "Começar", bouton_revoir: "Rever", bouton_examen: "Fazer o exame", indice_chapitre_verrouille: "Termina as etapas anteriores para desbloquear isto.", indice_niveau_ouvrir: "Clica para abrir os capítulos.", indice_niveau_verrouille: "Termina o nível anterior para desbloquear este.", avis_revoir: "Estás a rever este capítulo (demo) ✏️", avis_niveau_debloque: "✨ Nível concluído — o seguinte foi desbloqueado!", avis_chapitre_debloque: "✨ Capítulo desbloqueado!", avis_preparation: "Este capítulo ainda está em preparação ✏️", marqueur_alt: "Keb e Bek", son_actif: "Som ativado", son_inactif: "Som desativado", sacTitre: "A minha mochila", sacVide: "nada ainda", sacUnItem: "{n} item guardado", sacPlusieursItems: "{n} itens guardados", sacAvertissement: "Esta mochila só é guardada neste dispositivo. Inicie sessão para a guardar para sempre, mesmo trocando de dispositivo.", sacConnexion: "Entrar", sacTestItem: "+ item de teste", sacRienIci: "Ainda não há nada aqui.", catMots: "Palavras aprendidas", catCodes: "Códigos", catSucces: "Sucessos", catTrophees: "Troféus", catCartes: "Cartas" },
-    it: { titre_page: "Il tuo percorso", instruction_niveau_html: "Clicca su un <b>livello</b> per aprire i suoi capitoli.", pour_deplacer: "per spostarti,", pour_choisir: "per scegliere.", touche_entree: "Invio", note_provisoire_html: "Solo l'introduzione <b>Les Bonomes</b> è confermata per ora — i titoli seguiti da <b>*</b> sono provvisori, in attesa dei contenuti definitivi.", badge_confirme: "confermato", prologue_titre: "Prologo — Les Bonomes", prologue_texte: "Conosci Keb, Bek… e Kloé, che ti accompagnerà sempre.", prologue_bouton: "Scopri", retour_aria: "Indietro", type_niveau: "Livello", type_dialogue: "Dialogo", type_histoire: "Storia", type_examen: "Esame", bouton_commencer: "Inizia", bouton_revoir: "Rivedi", bouton_examen: "Fai l'esame", indice_chapitre_verrouille: "Completa le tappe precedenti per sbloccare questo.", indice_niveau_ouvrir: "Clicca per aprire i capitoli.", indice_niveau_verrouille: "Completa il livello precedente per sbloccare questo.", avis_revoir: "Stai rivedendo questo capitolo (demo) ✏️", avis_niveau_debloque: "✨ Livello completato — il prossimo è sbloccato!", avis_chapitre_debloque: "✨ Capitolo sbloccato!", avis_preparation: "Questo capitolo è ancora in preparazione ✏️", marqueur_alt: "Keb e Bek", son_actif: "Audio attivato", son_inactif: "Audio disattivato", sacTitre: "Il mio zaino", sacVide: "ancora niente", sacUnItem: "{n} elemento salvato", sacPlusieursItems: "{n} elementi salvati", sacAvertissement: "Questo zaino è salvato solo su questo dispositivo. Accedi per conservarlo per sempre, anche cambiando dispositivo.", sacConnexion: "Accedi", sacTestItem: "+ elemento di prova", sacRienIci: "Ancora niente qui.", catMots: "Parole imparate", catCodes: "Codici", catSucces: "Traguardi", catTrophees: "Trofei", catCartes: "Carte" },
-    de: { titre_page: "Dein Werdegang", instruction_niveau_html: "Klicke auf eine <b>Stufe</b>, um ihre Kapitel zu öffnen.", pour_deplacer: "zum Bewegen,", pour_choisir: "zum Auswählen.", touche_entree: "Enter", note_provisoire_html: "Nur die Einführung <b>Les Bonomes</b> ist bisher bestätigt — Titel mit einem <b>*</b> sind vorläufig, bis der endgültige Inhalt feststeht.", badge_confirme: "bestätigt", prologue_titre: "Prolog — Les Bonomes", prologue_texte: "Lerne Keb, Bek… und Kloé kennen, die dich überallhin begleitet.", prologue_bouton: "Entdecken", retour_aria: "Zurück", type_niveau: "Stufe", type_dialogue: "Dialog", type_histoire: "Geschichte", type_examen: "Prüfung", bouton_commencer: "Starten", bouton_revoir: "Wiederholen", bouton_examen: "Prüfung ablegen", indice_chapitre_verrouille: "Schließe die vorherigen Schritte ab, um dies freizuschalten.", indice_niveau_ouvrir: "Klicke, um die Kapitel zu öffnen.", indice_niveau_verrouille: "Schließe die vorherige Stufe ab, um diese freizuschalten.", avis_revoir: "Du wiederholst dieses Kapitel (Demo) ✏️", avis_niveau_debloque: "✨ Stufe abgeschlossen — die nächste ist freigeschaltet!", avis_chapitre_debloque: "✨ Kapitel freigeschaltet!", avis_preparation: "Dieses Kapitel wird noch vorbereitet ✏️", marqueur_alt: "Keb und Bek", son_actif: "Ton an", son_inactif: "Ton aus", sacTitre: "Mein Rucksack", sacVide: "noch nichts", sacUnItem: "{n} Gegenstand gespeichert", sacPlusieursItems: "{n} Gegenstände gespeichert", sacAvertissement: "Dieser Rucksack wird nur auf diesem Gerät gespeichert. Melde dich an, um ihn dauerhaft zu behalten, auch bei einem Gerätewechsel.", sacConnexion: "Anmelden", sacTestItem: "+ Testobjekt", sacRienIci: "Hier ist noch nichts.", catMots: "Gelernte Wörter", catCodes: "Codes", catSucces: "Erfolge", catTrophees: "Trophäen", catCartes: "Karten" },
-    nl: { titre_page: "Jouw traject", instruction_niveau_html: "Klik op een <b>niveau</b> om de hoofdstukken te openen.", pour_deplacer: "om te bewegen,", pour_choisir: "om te kiezen.", touche_entree: "Enter", note_provisoire_html: "Alleen de introductie <b>Les Bonomes</b> is voorlopig bevestigd — titels met een <b>*</b> zijn voorlopig, in afwachting van de definitieve inhoud.", badge_confirme: "bevestigd", prologue_titre: "Proloog — Les Bonomes", prologue_texte: "Maak kennis met Keb, Bek… en Kloé, die je overal zal begeleiden.", prologue_bouton: "Ontdekken", retour_aria: "Terug", type_niveau: "Niveau", type_dialogue: "Dialoog", type_histoire: "Verhaal", type_examen: "Examen", bouton_commencer: "Beginnen", bouton_revoir: "Herbekijken", bouton_examen: "Examen afleggen", indice_chapitre_verrouille: "Rond de vorige stappen af om dit te ontgrendelen.", indice_niveau_ouvrir: "Klik om de hoofdstukken te openen.", indice_niveau_verrouille: "Rond het vorige niveau af om dit te ontgrendelen.", avis_revoir: "Je bekijkt dit hoofdstuk opnieuw (demo) ✏️", avis_niveau_debloque: "✨ Niveau voltooid — het volgende is ontgrendeld!", avis_chapitre_debloque: "✨ Hoofdstuk ontgrendeld!", avis_preparation: "Dit hoofdstuk wordt nog voorbereid ✏️", marqueur_alt: "Keb en Bek", son_actif: "Geluid aan", son_inactif: "Geluid uit", sacTitre: "Mijn rugzak", sacVide: "nog niets", sacUnItem: "{n} item opgeslagen", sacPlusieursItems: "{n} items opgeslagen", sacAvertissement: "Deze rugzak wordt alleen op dit apparaat opgeslagen. Log in om hem voorgoed te bewaren, ook als je van apparaat wisselt.", sacConnexion: "Inloggen", sacTestItem: "+ testitem", sacRienIci: "Hier is nog niets.", catMots: "Geleerde woorden", catCodes: "Codes", catSucces: "Prestaties", catTrophees: "Trofeeën", catCartes: "Kaarten" },
-    ca: { titre_page: "El teu recorregut", instruction_niveau_html: "Fes clic en un <b>nivell</b> per desplegar els seus capítols.", pour_deplacer: "per moure't,", pour_choisir: "per triar.", touche_entree: "Retorn", note_provisoire_html: "Només la introducció <b>Les Bonomes</b> està confirmada de moment — els títols seguits d'un <b>*</b> són provisionals, a l'espera del contingut final.", badge_confirme: "confirmat", prologue_titre: "Pròleg — Les Bonomes", prologue_texte: "Coneix en Keb, la Bek… i la Kloé, que t'acompanyarà sempre.", prologue_bouton: "Descobrir", retour_aria: "Enrere", type_niveau: "Nivell", type_dialogue: "Diàleg", type_histoire: "Història", type_examen: "Examen", bouton_commencer: "Començar", bouton_revoir: "Repassar", bouton_examen: "Fer l'examen", indice_chapitre_verrouille: "Acaba els passos anteriors per desbloquejar això.", indice_niveau_ouvrir: "Fes clic per desplegar els capítols.", indice_niveau_verrouille: "Acaba el nivell anterior per desbloquejar aquest.", avis_revoir: "Estàs repassant aquest capítol (demo) ✏️", avis_niveau_debloque: "✨ Nivell completat — s'ha desbloquejat el següent!", avis_chapitre_debloque: "✨ Capítol desbloquejat!", avis_preparation: "Aquest capítol encara s'està preparant ✏️", marqueur_alt: "Keb i Bek", son_actif: "So activat", son_inactif: "So desactivat", sacTitre: "La meva motxilla", sacVide: "encara res", sacUnItem: "{n} element desat", sacPlusieursItems: "{n} elements desats", sacAvertissement: "Aquesta motxilla només es guarda en aquest dispositiu. Inicia sessió per conservar-la per sempre, encara que canviïs de dispositiu.", sacConnexion: "Inicia sessió", sacTestItem: "+ element de prova", sacRienIci: "Encara no hi ha res aquí.", catMots: "Paraules apreses", catCodes: "Codis", catSucces: "Assoliments", catTrophees: "Trofeus", catCartes: "Cartes" },
-    ru: { titre_page: "Твой путь", instruction_niveau_html: "Нажми на <b>уровень</b>, чтобы открыть его главы.", pour_deplacer: "чтобы двигаться,", pour_choisir: "чтобы выбрать.", touche_entree: "Enter", note_provisoire_html: "Пока подтверждено только введение <b>Les Bonomes</b> — названия со звёздочкой <b>*</b> временные, в ожидании финального содержания.", badge_confirme: "подтверждено", prologue_titre: "Пролог — Les Bonomes", prologue_texte: "Познакомься с Кебом, Бек… и Клоэ, которая будет рядом всегда.", prologue_bouton: "Открыть", retour_aria: "Назад", type_niveau: "Уровень", type_dialogue: "Диалог", type_histoire: "История", type_examen: "Экзамен", bouton_commencer: "Начать", bouton_revoir: "Повторить", bouton_examen: "Сдать экзамен", indice_chapitre_verrouille: "Заверши предыдущие шаги, чтобы открыть это.", indice_niveau_ouvrir: "Нажми, чтобы открыть главы.", indice_niveau_verrouille: "Заверши предыдущий уровень, чтобы открыть этот.", avis_revoir: "Ты повторяешь эту главу (демо) ✏️", avis_niveau_debloque: "✨ Уровень пройден — следующий открыт!", avis_chapitre_debloque: "✨ Глава открыта!", avis_preparation: "Эта глава ещё готовится ✏️", marqueur_alt: "Кеб и Бек", son_actif: "Звук включён", son_inactif: "Звук выключен", sacTitre: "Мой рюкзак", sacVide: "пока пусто", sacUnItem: "Сохранено: {n}", sacPlusieursItems: "Сохранено: {n}", sacAvertissement: "Этот рюкзак сохраняется только на этом устройстве. Войди в аккаунт, чтобы сохранить его навсегда, даже при смене устройства.", sacConnexion: "Войти", sacTestItem: "+ тестовый предмет", sacRienIci: "Здесь пока ничего нет.", catMots: "Выученные слова", catCodes: "Коды", catSucces: "Достижения", catTrophees: "Трофеи", catCartes: "Карточки" },
-    zh: { titre_page: "你的学习之旅", instruction_niveau_html: "点击一个<b>关卡</b>展开它的章节。", pour_deplacer: "移动，", pour_choisir: "选择。", touche_entree: "回车", note_provisoire_html: "目前只有 <b>Les Bonomes</b> 简介是确定的——带 <b>*</b> 的标题都是临时的，等待最终内容确定。", badge_confirme: "已确认", prologue_titre: "序章 — Les Bonomes", prologue_texte: "认识一下凯博、贝克……还有克洛伊，她会一直陪着你。", prologue_bouton: "去看看", retour_aria: "返回", type_niveau: "关卡", type_dialogue: "对话", type_histoire: "故事", type_examen: "测验", bouton_commencer: "开始", bouton_revoir: "重看", bouton_examen: "参加测验", indice_chapitre_verrouille: "完成前面的内容才能解锁。", indice_niveau_ouvrir: "点击展开章节。", indice_niveau_verrouille: "完成上一关才能解锁。", avis_revoir: "你正在重看这一章（演示）✏️", avis_niveau_debloque: "✨ 关卡完成——下一关已解锁！", avis_chapitre_debloque: "✨ 章节已解锁！", avis_preparation: "这一章还在准备中 ✏️", marqueur_alt: "凯博和贝克", son_actif: "声音已开启", son_inactif: "声音已关闭", sacTitre: "我的背包", sacVide: "还没有内容", sacUnItem: "已保存 {n} 项", sacPlusieursItems: "已保存 {n} 项", sacAvertissement: "背包内容只保存在这台设备上。登录后可永久保存，换设备也不会丢失。", sacConnexion: "登录", sacTestItem: "+ 测试项目", sacRienIci: "这里还没有内容。", catMots: "学会的单词", catCodes: "兑换码", catSucces: "成就", catTrophees: "奖杯", catCartes: "卡片" },
-    ja: { titre_page: "きみの学習コース", instruction_niveau_html: "<b>レベル</b>をクリックすると章が開きます。", pour_deplacer: "移動、", pour_choisir: "選択。", touche_entree: "Enter", note_provisoire_html: "今のところ確定しているのは <b>Les Bonomes</b> の導入だけです — <b>*</b> がついたタイトルは仮のもので、最終内容待ちです。", badge_confirme: "確定済み", prologue_titre: "プロローグ — Les Bonomes", prologue_texte: "ケブ、ベック…そしてずっと一緒にいてくれるクロエに会おう。", prologue_bouton: "見てみる", retour_aria: "戻る", type_niveau: "レベル", type_dialogue: "会話", type_histoire: "物語", type_examen: "テスト", bouton_commencer: "始める", bouton_revoir: "見直す", bouton_examen: "テストを受ける", indice_chapitre_verrouille: "前のステップを終えるとここが解放されます。", indice_niveau_ouvrir: "クリックして章を開く。", indice_niveau_verrouille: "前のレベルを終えるとここが解放されます。", avis_revoir: "この章を見直しています（デモ）✏️", avis_niveau_debloque: "✨ レベルクリア — 次が解放されました！", avis_chapitre_debloque: "✨ 章が解放されました！", avis_preparation: "この章はまだ準備中です ✏️", marqueur_alt: "ケブとベック", son_actif: "音がオンです", son_inactif: "音がオフです", sacTitre: "マイリュック", sacVide: "まだ何もありません", sacUnItem: "{n}個 保存済み", sacPlusieursItems: "{n}個 保存済み", sacAvertissement: "このリュックの中身はこの端末にのみ保存されています。別の端末でも保持するにはログインしてください。", sacConnexion: "ログイン", sacTestItem: "+ テスト項目", sacRienIci: "まだここには何もありません。", catMots: "習った単語", catCodes: "コード", catSucces: "達成記録", catTrophees: "トロフィー", catCartes: "カード" },
-    ko: { titre_page: "나의 학습 여정", instruction_niveau_html: "<b>레벨</b>을 클릭하면 챕터가 펼쳐져요.", pour_deplacer: "이동,", pour_choisir: "선택.", touche_entree: "Enter", note_provisoire_html: "지금은 <b>Les Bonomes</b> 소개만 확정되어 있어요 — <b>*</b>가 붙은 제목은 최종 내용이 정해지기 전까지 임시 제목입니다.", badge_confirme: "확정됨", prologue_titre: "프롤로그 — Les Bonomes", prologue_texte: "케브, 베크… 그리고 항상 함께할 클로에를 만나보세요.", prologue_bouton: "둘러보기", retour_aria: "뒤로", type_niveau: "레벨", type_dialogue: "대화", type_histoire: "이야기", type_examen: "시험", bouton_commencer: "시작하기", bouton_revoir: "다시 보기", bouton_examen: "시험 보기", indice_chapitre_verrouille: "이전 단계를 마치면 여기가 열려요.", indice_niveau_ouvrir: "클릭하면 챕터가 펼쳐져요.", indice_niveau_verrouille: "이전 레벨을 마치면 여기가 열려요.", avis_revoir: "이 챕터를 다시 보는 중이에요 (데모) ✏️", avis_niveau_debloque: "✨ 레벨 완료 — 다음 레벨이 열렸어요!", avis_chapitre_debloque: "✨ 챕터가 열렸어요!", avis_preparation: "이 챕터는 아직 준비 중이에요 ✏️", marqueur_alt: "케브와 베크", son_actif: "소리 켜짐", son_inactif: "소리 꺼짐", sacTitre: "내 배낭", sacVide: "아직 없음", sacUnItem: "{n}개 저장됨", sacPlusieursItems: "{n}개 저장됨", sacAvertissement: "이 배낭은 이 기기에만 저장돼요. 다른 기기로 바꿔도 계속 간직하려면 로그인하세요.", sacConnexion: "로그인", sacTestItem: "+ 테스트 항목", sacRienIci: "아직 여기에 아무것도 없어요.", catMots: "배운 단어", catCodes: "코드", catSucces: "업적", catTrophees: "트로피", catCartes: "카드" },
-    vi: { titre_page: "Hành trình của bạn", instruction_niveau_html: "Nhấp vào một <b>cấp độ</b> để mở các chương.", pour_deplacer: "để di chuyển,", pour_choisir: "để chọn.", touche_entree: "Enter", note_provisoire_html: "Hiện chỉ có phần giới thiệu <b>Les Bonomes</b> là chính thức — các tiêu đề có dấu <b>*</b> chỉ là tạm thời, chờ nội dung cuối cùng.", badge_confirme: "đã xác nhận", prologue_titre: "Mở đầu — Les Bonomes", prologue_texte: "Làm quen với Keb, Bek… và Kloé, người sẽ luôn đồng hành cùng bạn.", prologue_bouton: "Khám phá", retour_aria: "Quay lại", type_niveau: "Cấp độ", type_dialogue: "Hội thoại", type_histoire: "Câu chuyện", type_examen: "Bài kiểm tra", bouton_commencer: "Bắt đầu", bouton_revoir: "Xem lại", bouton_examen: "Làm bài kiểm tra", indice_chapitre_verrouille: "Hoàn thành các bước trước để mở khóa mục này.", indice_niveau_ouvrir: "Nhấp để mở các chương.", indice_niveau_verrouille: "Hoàn thành cấp độ trước để mở khóa cấp độ này.", avis_revoir: "Bạn đang xem lại chương này (bản demo) ✏️", avis_niveau_debloque: "✨ Hoàn thành cấp độ — cấp độ tiếp theo đã mở khóa!", avis_chapitre_debloque: "✨ Đã mở khóa chương mới!", avis_preparation: "Chương này vẫn đang được chuẩn bị ✏️", marqueur_alt: "Keb và Bek", son_actif: "Đã bật âm thanh", son_inactif: "Đã tắt âm thanh", sacTitre: "Ba lô của tôi", sacVide: "chưa có gì", sacUnItem: "Đã lưu {n} món", sacPlusieursItems: "Đã lưu {n} món", sacAvertissement: "Ba lô này chỉ được lưu trên thiết bị này. Đăng nhập để giữ mãi, kể cả khi bạn đổi thiết bị.", sacConnexion: "Đăng nhập", sacTestItem: "+ món thử nghiệm", sacRienIci: "Chưa có gì ở đây.", catMots: "Từ đã học", catCodes: "Mã", catSucces: "Thành tích", catTrophees: "Cúp", catCartes: "Thẻ bài" },
-    tl: { titre_page: "Ang iyong paglalakbay", instruction_niveau_html: "I-click ang isang <b>antas</b> para buksan ang mga kabanata nito.", pour_deplacer: "para gumalaw,", pour_choisir: "para pumili.", touche_entree: "Enter", note_provisoire_html: "Ang panimulang <b>Les Bonomes</b> lang ang tiyak sa ngayon — ang mga pamagat na may <b>*</b> ay pansamantala, hinihintay ang huling nilalaman.", badge_confirme: "kumpirmado", prologue_titre: "Paunang salita — Les Bonomes", prologue_texte: "Kilalanin sina Keb, Bek… at si Kloé, na sasama sa iyo sa bawat hakbang.", prologue_bouton: "Tuklasin", retour_aria: "Bumalik", type_niveau: "Antas", type_dialogue: "Diyalogo", type_histoire: "Kuwento", type_examen: "Pagsusulit", bouton_commencer: "Simulan", bouton_revoir: "Balikan", bouton_examen: "Kunin ang pagsusulit", indice_chapitre_verrouille: "Tapusin ang mga nakaraang hakbang para ma-unlock ito.", indice_niveau_ouvrir: "I-click para buksan ang mga kabanata.", indice_niveau_verrouille: "Tapusin ang nakaraang antas para ma-unlock ito.", avis_revoir: "Binabalikan mo ang kabanatang ito (demo) ✏️", avis_niveau_debloque: "✨ Tapos na ang antas — na-unlock na ang susunod!", avis_chapitre_debloque: "✨ Na-unlock ang kabanata!", avis_preparation: "Inihahanda pa ang kabanatang ito ✏️", marqueur_alt: "Sina Keb at Bek", son_actif: "Naka-on ang tunog", son_inactif: "Naka-off ang tunog", sacTitre: "Aking bag", sacVide: "wala pa", sacUnItem: "{n} bagay ang naka-imbak", sacPlusieursItems: "{n} na bagay ang naka-imbak", sacAvertissement: "Naka-imbak lang ang bag na ito sa kagamitan na ito. Pumasok sa kuwenta mo para maingatan ito magpakailanman, kahit magpalit ka ng kagamitan.", sacConnexion: "Pumasok", sacTestItem: "+ pansubok na bagay", sacRienIci: "Wala pang laman dito.", catMots: "Mga natutunang salita", catCodes: "Mga kodigo", catSucces: "Mga tagumpay", catTrophees: "Mga trofeo", catCartes: "Mga kard" },
-    id: { titre_page: "Perjalananmu", instruction_niveau_html: "Klik sebuah <b>level</b> untuk membuka babnya.", pour_deplacer: "untuk bergerak,", pour_choisir: "untuk memilih.", touche_entree: "Enter", note_provisoire_html: "Untuk saat ini hanya pengantar <b>Les Bonomes</b> yang sudah final — judul dengan tanda <b>*</b> masih sementara, menunggu konten akhir.", badge_confirme: "dikonfirmasi", prologue_titre: "Prolog — Les Bonomes", prologue_texte: "Kenali Keb, Bek… dan Kloé, yang akan menemanimu selalu.", prologue_bouton: "Jelajahi", retour_aria: "Kembali", type_niveau: "Level", type_dialogue: "Dialog", type_histoire: "Cerita", type_examen: "Ujian", bouton_commencer: "Mulai", bouton_revoir: "Tinjau ulang", bouton_examen: "Ikuti ujian", indice_chapitre_verrouille: "Selesaikan langkah sebelumnya untuk membuka ini.", indice_niveau_ouvrir: "Klik untuk membuka bab.", indice_niveau_verrouille: "Selesaikan level sebelumnya untuk membuka ini.", avis_revoir: "Kamu sedang meninjau ulang bab ini (demo) ✏️", avis_niveau_debloque: "✨ Level selesai — level berikutnya terbuka!", avis_chapitre_debloque: "✨ Bab terbuka!", avis_preparation: "Bab ini masih dipersiapkan ✏️", marqueur_alt: "Keb dan Bek", son_actif: "Suara aktif", son_inactif: "Suara nonaktif", sacTitre: "Tas saya", sacVide: "belum ada", sacUnItem: "{n} item tersimpan", sacPlusieursItems: "{n} item tersimpan", sacAvertissement: "Tas ini hanya tersimpan di perangkat ini. Masuk untuk menyimpannya selamanya, meskipun kamu ganti perangkat.", sacConnexion: "Masuk", sacTestItem: "+ item uji coba", sacRienIci: "Belum ada apa-apa di sini.", catMots: "Kata yang dipelajari", catCodes: "Kode", catSucces: "Pencapaian", catTrophees: "Piala", catCartes: "Kartu" },
-    ht: { titre_page: "Chemen ou", instruction_niveau_html: "Klike sou yon <b>nivo</b> pou ouvri chapit li yo.", pour_deplacer: "pou deplase,", pour_choisir: "pou chwazi.", touche_entree: "Antre", note_provisoire_html: "Se sèlman entwodiksyon <b>Les Bonomes</b> ki konfime pou kounye a — tit ki gen yon <b>*</b> yo pwovizwa, y ap tann kontni final la.", badge_confirme: "konfime", prologue_titre: "Pwològ — Les Bonomes", prologue_texte: "Fè konesans ak Keb, Bek… ak Kloé, k ap la avè w tout tan.", prologue_bouton: "Dekouvri", retour_aria: "Tounen", type_niveau: "Nivo", type_dialogue: "Dyalòg", type_histoire: "Istwa", type_examen: "Egzamen", bouton_commencer: "Kòmanse", bouton_revoir: "Revize", bouton_examen: "Pase egzamen an", indice_chapitre_verrouille: "Fini etap anvan yo pou debloke sa a.", indice_niveau_ouvrir: "Klike pou ouvri chapit yo.", indice_niveau_verrouille: "Fini nivo anvan an pou debloke sa a.", avis_revoir: "W ap revize chapit sa a (demo) ✏️", avis_niveau_debloque: "✨ Nivo fini — pwochen an debloke!", avis_chapitre_debloque: "✨ Chapit la debloke!", avis_preparation: "Chapit sa a poko fini prepare ✏️", marqueur_alt: "Keb ak Bek", son_actif: "Son aktive", son_inactif: "Son dezaktive", sacTitre: "Sak do mwen", sacVide: "poko gen anyen", sacUnItem: "{n} bagay anrejistre", sacPlusieursItems: "{n} bagay anrejistre", sacAvertissement: "Sak do sa a anrejistre sèlman sou aparèy sa a. Konekte pou konsève l pou tout tan, menm si ou chanje aparèy.", sacConnexion: "Konekte", sacTestItem: "+ bagay tès", sacRienIci: "Poko gen anyen isit la.", catMots: "Mo yo aprann", catCodes: "Kòd", catSucces: "Reyisit", catTrophees: "Twofe", catCartes: "Kat" },
-    fa: { titre_page: "مسیر تو", instruction_niveau_html: "روی یک <b>سطح</b> کلیک کن تا فصل‌هایش باز شود.", pour_deplacer: "برای جابه‌جایی،", pour_choisir: "برای انتخاب.", touche_entree: "Enter", note_provisoire_html: "فعلاً فقط مقدمه‌ی <b>Les Bonomes</b> نهایی شده — عنوان‌هایی که با <b>*</b> مشخص شده‌اند موقتی هستند و منتظر محتوای نهایی.", badge_confirme: "تأییدشده", prologue_titre: "مقدمه — Les Bonomes", prologue_texte: "با کب، بک… و کلوئه که همیشه همراهت خواهد بود آشنا شو.", prologue_bouton: "کشف کن", retour_aria: "بازگشت", type_niveau: "سطح", type_dialogue: "گفت‌وگو", type_histoire: "داستان", type_examen: "آزمون", bouton_commencer: "شروع", bouton_revoir: "مرور", bouton_examen: "شرکت در آزمون", indice_chapitre_verrouille: "مراحل قبلی را تمام کن تا این باز شود.", indice_niveau_ouvrir: "کلیک کن تا فصل‌ها باز شوند.", indice_niveau_verrouille: "سطح قبلی را تمام کن تا این باز شود.", avis_revoir: "داری این فصل را دوباره مرور می‌کنی (نسخه‌ی آزمایشی) ✏️", avis_niveau_debloque: "✨ سطح تمام شد — سطح بعدی باز شد!", avis_chapitre_debloque: "✨ فصل باز شد!", avis_preparation: "این فصل هنوز در حال آماده‌سازی است ✏️", marqueur_alt: "کب و بک", son_actif: "صدا روشن است", son_inactif: "صدا خاموش است", sacTitre: "کوله‌پشتی من", sacVide: "هنوز چیزی نیست", sacUnItem: "{n} مورد ذخیره شد", sacPlusieursItems: "{n} مورد ذخیره شد", sacAvertissement: "این کوله‌پشتی فقط روی همین دستگاه ذخیره می‌شه. برای نگه‌داشتنش برای همیشه، حتی با تعویض دستگاه، وارد شو.", sacConnexion: "ورود", sacTestItem: "+ مورد آزمایشی", sacRienIci: "هنوز چیزی اینجا نیست.", catMots: "کلمات یاد گرفته‌شده", catCodes: "کدها", catSucces: "دستاوردها", catTrophees: "جام‌ها", catCartes: "کارت‌ها" },
-    no: { titre_page: "Din vei", instruction_niveau_html: "Klikk på et <b>nivå</b> for å åpne kapitlene.", pour_deplacer: "for å flytte,", pour_choisir: "for å velge.", touche_entree: "Enter", note_provisoire_html: "Bare introduksjonen <b>Les Bonomes</b> er bekreftet foreløpig — titler med en <b>*</b> er midlertidige, i påvente av det endelige innholdet.", badge_confirme: "bekreftet", prologue_titre: "Prolog — Les Bonomes", prologue_texte: "Bli kjent med Keb, Bek… og Kloé, som blir med deg hele veien.", prologue_bouton: "Utforsk", retour_aria: "Tilbake", type_niveau: "Nivå", type_dialogue: "Dialog", type_histoire: "Historie", type_examen: "Eksamen", bouton_commencer: "Start", bouton_revoir: "Se på nytt", bouton_examen: "Ta eksamen", indice_chapitre_verrouille: "Fullfør de forrige stegene for å låse opp dette.", indice_niveau_ouvrir: "Klikk for å åpne kapitlene.", indice_niveau_verrouille: "Fullfør forrige nivå for å låse opp dette.", avis_revoir: "Du ser gjennom dette kapittelet på nytt (demo) ✏️", avis_niveau_debloque: "✨ Nivå fullført — det neste er låst opp!", avis_chapitre_debloque: "✨ Kapittel låst opp!", avis_preparation: "Dette kapittelet er fortsatt under forberedelse ✏️", marqueur_alt: "Keb og Bek", son_actif: "Lyd på", son_inactif: "Lyd av", sacTitre: "Sekken min", sacVide: "ingenting ennå", sacUnItem: "{n} gjenstand lagret", sacPlusieursItems: "{n} gjenstander lagret", sacAvertissement: "Denne sekken lagres kun på denne enheten. Logg inn for å beholde den for godt, selv om du bytter enhet.", sacConnexion: "Logg inn", sacTestItem: "+ testobjekt", sacRienIci: "Ingenting her ennå.", catMots: "Lærte ord", catCodes: "Koder", catSucces: "Prestasjoner", catTrophees: "Trofeer", catCartes: "Kort" },
-    sv: { titre_page: "Din resa", instruction_niveau_html: "Klicka på en <b>nivå</b> för att öppna dess kapitel.", pour_deplacer: "för att flytta,", pour_choisir: "för att välja.", touche_entree: "Enter", note_provisoire_html: "Bara introduktionen <b>Les Bonomes</b> är bekräftad hittills — titlar med en <b>*</b> är preliminära, i väntan på det slutgiltiga innehållet.", badge_confirme: "bekräftad", prologue_titre: "Prolog — Les Bonomes", prologue_texte: "Lär känna Keb, Bek… och Kloé, som följer med dig hela vägen.", prologue_bouton: "Upptäck", retour_aria: "Tillbaka", type_niveau: "Nivå", type_dialogue: "Dialog", type_histoire: "Berättelse", type_examen: "Prov", bouton_commencer: "Starta", bouton_revoir: "Repetera", bouton_examen: "Gör provet", indice_chapitre_verrouille: "Slutför de föregående stegen för att låsa upp det här.", indice_niveau_ouvrir: "Klicka för att öppna kapitlen.", indice_niveau_verrouille: "Slutför föregående nivå för att låsa upp den här.", avis_revoir: "Du repeterar det här kapitlet (demo) ✏️", avis_niveau_debloque: "✨ Nivå klar — nästa är upplåst!", avis_chapitre_debloque: "✨ Kapitel upplåst!", avis_preparation: "Det här kapitlet förbereds fortfarande ✏️", marqueur_alt: "Keb och Bek", son_actif: "Ljud på", son_inactif: "Ljud av", sacTitre: "Min ryggsäck", sacVide: "inget än", sacUnItem: "{n} sak sparad", sacPlusieursItems: "{n} saker sparade", sacAvertissement: "Den här ryggsäcken sparas bara på den här enheten. Logga in för att spara den för gott, även om du byter enhet.", sacConnexion: "Logga in", sacTestItem: "+ testsak", sacRienIci: "Inget här än.", catMots: "Inlärda ord", catCodes: "Koder", catSucces: "Prestationer", catTrophees: "Troféer", catCartes: "Kort" },
-    eo: { titre_page: "Via vojo", instruction_niveau_html: "Alklaku <b>nivelon</b> por malfermi ĝiajn ĉapitrojn.", pour_deplacer: "por moviĝi,", pour_choisir: "por elekti.", touche_entree: "Enigo", note_provisoire_html: "Nur la enkonduko <b>Les Bonomes</b> estas konfirmita nuntempe — titoloj kun <b>*</b> estas provizoraj, atendante la finan enhavon.", badge_confirme: "konfirmita", prologue_titre: "Prologo — Les Bonomes", prologue_texte: "Konatiĝu kun Keb, Bek… kaj Kloé, kiu akompanos vin ĉie.", prologue_bouton: "Malkovri", retour_aria: "Reen", type_niveau: "Nivelo", type_dialogue: "Dialogo", type_histoire: "Rakonto", type_examen: "Ekzameno", bouton_commencer: "Komenci", bouton_revoir: "Rerigardi", bouton_examen: "Fari la ekzamenon", indice_chapitre_verrouille: "Finu la antaŭajn paŝojn por malŝlosi ĉi tion.", indice_niveau_ouvrir: "Alklaku por malfermi la ĉapitrojn.", indice_niveau_verrouille: "Finu la antaŭan nivelon por malŝlosi ĉi tiun.", avis_revoir: "Vi rerigardas ĉi tiun ĉapitron (demo) ✏️", avis_niveau_debloque: "✨ Nivelo finita — la sekva estas malŝlosita!", avis_chapitre_debloque: "✨ Ĉapitro malŝlosita!", avis_preparation: "Ĉi tiu ĉapitro ankoraŭ estas preparata ✏️", marqueur_alt: "Keb kaj Bek", son_actif: "Sono ŝaltita", son_inactif: "Sono malŝaltita", sacTitre: "Mia dorsosako", sacVide: "ankoraŭ nenio", sacUnItem: "{n} objekto konservita", sacPlusieursItems: "{n} objektoj konservitaj", sacAvertissement: "Ĉi tiu dorsosako konserviĝas nur sur ĉi tiu aparato. Ensalutu por konservi ĝin porĉiam, eĉ se vi ŝanĝos aparaton.", sacConnexion: "Ensaluti", sacTestItem: "+ prova objekto", sacRienIci: "Ankoraŭ nenio ĉi tie.", catMots: "Lernitaj vortoj", catCodes: "Kodoj", catSucces: "Atingoj", catTrophees: "Trofeoj", catCartes: "Kartoj" }
+    fr: { titre_page: "Ton parcours", instruction_niveau_html: "Clique sur un <b>niveau</b> pour déployer ses chapitres.", pour_deplacer: "pour se déplacer,", pour_choisir: "pour choisir.", touche_entree: "Entrée", note_provisoire_html: "Le dialogue <b>J'ai faim</b> est confirmé pour l'instant — les titres suivis d'un <b>*</b> sont provisoires, en attente du contenu final.", retour_aria: "Retour", type_niveau: "Niveau", type_dialogue: "Dialogue", type_histoire: "Histoire", type_examen: "Examen", bouton_commencer: "Commencer", bouton_revoir: "Revoir", bouton_examen: "Passer l'examen", indice_chapitre_verrouille: "Termine les étapes précédentes pour débloquer ceci.", indice_niveau_ouvrir: "Clique pour déployer les chapitres.", indice_niveau_verrouille: "Termine le niveau précédent pour débloquer celui-ci.", avis_revoir: "Tu revois ce chapitre (démo) ✏️", avis_niveau_debloque: "✨ Niveau terminé — le suivant est débloqué !", avis_chapitre_debloque: "✨ Chapitre débloqué !", avis_preparation: "Ce chapitre est encore en préparation ✏️", marqueur_alt: "Keb et Bek", son_actif: "Son activé", son_inactif: "Son désactivé", sacTitre: "Mon sac à dos", sacVide: "rien pour l'instant", sacUnItem: "{n} élément enregistré", sacPlusieursItems: "{n} éléments enregistrés", sacAvertissement: "Ce sac à dos est enregistré uniquement sur cet appareil. Connecte-toi pour le garder pour de bon, même si tu changes d'appareil.", sacConnexion: "Se connecter", sacTestItem: "+ élément test", sacRienIci: "Rien ici pour l'instant.", catMots: "Mots appris", catCodes: "Codes", catSucces: "Réussites", catTrophees: "Trophées", catCartes: "Cartes", recherche_placeholder: "Rechercher une leçon…", recherche_aucun_resultat: "Aucun résultat.", sous_titre_page: "Apprends • Explore • Grandis", niveau_actuel_progression: "{fait}/{total} leçons", bouton_continuer_niveau: "Continuer" },
+    en: { titre_page: "Your journey", instruction_niveau_html: "Click on a <b>level</b> to open its chapters.", pour_deplacer: "to move,", pour_choisir: "to choose.", touche_entree: "Enter", note_provisoire_html: "The <b>J'ai faim</b> dialogue is confirmed for now — titles with a <b>*</b> are still placeholders, pending final content.", retour_aria: "Back", type_niveau: "Level", type_dialogue: "Dialogue", type_histoire: "Story", type_examen: "Exam", bouton_commencer: "Start", bouton_revoir: "Review", bouton_examen: "Take the exam", indice_chapitre_verrouille: "Finish the previous steps to unlock this.", indice_niveau_ouvrir: "Click to open the chapters.", indice_niveau_verrouille: "Finish the previous level to unlock this one.", avis_revoir: "Reviewing this chapter (demo) ✏️", avis_niveau_debloque: "✨ Level complete — the next one is unlocked!", avis_chapitre_debloque: "✨ Chapter unlocked!", avis_preparation: "This chapter is still being prepared ✏️", marqueur_alt: "Keb and Bek", son_actif: "Sound on", son_inactif: "Sound off", sacTitre: "My backpack", sacVide: "nothing yet", sacUnItem: "{n} item saved", sacPlusieursItems: "{n} items saved", sacAvertissement: "This backpack is saved on this device only. Sign in to keep it for good, even if you switch devices.", sacConnexion: "Sign in", sacTestItem: "+ test item", sacRienIci: "Nothing here yet.", catMots: "Words learned", catCodes: "Codes", catSucces: "Achievements", catTrophees: "Trophies", catCartes: "Cards", recherche_placeholder: "Search for a lesson…", recherche_aucun_resultat: "No results.", sous_titre_page: "Learn • Explore • Grow", niveau_actuel_progression: "{fait}/{total} lessons", bouton_continuer_niveau: "Continue" },
+    es: { titre_page: "Tu recorrido", instruction_niveau_html: "Haz clic en un <b>nivel</b> para desplegar sus capítulos.", pour_deplacer: "para moverte,", pour_choisir: "para elegir.", touche_entree: "Intro", note_provisoire_html: "Solo la introducción <b>Les Bonomes</b> está confirmada por ahora — los títulos con un <b>*</b> son provisionales, a la espera del contenido final.", badge_confirme: "confirmado", retour_aria: "Volver", type_niveau: "Nivel", type_dialogue: "Diálogo", type_histoire: "Historia", type_examen: "Examen", bouton_commencer: "Empezar", bouton_revoir: "Repasar", bouton_examen: "Hacer el examen", indice_chapitre_verrouille: "Termina los pasos anteriores para desbloquear esto.", indice_niveau_ouvrir: "Haz clic para desplegar los capítulos.", indice_niveau_verrouille: "Termina el nivel anterior para desbloquear este.", avis_revoir: "Estás repasando este capítulo (demo) ✏️", avis_niveau_debloque: "✨ ¡Nivel completado, se ha desbloqueado el siguiente!", avis_chapitre_debloque: "✨ ¡Capítulo desbloqueado!", avis_preparation: "Este capítulo todavía se está preparando ✏️", marqueur_alt: "Keb y Bek", son_actif: "Sonido activado", son_inactif: "Sonido desactivado", sacTitre: "Mi mochila", sacVide: "nada todavía", sacUnItem: "{n} elemento guardado", sacPlusieursItems: "{n} elementos guardados", sacAvertissement: "Esta mochila se guarda solo en este dispositivo. Inicia sesión para conservarla siempre, incluso si cambias de dispositivo.", sacConnexion: "Iniciar sesión", sacTestItem: "+ elemento de prueba", sacRienIci: "Todavía no hay nada aquí.", catMots: "Palabras aprendidas", catCodes: "Códigos", catSucces: "Logros", catTrophees: "Trofeos", catCartes: "Cartas", niveau_actuel_progression: "{fait}/{total} lecciones", bouton_continuer_niveau: "Continuar" },
+    pt: { titre_page: "O teu percurso", instruction_niveau_html: "Clica num <b>nível</b> para abrir os seus capítulos.", pour_deplacer: "para te moveres,", pour_choisir: "para escolheres.", touche_entree: "Enter", note_provisoire_html: "Apenas a introdução <b>Les Bonomes</b> está confirmada por agora — os títulos seguidos de <b>*</b> são provisórios, à espera do conteúdo final.", badge_confirme: "confirmado", retour_aria: "Voltar", type_niveau: "Nível", type_dialogue: "Diálogo", type_histoire: "História", type_examen: "Exame", bouton_commencer: "Começar", bouton_revoir: "Rever", bouton_examen: "Fazer o exame", indice_chapitre_verrouille: "Termina as etapas anteriores para desbloquear isto.", indice_niveau_ouvrir: "Clica para abrir os capítulos.", indice_niveau_verrouille: "Termina o nível anterior para desbloquear este.", avis_revoir: "Estás a rever este capítulo (demo) ✏️", avis_niveau_debloque: "✨ Nível concluído — o seguinte foi desbloqueado!", avis_chapitre_debloque: "✨ Capítulo desbloqueado!", avis_preparation: "Este capítulo ainda está em preparação ✏️", marqueur_alt: "Keb e Bek", son_actif: "Som ativado", son_inactif: "Som desativado", sacTitre: "A minha mochila", sacVide: "nada ainda", sacUnItem: "{n} item guardado", sacPlusieursItems: "{n} itens guardados", sacAvertissement: "Esta mochila só é guardada neste dispositivo. Inicie sessão para a guardar para sempre, mesmo trocando de dispositivo.", sacConnexion: "Entrar", sacTestItem: "+ item de teste", sacRienIci: "Ainda não há nada aqui.", catMots: "Palavras aprendidas", catCodes: "Códigos", catSucces: "Sucessos", catTrophees: "Troféus", catCartes: "Cartas", niveau_actuel_progression: "{fait}/{total} lições", bouton_continuer_niveau: "Continuar" },
+    it: { titre_page: "Il tuo percorso", instruction_niveau_html: "Clicca su un <b>livello</b> per aprire i suoi capitoli.", pour_deplacer: "per spostarti,", pour_choisir: "per scegliere.", touche_entree: "Invio", note_provisoire_html: "Solo l'introduzione <b>Les Bonomes</b> è confermata per ora — i titoli seguiti da <b>*</b> sono provvisori, in attesa dei contenuti definitivi.", badge_confirme: "confermato", retour_aria: "Indietro", type_niveau: "Livello", type_dialogue: "Dialogo", type_histoire: "Storia", type_examen: "Esame", bouton_commencer: "Inizia", bouton_revoir: "Rivedi", bouton_examen: "Fai l'esame", indice_chapitre_verrouille: "Completa le tappe precedenti per sbloccare questo.", indice_niveau_ouvrir: "Clicca per aprire i capitoli.", indice_niveau_verrouille: "Completa il livello precedente per sbloccare questo.", avis_revoir: "Stai rivedendo questo capitolo (demo) ✏️", avis_niveau_debloque: "✨ Livello completato — il prossimo è sbloccato!", avis_chapitre_debloque: "✨ Capitolo sbloccato!", avis_preparation: "Questo capitolo è ancora in preparazione ✏️", marqueur_alt: "Keb e Bek", son_actif: "Audio attivato", son_inactif: "Audio disattivato", sacTitre: "Il mio zaino", sacVide: "ancora niente", sacUnItem: "{n} elemento salvato", sacPlusieursItems: "{n} elementi salvati", sacAvertissement: "Questo zaino è salvato solo su questo dispositivo. Accedi per conservarlo per sempre, anche cambiando dispositivo.", sacConnexion: "Accedi", sacTestItem: "+ elemento di prova", sacRienIci: "Ancora niente qui.", catMots: "Parole imparate", catCodes: "Codici", catSucces: "Traguardi", catTrophees: "Trofei", catCartes: "Carte", niveau_actuel_progression: "{fait}/{total} lezioni", bouton_continuer_niveau: "Continua" },
+    de: { titre_page: "Dein Werdegang", instruction_niveau_html: "Klicke auf eine <b>Stufe</b>, um ihre Kapitel zu öffnen.", pour_deplacer: "zum Bewegen,", pour_choisir: "zum Auswählen.", touche_entree: "Enter", note_provisoire_html: "Nur die Einführung <b>Les Bonomes</b> ist bisher bestätigt — Titel mit einem <b>*</b> sind vorläufig, bis der endgültige Inhalt feststeht.", badge_confirme: "bestätigt", retour_aria: "Zurück", type_niveau: "Stufe", type_dialogue: "Dialog", type_histoire: "Geschichte", type_examen: "Prüfung", bouton_commencer: "Starten", bouton_revoir: "Wiederholen", bouton_examen: "Prüfung ablegen", indice_chapitre_verrouille: "Schließe die vorherigen Schritte ab, um dies freizuschalten.", indice_niveau_ouvrir: "Klicke, um die Kapitel zu öffnen.", indice_niveau_verrouille: "Schließe die vorherige Stufe ab, um diese freizuschalten.", avis_revoir: "Du wiederholst dieses Kapitel (Demo) ✏️", avis_niveau_debloque: "✨ Stufe abgeschlossen — die nächste ist freigeschaltet!", avis_chapitre_debloque: "✨ Kapitel freigeschaltet!", avis_preparation: "Dieses Kapitel wird noch vorbereitet ✏️", marqueur_alt: "Keb und Bek", son_actif: "Ton an", son_inactif: "Ton aus", sacTitre: "Mein Rucksack", sacVide: "noch nichts", sacUnItem: "{n} Gegenstand gespeichert", sacPlusieursItems: "{n} Gegenstände gespeichert", sacAvertissement: "Dieser Rucksack wird nur auf diesem Gerät gespeichert. Melde dich an, um ihn dauerhaft zu behalten, auch bei einem Gerätewechsel.", sacConnexion: "Anmelden", sacTestItem: "+ Testobjekt", sacRienIci: "Hier ist noch nichts.", catMots: "Gelernte Wörter", catCodes: "Codes", catSucces: "Erfolge", catTrophees: "Trophäen", catCartes: "Karten", niveau_actuel_progression: "{fait}/{total} Lektionen", bouton_continuer_niveau: "Weiter" },
+    nl: { titre_page: "Jouw traject", instruction_niveau_html: "Klik op een <b>niveau</b> om de hoofdstukken te openen.", pour_deplacer: "om te bewegen,", pour_choisir: "om te kiezen.", touche_entree: "Enter", note_provisoire_html: "Alleen de introductie <b>Les Bonomes</b> is voorlopig bevestigd — titels met een <b>*</b> zijn voorlopig, in afwachting van de definitieve inhoud.", badge_confirme: "bevestigd", retour_aria: "Terug", type_niveau: "Niveau", type_dialogue: "Dialoog", type_histoire: "Verhaal", type_examen: "Examen", bouton_commencer: "Beginnen", bouton_revoir: "Herbekijken", bouton_examen: "Examen afleggen", indice_chapitre_verrouille: "Rond de vorige stappen af om dit te ontgrendelen.", indice_niveau_ouvrir: "Klik om de hoofdstukken te openen.", indice_niveau_verrouille: "Rond het vorige niveau af om dit te ontgrendelen.", avis_revoir: "Je bekijkt dit hoofdstuk opnieuw (demo) ✏️", avis_niveau_debloque: "✨ Niveau voltooid — het volgende is ontgrendeld!", avis_chapitre_debloque: "✨ Hoofdstuk ontgrendeld!", avis_preparation: "Dit hoofdstuk wordt nog voorbereid ✏️", marqueur_alt: "Keb en Bek", son_actif: "Geluid aan", son_inactif: "Geluid uit", sacTitre: "Mijn rugzak", sacVide: "nog niets", sacUnItem: "{n} item opgeslagen", sacPlusieursItems: "{n} items opgeslagen", sacAvertissement: "Deze rugzak wordt alleen op dit apparaat opgeslagen. Log in om hem voorgoed te bewaren, ook als je van apparaat wisselt.", sacConnexion: "Inloggen", sacTestItem: "+ testitem", sacRienIci: "Hier is nog niets.", catMots: "Geleerde woorden", catCodes: "Codes", catSucces: "Prestaties", catTrophees: "Trofeeën", catCartes: "Kaarten", niveau_actuel_progression: "{fait}/{total} lessen", bouton_continuer_niveau: "Doorgaan" },
+    ca: { titre_page: "El teu recorregut", instruction_niveau_html: "Fes clic en un <b>nivell</b> per desplegar els seus capítols.", pour_deplacer: "per moure't,", pour_choisir: "per triar.", touche_entree: "Retorn", note_provisoire_html: "Només la introducció <b>Les Bonomes</b> està confirmada de moment — els títols seguits d'un <b>*</b> són provisionals, a l'espera del contingut final.", badge_confirme: "confirmat", retour_aria: "Enrere", type_niveau: "Nivell", type_dialogue: "Diàleg", type_histoire: "Història", type_examen: "Examen", bouton_commencer: "Començar", bouton_revoir: "Repassar", bouton_examen: "Fer l'examen", indice_chapitre_verrouille: "Acaba els passos anteriors per desbloquejar això.", indice_niveau_ouvrir: "Fes clic per desplegar els capítols.", indice_niveau_verrouille: "Acaba el nivell anterior per desbloquejar aquest.", avis_revoir: "Estàs repassant aquest capítol (demo) ✏️", avis_niveau_debloque: "✨ Nivell completat — s'ha desbloquejat el següent!", avis_chapitre_debloque: "✨ Capítol desbloquejat!", avis_preparation: "Aquest capítol encara s'està preparant ✏️", marqueur_alt: "Keb i Bek", son_actif: "So activat", son_inactif: "So desactivat", sacTitre: "La meva motxilla", sacVide: "encara res", sacUnItem: "{n} element desat", sacPlusieursItems: "{n} elements desats", sacAvertissement: "Aquesta motxilla només es guarda en aquest dispositiu. Inicia sessió per conservar-la per sempre, encara que canviïs de dispositiu.", sacConnexion: "Inicia sessió", sacTestItem: "+ element de prova", sacRienIci: "Encara no hi ha res aquí.", catMots: "Paraules apreses", catCodes: "Codis", catSucces: "Assoliments", catTrophees: "Trofeus", catCartes: "Cartes", niveau_actuel_progression: "{fait}/{total} lliçons", bouton_continuer_niveau: "Continuar" },
+    ru: { titre_page: "Твой путь", instruction_niveau_html: "Нажми на <b>уровень</b>, чтобы открыть его главы.", pour_deplacer: "чтобы двигаться,", pour_choisir: "чтобы выбрать.", touche_entree: "Enter", note_provisoire_html: "Пока подтверждено только введение <b>Les Bonomes</b> — названия со звёздочкой <b>*</b> временные, в ожидании финального содержания.", badge_confirme: "подтверждено", retour_aria: "Назад", type_niveau: "Уровень", type_dialogue: "Диалог", type_histoire: "История", type_examen: "Экзамен", bouton_commencer: "Начать", bouton_revoir: "Повторить", bouton_examen: "Сдать экзамен", indice_chapitre_verrouille: "Заверши предыдущие шаги, чтобы открыть это.", indice_niveau_ouvrir: "Нажми, чтобы открыть главы.", indice_niveau_verrouille: "Заверши предыдущий уровень, чтобы открыть этот.", avis_revoir: "Ты повторяешь эту главу (демо) ✏️", avis_niveau_debloque: "✨ Уровень пройден — следующий открыт!", avis_chapitre_debloque: "✨ Глава открыта!", avis_preparation: "Эта глава ещё готовится ✏️", marqueur_alt: "Кеб и Бек", son_actif: "Звук включён", son_inactif: "Звук выключен", sacTitre: "Мой рюкзак", sacVide: "пока пусто", sacUnItem: "Сохранено: {n}", sacPlusieursItems: "Сохранено: {n}", sacAvertissement: "Этот рюкзак сохраняется только на этом устройстве. Войди в аккаунт, чтобы сохранить его навсегда, даже при смене устройства.", sacConnexion: "Войти", sacTestItem: "+ тестовый предмет", sacRienIci: "Здесь пока ничего нет.", catMots: "Выученные слова", catCodes: "Коды", catSucces: "Достижения", catTrophees: "Трофеи", catCartes: "Карточки", niveau_actuel_progression: "{fait}/{total} уроков", bouton_continuer_niveau: "Продолжить" },
+    zh: { titre_page: "你的学习之旅", instruction_niveau_html: "点击一个<b>关卡</b>展开它的章节。", pour_deplacer: "移动，", pour_choisir: "选择。", touche_entree: "回车", note_provisoire_html: "目前只有 <b>Les Bonomes</b> 简介是确定的——带 <b>*</b> 的标题都是临时的，等待最终内容确定。", badge_confirme: "已确认", retour_aria: "返回", type_niveau: "关卡", type_dialogue: "对话", type_histoire: "故事", type_examen: "测验", bouton_commencer: "开始", bouton_revoir: "重看", bouton_examen: "参加测验", indice_chapitre_verrouille: "完成前面的内容才能解锁。", indice_niveau_ouvrir: "点击展开章节。", indice_niveau_verrouille: "完成上一关才能解锁。", avis_revoir: "你正在重看这一章（演示）✏️", avis_niveau_debloque: "✨ 关卡完成——下一关已解锁！", avis_chapitre_debloque: "✨ 章节已解锁！", avis_preparation: "这一章还在准备中 ✏️", marqueur_alt: "凯博和贝克", son_actif: "声音已开启", son_inactif: "声音已关闭", sacTitre: "我的背包", sacVide: "还没有内容", sacUnItem: "已保存 {n} 项", sacPlusieursItems: "已保存 {n} 项", sacAvertissement: "背包内容只保存在这台设备上。登录后可永久保存，换设备也不会丢失。", sacConnexion: "登录", sacTestItem: "+ 测试项目", sacRienIci: "这里还没有内容。", catMots: "学会的单词", catCodes: "兑换码", catSucces: "成就", catTrophees: "奖杯", catCartes: "卡片", niveau_actuel_progression: "{fait}/{total} 课", bouton_continuer_niveau: "继续" },
+    ja: { titre_page: "きみの学習コース", instruction_niveau_html: "<b>レベル</b>をクリックすると章が開きます。", pour_deplacer: "移動、", pour_choisir: "選択。", touche_entree: "Enter", note_provisoire_html: "今のところ確定しているのは <b>Les Bonomes</b> の導入だけです — <b>*</b> がついたタイトルは仮のもので、最終内容待ちです。", badge_confirme: "確定済み", retour_aria: "戻る", type_niveau: "レベル", type_dialogue: "会話", type_histoire: "物語", type_examen: "テスト", bouton_commencer: "始める", bouton_revoir: "見直す", bouton_examen: "テストを受ける", indice_chapitre_verrouille: "前のステップを終えるとここが解放されます。", indice_niveau_ouvrir: "クリックして章を開く。", indice_niveau_verrouille: "前のレベルを終えるとここが解放されます。", avis_revoir: "この章を見直しています（デモ）✏️", avis_niveau_debloque: "✨ レベルクリア — 次が解放されました！", avis_chapitre_debloque: "✨ 章が解放されました！", avis_preparation: "この章はまだ準備中です ✏️", marqueur_alt: "ケブとベック", son_actif: "音がオンです", son_inactif: "音がオフです", sacTitre: "マイリュック", sacVide: "まだ何もありません", sacUnItem: "{n}個 保存済み", sacPlusieursItems: "{n}個 保存済み", sacAvertissement: "このリュックの中身はこの端末にのみ保存されています。別の端末でも保持するにはログインしてください。", sacConnexion: "ログイン", sacTestItem: "+ テスト項目", sacRienIci: "まだここには何もありません。", catMots: "習った単語", catCodes: "コード", catSucces: "達成記録", catTrophees: "トロフィー", catCartes: "カード", niveau_actuel_progression: "{fait}/{total} レッスン", bouton_continuer_niveau: "続ける" },
+    ko: { titre_page: "나의 학습 여정", instruction_niveau_html: "<b>레벨</b>을 클릭하면 챕터가 펼쳐져요.", pour_deplacer: "이동,", pour_choisir: "선택.", touche_entree: "Enter", note_provisoire_html: "지금은 <b>Les Bonomes</b> 소개만 확정되어 있어요 — <b>*</b>가 붙은 제목은 최종 내용이 정해지기 전까지 임시 제목입니다.", badge_confirme: "확정됨", retour_aria: "뒤로", type_niveau: "레벨", type_dialogue: "대화", type_histoire: "이야기", type_examen: "시험", bouton_commencer: "시작하기", bouton_revoir: "다시 보기", bouton_examen: "시험 보기", indice_chapitre_verrouille: "이전 단계를 마치면 여기가 열려요.", indice_niveau_ouvrir: "클릭하면 챕터가 펼쳐져요.", indice_niveau_verrouille: "이전 레벨을 마치면 여기가 열려요.", avis_revoir: "이 챕터를 다시 보는 중이에요 (데모) ✏️", avis_niveau_debloque: "✨ 레벨 완료 — 다음 레벨이 열렸어요!", avis_chapitre_debloque: "✨ 챕터가 열렸어요!", avis_preparation: "이 챕터는 아직 준비 중이에요 ✏️", marqueur_alt: "케브와 베크", son_actif: "소리 켜짐", son_inactif: "소리 꺼짐", sacTitre: "내 배낭", sacVide: "아직 없음", sacUnItem: "{n}개 저장됨", sacPlusieursItems: "{n}개 저장됨", sacAvertissement: "이 배낭은 이 기기에만 저장돼요. 다른 기기로 바꿔도 계속 간직하려면 로그인하세요.", sacConnexion: "로그인", sacTestItem: "+ 테스트 항목", sacRienIci: "아직 여기에 아무것도 없어요.", catMots: "배운 단어", catCodes: "코드", catSucces: "업적", catTrophees: "트로피", catCartes: "카드", niveau_actuel_progression: "{fait}/{total} 개 레슨", bouton_continuer_niveau: "계속하기" },
+    vi: { titre_page: "Hành trình của bạn", instruction_niveau_html: "Nhấp vào một <b>cấp độ</b> để mở các chương.", pour_deplacer: "để di chuyển,", pour_choisir: "để chọn.", touche_entree: "Enter", note_provisoire_html: "Hiện chỉ có phần giới thiệu <b>Les Bonomes</b> là chính thức — các tiêu đề có dấu <b>*</b> chỉ là tạm thời, chờ nội dung cuối cùng.", badge_confirme: "đã xác nhận", retour_aria: "Quay lại", type_niveau: "Cấp độ", type_dialogue: "Hội thoại", type_histoire: "Câu chuyện", type_examen: "Bài kiểm tra", bouton_commencer: "Bắt đầu", bouton_revoir: "Xem lại", bouton_examen: "Làm bài kiểm tra", indice_chapitre_verrouille: "Hoàn thành các bước trước để mở khóa mục này.", indice_niveau_ouvrir: "Nhấp để mở các chương.", indice_niveau_verrouille: "Hoàn thành cấp độ trước để mở khóa cấp độ này.", avis_revoir: "Bạn đang xem lại chương này (bản demo) ✏️", avis_niveau_debloque: "✨ Hoàn thành cấp độ — cấp độ tiếp theo đã mở khóa!", avis_chapitre_debloque: "✨ Đã mở khóa chương mới!", avis_preparation: "Chương này vẫn đang được chuẩn bị ✏️", marqueur_alt: "Keb và Bek", son_actif: "Đã bật âm thanh", son_inactif: "Đã tắt âm thanh", sacTitre: "Ba lô của tôi", sacVide: "chưa có gì", sacUnItem: "Đã lưu {n} món", sacPlusieursItems: "Đã lưu {n} món", sacAvertissement: "Ba lô này chỉ được lưu trên thiết bị này. Đăng nhập để giữ mãi, kể cả khi bạn đổi thiết bị.", sacConnexion: "Đăng nhập", sacTestItem: "+ món thử nghiệm", sacRienIci: "Chưa có gì ở đây.", catMots: "Từ đã học", catCodes: "Mã", catSucces: "Thành tích", catTrophees: "Cúp", catCartes: "Thẻ bài", niveau_actuel_progression: "{fait}/{total} bài học", bouton_continuer_niveau: "Tiếp tục" },
+    tl: { titre_page: "Ang iyong paglalakbay", instruction_niveau_html: "I-click ang isang <b>antas</b> para buksan ang mga kabanata nito.", pour_deplacer: "para gumalaw,", pour_choisir: "para pumili.", touche_entree: "Enter", note_provisoire_html: "Ang panimulang <b>Les Bonomes</b> lang ang tiyak sa ngayon — ang mga pamagat na may <b>*</b> ay pansamantala, hinihintay ang huling nilalaman.", badge_confirme: "kumpirmado", retour_aria: "Bumalik", type_niveau: "Antas", type_dialogue: "Diyalogo", type_histoire: "Kuwento", type_examen: "Pagsusulit", bouton_commencer: "Simulan", bouton_revoir: "Balikan", bouton_examen: "Kunin ang pagsusulit", indice_chapitre_verrouille: "Tapusin ang mga nakaraang hakbang para ma-unlock ito.", indice_niveau_ouvrir: "I-click para buksan ang mga kabanata.", indice_niveau_verrouille: "Tapusin ang nakaraang antas para ma-unlock ito.", avis_revoir: "Binabalikan mo ang kabanatang ito (demo) ✏️", avis_niveau_debloque: "✨ Tapos na ang antas — na-unlock na ang susunod!", avis_chapitre_debloque: "✨ Na-unlock ang kabanata!", avis_preparation: "Inihahanda pa ang kabanatang ito ✏️", marqueur_alt: "Sina Keb at Bek", son_actif: "Naka-on ang tunog", son_inactif: "Naka-off ang tunog", sacTitre: "Aking bag", sacVide: "wala pa", sacUnItem: "{n} bagay ang naka-imbak", sacPlusieursItems: "{n} na bagay ang naka-imbak", sacAvertissement: "Naka-imbak lang ang bag na ito sa kagamitan na ito. Pumasok sa kuwenta mo para maingatan ito magpakailanman, kahit magpalit ka ng kagamitan.", sacConnexion: "Pumasok", sacTestItem: "+ pansubok na bagay", sacRienIci: "Wala pang laman dito.", catMots: "Mga natutunang salita", catCodes: "Mga kodigo", catSucces: "Mga tagumpay", catTrophees: "Mga trofeo", catCartes: "Mga kard", niveau_actuel_progression: "{fait}/{total} aralin", bouton_continuer_niveau: "Magpatuloy" },
+    id: { titre_page: "Perjalananmu", instruction_niveau_html: "Klik sebuah <b>level</b> untuk membuka babnya.", pour_deplacer: "untuk bergerak,", pour_choisir: "untuk memilih.", touche_entree: "Enter", note_provisoire_html: "Untuk saat ini hanya pengantar <b>Les Bonomes</b> yang sudah final — judul dengan tanda <b>*</b> masih sementara, menunggu konten akhir.", badge_confirme: "dikonfirmasi", retour_aria: "Kembali", type_niveau: "Level", type_dialogue: "Dialog", type_histoire: "Cerita", type_examen: "Ujian", bouton_commencer: "Mulai", bouton_revoir: "Tinjau ulang", bouton_examen: "Ikuti ujian", indice_chapitre_verrouille: "Selesaikan langkah sebelumnya untuk membuka ini.", indice_niveau_ouvrir: "Klik untuk membuka bab.", indice_niveau_verrouille: "Selesaikan level sebelumnya untuk membuka ini.", avis_revoir: "Kamu sedang meninjau ulang bab ini (demo) ✏️", avis_niveau_debloque: "✨ Level selesai — level berikutnya terbuka!", avis_chapitre_debloque: "✨ Bab terbuka!", avis_preparation: "Bab ini masih dipersiapkan ✏️", marqueur_alt: "Keb dan Bek", son_actif: "Suara aktif", son_inactif: "Suara nonaktif", sacTitre: "Tas saya", sacVide: "belum ada", sacUnItem: "{n} item tersimpan", sacPlusieursItems: "{n} item tersimpan", sacAvertissement: "Tas ini hanya tersimpan di perangkat ini. Masuk untuk menyimpannya selamanya, meskipun kamu ganti perangkat.", sacConnexion: "Masuk", sacTestItem: "+ item uji coba", sacRienIci: "Belum ada apa-apa di sini.", catMots: "Kata yang dipelajari", catCodes: "Kode", catSucces: "Pencapaian", catTrophees: "Piala", catCartes: "Kartu", niveau_actuel_progression: "{fait}/{total} pelajaran", bouton_continuer_niveau: "Lanjutkan" },
+    ht: { titre_page: "Chemen ou", instruction_niveau_html: "Klike sou yon <b>nivo</b> pou ouvri chapit li yo.", pour_deplacer: "pou deplase,", pour_choisir: "pou chwazi.", touche_entree: "Antre", note_provisoire_html: "Se sèlman entwodiksyon <b>Les Bonomes</b> ki konfime pou kounye a — tit ki gen yon <b>*</b> yo pwovizwa, y ap tann kontni final la.", badge_confirme: "konfime", retour_aria: "Tounen", type_niveau: "Nivo", type_dialogue: "Dyalòg", type_histoire: "Istwa", type_examen: "Egzamen", bouton_commencer: "Kòmanse", bouton_revoir: "Revize", bouton_examen: "Pase egzamen an", indice_chapitre_verrouille: "Fini etap anvan yo pou debloke sa a.", indice_niveau_ouvrir: "Klike pou ouvri chapit yo.", indice_niveau_verrouille: "Fini nivo anvan an pou debloke sa a.", avis_revoir: "W ap revize chapit sa a (demo) ✏️", avis_niveau_debloque: "✨ Nivo fini — pwochen an debloke!", avis_chapitre_debloque: "✨ Chapit la debloke!", avis_preparation: "Chapit sa a poko fini prepare ✏️", marqueur_alt: "Keb ak Bek", son_actif: "Son aktive", son_inactif: "Son dezaktive", sacTitre: "Sak do mwen", sacVide: "poko gen anyen", sacUnItem: "{n} bagay anrejistre", sacPlusieursItems: "{n} bagay anrejistre", sacAvertissement: "Sak do sa a anrejistre sèlman sou aparèy sa a. Konekte pou konsève l pou tout tan, menm si ou chanje aparèy.", sacConnexion: "Konekte", sacTestItem: "+ bagay tès", sacRienIci: "Poko gen anyen isit la.", catMots: "Mo yo aprann", catCodes: "Kòd", catSucces: "Reyisit", catTrophees: "Twofe", catCartes: "Kat", niveau_actuel_progression: "{fait}/{total} leson", bouton_continuer_niveau: "Kontinye" },
+    fa: { titre_page: "مسیر تو", instruction_niveau_html: "روی یک <b>سطح</b> کلیک کن تا فصل‌هایش باز شود.", pour_deplacer: "برای جابه‌جایی،", pour_choisir: "برای انتخاب.", touche_entree: "Enter", note_provisoire_html: "فعلاً فقط مقدمه‌ی <b>Les Bonomes</b> نهایی شده — عنوان‌هایی که با <b>*</b> مشخص شده‌اند موقتی هستند و منتظر محتوای نهایی.", badge_confirme: "تأییدشده", retour_aria: "بازگشت", type_niveau: "سطح", type_dialogue: "گفت‌وگو", type_histoire: "داستان", type_examen: "آزمون", bouton_commencer: "شروع", bouton_revoir: "مرور", bouton_examen: "شرکت در آزمون", indice_chapitre_verrouille: "مراحل قبلی را تمام کن تا این باز شود.", indice_niveau_ouvrir: "کلیک کن تا فصل‌ها باز شوند.", indice_niveau_verrouille: "سطح قبلی را تمام کن تا این باز شود.", avis_revoir: "داری این فصل را دوباره مرور می‌کنی (نسخه‌ی آزمایشی) ✏️", avis_niveau_debloque: "✨ سطح تمام شد — سطح بعدی باز شد!", avis_chapitre_debloque: "✨ فصل باز شد!", avis_preparation: "این فصل هنوز در حال آماده‌سازی است ✏️", marqueur_alt: "کب و بک", son_actif: "صدا روشن است", son_inactif: "صدا خاموش است", sacTitre: "کوله‌پشتی من", sacVide: "هنوز چیزی نیست", sacUnItem: "{n} مورد ذخیره شد", sacPlusieursItems: "{n} مورد ذخیره شد", sacAvertissement: "این کوله‌پشتی فقط روی همین دستگاه ذخیره می‌شه. برای نگه‌داشتنش برای همیشه، حتی با تعویض دستگاه، وارد شو.", sacConnexion: "ورود", sacTestItem: "+ مورد آزمایشی", sacRienIci: "هنوز چیزی اینجا نیست.", catMots: "کلمات یاد گرفته‌شده", catCodes: "کدها", catSucces: "دستاوردها", catTrophees: "جام‌ها", catCartes: "کارت‌ها", niveau_actuel_progression: "{fait}/{total} درس", bouton_continuer_niveau: "ادامه" },
+    no: { titre_page: "Din vei", instruction_niveau_html: "Klikk på et <b>nivå</b> for å åpne kapitlene.", pour_deplacer: "for å flytte,", pour_choisir: "for å velge.", touche_entree: "Enter", note_provisoire_html: "Bare introduksjonen <b>Les Bonomes</b> er bekreftet foreløpig — titler med en <b>*</b> er midlertidige, i påvente av det endelige innholdet.", badge_confirme: "bekreftet", retour_aria: "Tilbake", type_niveau: "Nivå", type_dialogue: "Dialog", type_histoire: "Historie", type_examen: "Eksamen", bouton_commencer: "Start", bouton_revoir: "Se på nytt", bouton_examen: "Ta eksamen", indice_chapitre_verrouille: "Fullfør de forrige stegene for å låse opp dette.", indice_niveau_ouvrir: "Klikk for å åpne kapitlene.", indice_niveau_verrouille: "Fullfør forrige nivå for å låse opp dette.", avis_revoir: "Du ser gjennom dette kapittelet på nytt (demo) ✏️", avis_niveau_debloque: "✨ Nivå fullført — det neste er låst opp!", avis_chapitre_debloque: "✨ Kapittel låst opp!", avis_preparation: "Dette kapittelet er fortsatt under forberedelse ✏️", marqueur_alt: "Keb og Bek", son_actif: "Lyd på", son_inactif: "Lyd av", sacTitre: "Sekken min", sacVide: "ingenting ennå", sacUnItem: "{n} gjenstand lagret", sacPlusieursItems: "{n} gjenstander lagret", sacAvertissement: "Denne sekken lagres kun på denne enheten. Logg inn for å beholde den for godt, selv om du bytter enhet.", sacConnexion: "Logg inn", sacTestItem: "+ testobjekt", sacRienIci: "Ingenting her ennå.", catMots: "Lærte ord", catCodes: "Koder", catSucces: "Prestasjoner", catTrophees: "Trofeer", catCartes: "Kort", niveau_actuel_progression: "{fait}/{total} leksjoner", bouton_continuer_niveau: "Fortsett" },
+    sv: { titre_page: "Din resa", instruction_niveau_html: "Klicka på en <b>nivå</b> för att öppna dess kapitel.", pour_deplacer: "för att flytta,", pour_choisir: "för att välja.", touche_entree: "Enter", note_provisoire_html: "Bara introduktionen <b>Les Bonomes</b> är bekräftad hittills — titlar med en <b>*</b> är preliminära, i väntan på det slutgiltiga innehållet.", badge_confirme: "bekräftad", retour_aria: "Tillbaka", type_niveau: "Nivå", type_dialogue: "Dialog", type_histoire: "Berättelse", type_examen: "Prov", bouton_commencer: "Starta", bouton_revoir: "Repetera", bouton_examen: "Gör provet", indice_chapitre_verrouille: "Slutför de föregående stegen för att låsa upp det här.", indice_niveau_ouvrir: "Klicka för att öppna kapitlen.", indice_niveau_verrouille: "Slutför föregående nivå för att låsa upp den här.", avis_revoir: "Du repeterar det här kapitlet (demo) ✏️", avis_niveau_debloque: "✨ Nivå klar — nästa är upplåst!", avis_chapitre_debloque: "✨ Kapitel upplåst!", avis_preparation: "Det här kapitlet förbereds fortfarande ✏️", marqueur_alt: "Keb och Bek", son_actif: "Ljud på", son_inactif: "Ljud av", sacTitre: "Min ryggsäck", sacVide: "inget än", sacUnItem: "{n} sak sparad", sacPlusieursItems: "{n} saker sparade", sacAvertissement: "Den här ryggsäcken sparas bara på den här enheten. Logga in för att spara den för gott, även om du byter enhet.", sacConnexion: "Logga in", sacTestItem: "+ testsak", sacRienIci: "Inget här än.", catMots: "Inlärda ord", catCodes: "Koder", catSucces: "Prestationer", catTrophees: "Troféer", catCartes: "Kort", niveau_actuel_progression: "{fait}/{total} lektioner", bouton_continuer_niveau: "Fortsätt" },
+    eo: { titre_page: "Via vojo", instruction_niveau_html: "Alklaku <b>nivelon</b> por malfermi ĝiajn ĉapitrojn.", pour_deplacer: "por moviĝi,", pour_choisir: "por elekti.", touche_entree: "Enigo", note_provisoire_html: "Nur la enkonduko <b>Les Bonomes</b> estas konfirmita nuntempe — titoloj kun <b>*</b> estas provizoraj, atendante la finan enhavon.", badge_confirme: "konfirmita", retour_aria: "Reen", type_niveau: "Nivelo", type_dialogue: "Dialogo", type_histoire: "Rakonto", type_examen: "Ekzameno", bouton_commencer: "Komenci", bouton_revoir: "Rerigardi", bouton_examen: "Fari la ekzamenon", indice_chapitre_verrouille: "Finu la antaŭajn paŝojn por malŝlosi ĉi tion.", indice_niveau_ouvrir: "Alklaku por malfermi la ĉapitrojn.", indice_niveau_verrouille: "Finu la antaŭan nivelon por malŝlosi ĉi tiun.", avis_revoir: "Vi rerigardas ĉi tiun ĉapitron (demo) ✏️", avis_niveau_debloque: "✨ Nivelo finita — la sekva estas malŝlosita!", avis_chapitre_debloque: "✨ Ĉapitro malŝlosita!", avis_preparation: "Ĉi tiu ĉapitro ankoraŭ estas preparata ✏️", marqueur_alt: "Keb kaj Bek", son_actif: "Sono ŝaltita", son_inactif: "Sono malŝaltita", sacTitre: "Mia dorsosako", sacVide: "ankoraŭ nenio", sacUnItem: "{n} objekto konservita", sacPlusieursItems: "{n} objektoj konservitaj", sacAvertissement: "Ĉi tiu dorsosako konserviĝas nur sur ĉi tiu aparato. Ensalutu por konservi ĝin porĉiam, eĉ se vi ŝanĝos aparaton.", sacConnexion: "Ensaluti", sacTestItem: "+ prova objekto", sacRienIci: "Ankoraŭ nenio ĉi tie.", catMots: "Lernitaj vortoj", catCodes: "Kodoj", catSucces: "Atingoj", catTrophees: "Trofeoj", catCartes: "Kartoj", niveau_actuel_progression: "{fait}/{total} lecionoj", bouton_continuer_niveau: "Daŭrigi" }
   };
 
   function t(cle) {
@@ -1088,13 +1296,11 @@
 
   document.documentElement.lang = langueActuelle();
   document.getElementById('lienRetour').setAttribute('aria-label', t('retour_aria'));
-  document.getElementById('titrePage').textContent = t('titre_page');
+  document.getElementById('titrePageTexte').textContent = t('titre_page');
+  document.getElementById('sousTitreParcours').innerHTML = t('sous_titre_page').split('•').map(s => s.trim()).join('<span>•</span>');
   document.getElementById('instructionNiveau').innerHTML = t('instruction_niveau_html') + '<br><kbd>↑</kbd> <kbd>↓</kbd> <span>' + t('pour_deplacer') + '</span> <kbd>' + t('touche_entree') + '</kbd> <span>' + t('pour_choisir') + '</span>';
   document.getElementById('noteProvisoire').innerHTML = '✎ ' + t('note_provisoire_html');
-  document.getElementById('prologueBadge').textContent = '✓ ' + t('badge_confirme');
-  document.getElementById('prologueTitre').textContent = t('prologue_titre');
-  document.getElementById('prologueTexte').textContent = t('prologue_texte');
-  document.getElementById('prologueBouton').textContent = t('prologue_bouton');
+  document.getElementById('rechercheInput').placeholder = t('recherche_placeholder');
   document.getElementById('imgMarqueur').alt = t('marqueur_alt');
   document.getElementById('sacBouton').setAttribute('aria-label', t('sacTitre'));
   document.getElementById('sacTitre').textContent = t('sacTitre');
@@ -1182,20 +1388,26 @@
   // de contenu réel/provisoire.
   const NIVEAUX = [
     { id: 'niveau-1', titre: 'Les salutations *', etat: 'actuel', chapitres: [
-        { id: 'd1', type: 'dialogue', titre: 'Premier échange', etat: 'actuel', reel: true, page: 'dialogues/d1/' },
-        { id: 'h1', type: 'histoire', titre: 'Le café du samedi *', etat: 'verrouille' },
-        { id: 'd2', type: 'dialogue', titre: 'Les couleurs *', etat: 'verrouille' },
+        { id: 'd1', type: 'dialogue', titre: 'J\u2019ai faim', etat: 'actuel', reel: true, page: 'dialogues/d1/',
+          motsCles: ['manger', 'faim', 'sandwich', 'impératif', 'nourriture', 'eat', 'hungry', 'food', 'imperative'],
+          resume: {
+            fr: 'Keb a faim et demande de l\u2019aide — Bek partage son sandwich. Un tout premier échange, simple et chaleureux, entre Keb et Bek.',
+            en: 'Keb is hungry and asks for help — Bek shares his sandwich. A simple, warm first exchange between Keb and Bek.'
+          },
+          image: 'dialogues/d1/apercu_d1_01.png' },
+        { id: 'h1', type: 'histoire', titre: 'À venir *', etat: 'verrouille' },
+        { id: 'd2', type: 'dialogue', titre: 'À venir *', etat: 'verrouille' },
         { id: 'ex1', type: 'examen', titre: "L'examen *", etat: 'verrouille' }
     ]},
     { id: 'niveau-2', titre: 'Au parc *', etat: 'verrouille', chapitres: [
-        { id: 'h2', type: 'histoire', titre: 'La visite au parc *', etat: 'verrouille' },
-        { id: 'd3', type: 'dialogue', titre: 'Le marché *', etat: 'verrouille' },
-        { id: 'h3', type: 'histoire', titre: 'Le mystère du grenier *', etat: 'verrouille' },
+        { id: 'h2', type: 'histoire', titre: 'À venir *', etat: 'verrouille' },
+        { id: 'd3', type: 'dialogue', titre: 'À venir *', etat: 'verrouille' },
+        { id: 'h3', type: 'histoire', titre: 'À venir *', etat: 'verrouille' },
         { id: 'ex2', type: 'examen', titre: "L'examen *", etat: 'verrouille' }
     ]},
     { id: 'niveau-3', titre: 'La météo *', etat: 'verrouille', chapitres: [
-        { id: 'd4', type: 'dialogue', titre: 'Le ciel *', etat: 'verrouille' },
-        { id: 'h4', type: 'histoire', titre: 'Le grand voyage *', etat: 'verrouille' },
+        { id: 'd4', type: 'dialogue', titre: 'À venir *', etat: 'verrouille' },
+        { id: 'h4', type: 'histoire', titre: 'À venir *', etat: 'verrouille' },
         { id: 'ex3', type: 'examen', titre: "L'examen *", etat: 'verrouille' }
     ]}
   ];
@@ -1208,8 +1420,13 @@
   function iconePinceau() { return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20l1-4L16.5 4.5a1.5 1.5 0 0 1 2.12 0l.88.88a1.5 1.5 0 0 1 0 2.12L8 19l-4 1Z"/><path d="M14.5 6.5l3 3"/></svg>'; }
   function badgeBrouillon() { return '<span class="badge-brouillon" aria-hidden="true">' + iconePinceau() + '</span>'; }
 
+  function badgeVerrou() { return '<span class="badge-verrou-mini" aria-hidden="true">' + iconeVerrou() + '</span>'; }
+
   function iconePourChapitre(ch) {
-    if (ch.etat === 'verrouille') return iconeVerrou();
+    if (ch.etat === 'verrouille') {
+      const iconeType = ch.type === 'examen' ? iconeEtoile() : (ch.type === 'dialogue' ? iconeDialogue() : iconeHistoire());
+      return iconeType + badgeVerrou();
+    }
     if (ch.type === 'examen') return iconeEtoile();
     if (ch.etat === 'complete') return iconeCoche();
     return ch.type === 'dialogue' ? iconeDialogue() : iconeHistoire();
@@ -1228,6 +1445,15 @@
     if (!total) return 0;
     const faits = niveau.chapitres.filter(c => c.etat === 'complete').length;
     return faits / total;
+  }
+
+  // 🆕 Utilisé par le bouton "Continuer" du bandeau de progression (voir
+  // .bandeau-continuer) : le premier chapitre pas encore complété, pas
+  // simplement le premier accessible (qui inclurait les chapitres déjà
+  // faits) — c'est bien "la suite", pas "le début".
+  function premierChapitreNonComplete(niveau) {
+    const idx = niveau.chapitres.findIndex(c => c.etat !== 'complete');
+    return idx === -1 ? 0 : idx;
   }
 
   // Marqueur « brouillon » — dérivé de l'astérisque déjà présent dans le
@@ -1251,16 +1477,18 @@
   const carteInfoBouton = document.getElementById('carteInfoBouton');
   const carteInfoIndice = document.getElementById('carteInfoIndice');
   const carteInfoIndiceTexte = document.getElementById('carteInfoIndiceTexte');
+  const carteInfoResume = document.getElementById('carteInfoResume');
+  const carteInfoImageZone = document.getElementById('carteInfoImageZone');
   const carteInfoCorps = document.getElementById('carteInfoCorps');
   let signatureCarteInfoPrecedente = null;
 
   let niveauOuvertIdx = NIVEAUX.findIndex(n => n.etat === 'actuel');
   if (niveauOuvertIdx === -1) niveauOuvertIdx = 0;
-  // Le curseur (et donc le marqueur Keb/Bek) démarre AU PROLOGUE, pas au
-  // niveau 1 — c'est la toute première chose à faire sur un compte neuf.
-  // initProgressionReelle() le fera avancer au niveau 1 automatiquement
-  // si le prologue est déjà confirmé complété (voir plus bas).
-  let curseurNiveau = -1;
+  // 🆕 (9e échange) : le curseur (et donc le marqueur Keb/Bek) démarre au
+  // niveau 1 — la carte prologue a été retirée de cette page (le prologue
+  // reste accessible depuis index.html, "première fois ?"), donc plus de
+  // position virtuelle -1 à représenter ici.
+  let curseurNiveau = 0;
   let curseurChapitre = null; // index dans le niveau ouvert, ou null si contexte "niveaux"
   let niveauVientDouvrir = false; // posé à true seulement au moment précis où toggleNiveau() ouvre un niveau
   let idAAnimerDeverrouillage = null; // id d'un chapitre/niveau tout juste débloqué, à animer une seule fois
@@ -1302,7 +1530,14 @@
             '<circle class="anneau-piste" cx="50" cy="50" r="46"/>' +
             '<circle class="anneau-valeur" cx="50" cy="50" r="46" style="stroke-dashoffset:' + offsetDepart.toFixed(2) + ';"/>' +
           '</svg>' +
-          '<div class="num">' + (i + 1) + '</div><div class="lib">' + niveau.titre + '</div>' +
+          // 🆕 Le petit libellé sous le numéro affiche "Niveau"/"Level" (déjà
+          // traduit dans les 20 langues via type_niveau), pas le titre complet
+          // du niveau — un titre long ("Les salutations*") passait sur deux
+          // lignes et débordait de la hauteur fixe du noeud, ce qui donnait
+          // cette impression de forme irrégulière/mal arrondie (retour
+          // Raphaël). Le titre complet reste visible dans la carte-info, qui a
+          // la place pour lui.
+          '<div class="num">' + (i + 1) + '</div><div class="lib">' + t('type_niveau') + '</div>' +
           (provisoireNiveau ? badgeBrouillon() : '');
       }
 
@@ -1313,6 +1548,38 @@
         if (estAccessible(niveau.etat)) toggleNiveau(i); else rafraichir();
       });
       groupe.appendChild(noeud);
+
+      // 🆕 Bandeau "X/Y leçons" + Continuer, uniquement sur le niveau
+      // actuel (voir .bandeau-continuer en CSS). Le clic reprend
+      // exactement le même geste que le clic sur un résultat de
+      // recherche (niveauOuvertIdx/curseurNiveau/curseurChapitre posés
+      // directement puis rafraichir() + scrollIntoView) plutôt que
+      // toggleNiveau()/ouvrirNiveau(), pour ne pas interférer avec leur
+      // logique de fermeture animée d'un autre niveau déjà ouvert.
+      if (niveau.etat === 'actuel') {
+        const totalChapitres = niveau.chapitres.length;
+        const chapitresFaits = niveau.chapitres.filter(c => c.etat === 'complete').length;
+        const bandeau = document.createElement('div');
+        bandeau.className = 'bandeau-continuer';
+        bandeau.innerHTML =
+          '<span class="bandeau-continuer-texte">' + tAvecVariables('niveau_actuel_progression', { fait: chapitresFaits, total: totalChapitres }) + '</span>' +
+          '<button type="button" class="bandeau-continuer-bouton">' + t('bouton_continuer_niveau') + ' ▶</button>';
+        bandeau.querySelector('.bandeau-continuer-bouton').addEventListener('click', (e) => {
+          e.stopPropagation();
+          const j = premierChapitreNonComplete(niveau);
+          jouerClicSelection();
+          niveauOuvertIdx = i;
+          curseurNiveau = i;
+          curseurChapitre = j;
+          rafraichir();
+          requestAnimationFrame(() => {
+            const blocCourant = parcoursEl.querySelectorAll('.bloc-niveau')[i];
+            const noeudCible = blocCourant && blocCourant.querySelectorAll('.noeud-chapitre')[j];
+            if (noeudCible) noeudCible.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          });
+        });
+        groupe.appendChild(bandeau);
+      }
 
       if (animerAnneauCeNiveau) {
         requestAnimationFrame(() => requestAnimationFrame(() => {
@@ -1573,7 +1840,6 @@
   // construireDOM(), qui remplacerait le noeud en cours de transition.
   function metAJourCarteInfo() {
     let elActif = null;
-    const prologueCarte = document.querySelector('.prologue-carte');
 
     if (curseurChapitre !== null && niveauOuvertIdx !== -1) {
       elActif = parcoursEl.querySelectorAll('.bloc-niveau')[niveauOuvertIdx].querySelectorAll('.noeud-chapitre')[curseurChapitre];
@@ -1582,6 +1848,37 @@
       carteInfoType.className = 'type' + (ch.type === 'examen' ? ' examen' : '');
       carteInfoTitre.textContent = ch.titre;
       carteInfoTitreTrad.textContent = traductionTitre(ch.id) || '';
+
+      // 🆕 Résumé + image — seulement si le chapitre en a vraiment (voir
+      // note dans le HTML) ; sinon les deux blocs restent simplement
+      // masqués, pas de cadre vide ni de texte "à venir" répétitif.
+      const resumeTexte = ch.resume ? (ch.resume[langueActuelle()] || ch.resume.en) : null;
+      if (resumeTexte) {
+        carteInfoResume.textContent = resumeTexte;
+        carteInfoResume.style.display = 'block';
+      } else {
+        carteInfoResume.textContent = '';
+        carteInfoResume.style.display = 'none';
+      }
+      if (ch.image) {
+        carteInfoImageZone.style.display = 'block';
+        carteInfoImageZone.innerHTML = '';
+        const img = document.createElement('img');
+        img.id = 'carteInfoImage';
+        img.alt = ch.titre;
+        img.src = ch.image;
+        img.onerror = function () {
+          const repli = document.createElement('div');
+          repli.className = 'repli-image-manquante';
+          repli.textContent = 'Image not ready yet';
+          img.replaceWith(repli);
+        };
+        carteInfoImageZone.appendChild(img);
+      } else {
+        carteInfoImageZone.style.display = 'none';
+        carteInfoImageZone.innerHTML = '';
+      }
+
       carteInfo.classList.add('visible');
       if (ch.etat === 'verrouille') {
         carteInfoBouton.style.display = 'none';
@@ -1593,14 +1890,6 @@
         carteInfoBouton.classList.toggle('examen-bouton', ch.type === 'examen');
         carteInfoBouton.textContent = ch.type === 'examen' ? t('bouton_examen') : (ch.etat === 'complete' ? t('bouton_revoir') : t('bouton_commencer'));
       }
-    } else if (curseurNiveau === -1) {
-      // Prologue sélectionné au clavier — sa grande carte affiche déjà
-      // tout le nécessaire (titre, texte, bouton Découvrir) ; pas besoin
-      // de dupliquer l'info dans la carte-info du bas, on la masque plutôt
-      // (même transition douce que son apparition, voir .carte-info en
-      // CSS — pas de "disparition d'un coup" ici non plus).
-      elActif = prologueCarte;
-      carteInfo.classList.remove('visible');
     } else {
       elActif = parcoursEl.querySelectorAll('.noeud-niveau')[curseurNiveau];
       const niveau = NIVEAUX[curseurNiveau];
@@ -1608,13 +1897,15 @@
       carteInfoType.className = 'type';
       carteInfoTitre.textContent = niveau.titre;
       carteInfoTitreTrad.textContent = traductionTitre(niveau.id) || '';
+      carteInfoResume.textContent = '';
+      carteInfoResume.style.display = 'none';
+      carteInfoImageZone.style.display = 'none';
+      carteInfoImageZone.innerHTML = '';
       carteInfo.classList.add('visible');
       carteInfoBouton.style.display = 'none';
       carteInfoIndice.style.display = 'flex';
       carteInfoIndiceTexte.textContent = estAccessible(niveau.etat) ? t('indice_niveau_ouvrir') : t('indice_niveau_verrouille');
     }
-
-    if (prologueCarte) prologueCarte.classList.toggle('selection', curseurNiveau === -1 && curseurChapitre === null);
 
     if (elActif) {
       elActifCourant = elActif;
@@ -1626,7 +1917,7 @@
     // chargement de police, etc. n'ont pas à rejouer l'effet).
     const signatureCarteInfo = curseurChapitre !== null
       ? 'ch:' + NIVEAUX[niveauOuvertIdx].chapitres[curseurChapitre].id + ':' + NIVEAUX[niveauOuvertIdx].chapitres[curseurChapitre].etat
-      : (curseurNiveau === -1 ? 'prologue' : 'niv:' + NIVEAUX[curseurNiveau].id + ':' + NIVEAUX[curseurNiveau].etat);
+      : 'niv:' + NIVEAUX[curseurNiveau].id + ':' + NIVEAUX[curseurNiveau].etat;
     if (signatureCarteInfo !== signatureCarteInfoPrecedente) {
       carteInfoCorps.classList.remove('actualise');
       void carteInfoCorps.offsetWidth; // force le recalcul de style pour pouvoir rejouer l'animation
@@ -1655,22 +1946,13 @@
 
     if (curseurChapitre === null) {
       // Contexte "niveaux" — Haut/Bas parcourent la colonne verticale des
-      // niveaux. Le prologue occupe la position virtuelle curseurNiveau =
-      // -1, juste au-dessus du niveau 1 (sa carte est en dehors de la
-      // structure NIVEAUX, voir le bloc .prologue-bonomes plus haut dans
-      // le HTML — d'où ce traitement à part plutôt qu'une entrée de plus
-      // dans le tableau NIVEAUX).
+      // niveaux.
       const niveauAvant = curseurNiveau;
       if (e.key === 'ArrowDown' && curseurNiveau < NIVEAUX.length - 1 && estAccessible(NIVEAUX[curseurNiveau + 1].etat)) curseurNiveau++;
-      if (e.key === 'ArrowUp' && curseurNiveau > -1) curseurNiveau--;
+      if (e.key === 'ArrowUp' && curseurNiveau > 0) curseurNiveau--;
       if (curseurNiveau !== niveauAvant) jouerClicSelection();
-      if (e.key === 'Enter' || e.key === ' ') {
-        if (curseurNiveau === -1) {
-          jouerClicSelection();
-          document.getElementById('prologueBouton').click();
-        } else if (estAccessible(NIVEAUX[curseurNiveau].etat)) {
-          toggleNiveau(curseurNiveau);
-        }
+      if ((e.key === 'Enter' || e.key === ' ') && estAccessible(NIVEAUX[curseurNiveau].etat)) {
+        toggleNiveau(curseurNiveau);
       }
       rafraichir();
     } else {
@@ -1679,15 +1961,14 @@
       // gauche à droite, d'où ce choix plutôt que Haut/Bas). Haut/Bas
       // referment ce niveau en douceur (même mécanisme animé que
       // fermerNiveauAnime plus bas) et déplacent la sélection vers le
-      // niveau voisin, ou le prologue en remontant depuis le niveau 1 :
-      // ils naviguent TOUJOURS entre niveaux, jamais à l'horizontale dans
-      // les chapitres, quel que soit le contexte — cohérent avec le
-      // contexte "niveaux" ci-dessus.
+      // niveau voisin : ils naviguent TOUJOURS entre niveaux, jamais à
+      // l'horizontale dans les chapitres, quel que soit le contexte —
+      // cohérent avec le contexte "niveaux" ci-dessus.
       if (e.key === 'Escape') { fermerNiveauAnime(niveauOuvertIdx, null); return; }
 
       if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
         const cible = niveauOuvertIdx + (e.key === 'ArrowDown' ? 1 : -1);
-        if (cible >= -1 && cible < NIVEAUX.length && (cible === -1 || estAccessible(NIVEAUX[cible].etat))) {
+        if (cible >= 0 && cible < NIVEAUX.length && estAccessible(NIVEAUX[cible].etat)) {
           curseurNiveau = cible;
           jouerClicSelection();
           fermerNiveauAnime(niveauOuvertIdx, null);
@@ -1743,24 +2024,95 @@
     return null;
   }
 
-  // La carte du prologue doit être cliquable dans son ensemble, comme les
-  // cases de niveau — pas seulement son bouton "Découvrir"/"Revoir". Un
-  // clic ailleurs que sur ce bouton fait exactement ce que ferait un clic
-  // dessus (elle n'a rien à "ouvrir" comme un niveau : son seul rôle est
-  // de mener à intro-bonomes.html) ; un clic sur le bouton lui-même n'est
-  // pas intercepté ici, pour laisser le lien natif agir normalement plutôt
-  // que de risquer une double navigation.
-  const prologueCarteEl = document.querySelector('.prologue-carte');
-  if (prologueCarteEl) {
-    prologueCarteEl.addEventListener('click', (e) => {
-      if (e.target.closest('.prologue-bouton')) return;
-      curseurNiveau = -1;
-      curseurChapitre = null;
-      jouerClicSelection();
-      rafraichir();
-      document.getElementById('prologueBouton').click();
+  // 🆕 (9e échange) : gestionnaire de clic sur la carte prologue retiré —
+  // la carte elle-même a été retirée de cette page (voir CSS/HTML/note en
+  // tête de fichier).
+
+  // ==================================================================
+  // 🆕 Recherche — portée confirmée par Raphaël : titres + mots-clés/
+  // contenu associé (voir ch.motsCles dans NIVEAUX). Accent-insensible
+  // (normalize + suppression des diacritiques) pour que "cafe" trouve
+  // "café", etc. Une liste plate de tous les chapitres est reconstruite
+  // à chaque frappe plutôt que mise en cache : NIVEAUX est petit (une
+  // douzaine de chapitres pour l'instant), reconstruire à chaque frappe
+  // est largement assez rapide et évite un cache à invalider quand le
+  // contenu change.
+  function normaliserRecherche(s) {
+    return (s || '').toString().normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+  }
+
+  function tousLesChapitres() {
+    const liste = [];
+    NIVEAUX.forEach((niveau, niveauIdx) => {
+      niveau.chapitres.forEach((ch, chapitreIdx) => {
+        liste.push({ niveau, niveauIdx, ch, chapitreIdx });
+      });
+    });
+    return liste;
+  }
+
+  function rechercherChapitres(requete) {
+    const q = normaliserRecherche(requete).trim();
+    if (!q) return [];
+    return tousLesChapitres().filter(({ ch }) => {
+      const champs = [ch.titre].concat(ch.motsCles || []);
+      return champs.some(champ => normaliserRecherche(champ).includes(q));
     });
   }
+
+  const rechercheInput = document.getElementById('rechercheInput');
+  const rechercheResultats = document.getElementById('rechercheResultats');
+
+  function iconeTypePourRecherche(type) {
+    if (type === 'examen') return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>';
+    if (type === 'histoire') return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>';
+    return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>';
+  }
+
+  function rendreResultatsRecherche(requete) {
+    const resultats = rechercherChapitres(requete);
+    if (!requete.trim()) {
+      rechercheResultats.classList.remove('visible');
+      rechercheResultats.innerHTML = '';
+      return;
+    }
+    if (resultats.length === 0) {
+      rechercheResultats.innerHTML = '<div class="recherche-aucun">' + t('recherche_aucun_resultat') + '</div>';
+      rechercheResultats.classList.add('visible');
+      return;
+    }
+    rechercheResultats.innerHTML = resultats.map(({ niveau, niveauIdx, ch, chapitreIdx }) =>
+      '<button type="button" class="recherche-item" data-niveau="' + niveauIdx + '" data-chapitre="' + chapitreIdx + '">' +
+        iconeTypePourRecherche(ch.type) +
+        '<span><span class="recherche-item-titre">' + ch.titre + '</span><br>' +
+        '<span class="recherche-item-niveau">' + niveau.titre + '</span></span>' +
+      '</button>'
+    ).join('');
+    rechercheResultats.classList.add('visible');
+    rechercheResultats.querySelectorAll('.recherche-item').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const niveauIdx = Number(btn.dataset.niveau);
+        const chapitreIdx = Number(btn.dataset.chapitre);
+        rechercheInput.value = '';
+        rendreResultatsRecherche('');
+        rechercheInput.blur();
+        niveauOuvertIdx = niveauIdx;
+        curseurNiveau = niveauIdx;
+        curseurChapitre = chapitreIdx;
+        rafraichir();
+        requestAnimationFrame(() => {
+          const noeud = parcoursEl.querySelectorAll('.bloc-niveau')[niveauIdx].querySelectorAll('.noeud-chapitre')[chapitreIdx];
+          if (noeud) noeud.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        });
+      });
+    });
+  }
+
+  rechercheInput.addEventListener('input', () => rendreResultatsRecherche(rechercheInput.value));
+  rechercheInput.addEventListener('focus', () => { if (rechercheInput.value.trim()) rendreResultatsRecherche(rechercheInput.value); });
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('.recherche-parcours')) rechercheResultats.classList.remove('visible');
+  });
 
   carteInfoBouton.addEventListener('click', () => {
     if (curseurChapitre === null) return;
@@ -1810,12 +2162,13 @@
 
   // ==================================================================
   // Branchement réel sur la progression (COMPTES_ELEVES_v11) — le
-  // prologue « Les Bonomes » ET le chapitre d1 (voir ch.reel dans
-  // NIVEAUX) ont maintenant une vraie page et une vraie progression.
-  // Les autres chapitres (h1, d2, ex1...) restent volontairement en mode
-  // démo tant qu'aucune vraie page de leçon n'existe pour eux (voir note
-  // "titres suivis d'un *" plus haut) — les rebrancher viendra avec leurs
-  // pages, pas avant.
+  // chapitre d1 (voir ch.reel dans NIVEAUX) a maintenant une vraie page
+  // et une vraie progression. Les autres chapitres (h1, d2, ex1...)
+  // restent volontairement en mode démo tant qu'aucune vraie page de
+  // leçon n'existe pour eux (voir note "titres suivis d'un *" plus haut)
+  // — les rebrancher viendra avec leurs pages, pas avant. Le prologue
+  // « Les Bonomes » n'apparaît plus du tout sur cette page (voir 9e
+  // échange) — rien à y synchroniser.
   //
   // 🆕 (8e échange) : synchroniserChapitresReels() applique la même
   // logique de déverrouillage en cascade que progresserDemo() (chapitre
@@ -1870,18 +2223,7 @@
 
     const progression = await KebBekProgression.lireProgression();
     synchroniserChapitresReels(progression);
-    rafraichir(); // 🆕 reflète l'état réel (d1 complété, h1 débloqué, etc.) dès le chargement
-    if (progression['prologue']) {
-      const bouton = document.getElementById('prologueBouton');
-      if (bouton) bouton.textContent = t('bouton_revoir');
-      // Prologue déjà fait : plus la peine d'y pointer le curseur/marqueur
-      // par défaut à chaque visite — on avance directement au niveau 1
-      // (ou au niveau "actuel" s'il y en a un autre), comme avant v43.
-      if (curseurNiveau === -1 && curseurChapitre === null) {
-        curseurNiveau = niveauOuvertIdx;
-        rafraichir();
-      }
-    }
+    rafraichir(); // reflète l'état réel (d1 complété, h1 débloqué, etc.) dès le chargement
   }
   initProgressionReelle();
 

@@ -3,75 +3,52 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>J'ai faim — Keb &amp; Bek</title>
+<title>Apprends le français avec Keb &amp; Bek — Learn French with Keb &amp; Bek</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../../sac-a-dos.css">
-<!-- Page à part entière, même situation que parcours.html/intro-bonomes.html
-     (voir COMPTES_ELEVES_v10/v11) : aucun état JS partagé avec index.html,
-     donc son propre client Supabase — progression.js en crée un lui-même
-     au premier appel qui en a besoin. -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-<script src="../../progression.js"></script>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;700&family=Chewy&display=swap" rel="stylesheet">
+<!-- 🆕 Composant "sac à dos" PARTAGÉ (voir sac-a-dos.js/.css) — vraie
+     intégration cette session (avant, index.html n'avait ni l'un ni
+     l'autre, voir note ⚠️ dans identite-eleve.js). Chargé AVANT
+     identite-eleve.css : même ordre que les <script> plus bas
+     (sac-a-dos.js avant identite-eleve.js), pas que ça compte pour du
+     CSS, simple cohérence de lecture. -->
+<link rel="stylesheet" href="sac-a-dos.css">
+<!-- Séquence identité (nom + genre + tranche d'âge, chemin "Oui" de First
+     time?) — voir identite-eleve.js plus bas pour la logique et
+     #sequenceIdentite plus bas dans le body pour le conteneur. -->
+<link rel="stylesheet" href="identite-eleve.css?v=2">
+<link rel="stylesheet" href="menu-principal.css">
 <style>
   /* ==================================================================
-     dialogue-d1.html — PREMIÈRE vraie leçon de dialogue du site (id
-     'd1' dans NIVEAUX, parcours.html). Contenu confirmé par Raphaël
-     (session du 08-08-2026) :
-       Keb « J'ai faim. »        Bek « Mange ! »
-       Keb « Mange quoi ? »      Bek « Mange... mon sandwich ? »
-       Keb « Oh, merci ! »
+     index.html — page d'accueil officielle du site (voir BONOMES_v61,
+     "reste à faire" #2 : l'index est la première leçon au sens large).
 
-     MÉCANIQUE (demande explicite de Raphaël, à distinguer clairement de
-     intro-bonomes.html même si l'ossature en est reprise) — DEUX choses
-     bien séparées, chacune avec sa propre logique d'accumulation/retrait :
+     Sélecteur de langue en grille de pastilles, ouverture AU SURVOL de
+     la souris (clic disponible en secours pour le tactile et le
+     clavier) :
+       - dès que la souris touche le déclencheur (ou le panneau), le
+         panneau s'ouvre et les personnages se tournent vers lui ;
+       - le panneau se referme quand la souris quitte toute la zone
+         (petit délai pour ne pas fermer en traversant l'espace entre
+         le bouton et le panneau) ;
+       - sur tactile / clavier (pas de survol disponible), un clic
+         sur le déclencheur bascule l'ouverture, avec fermeture au
+         clic extérieur et à la touche Échap ;
+       - un champ de recherche en haut permet de filtrer par nom natif
+         ou nom français.
 
-       1. La bulle du haut (#bulleDialogue) : UNE SEULE réplique visible à
-          la fois, au-dessus des personnages, remplacée à chaque étape —
-          jamais empilée. Défilement par flèches clavier, clic/tap sur les
-          boutons Précédent/Suivant, OU tap direct sur la scène (avance
-          seulement — reculer reste un geste délibéré via le bouton, pour
-          éviter un retour accidentel qui ferait disparaître des lignes
-          déjà accumulées).
-
-       2. DEUX piles indépendantes en dessous, qui s'accumulent en avançant
-          ET SE VIDENT PARTIELLEMENT en reculant (reconstruites depuis le
-          début à chaque navigation — même stratégie que precedent() dans
-          intro-bonomes.html, plus simple et plus sûre qu'un simple
-          "retirer le dernier élément" quand deux piles doivent rester
-          synchronisées avec la même étape courante) :
-            a) #pileDialogue  : chaque réplique déjà dite, dans l'ordre.
-            b) #pileGrammaire : les notes grammaticales, dans la langue de
-               l'apprenant (voir GRAMMAIRE plus bas) — n'apparaît QUE pour
-               les étapes qui en ont une (ici : étapes 1 et 2 seulement,
-               voir ETAPES). Visuellement distincte de la pile de dialogue
-               (fond pêche-pâle, même langage que .sac-intro/.iden-indice-mot
-               ailleurs sur le site — un contenu "aide/explication", pas
-               une réplique du dialogue lui-même).
-
-     PAS DE GENRE (masculin/féminin) à ce stade — demande explicite de
-     Raphaël : rien dans ce dialogue n'introduit cette distinction, donc
-     rien dans la mise en scène n'en dépend non plus.
-
-     IMAGES : aucune illustration propre à cette leçon n'existe encore.
-     Chemins RÉSERVÉS ci-dessous (images/dialogue-d1/...), avec le même
-     repli "Image not ready yet" que intro-bonomes.html (creerImage) —
-     la mécanique fonctionne dès maintenant, les vraies images pourront
-     être déposées aux chemins prévus sans toucher au code.
-
-     RÉCOMPENSES : confirmé par Raphaël (session du 09-08-2026) — la
-     première complétion de d1 donne 5 P$, pas de PB (réservés aux objets
-     spéciaux/coûteux, attribués avec bien plus de parcimonie — voir même
-     échange). Câblé ci-dessous via KebBekProgression.attribuerRecompense-
-     PremiereFois('d1', 5, 0), séparée de marquerChapitreComplete() pour ne
-     courir aucun risque sur cette dernière (déjà fonctionnelle). Fonction
-     SQL attribuer_recompense_premiere_fois DÉPLOYÉE sur Supabase (projet
-     Bravo, session du 09-08-2026, via le connecteur Supabase — schéma
-     réellement introspecté avant écriture, pas deviné : eleves.id/uuid,
-     eleves.compte_id confirmés, même garde de propriété v_compte_id =
-     auth.uid() que marquer_chapitre_complete). Reste à valider en
-     conditions réelles (compléter la leçon avec un compte connecté et
-     vérifier le solde P$ dans le sac).
+     Images des personnages (neutre / présentent-gauche / saluent /
+     clique-ici, 896×936) servies depuis images/accueil/*.webp — voir
+     BONOMES_v61 sur la règle .webp pour tout nouveau contenu. Mécanisme
+     "Bonjour !" : survol ou tap direct sur #personnages fait saluer
+     Keb & Bek avec une bulle "Bonjour !" (police Chewy, déjà chargée
+     ci-dessus) ; après 50 déclenchements sans avoir trouvé la case
+     secrète, l'image bascule sur "clique ici" (4e image) — un succès
+     s'active seulement si le clic tombe dans la zone précise du
+     bouton "clique ici" (.zone-case, coordonnées calibrées sur la
+     bulle "CLIQUE ICI" de la 4e image — voir CSS et JS plus bas si un
+     réajustement est un jour nécessaire).
      ================================================================== */
 
   :root {
@@ -80,10 +57,9 @@
     --brun-fonce: #4A3B33;
     --peche: #F0A98B;
     --peche-fonce: #E08867;
-    --peche-pale: #FBEAE2;
-    --bek-couleur: #C97B3D;
-    --keb-couleur: #5B7FA6;
-    --ombre: rgba(102, 80, 69, 0.16);
+    --peche-pale: rgba(240, 169, 139, 0.16);
+    --peche-pale-vif: rgba(240, 169, 139, 0.30);
+    --ombre: rgba(102, 80, 69, 0.18);
   }
 
   * { box-sizing: border-box; }
@@ -91,360 +67,824 @@
   html, body {
     margin: 0;
     padding: 0;
-    min-height: 100%;
+    height: 100%;
     background: var(--fond);
+    /* 🐛 CORRIGÉ : overflow: hidden (sur les DEUX axes) empêchait tout
+       défilement, peu importe la hauteur réelle du contenu. Tant que la
+       scène de départ (Keb/Bek + "Oui"/"Non") tenait dans un seul écran,
+       ça ne posait pas de problème visible. Mais la séquence identité
+       (#sequenceIdentite, ajoutée À L'INTÉRIEUR de .scene — voir plus
+       bas) peut être bien plus haute qu'un écran une fois le carrousel de
+       silhouettes affiché (titre + carrousel + libellés + indice + bouton
+       "Traduire la phrase" + éventuel bouton "Annuler"). Comme .scene
+       utilise justify-content: center (voir plus bas), un contenu plus
+       haut que 100vh se faisait centrer PUIS rogner à parts égales en
+       haut ET en bas par ce overflow: hidden — sans aucun moyen de
+       défiler pour voir la partie coupée. C'est la cause réelle des mots
+       "invisibles"/coupés selon la fenêtre du fureteur (le rognage dépend
+       directement de la hauteur d'écran disponible). overflow-y: auto
+       (seulement caché sur X, pour ne jamais faire apparaître de barre de
+       défilement horizontale accidentelle) laisse le contenu qui dépasse
+       devenir défilable plutôt que rogné. */
+    overflow-x: hidden;
+    overflow-y: auto;
+    font-family: 'Baloo 2', sans-serif;
   }
 
   body {
-    font-family: 'Baloo 2', 'Noto Sans', sans-serif;
-    color: var(--brun-fonce);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 24px 16px 60px;
-  }
-
-  /* ---------- Retour vers le parcours ---------- */
-  .retour {
-    position: fixed;
-    top: 20px;
-    left: 20px;
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    background: #FFFFFF;
-    color: var(--brun);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.4rem;
-    text-decoration: none;
-    box-shadow: 0 2px 8px var(--ombre);
-    opacity: 0.85;
-    transition: opacity 0.2s ease, transform 0.2s ease;
-    z-index: 20;
-  }
-  .retour:hover { opacity: 1; transform: scale(1.08); }
-
-  .compteur {
-    font-weight: 700;
-    font-size: 0.9rem;
-    color: var(--brun);
-    opacity: 0.75;
-    margin-bottom: 14px;
-    letter-spacing: 0.02em;
   }
 
-  /* ---------- Légende unique, au-dessus des personnages ---------- */
-  /* 🆕 (session du 08-08-2026, 2e échange) : Raphaël ne veut PAS l'habillage
-     "bulle de BD" (encadré + pointe triangulaire vers le personnage) —
-     juste du texte présenté comme dans intro-bonomes.html (.legende-intro :
-     encadré doux coloré selon le personnage, SANS pointe). Donc même boîte
-     que .legende-intro, mais SANS le ::after qui existait ici avant. Le
-     positionnement au-dessus des personnages, lui, reste : la légende vit
-     simplement AVANT l'image dans le flux normal du document (pas de
-     superposition en absolute), donc "au-dessus" sans jamais rien
-     recouvrir — c'est cette partie-là qui n'a pas changé. */
-  /* 🆕 (session du 08-08-2026, 3e échange) : les répliques flottaient trop
-     loin au-dessus des têtes — les images sources ont une bonne marge vide
-     en haut/en bas du cadre, donc même juste avant la scène dans le flux,
-     l'écart visuel restait grand. Deux correctifs : la légende est décalée
-     vers l'intérieur (padding sur .zone-bulle) plutôt que collée à
-     l'extrême bord, ET l'image est légèrement zoomée/recadrée (voir
-     .scene-dialogue overflow:hidden + transform sur .image-scene plus bas)
-     pour réduire cette marge vide et rapprocher visuellement les têtes du
-     haut du cadre. */
-  .zone-bulle {
+  /* ==================================================================
+     🆕 Écran-titre ("Le français avec les Bonomes") — demande de
+     Raphaël : la toute première chose vue en arrivant sur le site,
+     avant même Keb/Bek. Superposé en position: fixed plutôt qu'inséré
+     dans .scene : la scène en dessous se construit normalement, EN
+     MÊME TEMPS, pendant que l'écran-titre est encore affiché par-
+     dessus — rien à attendre, rien à séquencer côté JS, juste une
+     couche opaque (même --fond que le reste, donc invisible en soi) qui
+     se retire après coup. Couvre tout le viewport (inset: 0), fond
+     --fond plein (pas de transparence : doit vraiment cacher la scène
+     en dessous tant qu'il est là).
+     z-index 500 : au-dessus de la modale de confirmation du sac (300,
+     voir sac-a-dos.css) et de tout le reste de la page — rien ne doit
+     jamais passer devant l'écran-titre pendant les quelques instants où
+     il est affiché.
+     Disparition demandée par Raphaël : "en éclatant comme une bulle".
+     .ecran-titre-sortie (ajoutée en JS, voir plus bas) anime l'image en
+     grossissant rapidement tout en s'estompant (cubic-bezier avec léger
+     dépassement, façon bulle qui gonfle puis crève) — PAS un simple
+     fondu, qui aurait été visuellement plat pour "éclater". Le fond
+     lui-même s'estompe un peu plus lentement pour laisser le temps à
+     l'œil de suivre le "pop" de l'image avant que la scène du dessous
+     ne devienne cliquable. */
+  #ecranTitre {
+    position: fixed;
+    inset: 0;
+    z-index: 500;
     display: flex;
-    width: min(92vw, 560px);
-    min-height: 60px;
-    align-items: flex-end;
-    padding: 0 5%;
+    align-items: center;
+    justify-content: center;
+    background: var(--fond);
+    opacity: 1;
+    transition: opacity 0.5s ease 0.15s; /* le petit délai laisse le "pop" de l'image démarrer avant que le fond commence lui-même à s'effacer */
+    cursor: pointer; /* invite implicitement à toucher pour passer plus vite, cohérent avec le reste du site (tap pour avancer) */
   }
 
-  .bulle-dialogue {
-    position: relative;
-    max-width: 82%;
-    font-weight: 700;
-    font-size: clamp(1.05rem, 3vw, 1.35rem);
-    line-height: 1.35;
-    padding: 12px 20px;
-    background: #FFFFFF;
-    border-radius: 18px;
-    box-shadow: 0 4px 14px var(--ombre);
+  #ecranTitre.ecran-titre-sortie {
     opacity: 0;
-    transform: translateY(6px);
-    transition: opacity 0.3s ease, transform 0.3s ease;
+    pointer-events: none; /* dès le déclenchement de la sortie, ne bloque plus les clics vers la scène en dessous, même avant la fin des 0.5s de transition */
   }
-  .bulle-dialogue.in { opacity: 1; transform: translateY(0); }
 
-  .bulle-dialogue.cote-keb { margin-right: auto; text-align: left; border: 2.5px solid var(--keb-couleur); color: var(--keb-couleur); }
-  .bulle-dialogue.cote-bek { margin-left: auto; text-align: right; border: 2.5px solid var(--bek-couleur); color: var(--bek-couleur); }
-  /* Pas de pointe triangulaire (::after) ici — c'était le seul élément qui
-     faisait "bulle de BD" plutôt que simple texte encadré ; retiré à la
-     demande de Raphaël. cote-keb reste aligné à gauche, décalé du bord par
-     le padding de .zone-bulle plutôt que flush à 0. */
+  .ecran-titre-img {
+    /* 🆕 Largeur réduite pour compenser le recadrage plus serré du
+       fichier (canevas 509×489, contenu à ~97% du canevas — avant, une
+       marge interne dans l'image elle-même donnait de facto une taille
+       affichée plus petite que la largeur déclarée ; cette marge n'existe
+       plus, donc la largeur déclarée doit diminuer pour garder le même
+       poids visuel qu'avant, plutôt que de soudain paraître plus gros). */
+    width: min(50vw, 260px);
+    height: auto;
+    transition: transform 0.5s cubic-bezier(.25, .8, .3, 1.6), opacity 0.4s ease;
+  }
 
-  /* ---------- Scène (personnages) ---------- */
-  .scene-dialogue {
+  #ecranTitre.ecran-titre-sortie .ecran-titre-img {
+    transform: scale(1.35);
+    opacity: 0;
+  }
+
+  @media (max-width: 460px) {
+    .ecran-titre-img { width: min(60vw, 210px); }
+  }
+
+  .scene {
     position: relative;
-    width: min(92vw, 560px);
-    aspect-ratio: 1408 / 768;
-    overflow: hidden; /* 🆕 nécessaire pour que le zoom ci-dessous recadre au lieu de déborder */
-    margin-top: 4px;
+    width: 100vw;
+    /* 🐛 CORRIGÉ (voir note ci-dessus) : height: 100vh (fixe) forçait
+       .scene à rester exactement à la taille d'un écran même quand son
+       contenu (maintenant que #sequenceIdentite y vit, voir plus bas)
+       dépasse largement ça — combiné à l'ancien overflow: hidden, tout
+       excédent disparaissait sans recours. min-height: 100vh garde
+       exactement le même rendu qu'avant tant que le contenu tient dans un
+       écran (la scène de départ Keb/Bek reste bien centrée verticalement,
+       comme conçu), mais laisse .scene grandir normalement — et donc
+       devenir défilable via le body ci-dessus — dès que le contenu réel
+       (la séquence identité) est plus haut que ça. Un peu de padding
+       vertical ajouté par la même occasion : espace demandé explicitement
+       en haut ET en bas, pour que rien ne colle jamais aux bords de
+       l'écran une fois le défilement en jeu. */
+    min-height: 100vh;
+    box-sizing: border-box;
+    padding: 32px 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(10px, 2vh, 20px);
   }
 
-  .scene-dialogue img.image-scene {
+  /* Ligne horizontale d'origine (sélecteur de langue + personnages),
+     inchangée — juste déplacée dans son propre conteneur flex pour
+     laisser .scene devenir une colonne accueillant aussi le lien vers
+     les cours privés en dessous, sans toucher au calcul déjà en place
+     (order:-1, gap, etc.) à l'intérieur de cette ligne. */
+  .scene-rangee {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(16px, 4vw, 32px);
+  }
+
+  /* ---------- Personnages centraux ---------- */
+
+  .personnages {
+    position: relative;
+    width: min(60vw, 460px);
+    aspect-ratio: 1 / 1;
+    flex-shrink: 0;
+  }
+
+  .personnages img {
     position: absolute;
     inset: 0;
     width: 100%;
     height: 100%;
     object-fit: contain;
-    display: block;
-    transform: none; /* 🆕 (6e échange) : le zoom coupait la queue de cheval de Bek — annulé, priorité à ne jamais rogner les personnages */
-    -webkit-mask-image: radial-gradient(ellipse 94% 90% at center, #000 74%, transparent 100%);
-    mask-image: radial-gradient(ellipse 94% 90% at center, #000 74%, transparent 100%);
+    opacity: 0;
+    transition: opacity 0.35s ease;
+    user-select: none;
+    -webkit-user-drag: none;
+    pointer-events: none;
   }
 
-  /* ---------- Sandwich greffé (étape "Ton sandwich ?", dernier temps de
-     la séquence auto) — flotte doucement avec une lueur chaude pulsante
-     autour, à l'emplacement de l'étoile déjà présente dans l'image de
-     base. Voir creerImageComposite(). ---------- */
-  .sandwich-greffe {
-    position: absolute;
-    left: 52.7%;
-    top: 37%;
-    width: 19%;
-    transform: translate(-50%, -50%);
-    animation: sandwichFlotte 2.6s ease-in-out infinite;
-  }
-  .sandwich-greffe-lueur {
-    position: absolute;
-    inset: -35%;
-    border-radius: 50%;
-    background: radial-gradient(circle, rgba(255, 209, 128, 0.65) 0%, rgba(255, 209, 128, 0) 72%);
-    animation: sandwichLueur 2.6s ease-in-out infinite;
-    z-index: 0;
-  }
-  .sandwich-greffe-img {
-    position: relative;
-    z-index: 1;
-    width: 100%;
-    display: block;
-    filter: drop-shadow(0 6px 12px rgba(120, 80, 40, 0.35));
-  }
-  @keyframes sandwichFlotte {
-    0%, 100% { transform: translate(-50%, -50%); }
-    50% { transform: translate(-50%, calc(-50% - 9px)); }
-  }
-  @keyframes sandwichLueur {
-    0%, 100% { opacity: 0.75; transform: scale(1); }
-    50% { opacity: 1; transform: scale(1.1); }
-  }
+  .personnages img.actif { opacity: 1; }
 
-  .repli-image-manquante {
-    position: absolute;
-    inset: 0;
+  /* ==================================================================
+     Groupe personnages + bloc "First time?" — voir la note sur
+     #premiereFois plus haut dans le HTML. Un simple conteneur flex pour
+     que le bloc reste toujours collé au bord droit des personnages, à
+     n'importe quelle largeur d'écran (plutôt qu'un positionnement
+     absolu qui aurait dû recalculer le bord droit réel de .personnages
+     à chaque taille de fenêtre).
+     ================================================================== */
+
+  .personnages-groupe {
     display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: clamp(10px, 2vw, 20px);
+    flex-shrink: 0;
+  }
+
+  /* ==================================================================
+     Bloc "First time?" — remplace l'ancienne flèche "continuer" (v61).
+     Sur demande de Raphaël : au lieu d'un simple bouton neutre, on
+     demande explicitement si c'est la première visite, avec deux
+     réponses oui/non qui mènent chacune au menu principal (destination
+     encore à définir, voir JS). Même apparition différée/au choix de
+     langue que l'ancien bouton (classe .visible, voir JS
+     afficherPremiereFois()), même habillage visuel (verre dépoli,
+     bordure pêche) que le reste des contrôles de cette page.
+     ================================================================== */
+  .premiere-fois {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+    padding: 10px 16px;
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.5);
+    backdrop-filter: blur(9px) saturate(160%);
+    -webkit-backdrop-filter: blur(9px) saturate(160%);
+    border: 1.5px solid var(--peche);
+    box-shadow: 6px 6px 20px var(--ombre), inset -1px 0 0 rgba(255,255,255,0.5);
+    opacity: 0;
+    transform: scale(0.75);
+    pointer-events: none;
+    transition: opacity 0.35s ease, transform 0.4s cubic-bezier(.34,1.6,.4,1), box-shadow 0.25s ease;
+  }
+
+  .premiere-fois.visible {
+    opacity: 1;
+    transform: scale(1);
+    pointer-events: auto;
+  }
+
+  /* Libellé traduit via DICO_PREMIERE_FOIS (JS plus bas), même esprit
+     que DICO_COURS_PRIVES — mis à jour au choix de langue par
+     rafraichirPremiereFois(). Contrairement aux boutons Oui/Non
+     ci-dessous, ce texte est un habillage d'interface, pas un mot de
+     vocabulaire français à retenir : il suit donc la langue choisie. */
+  .pf-question {
+    margin: 0;
+    font-family: 'Baloo 2', sans-serif;
+    font-weight: 700;
+    font-size: 0.8rem;
+    color: var(--brun);
+    text-align: center;
+    white-space: nowrap;
+  }
+
+  .pf-boutons {
+    display: flex;
+    gap: 8px;
+  }
+
+  /* Libellés "Oui" / "Non" volontairement laissés en français, jamais
+     traduits (comme la bulle "Bonjour !" plus haut) : ce sont eux-mêmes
+     des mots français que l'immersion expose dès cette première page. */
+  .pf-bouton {
+    font-family: 'Baloo 2', sans-serif;
+    font-weight: 700;
+    font-size: 0.85rem;
+    padding: 6px 18px;
+    border-radius: 999px;
+    border: 1.5px solid var(--peche);
+    background: rgba(255, 255, 255, 0.6);
+    color: var(--brun);
+    cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .pf-bouton:hover,
+  .pf-bouton:focus-visible {
+    background: var(--peche);
+    color: #fff;
+    transform: translateY(-1px);
+    box-shadow: 4px 4px 14px var(--ombre);
+  }
+
+  /* ==================================================================
+     Lien "Information et cours privés" — voir note dans le HTML.
+     Discret par construction : texte plutôt qu'un bloc plein, opacité
+     réduite au repos, ne se détache qu'au survol/focus — pense à un
+     lien de bas de page, pas à un second appel à l'action à côté du
+     bloc "First time?".
+     ================================================================== */
+  .lien-cours-prives {
+    font-family: 'Baloo 2', sans-serif;
+    font-weight: 700;
+    font-size: 0.82rem;
+    letter-spacing: 0.01em;
+    color: var(--brun);
+    opacity: 0.62;
+    text-decoration: none;
+    padding: 6px 4px;
+    border-bottom: 1.5px solid transparent;
+    transition: opacity 0.2s ease, border-color 0.2s ease;
+    flex-shrink: 0;
+  }
+
+  .lien-cours-prives:hover,
+  .lien-cours-prives:focus-visible {
+    opacity: 1;
+    border-bottom-color: var(--peche);
+  }
+
+  @media (max-height: 560px) {
+    .lien-cours-prives { font-size: 0.74rem; padding: 2px 4px; }
+  }
+
+  /* ==================================================================
+     Mécanisme "Bonjour !" — COPIÉ de index (2) (BONOMES_v57/v58,
+     .survol / .bulle-bonjour / .zone-case), adapté ici à la structure
+     de .personnages (4 images empilées + classe .actif déjà gérée en
+     JS pour le sélecteur de langue, plutôt que le crossfade en pur CSS
+     :hover de l'original) — un seul mécanisme d'affichage pour les 4
+     images, piloté depuis afficherImage() en JS, voir plus bas.
+
+     Déclencheurs de "Bonjour !" : survol souris DIRECT de #personnages
+     (pas du sélecteur de langue, qui reste un déclencheur séparé et
+     inchangé) OU tap tactile (pas de survol sur tactile — voir JS pour
+     le bascule au clic qui en tient lieu). Après SEUIL_BONJOUR (50)
+     déclenchements sans avoir trouvé la case secrète, l'image bascule
+     sur "clique ici" (mode-secret) — copie du comportement original.
+     ================================================================== */
+
+  /* Police et habillage copiés tels quels de .bulle-bonjour dans
+     index (2) (Chewy déjà chargée dans le <link> de cette page, voir
+     tête de fichier — rien à ajouter côté polices).
+
+     🆕 Cette même classe est réutilisée telle quelle pour #bulleBienvenue
+     (mot "Bienvenue !" au survol du bouton "Oui" du bloc First time?,
+     voir HTML/JS plus bas) — même bulle visuelle, juste un texte et un
+     déclencheur différents ; aucune règle CSS supplémentaire requise. */
+  .bulle-bonjour {
+    position: absolute;
+    left: 50%;
+    top: -14%;
+    width: 80%;
+    transform: translateX(-50%) translateY(10px) scale(0.85) rotate(-3deg);
+    font-family: 'Chewy', cursive;
+    font-weight: 400;
+    font-size: clamp(1.8rem, 9vw, 3.6rem);
+    line-height: 1;
+    text-align: center;
+    color: #4A3B33;
+    -webkit-text-stroke: 2px #F2EDE3;
+    paint-order: stroke fill;
+    opacity: 0;
+    pointer-events: none;
+    z-index: 2;
+    transition: opacity 0.3s ease 0.08s, transform 0.35s cubic-bezier(.3,1.4,.4,1) 0.08s;
+  }
+  .bulle-bonjour.visible {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0) scale(1) rotate(-3deg);
+  }
+
+  /* Case secrète (4e image, "clique ici") : coordonnées recalculées —
+     DEUX erreurs corrigées cette fois-ci (voir capture d'écran fournie,
+     qui montrait la case ailleurs que sur la bulle) :
+       1) La bulle avait été mal repérée sur l'image source la première
+          fois (zone détectée = le t-shirt blanc de Bek, pas la bulle
+          tan "Clique ici" plus bas) — recalculé par détection de la
+          couleur tan de la bulle elle-même (237,215,183), pas à l'œil.
+       2) #personnages est un CARRÉ (aspect-ratio: 1/1) alors que
+          l'image source est PORTRAIT (896×936, plus haute que large).
+          Avec object-fit:contain dans un conteneur carré, l'image est
+          calée sur la hauteur et laisse une marge vide de chaque côté
+          (environ 2.14% de la largeur du conteneur, de part et
+          d'autre) — un pourcentage calculé directement sur les pixels
+          de l'image (comme la 1ʳᵉ tentative) est donc décalé
+          horizontalement une fois rapporté au conteneur. Les valeurs
+          ci-dessous sont déjà converties en pourcentage du CONTENEUR
+          (pas de l'image brute) ; le calcul en amont est documenté
+          dans l'échange pour toute future image qui ne serait pas
+          carrée. */
+  .zone-case {
+    position: absolute;
+    left: 30.66%;
+    top: 63.25%;
+    width: 40.06%;
+    height: 13.14%;
+    z-index: 3;
+    display: none;
+    cursor: pointer;
+    /* Décommenter le temps de vérifier le calage à l'œil, puis
+       recommenter :
+    background: rgba(224, 103, 103, 0.35); border: 2px dashed red;
+    */
+  }
+  .personnages.mode-secret .zone-case { display: block; }
+
+  /* Petit flash de succès sur .personnages quand la case secrète est
+     trouvée — indicateur volontairement simple : cet essai est
+     autonome (ne charge pas sac-a-dos.js), donc pas de vrai
+     ajouterAuSac('succes', ...) ici ; à brancher dessus une fois ce
+     mécanisme intégré dans une page qui a le sac à dos (voir JS). */
+  .personnages.succes-flash::after {
+    content: "";
+    position: absolute;
+    inset: -6%;
+    border-radius: 24px;
+    box-shadow: 0 0 0 6px rgba(120, 190, 110, 0.55);
+    animation: flashSucces 0.9s ease-out;
+    pointer-events: none;
+  }
+  @keyframes flashSucces {
+    0%   { opacity: 0; }
+    25%  { opacity: 1; }
+    100% { opacity: 0; }
+  }
+
+  /* ==================================================================
+     Sélecteur de langue — déclencheur + panneau grille
+
+     Le déclencheur est un vrai élément flex, frère de .personnages
+     dans .scene (gap fixe entre les deux, voir .scene ci-dessus) —
+     plus de positionnement en pourcentage du viewport, donc plus de
+     dérive selon la largeur d'écran. `order: -1` le place visuellement
+     à GAUCHE du personnage sans toucher à l'ordre du DOM (accessibilité
+     inchangée).
+
+     Le panneau (.sl-panneau) a deux comportements distincts, séparés
+     par largeur d'écran :
+       - en dessous de 1200px : recouvrement centré plein écran (comme
+         avant sur mobile) — accepté même si ça passe par-dessus le
+         personnage, cf. échange précédent ;
+       - à partir de 1200px : panneau ancré qui s'ouvre vers la GAUCHE
+         du déclencheur, donc à l'opposé du personnage — la marge
+         disponible à 1200px+ est calculée pour qu'il ne puisse
+         jamais toucher le personnage ni sortir de l'écran.
+     ================================================================== */
+
+  .selecteur-langue {
+    position: relative;
+    order: -1;
+    flex-shrink: 0;
+    z-index: 10;
+  }
+
+  /* Petit pont invisible entre le déclencheur et le panneau : évite
+     que la souris "sorte" de la zone survolée pendant le trajet et
+     ferme le panneau par erreur. */
+  .selecteur-langue::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    right: 100%;
+    width: 18px;
+    height: 140%;
+    transform: translateY(-50%);
+  }
+
+  .sl-declencheur {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: 'Baloo 2', sans-serif;
+    font-weight: 700;
+    font-size: 0.92rem;
+    letter-spacing: 0.03em;
+    color: var(--brun);
+    text-transform: uppercase;
+    background: rgba(255, 255, 255, 0.5);
+    backdrop-filter: blur(9px) saturate(160%);
+    -webkit-backdrop-filter: blur(9px) saturate(160%);
+    border: 1.5px solid var(--peche);
+    border-radius: 999px;
+    padding: 10px 16px;
+    cursor: pointer;
+    box-shadow: 6px 6px 20px var(--ombre), inset -1px 0 0 rgba(255,255,255,0.5);
+    transition: box-shadow 0.25s ease, transform 0.25s cubic-bezier(.34,1.4,.4,1), background 0.2s ease;
+  }
+
+  .sl-declencheur:hover {
+    box-shadow: 8px 8px 26px var(--ombre), inset -1px 0 0 rgba(255,255,255,0.6);
+    transform: translateY(-1px);
+  }
+
+  /* ==================================================================
+     Radiance d'invitation — attire l'œil vers le sélecteur de langue
+     tant qu'aucun choix actif n'a été fait (classe .invite, retirée par
+     choisir() au premier vrai choix, voir JS). Anneau qui s'étend et
+     s'efface en boucle, superposé au box-shadow existant plutôt qu'à sa
+     place (d'où la 3ᵉ valeur ajoutée dans chaque état des keyframes).
+     ================================================================== */
+  .selecteur-langue.invite .sl-declencheur {
+    animation: radianceInvite 2s ease-out infinite;
+  }
+
+  @keyframes radianceInvite {
+    0%   { box-shadow: 6px 6px 20px var(--ombre), inset -1px 0 0 rgba(255,255,255,0.5), 0 0 0 0 rgba(240, 169, 139, 0.55); }
+    70%  { box-shadow: 6px 6px 20px var(--ombre), inset -1px 0 0 rgba(255,255,255,0.5), 0 0 0 14px rgba(240, 169, 139, 0); }
+    100% { box-shadow: 6px 6px 20px var(--ombre), inset -1px 0 0 rgba(255,255,255,0.5), 0 0 0 0 rgba(240, 169, 139, 0); }
+  }
+
+  .selecteur-langue.ouvert .sl-declencheur {
+    background: var(--peche);
+    color: #fff;
+  }
+
+  .sl-chevron {
+    color: currentColor;
+    transition: transform 0.25s cubic-bezier(.34,1.4,.4,1);
+    flex-shrink: 0;
+  }
+
+  .selecteur-langue.ouvert .sl-chevron { transform: rotate(180deg); }
+
+  /* ---------- Panneau (grille) ---------- */
+
+  .sl-panneau {
+    /* Défaut (< 1200px) : recouvrement centré plein écran, cf.
+       commentaire plus haut — voir le bloc @media (min-width: 1200px)
+       plus bas pour le mode « panneau ancré » du grand écran. */
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.9);
+    transform-origin: center;
+    width: min(86vw, 340px);
+    max-height: 70vh;
+    display: flex;
+    flex-direction: column;
+    background: rgba(250, 246, 240, 0.88);
+    backdrop-filter: blur(14px) saturate(160%);
+    -webkit-backdrop-filter: blur(14px) saturate(160%);
+    border: 1.5px solid var(--peche);
+    border-radius: 22px;
+    box-shadow: 14px 14px 38px var(--ombre), inset 0 1px 0 rgba(255,255,255,0.6);
+    padding: 12px;
+    opacity: 0;
+    pointer-events: none;
+    z-index: 20;
+    transition: opacity 0.22s ease, transform 0.32s cubic-bezier(.32,1.35,.4,1);
+  }
+
+  .selecteur-langue.ouvert .sl-panneau {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translate(-50%, -50%) scale(1);
+  }
+
+  .sl-recherche {
+    font-family: 'Baloo 2', sans-serif;
+    font-size: 0.86rem;
+    color: var(--brun-fonce);
+    background: #fff;
+    border: 1.5px solid var(--peche-pale-vif);
+    border-radius: 999px;
+    padding: 9px 14px;
+    outline: none;
+    margin-bottom: 10px;
+    flex-shrink: 0;
+    transition: border-color 0.2s ease;
+  }
+
+  .sl-recherche::placeholder { color: var(--brun); opacity: 0.5; }
+  .sl-recherche:focus { border-color: var(--peche-fonce); }
+
+  .sl-vide {
+    font-size: 0.8rem;
+    color: var(--brun);
+    opacity: 0.55;
+    text-align: center;
+    margin: 18px 0;
+  }
+
+  .sl-grille {
+    overflow-y: auto;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--peche) transparent;
+  }
+
+  .sl-grille::-webkit-scrollbar { width: 6px; }
+  .sl-grille::-webkit-scrollbar-thumb { background: var(--peche); border-radius: 999px; }
+  .sl-grille::-webkit-scrollbar-track { background: transparent; }
+
+  .sl-chip {
+    display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
     text-align: center;
-    padding: 20px;
-    font-weight: 700;
-    font-size: 0.95rem;
-    color: var(--peche-fonce);
-    opacity: 0.75;
-  }
-
-  /* ---------- Navigation ---------- */
-  .nav-dialogue {
-    display: flex;
-    gap: 12px;
-    margin-top: 18px;
-  }
-
-  .bouton-nav {
-    font-family: inherit;
-    font-weight: 700;
-    font-size: 0.95rem;
-    border-radius: 999px;
-    padding: 10px 26px;
+    gap: 2px;
+    padding: 10px 6px;
+    border-radius: 14px;
+    border: 1.5px solid transparent;
+    background: rgba(255,255,255,0.55);
     cursor: pointer;
-    transition: transform 0.12s ease, box-shadow 0.12s ease, opacity 0.15s ease;
-  }
-  .bouton-nav:disabled { opacity: 0.4; cursor: not-allowed; }
-
-  .bouton-nav.suivant { border: none; background: var(--peche-fonce); color: #FFFFFF; box-shadow: 0 4px 0 #B5623F; }
-  .bouton-nav.suivant:hover:not(:disabled) { transform: translateY(2px); box-shadow: 0 2px 0 #B5623F; }
-  .bouton-nav.suivant:active:not(:disabled) { transform: translateY(3px); box-shadow: 0 1px 0 #B5623F; }
-
-  .bouton-nav.precedent { background: #FFFFFF; color: var(--brun); border: 1.5px solid var(--brun); }
-  .bouton-nav.precedent:hover:not(:disabled) { background: var(--fond); }
-
-  /* ---------- Piles (dialogue + grammaire) ---------- */
-  .piles-conteneur {
-    width: min(92vw, 560px);
-    margin-top: 26px;
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
+    transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
   }
 
-  .pile-section-titre {
-    font-size: 0.72rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    color: var(--brun-clair, #8A7364);
-    margin: 0 0 6px 4px;
-  }
-
-  .pile-dialogue { display: flex; flex-direction: column; gap: 2px; }
-
-  .pile-item {
-    display: flex;
-    gap: 10px;
-    align-items: flex-start;
-    max-height: 0;
-    opacity: 0;
-    overflow: hidden;
-    transition: max-height 0.3s ease, opacity 0.3s ease, margin 0.3s ease;
-  }
-  .pile-item.in { opacity: 1; max-height: 120px; margin: 7px 0; overflow: visible; }
-
-  .pile-avatar {
-    flex-shrink: 0;
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.72rem;
-    font-weight: 700;
-    color: #FFFFFF;
-    background: var(--c, var(--brun));
-  }
-  .pile-item.keb { --c: var(--keb-couleur); }
-  .pile-item.bek { --c: var(--bek-couleur); }
-
-  .pile-corps { flex: 1; min-width: 0; }
-  .pile-qui { display: block; font-size: 0.68rem; font-weight: 700; color: var(--c, var(--brun)); margin-bottom: 1px; }
-  .pile-texte { font-size: 0.92rem; line-height: 1.35; }
-
-  /* Notes grammaticales — même langage visuel qu'un contenu d'aide
-     ponctuel ailleurs sur le site (.sac-intro dans sac-a-dos.css,
-     .iden-indice-mot dans identite-eleve.css) : fond pêche-pâle, pour
-     que ce ne soit jamais confondu avec une réplique du dialogue. */
-  .pile-grammaire { display: flex; flex-direction: column; gap: 8px; }
-
-  .grammaire-item {
-    max-height: 0;
-    opacity: 0;
-    overflow: hidden;
-    padding: 0 14px;
+  .sl-chip:hover {
     background: var(--peche-pale);
-    border-radius: 12px;
-    font-size: 0.84rem;
-    line-height: 1.45;
-    color: var(--brun-fonce);
-    transition: max-height 0.3s ease, opacity 0.3s ease, padding 0.3s ease;
+    transform: translateY(-1px);
   }
-  .grammaire-item.in { opacity: 1; max-height: 160px; padding: 10px 14px; overflow: visible; }
+
+  .sl-chip.selectionne {
+    background: var(--peche-pale-vif);
+    border-color: var(--peche-fonce);
+  }
+
+  .sl-chip-natif {
+    font-weight: 700;
+    font-size: 0.78rem;
+    color: var(--brun-fonce);
+    line-height: 1.15;
+  }
+
+  .sl-chip.selectionne .sl-chip-natif { color: var(--peche-fonce); }
+
+  .sl-chip-code {
+    font-weight: 500;
+    font-size: 0.62rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--brun);
+    opacity: 0.55;
+  }
+
+  /* ---------- Fond estompé ----------
+     Visible par défaut (mode recouvrement plein écran) ; désactivé
+     à partir de 1200px, où le panneau devient un dropdown ancré qui
+     n'a pas besoin d'assombrir la scène. */
+
+  .sl-fond {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(74, 59, 51, 0.28);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
+    z-index: 5;
+  }
+
+  .selecteur-langue.ouvert .sl-fond {
+    opacity: 1;
+    pointer-events: auto;
+  }
 
   @media (max-width: 460px) {
-    .bulle-dialogue { font-size: 1rem; padding: 10px 16px; }
-    .bouton-nav { padding: 9px 20px; font-size: 0.88rem; }
+    .personnages { width: min(70vw, 320px); }
   }
 
-  /* ---------- Mots cliquables dans la bulle active ----------
-     Repris À L'IDENTIQUE (mêmes noms de classes) du mécanisme déjà
-     enseigné ailleurs sur le site (identite-eleve.css/.js) — demande
-     explicite de Raphaël : "le mécanisme du sac demeure partout". Un
-     clic/tap affiche la traduction (bulle .iden-tooltip-mot) ; un
-     double-clic/double-tap range le mot dans le sac (vol animé vers
-     #sacBouton, voir animerMotVersSac dans le script plus bas). Seule
-     la pile #pileDialogue (réplique déjà passée) reste du texte inerte
-     — seule la bulle ACTIVE est interactive, comme dans l'introduction. */
-  .iden-mot {
-    cursor: pointer;
-    position: relative;
-    display: inline-block;
-    transition: color 0.15s ease, text-shadow 0.25s ease;
-    animation: iden-lueur-mot 2.6s ease-in-out infinite;
-    touch-action: manipulation; /* évite le zoom natif au double-tap, voir identite-eleve.css */
-  }
-  @keyframes iden-lueur-mot {
-    0%, 100% { text-shadow: 0 0 0 rgba(224, 136, 103, 0); }
-    50%      { text-shadow: 0 0 14px rgba(224, 136, 103, 0.5); }
-  }
-  .iden-mot:hover { color: var(--peche-fonce); animation: none; text-shadow: 0 0 16px rgba(224, 136, 103, 0.6); }
+  /* ==================================================================
+     À partir de 1200px : le panneau devient un dropdown ancré au
+     déclencheur, qui s'ouvre vers la GAUCHE — donc à l'opposé du
+     personnage, qui est toujours à sa droite (voir .scene / order:-1
+     plus haut). Le seuil de 1200px n'est pas arbitraire : à cette
+     largeur, la marge disponible à gauche du déclencheur (une fois
+     .scene centrée) dépasse toujours la largeur du panneau (280px)
+     + son décalage (14px), donc le panneau ne peut ni chevaucher le
+     personnage ni sortir de l'écran.
+     ================================================================== */
 
-  @keyframes iden-flash-ajout {
-    0%   { text-shadow: 0 0 0 rgba(111, 174, 94, 0); }
-    30%  { color: #4C8A3E; text-shadow: 0 0 18px rgba(111, 174, 94, 0.85); }
-    100% { text-shadow: 0 0 0 rgba(111, 174, 94, 0); }
-  }
-  .iden-mot.flash-ajout { animation: iden-flash-ajout 0.7s ease; }
+  @media (min-width: 1200px) {
+    .sl-fond { display: none; }
 
-  .iden-mot-vole {
-    position: fixed;
-    z-index: 250;
-    font-weight: 700;
-    font-size: 1rem;
-    color: var(--peche-fonce);
-    pointer-events: none;
-    white-space: nowrap;
-    transition: transform 0.55s cubic-bezier(.4, 0, .3, 1), opacity 0.55s ease;
-    transform: translate(0, 0) scale(1);
-    opacity: 1;
-  }
-  .iden-mot-vole.en-vol { transform: translate(var(--vol-dx), var(--vol-dy)) scale(0.3); opacity: 0; }
+    .sl-panneau {
+      position: absolute;
+      top: 50%;
+      left: auto;
+      right: calc(100% + 14px);
+      transform: translateY(-50%) scale(0.85);
+      transform-origin: right center;
+      width: 280px;
+      max-height: min(62vh, 460px);
+    }
 
-  .iden-tooltip-mot {
-    position: absolute;
-    left: 50%;
-    top: calc(100% + 10px);
-    transform: translateX(-50%);
-    font-family: 'Baloo 2', sans-serif;
-    font-size: 0.7rem;
-    font-weight: 700;
-    color: var(--brun-fonce);
-    background: #FFFFFF;
-    border: 1.5px solid var(--peche);
-    border-radius: 8px;
-    padding: 3px 8px;
-    white-space: nowrap;
-    z-index: 3;
-    pointer-events: none;
+    .selecteur-langue.ouvert .sl-panneau {
+      transform: translateY(-50%) scale(1);
+    }
   }
-  .iden-tooltip-mot::after, .iden-tooltip-mot::before {
-    content: '';
-    position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
-    border-left: 6px solid transparent;
-    border-right: 6px solid transparent;
-  }
-  .iden-tooltip-mot::after { bottom: 100%; border-bottom: 7px solid var(--peche); }
-  .iden-tooltip-mot::before { bottom: calc(100% - 1.5px); border-bottom: 6px solid #FFFFFF; z-index: 1; }
 </style>
 </head>
 <body>
 
-<a class="retour" href="../../parcours.html" aria-label="Retour au parcours">‹</a>
+  <!-- 🆕 Écran-titre — voir #ecranTitre dans le CSS pour le détail du
+       raisonnement (superposition, timing, animation "bulle qui
+       éclate"). role="button"/tabindex/aria-label : cliquable/tapable
+       pour passer plus vite (voir masquerEcranTitre() plus bas), donc
+       doit rester accessible comme un vrai bouton, pas juste une image
+       décorative — au clavier aussi (Entrée/Espace, même patron que
+       #idenPersonnages dans identite-eleve.js). aria-hidden basculé à
+       "true" au moment de la sortie (voir JS) : un lecteur d'écran ne
+       doit plus s'y arrêter une fois qu'il a commencé à disparaître. -->
+  <div id="ecranTitre" role="button" tabindex="0" aria-label="Le français avec les Bonomes">
+    <img class="ecran-titre-img" src="images/accueil/index_bonomes_titre_01.webp" width="509" height="489" alt="Le français avec les Bonomes">
+  </div>
 
-<!-- Sac à dos : structure EXACTEMENT celle attendue par sac-a-dos.js/.css
-     (voir index.html) — PAS l'ancien balisage SVG encore présent sur
-     parcours.html (#sacTitre, .sac-avertissement, #btnAjouterTest), qui a
-     divergé du CSS actuel. Visible dès le chargement (pas de
-     style="display:none") : contrairement à index.html, où le sac doit
-     être "gagné" pendant l'intro, une leçon de dialogue n'est accessible
-     qu'après ce déblocage — donc toujours déjà acquis ici. -->
-<button type="button" id="sacBouton" onclick="toggleSacADos()" aria-label="Backpack">
+  <div class="scene">
+   <div class="scene-rangee" id="sceneRangee">
+    <div class="personnages-groupe">
+      <div class="personnages" id="personnages">
+        <img id="imgNeutre" class="actif" src="images/accueil/index_bonomes_keb_bek_neutres_01.webp" alt="Keb et Bek">
+        <img id="imgGauche" src="images/accueil/index_bonomes_keb_bek_presentent-gauche_01.webp" alt="Keb et Bek regardant vers le sélecteur de langue">
+        <img id="imgSaluent" src="images/accueil/index_bonomes_keb_bek_saluent_01.webp" alt="Keb et Bek qui saluent en disant Bonjour">
+        <img id="imgClique" src="images/accueil/index_bonomes_keb_bek_clique-ici_01.webp" alt="Keb et Bek qui montrent une case précise à cliquer">
+        <!-- 🆕 Images du bloc "First time?" (voir plus bas) : Keb & Bek qui
+             souhaitent la bienvenue (survol du bouton "Oui") et Keb & Bek
+             déjà équipés — vêtements colorés, casque, sac à dos — pour
+             suggérer dès le départ qu'il existe un système de progression,
+             sans un mot d'explication (survol du bouton "Non"). Même
+             mécanisme d'affichage que les 4 images ci-dessus, voir
+             afficherImage() en JS. -->
+        <img id="imgBienvenue" src="images/accueil/index_bonomes_keb_bek_bienvenue_01.webp" alt="Keb et Bek qui souhaitent la bienvenue">
+        <img id="imgEquipes" src="images/accueil/index_bonomes_keb_bek_equipes_01.webp" alt="Keb et Bek déjà équipés pour le parcours, avec vêtements colorés, casque et sac à dos">
+        <!-- 🆕 Deuxième pose "équipés", bras levé façon salut — utilisée
+             uniquement le temps d'un battement au survol de "Non", voir
+             jouerSequenceEquipes() en JS : 01 (posture normale) → 02 (ce
+             salut) → retour à 01, pour imiter un mouvement de salutation
+             plutôt qu'un simple changement d'image figé. -->
+        <img id="imgEquipesSalut" src="images/accueil/index_bonomes_keb_bek_equipes_02.webp" alt="Keb et Bek équipés qui font un salut de la main">
+        <p class="bulle-bonjour" id="bulleBonjour" aria-hidden="true">Bonjour !</p>
+        <!-- 🆕 Bulle "Bienvenue !" — même classe .bulle-bonjour (voir CSS),
+             affichée au survol/tap du bouton "Oui" du bloc First time?
+             plus bas. Texte volontairement toujours en français, comme
+             "Bonjour !" ci-dessus : c'est un mot de vocabulaire exposé par
+             immersion, pas un libellé d'interface à traduire. -->
+        <p class="bulle-bonjour" id="bulleBienvenue" aria-hidden="true">Bienvenue !</p>
+        <div class="zone-case" id="zoneCaseSecrete" aria-hidden="true" title="Case secrète — clique ici"></div>
+      </div>
+
+      <!-- 🆕 Bloc "First time?" : remplace l'ancien bouton "continuer" (une
+           simple flèche, v61) sur demande de Raphaël. Apparaît soit dès
+           qu'un choix de langue actif est fait (voir choisir() plus bas),
+           soit automatiquement après 15s sur la page si aucun choix n'a
+           encore été fait — les deux chemins mènent à
+           afficherPremiereFois(), idempotente. Espace réservé dès le
+           départ (opacity/scale animés, pas de display:none) pour que son
+           apparition ne déplace rien autour de lui.
+
+           "Oui"/"Non" mènent tous les deux au menu principal pour
+           l'instant (destination encore à définir côté contenu, voir JS)
+           — à la souris, survoler l'un des deux boutons change l'image
+           des personnages en aperçu avant même de cliquer, comme le
+           reste des interactions "Bonjour !"/sélecteur de langue de
+           cette page. Au tactile, pas de survol distinct : le tap
+           déclenche directement clic + navigation (pas besoin d'un
+           aperçu séparé façon essai_cava_reactions_v3.html, puisque les
+           deux réponses mènent pour l'instant à la même destination). -->
+      <div class="premiere-fois" id="premiereFois">
+        <p class="pf-question" id="pfQuestion">First time?</p>
+        <div class="pf-boutons">
+          <button class="pf-bouton pf-oui" id="pfOui" type="button" data-cible="oui">Oui</button>
+          <button class="pf-bouton pf-non" id="pfNon" type="button" data-cible="non">Non</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="selecteur-langue invite" id="selecteurLangue">
+      <div class="sl-fond" id="slFond"></div>
+
+      <button class="sl-declencheur" id="slDeclencheur" aria-haspopup="listbox" aria-expanded="false">
+        <span class="sl-code" id="slCode">EN</span>
+        <svg class="sl-chevron" viewBox="0 0 20 20" width="14" height="14">
+          <path d="M5 7l5 5 5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+
+      <div class="sl-panneau" id="slPanneau">
+        <input type="text" class="sl-recherche" id="slRecherche" placeholder="Chercher une langue…" autocomplete="off">
+        <div class="sl-grille" id="slGrille" role="listbox"></div>
+        <p class="sl-vide" id="slVide" hidden>Aucune langue trouvée</p>
+      </div>
+    </div>
+   </div>
+
+  <!-- 🐛 CORRIGÉ (2 allers-retours plus tard) : #sequenceIdentite et le
+       lien "cours privés" restent ICI, À L'INTÉRIEUR de .scene — pas à
+       côté. .scene est délibérément un conteneur flex EN COLONNE (voir
+       CSS de .scene-rangee : "laisser .scene devenir une colonne
+       accueillant aussi le lien vers les cours privés en dessous"),
+       conçu pour empiler .scene-rangee (personnages + sélecteur de
+       langue) au-dessus de ces deux éléments. Une tentative précédente
+       les avait sortis de .scene pour qu'ils restent visibles quand
+       .scene se cache — mais body est lui un conteneur flex en LIGNE
+       (flex-direction: row, par défaut) : dès que .scene disparaissait,
+       ces deux éléments (devenus des frères de .scene au lieu de ses
+       enfants) se faisaient reposition­ner par le flex du <body>, d'où
+       le lien "Information et cours privés" qui se retrouvait plaqué à
+       l'extrême droite de l'écran au lieu de rester sous les
+       personnages. Corrigé pour de bon cette fois : #sceneRangee (voir
+       id ajouté plus haut) est l'élément qu'on cache/affiche
+       individuellement (voir demarrerIdentiteSiPremiereFois() plus bas),
+       jamais .scene en entier — #sequenceIdentite et le lien restent
+       donc toujours dans le même flux de mise en page, qu'ils soient
+       visibles ou non. -->
+
+  <!-- 🆕 Séquence identité (nom + genre + tranche d'âge) — se substitue
+       à la scène d'accueil ci-dessus quand l'élève répond "Oui" à
+       "First time?" (voir demarrerIdentiteSiPremiereFois() plus bas).
+       Masqué par défaut (display:none) plutôt que retiré du DOM, pour
+       pouvoir y revenir sans tout reconstruire ; demarrerSequenceIdentite
+       (identite-eleve.js) réécrit tout son contenu à chaque étape. -->
+  <div id="sequenceIdentite" style="display:none;"></div>
+
+  <!-- 🆕 Menu principal (menu-principal.js) — se substitue à son tour à
+       la séquence identité une fois celle-ci terminée (onComplet, voir
+       plus bas). Même patron que #sequenceIdentite juste au-dessus :
+       masqué par défaut, rempli/vidé par demarrerMenuPrincipal(). -->
+  <div id="menuPrincipal" style="display:none;"></div>
+
+  <!-- Lien vers les cours privés — pensé pour un parent qui atterrit
+       ici en quête d'info, pas pour l'enfant en immersion : volontairement
+       discret (petit lien, pas un bouton en évidence) pour ne pas
+       concurrencer le sélecteur de langue / bouton continuer, qui restent
+       le parcours principal. Libellé traduit via DICO_COURS_PRIVES (JS
+       plus bas), mis à jour au choix de langue par rafraichirLienCoursPrives(). -->
+  <a class="lien-cours-prives" id="lienCoursPrives" href="cours-prives/">Information et cours privés</a>
+ </div>
+
+<!-- 🆕 Composant "sac à dos" — vraie intégration de sac-a-dos.js/.css
+     (voir <link> en tête de fichier). Structure EXACTEMENT celle
+     attendue par sac-a-dos.js (voir sa note de tête de fichier :
+     #sacBouton, #sacBadge, #iconeSac, #sacPanneau, #sacSousTitre,
+     #sacCorps ; #btnAjouterTest volontairement absent, comme sur
+     intro-bonomes.html — pas de bouton de test pendant une séquence
+     narrative). #btnConnexionDepuisSac également absent : index.html ne
+     gère aucune session (voir note de tête de identite-eleve.js), rien
+     de réel à brancher dessus pour l'instant.
+
+     display:none par défaut : ce composant existe dans le DOM dès le
+     chargement de la page (pour que rafraichirAffichageSac() le trouve),
+     mais reste invisible tant que l'élève ne l'a pas "gagné" — révélé une
+     seule fois par atterrir() dans identite-eleve.js (lancerDeblocageSac),
+     au moment précis où le sac atterrit dans le coin après son animation
+     de vol. Un style inline (élément.style.display = '') suffit alors à
+     lever ce display:none une bonne fois pour toutes. -->
+<!-- 🆕 Icône du sac — remplace l'improvisation SVG précédente (jamais
+     validée par Raphaël) par les deux VRAIES images fournies : fermé par
+     défaut, ouvert affiché en superposition quand #sacBouton porte la
+     classe .ouvert (voir toggleSacADos() dans sac-a-dos.js). Même patron
+     de cross-fade que .iden-img/.actif dans identite-eleve.css : les
+     deux images restent toujours dans le DOM, seule leur opacité change,
+     jamais un changement de src (évite tout scintillement/rechargement). -->
+<button type="button" id="sacBouton" class="" style="display:none;" onclick="toggleSacADos()" aria-label="Backpack">
   <span id="iconeSac" class="sac-icone">
-    <img class="sac-icone-img sac-icone-fermee" src="../../images/accueil/index_bonomes_icone_sac_01.webp" width="26" height="26" alt="">
-    <img class="sac-icone-img sac-icone-ouverte" src="../../images/accueil/index_bonomes_icone_sac_01_ouvert.webp" width="26" height="26" alt="">
+    <img class="sac-icone-img sac-icone-fermee" src="images/accueil/index_bonomes_icone_sac_01.webp" width="26" height="26" alt="">
+    <img class="sac-icone-img sac-icone-ouverte" src="images/accueil/index_bonomes_icone_sac_01_ouvert.webp" width="26" height="26" alt="">
   </span>
   <span class="sac-badge vide" id="sacBadge">0</span>
 </button>
@@ -454,6 +894,10 @@
     <span id="sacEnteteTitre">Your backpack</span>
     <div class="sac-sous-titre" id="sacSousTitre"></div>
   </div>
+  <!-- 🆕 Solde P$/PB — rempli par rafraichirSoldeSac() dans sac-a-dos.js
+       (voir progression.js:lireSolde()). Toujours à 0/0 pour un invité
+       (aucune ligne `eleves` tant qu'il n'a pas de compte), à jour pour
+       un élève connecté. -->
   <div class="sac-solde" id="sacSolde">
     <span class="sac-solde-item"><span class="sac-solde-valeur" id="sacSoldePiasses">0</span><span class="sac-solde-etiquette">P$</span></span>
     <span class="sac-solde-item"><span class="sac-solde-valeur" id="sacSoldePointsBonis">0</span><span class="sac-solde-etiquette">PB</span></span>
@@ -465,515 +909,857 @@
     <button type="button" id="btnFermerSac" onclick="toggleSacADos()" aria-label="Close" title="Close">&times;</button>
   </div>
 </div>
-<!-- sac-a-dos.js (fichier partagé, voir sa note de tête) : chargé ici,
-     avant le script de la leçon plus bas, pour que window.ajouterAuSac
-     et toggleSacADos existent déjà quand un mot est touché. -->
-<script src="../../sac-a-dos.js"></script>
 
-<div class="compteur" id="compteur">1 / 5</div>
-
-<div class="zone-bulle">
-  <div class="bulle-dialogue" id="bulleDialogue"></div>
-</div>
-
-<div class="scene-dialogue" id="sceneDialogue"></div>
-
-<div class="nav-dialogue">
-  <button type="button" class="bouton-nav precedent" id="btnPrecedent">‹ Précédent</button>
-  <button type="button" class="bouton-nav suivant" id="btnSuivant">Continuer ›</button>
-</div>
-
-<div class="piles-conteneur">
-  <div>
-    <div class="pile-section-titre" id="titrePileDialogue">Ce qui a été dit</div>
-    <div class="pile-dialogue" id="pileDialogue"></div>
-  </div>
-  <div id="blocGrammaire" style="display:none;">
-    <div class="pile-section-titre" id="titrePileGrammaire">À retenir</div>
-    <div class="pile-grammaire" id="pileGrammaire"></div>
-  </div>
-</div>
+<!-- Chargé AVANT le script principal ci-dessous : demarrerIdentiteSiPremiereFois()
+     (voir plus bas) appelle KebBekIdentite.demarrerSequenceIdentite(), qui
+     doit donc déjà exister au moment où ce script s'exécute. -->
+<!-- 🆕 progression.js — expose window.KebBekProgression, utilisé par
+     demarrerIdentiteSiPremiereFois() (voir plus bas) pour enregistrer
+     { prenom, genre, adulte } dès que la séquence identité se termine.
+     Aucune session n'est établie sur cette page (pas de login ici) :
+     KebBekProgression.enregistrerIdentite() retombe donc automatiquement
+     sur le mode invité (localStorage), sans besoin du CDN Supabase — à
+     ajouter ici plus tard si index.html gagne un jour son propre système
+     de connexion (voir note de tête de progression.js : "cas d'index.html,
+     qui gère sa propre connexion"). -->
+<!-- 🆕 CDN Supabase — DOIT être chargé avant progression.js (voir son
+     en-tête) pour que clientOuAutoCree() puisse créer un client réel ;
+     sans lui, KebBekProgression retombe silencieusement en mode invité
+     (localStorage), ce qui aurait empêché la création de compte de
+     fonctionner. Requis par lancerCreationCompte() dans identite-eleve.js
+     (courriel + code, voir ce fichier). -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="sac-a-dos.js"></script>
+<script src="progression.js"></script>
+<script src="identite-eleve.js"></script>
+<script src="menu-principal.js"></script>
 
 <script>
   // ================================================================
-  // Contenu du dialogue — confirmé par Raphaël (session du 08-08-2026).
-  // 'grammaire' est une clé optionnelle vers GRAMMAIRE ci-dessous ; toutes
-  // les étapes n'en ont pas (ici : seulement 1 et 2).
-  // ================================================================
-  const ETAPES = [
-    { speaker: 'keb', texte: 'J\u2019ai faim.', img: '../../images/dialogues/d1/d1_01_bonomes_keb_bek_jai-faim_.png', grammaire: 'gJai' },
-    { speaker: 'bek', texte: 'Mange\u00A0!', img: '../../images/dialogues/d1/d1_02_bonomes_keb_bek_mange_.png', grammaire: 'gImperatif' },
-    { speaker: 'keb', texte: 'Mange quoi\u00A0?', img: '../../images/dialogues/d1/d1_03_bonomes_keb_bek_mange_quoi.png', grammaire: 'gQuoi' },
-    { speaker: 'bek', texte: 'Mange... mon sandwich\u00A0?', img: '../../images/dialogues/d1/d1_04_bonomes_keb_bek_mange-mon-mange_.png' },
-    // 🆕 (session du 08-08-2026, 4e échange) : étape 5a — Keb réalise que
-    // Bek n'a pas de sandwich sur elle. 'sequenceAuto' : liste d'images qui
-    // s'enchaînent SEULES (pas de clic entre elles) dès que l'élève clique
-    // Continuer depuis CETTE étape — voir jouerSequenceAuto() plus bas.
-    // Confirmé par Raphaël : ce défilement automatique est une exception
-    // ponctuelle (pour montrer d'où viennent le calepin et le crayon), pas
-    // un patron réutilisé pour les prochaines apparitions d'objets.
-    // Noms de fichiers ci-dessous DEVINÉS en attendant les vraies images
-    // (même repli "Image not ready yet" que partout ailleurs) — à corriger
-    // dès que Raphaël fournit les vrais noms, comme pour 01-04.
-    {
-      speaker: 'keb',
-      texte: 'Ton sandwich\u00A0?',
-      img: '../../images/dialogues/d1/d1_05a_bonomes_keb_bek_ton-sandwich_.png',
-      sequenceAuto: [
-        '../../images/dialogues/d1/d1_05b_bonomes_keb_bek_ton-sandwich_.png',
-        '../../images/dialogues/d1/d1_05c_bonomes_keb_bek_ton-sandwich_.png',
-        // 🆕 dernier temps : image de base (la lueur/étoile y est déjà) +
-        // le sandwich greffé par-dessus en superposition flottante — voir
-        // creerImageComposite() plus bas. Position en % estimée par
-        // analyse de pixels de l'image fournie (centre de la lueur ≈ 52,7%
-        // largeur / 37% hauteur) — à ajuster si ça ne tombe pas pile une
-        // fois vu en vrai dans le navigateur.
-        {
-          img: '../../images/dialogues/d1/d1_05d_bonomes_keb_bek_ton-sandwich_.png',
-          superposition: '../../images/dialogues/d1/d1_05d_sandwich_.png'
-        }
-      ]
-    },
-    { speaker: 'keb', texte: 'Oh, merci\u00A0!', img: '../../images/dialogues/d1/d1_06_bonomes_keb_bek_ton-sandwich_.png' }
-  ];
-
-  // Notes grammaticales dans la langue de l'apprenant. Seules fr/en sont
-  // complètes pour l'instant (même choix minimal que menu-principal.js à
-  // sa création) — repli automatique sur l'anglais pour toute autre langue
-  // (voir texteGrammaire ci-dessous), plutôt que de traduire à l'avance un
-  // texte que Raphaël pourrait encore vouloir ajuster.
-  const GRAMMAIRE = {
-    gJai: {
-      fr: '« J\u2019ai » vient du verbe avoir. Avec « faim », ça donne littéralement « I have hunger » — mais en anglais, on dit plutôt « I\u2019m hungry ».',
-      en: '"J\u2019ai" comes from the verb avoir ("to have"). With "faim," it literally reads "I have hunger" — but in natural English, you\u2019d just say "I\u2019m hungry."'
-    },
-    gImperatif: {
-      fr: '« Mange\u00A0! » est l\u2019impératif informel (tutoiement) du verbe « manger » : un ordre ou une suggestion directe. On y reviendra plus en détail bientôt.',
-      en: '"Mange!" is the informal (tu-form) imperative of manger ("to eat") — a direct order or suggestion. We\u2019ll dig deeper into this soon.'
-    },
-    gQuoi: {
-      fr: '« Quoi\u00A0? » placé juste après le verbe, comme dans « Mange quoi\u00A0? », est la façon la plus spontanée et la plus courante de demander une précision à l\u2019oral, en contexte informel.',
-      en: 'Placing "quoi" ("what") right after the verb — as in "Mange quoi?" — is the most spontaneous and common way to ask for clarification out loud, in an informal setting.'
-    }
-  };
-
-  const NOMS = { keb: 'Keb', bek: 'Bek' };
-  const INITIALES = { keb: 'K', bek: 'B' };
-
-  // ---------- Mots cliquables : traduction + ajout au sac ----------
-  // Même mécanisme que partout ailleurs sur le site (identite-eleve.js) —
-  // demande explicite de Raphaël, "le mécanisme du sac demeure partout" :
-  // un clic/tap affiche la traduction, un double-clic/double-tap range le
-  // mot dans le sac (pas d'ajout automatique au simple clic ici).
+  // 🆕 Écran-titre — voir #ecranTitre dans le <style> pour le CSS/le
+  // raisonnement de superposition. Placé tout en haut de ce script,
+  // avant tout le reste : indépendant de la langue, de l'identité, du
+  // sac, etc. — ne doit dépendre de rien d'autre pour se déclencher.
   //
-  // TRADUCTIONS : seule fr→en est complète pour l\u2019instant (même repli
-  // minimal que GRAMMAIRE ci-dessus et que menu-principal.js à sa
-  // création) — à étoffer langue par langue plutôt que deviné à l\u2019avance.
-  const TRADUCTIONS = {
-    en: {
-      'j\u2019ai': 'I have',
-      'faim': 'hunger (= hungry)',
-      'mange': 'eat!',
-      'quoi': 'what',
-      'mon': 'my',
-      'sandwich': 'sandwich',
-      'oh': 'oh',
-      'merci': 'thank you'
+  // Timing choisi : 1600ms affiché tel quel (assez pour être lu, pas
+  // assez pour agacer qui revient sur le site), PUIS ~500ms d'animation
+  // de sortie (voir .ecran-titre-sortie, doit correspondre à la durée
+  // des transitions CSS ci-dessus) avant de retirer l'élément du DOM
+  // pour de bon. Le clic/tap ou une touche (Entrée/Espace) sur l'écran-
+  // titre lui-même saute directement à l'étape de sortie — cohérent
+  // avec le reste du site, où taper la scène fait toujours avancer
+  // (voir #idenPersonnages dans identite-eleve.js).
+  //
+  // Aucune dépendance à un "déjà vu" façon localStorage (à la
+  // différence de l'intro du sac ou de l'indice des mots) : demande de
+  // Raphaël, "la toute première chose quand on arrive sur le site" —
+  // sans préciser "une seule fois", et un écran-titre qui se répète à
+  // chaque visite est un choix délibéré courant (générique/splash),
+  // pas un oubli. Si Raphaël préfère qu'il ne joue qu'une fois par
+  // navigateur, un simple drapeau localStorage suffira à ajouter ici.
+  (function () {
+    const ecran = document.getElementById('ecranTitre');
+    if (!ecran) return;
+
+    const DUREE_AFFICHAGE_MS = 1600;
+    const DUREE_SORTIE_MS = 500; // doit rester ≥ à la plus longue transition CSS de #ecranTitre/.ecran-titre-img
+    let dejaSorti = false;
+
+    function masquerEcranTitre() {
+      if (dejaSorti) return;
+      dejaSorti = true;
+      ecran.classList.add('ecran-titre-sortie');
+      ecran.setAttribute('aria-hidden', 'true');
+      setTimeout(function () { ecran.remove(); }, DUREE_SORTIE_MS);
     }
-  };
 
-  // 'mange' est un tutoiement (impératif informel) — seul mot informel de
-  // ce dialogue à ce jour, voir gImperatif ci-dessus.
-  const MOTS_INFORMELS = new Set(['mange']);
-  const ETIQUETTE_INFORMEL = { fr: '(tutoiement)', en: '(informal)' };
-
-  // 🆕 (6e échange) : textes d'interface (boutons, titres de pile) dans la
-  // langue de l'apprenant — même repli minimal fr/en que GRAMMAIRE et
-  // TRADUCTIONS ci-dessus (anglais par défaut pour toute autre langue).
-  const INTERFACE = {
-    fr: { precedent: 'Précédent', continuer: 'Continuer', terminer: 'Terminer', ceQuiAEteDit: 'Ce qui a été dit', aRetenir: 'À retenir' },
-    en: { precedent: 'Back', continuer: 'Continue', terminer: 'Finish', ceQuiAEteDit: 'What was said', aRetenir: 'Good to know' }
-  };
-
-  function texteInterface(cle) {
-    const dict = INTERFACE[langueActuelle()] || INTERFACE.en;
-    return dict[cle] || INTERFACE.en[cle];
-  }
-
-  function traductionDeMot(mot) {
-    const dico = TRADUCTIONS[langueActuelle()] || TRADUCTIONS.en;
-    return dico[mot.toLowerCase()];
-  }
-
-  function motEstInformel(mot) {
-    return MOTS_INFORMELS.has(mot.toLowerCase());
-  }
-
-  // Même clé que sac-a-dos.js/menu-principal.js — un seul réglage de
-  // langue pour tout le site.
-  function langueActuelle() {
-    try { return localStorage.getItem('kebbek_langue') || 'en'; } catch (e) { return 'en'; }
-  }
-
-  function texteGrammaire(cle) {
-    const dict = GRAMMAIRE[cle];
-    if (!dict) return '';
-    return dict[langueActuelle()] || dict.en;
-  }
-
-  // ---------- Image avec repli "pas encore prête" (même patron que
-  // creerImage() dans intro-bonomes.html) ----------
-  function creerImage(cheminImage) {
-    const wrapper = document.createElement('div');
-    wrapper.style.position = 'absolute';
-    wrapper.style.inset = '0';
-    const img = document.createElement('img');
-    img.className = 'image-scene';
-    img.src = cheminImage;
-    img.alt = 'Keb et Bek';
-    img.onerror = function () {
-      const repli = document.createElement('div');
-      repli.className = 'repli-image-manquante';
-      repli.textContent = 'Image not ready yet';
-      img.replaceWith(repli);
-    };
-    wrapper.appendChild(img);
-    return wrapper;
-  }
-
-  // ---------- Image de base + sandwich greffé par-dessus, flottant avec
-  // lueur (voir CSS .sandwich-greffe*). Même repli "pas encore prête" que
-  // creerImage() pour les deux images. ----------
-  function creerImageComposite(cheminBase, cheminSuperposition) {
-    const wrapper = creerImage(cheminBase);
-    const greffe = document.createElement('div');
-    greffe.className = 'sandwich-greffe';
-    const lueur = document.createElement('div');
-    lueur.className = 'sandwich-greffe-lueur';
-    const imgSandwich = document.createElement('img');
-    imgSandwich.className = 'sandwich-greffe-img';
-    imgSandwich.src = cheminSuperposition;
-    imgSandwich.alt = 'Le sandwich';
-    imgSandwich.onerror = function () { greffe.style.display = 'none'; };
-    greffe.appendChild(lueur);
-    greffe.appendChild(imgSandwich);
-    wrapper.appendChild(greffe);
-    return wrapper;
-  }
-
-  function afficherTraductionMot(span, mot) {
-    document.querySelectorAll('.iden-tooltip-mot').forEach(function (t) { t.remove(); });
-    const trad = traductionDeMot(mot);
-    if (!trad) return; // pas de bulle vide si le mot n'est pas encore au dictionnaire
-    const tip = document.createElement('span');
-    tip.className = 'iden-tooltip-mot';
-    let contenu = trad;
-    if (motEstInformel(mot)) {
-      const langue = langueActuelle();
-      contenu += ' ' + (ETIQUETTE_INFORMEL[langue] || ETIQUETTE_INFORMEL.en);
-    }
-    tip.textContent = contenu;
-    span.appendChild(tip);
-  }
-
-  // Anime un CLONE du mot qui s'envole depuis sa position réelle jusqu'à
-  // #sacBouton, puis disparaît — repli silencieux si le sac est absent ou
-  // masqué (même prudence que animerMotVersSac dans identite-eleve.js).
-  function animerMotVersSac(span) {
-    const bouton = document.getElementById('sacBouton');
-    if (!bouton || getComputedStyle(bouton).display === 'none') return;
-    const depart = span.getBoundingClientRect();
-    const arrivee = bouton.getBoundingClientRect();
-    const clone = document.createElement('span');
-    clone.className = 'iden-mot-vole';
-    clone.textContent = span.textContent;
-    clone.style.left = depart.left + 'px';
-    clone.style.top = depart.top + 'px';
-    document.body.appendChild(clone);
-    const dx = (arrivee.left + arrivee.width / 2) - (depart.left + depart.width / 2);
-    const dy = (arrivee.top + arrivee.height / 2) - (depart.top + depart.height / 2);
-    void clone.offsetWidth;
-    clone.style.setProperty('--vol-dx', dx + 'px');
-    clone.style.setProperty('--vol-dy', dy + 'px');
-    clone.classList.add('en-vol');
-    clone.addEventListener('transitionend', function () { clone.remove(); }, { once: true });
-    bouton.classList.add('sac-recoit');
-    setTimeout(function () { bouton.classList.remove('sac-recoit'); }, DUREE_VOL_MOT + DELAI_FERMETURE_SAC_APRES_RECEPTION);
-  }
-
-  const DUREE_VOL_MOT = 550;
-  const DELAI_FERMETURE_SAC_APRES_RECEPTION = 350;
-  const motsDejaAjoutes = new Set(); // un seul flash par mot par visite de la leçon
-
-  function ajouterMotAuSac(span, mot) {
-    if (typeof window.ajouterAuSac !== 'function') return; // sac-a-dos.js absent : repli silencieux
-    const cle = mot.toLowerCase();
-    window.ajouterAuSac('mots', { mot: cle, trad: traductionDeMot(mot) || '', informel: motEstInformel(mot) });
-    animerMotVersSac(span);
-    if (motsDejaAjoutes.has(cle)) return;
-    motsDejaAjoutes.add(cle);
-    span.classList.remove('flash-ajout');
-    void span.offsetWidth;
-    span.classList.add('flash-ajout');
-  }
-
-  // Découpe le texte de la bulle active en <span class="iden-mot">
-  // cliquables — même logique de fusion de la ponctuation isolée
-  // ("Mange\u00A0!" → un seul mot cliquable, pas un "!" à part) que
-  // afficherBulle() dans identite-eleve.js.
-  const PONCTUATION_SEULE = /^[.,!?;:'"«»\u2026]+$/;
-  function construireBulleMots(texteBrut) {
-    elBulle.innerHTML = '';
-    const brutSepares = String(texteBrut).split(/\s+/).filter(Boolean);
-    const mots = [];
-    brutSepares.forEach(function (tok) {
-      if (PONCTUATION_SEULE.test(tok) && mots.length > 0) {
-        mots[mots.length - 1] += '\u00A0' + tok;
-      } else {
-        mots.push(tok);
-      }
+    setTimeout(masquerEcranTitre, DUREE_AFFICHAGE_MS);
+    ecran.addEventListener('click', masquerEcranTitre);
+    ecran.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); masquerEcranTitre(); }
     });
-    mots.forEach(function (motBrut, idx) {
-      const span = document.createElement('span');
-      span.className = 'iden-mot';
-      span.textContent = motBrut + (idx < mots.length - 1 ? '\u00A0' : '');
-      const motNettoye = motBrut.replace(/^[\s.,!?;:'"«»\u2026]+|[\s.,!?;:'"«»\u2026]+$/g, '');
-      span.tabIndex = 0;
-      span.addEventListener('click', function (e) {
-        e.stopPropagation();
-        afficherTraductionMot(span, motNettoye);
-      });
-      span.addEventListener('keydown', function (e) {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault(); e.stopPropagation();
-          afficherTraductionMot(span, motNettoye);
-        }
-      });
-      span.addEventListener('dblclick', function (e) {
-        e.stopPropagation();
-        ajouterMotAuSac(span, motNettoye);
-      });
-      elBulle.appendChild(span);
-    });
-  }
-
-  const elCompteur = document.getElementById('compteur');
-  const elBulle = document.getElementById('bulleDialogue');
-  const elScene = document.getElementById('sceneDialogue');
-  const btnPrecedent = document.getElementById('btnPrecedent');
-  const btnSuivant = document.getElementById('btnSuivant');
-  const elPileDialogue = document.getElementById('pileDialogue');
-  const elPileGrammaire = document.getElementById('pileGrammaire');
-  const blocGrammaire = document.getElementById('blocGrammaire');
-
-  let etape = 0;
-  let reconstructionEnCours = false;
-  const sequencesJouees = new Set(); // 🆕 (5e échange) : étapes dont la séquence auto a déjà joué
-
-  function ajouterLigneDialogue(def) {
-    const div = document.createElement('div');
-    div.className = 'pile-item ' + def.speaker;
-    div.innerHTML = '<div class="pile-avatar">' + INITIALES[def.speaker] + '</div>' +
-      '<div class="pile-corps"><span class="pile-qui">' + NOMS[def.speaker] + '</span>' +
-      '<div class="pile-texte">' + def.texte + '</div></div>';
-    elPileDialogue.appendChild(div);
-    requestAnimationFrame(() => requestAnimationFrame(() => div.classList.add('in')));
-  }
-
-  function ajouterNoteGrammaire(def) {
-    if (!def.grammaire) return;
-    blocGrammaire.style.display = 'block';
-    const div = document.createElement('div');
-    div.className = 'grammaire-item';
-    div.textContent = texteGrammaire(def.grammaire);
-    elPileGrammaire.appendChild(div);
-    requestAnimationFrame(() => requestAnimationFrame(() => div.classList.add('in')));
-  }
-
-  function rendreEtape() {
-    const def = ETAPES[etape];
-    elCompteur.textContent = (etape + 1) + ' / ' + ETAPES.length;
-
-    // Bulle unique — remplacée, jamais empilée. Mots cliquables (voir
-    // construireBulleMots) : clic/tap = traduction, double-clic/double-tap
-    // = ajout au sac — même mécanisme que partout ailleurs sur le site.
-    elBulle.classList.remove('in');
-    elBulle.className = 'bulle-dialogue cote-' + def.speaker;
-    construireBulleMots(def.texte);
-    requestAnimationFrame(() => requestAnimationFrame(() => elBulle.classList.add('in')));
-
-    // Scène — une image par étape (repli gracieux tant que l'art n'existe
-    // pas encore, voir creerImage()).
-    elScene.innerHTML = '';
-    elScene.appendChild(creerImage(def.img));
-
-    if (!reconstructionEnCours) {
-      ajouterLigneDialogue(def);
-      ajouterNoteGrammaire(def);
-    }
-
-    btnPrecedent.disabled = (etape === 0);
-    btnSuivant.textContent = (etape === ETAPES.length - 1)
-      ? texteInterface('terminer') + ' \u203a'
-      : texteInterface('continuer') + ' \u203a';
-  }
-
-  // ---------- Séquence automatique (b→c→d) — exception ponctuelle pour
-  // l'étape "Ton sandwich ?" (voir commentaire sur ETAPES), pas un patron
-  // réutilisé ailleurs. Enchaîne les images avec un léger fondu, SANS
-  // attendre de clic, pendant que la navigation est désactivée pour éviter
-  // qu'un clic mal placé saute une étape ou casse l'état. ----------
-  // 🆕 (7e échange) : verrou centralisé contre le double-déclenchement.
-  // Cause du bogue signalé (séquence sautée un coup sur deux après un
-  // retour en arrière) : le raccourci clavier (flèche/espace, tout en bas
-  // du fichier) appelait suivant() DIRECTEMENT, sans jamais vérifier
-  // btnSuivant.disabled — donc une pression pendant l'animation démarrait
-  // une 2e séquence en parallèle de la première, et les deux se
-  // marchaient dessus sur elScene. Un verrou unique, vérifié en tout
-  // premier dans suivant()/precedent() peu importe la source (clic sur
-  // bouton, tap sur la scène, ou clavier), règle ça à la racine — plus
-  // besoin de jouer au add/removeEventListener sur elScene.
-  let navigationVerrouillee = false;
-
-  function jouerSequenceAuto(chemins, auTermine) {
-    let i = 0;
-    function etapeSuivante() {
-      if (i >= chemins.length) {
-        auTermine();
-        return;
-      }
-      const item = chemins[i];
-      const nouveau = (typeof item === 'string')
-        ? creerImage(item)
-        : creerImageComposite(item.img, item.superposition);
-      nouveau.style.opacity = '0';
-      nouveau.style.transition = 'opacity 0.55s ease';
-      elScene.innerHTML = '';
-      elScene.appendChild(nouveau);
-      requestAnimationFrame(() => requestAnimationFrame(() => { nouveau.style.opacity = '1'; }));
-      i++;
-      setTimeout(etapeSuivante, 1700);
-    }
-    etapeSuivante();
-  }
-
-  function suivant() {
-    if (navigationVerrouillee) return; // 🆕 ignore tout déclenchement pendant l'animation
-    if (etape < ETAPES.length - 1) {
-      const def = ETAPES[etape];
-      if (def.sequenceAuto && !sequencesJouees.has(etape)) {
-        navigationVerrouillee = true;
-        btnPrecedent.disabled = true;
-        btnSuivant.disabled = true;
-        jouerSequenceAuto(def.sequenceAuto, function () {
-          sequencesJouees.add(etape);
-          btnPrecedent.disabled = (etape === 0);
-          btnSuivant.disabled = false;
-          navigationVerrouillee = false;
-        });
-        return;
-      }
-      etape++;
-      rendreEtape();
-    } else {
-      terminerLecon();
-    }
-  }
-
-  function precedent() {
-    if (navigationVerrouillee) return; // 🆕 pas de retour en arrière pendant l'animation
-    if (etape === 0) return;
-    etape--;
-    if (ETAPES[etape].sequenceAuto) sequencesJouees.delete(etape); // rejoue si on repasse par ici
-    // Reconstruit les deux piles depuis le début plutôt que de retirer
-    // juste le dernier élément — même stratégie que precedent() dans
-    // intro-bonomes.html : plus simple et sans risque de désynchronisation
-    // entre la pile de dialogue et la pile de grammaire.
-    elPileDialogue.innerHTML = '';
-    elPileGrammaire.innerHTML = '';
-    blocGrammaire.style.display = 'none';
-    reconstructionEnCours = true;
-    for (let i = 0; i <= etape; i++) {
-      ajouterLigneDialogue(ETAPES[i]);
-      ajouterNoteGrammaire(ETAPES[i]);
-    }
-    elPileDialogue.querySelectorAll('.pile-item').forEach(el => el.classList.add('in'));
-    elPileGrammaire.querySelectorAll('.grammaire-item').forEach(el => el.classList.add('in'));
-    rendreEtape(); // appelé AVANT de repasser reconstructionEnCours à false
-    reconstructionEnCours = false; // sinon rendreEtape() ci-dessus rajoute une 2e fois la ligne courante
-  }
-
-  // Fin de la leçon — enregistre la progression réelle (voir
-  // marquer_chapitre_complete côté Supabase) puis retour au parcours.
-  // ⚠️ N'attribue PAS encore de P$/PB (voir note en tête de fichier) —
-  // en attente d'un montant/une logique confirmés par Raphaël.
-  let leconTerminee = false;
-  // 🆕 (8e échange) : établit la vraie session/profil — manquant jusqu'ici
-  // dans ce fichier (contrairement à parcours.html, qui le fait déjà via
-  // initProgressionReelle()). Sans ça, marquerChapitreComplete() et
-  // attribuerRecompensePremiereFois() traitaient silencieusement TOUT
-  // élève connecté comme un invité, puisque progression.js ne bascule en
-  // mode "compte" que si sessionActuelle ET profilActifId sont posés
-  // (voir clientOuAutoCree()/estInvite() dans progression.js) — jamais
-  // d'erreur visible, juste la mauvaise ligne créditée (locale au lieu du
-  // compte réel). Lancé tout de suite (en parallèle du rendu de la
-  // leçon), mais AWAITÉ dans terminerLecon() avant l'enregistrement —
-  // même construction que initProgressionReelle() dans parcours.html.
-  const pretProgressionReelle = (async () => {
-    await KebBekProgression.initSession();
-    if (KebBekProgression.session) {
-      const dernier = KebBekProgression.dernierProfilConnu();
-      if (dernier) {
-        KebBekProgression.profilActifId = dernier;
-      } else {
-        const profils = await KebBekProgression.profilsDuCompte();
-        if (profils.length === 1) KebBekProgression.profilActifId = profils[0].id;
-      }
-    }
   })();
 
-  async function terminerLecon() {
-    if (leconTerminee) return;
-    leconTerminee = true;
-    btnSuivant.disabled = true;
-    btnSuivant.textContent = 'Enregistrement…';
-    await pretProgressionReelle; // 🆕 s'assure que la session/profil est prête avant d'enregistrer
-    try {
-      await KebBekProgression.marquerChapitreComplete('d1');
-    } catch (e) {
-      console.warn('dialogue-d1.html : impossible d\u2019enregistrer la fin du dialogue.', e);
-    }
-    // Récompense (5 P$, une seule fois) — appel séparé et best-effort,
-    // voir note en tête de fichier : n'affecte jamais l'enregistrement de
-    // la progression elle-même si la RPC n'existe pas encore côté Supabase.
-    try {
-      await KebBekProgression.attribuerRecompensePremiereFois('d1', 5, 0);
-    } catch (e) {
-      console.warn('dialogue-d1.html : impossible d\u2019attribuer la récompense (RPC pas encore créée ?).', e);
-    }
-    window.location.href = '../../parcours.html'; // 🆕 (8e échange) : corrigé — était un chemin non-relatif ('parcours.html'), incohérent avec le lien "retour" en haut de page qui, lui, utilisait déjà ../../
+  // ================================================================
+  // 19 langues : nom natif (affiché en priorité) + libellé français
+  // (affiché en plus petit, sert aussi à la recherche). Le code est
+  // celui utilisé ailleurs sur le site (data-lang).
+  // ================================================================
+  const LANGUES = [
+    { code: 'en', natif: 'English',           fr: 'Anglais' },
+    { code: 'es', natif: 'Español',           fr: 'Espagnol' },
+    { code: 'it', natif: 'Italiano',          fr: 'Italien' },
+    { code: 'pt', natif: 'Português',         fr: 'Portugais' },
+    { code: 'ca', natif: 'Català',            fr: 'Catalan' },
+    { code: 'eo', natif: 'Esperanto',         fr: 'Esperanto' },
+    { code: 'zh', natif: '中文',               fr: 'Chinois (mandarin)' },
+    { code: 'ja', natif: '日本語',             fr: 'Japonais' },
+    { code: 'ko', natif: '한국어',             fr: 'Coréen' },
+    { code: 'vi', natif: 'Tiếng Việt',        fr: 'Vietnamien' },
+    { code: 'ht', natif: 'Kreyòl ayisyen',    fr: 'Créole haïtien' },
+    { code: 'tl', natif: 'Tagalog',           fr: 'Tagalog' },
+    { code: 'id', natif: 'Bahasa Indonesia',  fr: 'Indonésien' },
+    { code: 'nl', natif: 'Nederlands',        fr: 'Néerlandais' },
+    { code: 'de', natif: 'Deutsch',           fr: 'Allemand' },
+    { code: 'fa', natif: 'فارسی',             fr: 'Farsi' },
+    { code: 'sv', natif: 'Svenska',           fr: 'Suédois' },
+    { code: 'no', natif: 'Norsk',             fr: 'Norvégien' },
+    { code: 'ru', natif: 'Русский',           fr: 'Russe' },
+  ];
+
+  // Clé PARTAGÉE avec tout le reste du site (sac-a-dos.js — voir
+  // CLE_LANGUE_SAC/langueActuelleSac — ainsi que cours-prives/index.html,
+  // methode.html, tarifs.html, qui lisent tous ce même
+  // localStorage.getItem('kebbek_langue')). Jusqu'ici cette page ne
+  // faisait QUE tenir langueActuelle en mémoire JS sans jamais l'écrire
+  // ici : choisir() changeait l'affichage local, mais rien n'était
+  // persisté, donc toute page suivante (comme le lien vers les cours
+  // privés) retombait sur son propre repli 'en' — corrigé ci-dessous.
+  const CLE_LANGUE = 'kebbek_langue';
+  function langueSauvegardee() {
+    try { return localStorage.getItem(CLE_LANGUE); }
+    catch (e) { return null; }
+  }
+  function sauvegarderLangue(codeLangue) {
+    try { localStorage.setItem(CLE_LANGUE, codeLangue); }
+    catch (e) { console.warn('Langue non sauvegardée (localStorage indisponible ou plein).', e); }
   }
 
-  btnSuivant.addEventListener('click', suivant);
-  btnPrecedent.addEventListener('click', precedent);
+  // Reprend le choix déjà fait lors d'une visite précédente s'il existe
+  // — sinon 'en' comme avant. La distinction avec un choix "jamais
+  // fait" (voir .invite / afficherPremiereFois plus bas) se base
+  // sur la présence même de la clé, pas sur sa valeur.
+  let langueActuelle = langueSauvegardee() || 'en';
 
-  // Tap direct sur la scène = avancer seulement (reculer reste un geste
-  // délibéré via le bouton, voir note en tête de fichier).
-  elScene.addEventListener('click', suivant);
+  // 🆕 Direction RTL — demande de Raphaël : le farsi (fa) s'écrit de
+  // droite à gauche. Appliquée sur <html> plutôt que sur un conteneur
+  // précis (bulle, traduction...) : ça couvre d'un coup tout le texte
+  // de la page ET celui injecté dynamiquement par identite-eleve.js/
+  // sac-a-dos.js (dir est hérité en CSS, sauf override explicite), sans
+  // avoir à traquer chaque conteneur de texte un par un. Volontairement
+  // minimal — pas un vrai miroir RTL de toute la mise en page (icônes,
+  // ordre des boutons, etc.), juste le sens de lecture du texte comme
+  // demandé ; un vrai miroir complet serait un chantier à part.
+  function appliquerDirectionLangue(codeLangue) {
+    document.documentElement.setAttribute('dir', codeLangue === 'fa' ? 'rtl' : 'ltr');
+  }
+  appliquerDirectionLangue(langueActuelle); // dès le chargement, si le farsi était déjà le choix d'une visite précédente
 
-  window.addEventListener('keydown', (e) => {
-    if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); suivant(); }
-    if (e.key === 'ArrowLeft') { e.preventDefault(); precedent(); }
+  // ==================================================================
+  // Libellé du lien "Information et cours privés" — traduit pour
+  // chacune des 19 langues du sélecteur (voir LANGUES plus haut). Pas
+  // de fonction t() globale sur cette page (contrairement à
+  // sac-a-dos.js, qui retombe sur celle d'index.html/parcours.html) :
+  // dictionnaire autonome, même esprit que DICO_SAC, mais propre à ce
+  // seul lien. 'fr' ajouté aussi par cohérence même si absent de
+  // LANGUES (l'interface ne propose pas le français comme langue
+  // d'apprenant, voir BONOMES_v61), au cas où langueActuelle vaudrait
+  // 'fr' un jour.
+  // ==================================================================
+  const DICO_COURS_PRIVES = {
+    fr: 'Information et cours privés',
+    en: 'Information & private lessons',
+    es: 'Información y clases particulares',
+    it: 'Informazioni e lezioni private',
+    pt: 'Informações e aulas particulares',
+    ca: 'Informació i classes particulars',
+    eo: 'Informoj kaj privataj lecionoj',
+    zh: '信息与私人课程',
+    ja: '情報とプライベートレッスン',
+    ko: '정보 및 개인 수업',
+    vi: 'Thông tin và các lớp học riêng',
+    ht: 'Enfòmasyon ak kou prive',
+    tl: 'Impormasyon at pribadong mga aralin',
+    id: 'Informasi dan les privat',
+    nl: 'Informatie en privélessen',
+    de: 'Informationen und Privatunterricht',
+    fa: 'اطلاعات و کلاس‌های خصوصی',
+    sv: 'Information och privatlektioner',
+    no: 'Informasjon og privattimer',
+    ru: 'Информация и частные уроки'
+  };
+
+  // ==================================================================
+  // 🆕 Libellé de la question "First time?" du bloc qui remplace
+  // l'ancien bouton "continuer" — même esprit et mêmes 19+1 langues que
+  // DICO_COURS_PRIVES juste au-dessus (dictionnaire autonome, mis à
+  // jour au choix de langue par rafraichirPremiereFois() plus bas).
+  // Contrairement aux libellés "Oui"/"Non" des boutons (volontairement
+  // laissés en français, voir HTML), ce texte est un habillage
+  // d'interface : il suit la langue choisie comme le lien vers les
+  // cours privés.
+  // ==================================================================
+  const DICO_PREMIERE_FOIS = {
+    fr: 'Première fois ?',
+    en: 'First time?',
+    es: '¿Primera vez?',
+    it: 'Prima volta?',
+    pt: 'Primeira vez?',
+    ca: 'Primera vegada?',
+    eo: 'Unuafoje?',
+    zh: '第一次来吗？',
+    ja: '初めてですか？',
+    ko: '처음이신가요?',
+    vi: 'Lần đầu tiên?',
+    ht: 'Premye fwa?',
+    tl: 'Unang beses?',
+    id: 'Pertama kali?',
+    nl: 'Eerste keer?',
+    de: 'Zum ersten Mal?',
+    fa: 'اولین باره؟',
+    sv: 'Första gången?',
+    no: 'Første gang?',
+    ru: 'Первый раз?'
+  };
+
+  // ==================================================================
+  // 🆕 Mécanisme de traduction pour la séquence identité (identite-eleve.js)
+  // — manquait ENTIÈREMENT jusqu'ici : demarrerSequenceIdentite() était
+  // appelée avec des options vides ({}), donc identite-eleve.js retombait
+  // systématiquement sur ses replis anglais internes (TEXTES_PAR_DEFAUT)
+  // et n'avait aucun mot ni aucune phrase à proposer en traduction (le
+  // clic sur un mot n'affichait jamais rien, le bouton "Traduire la
+  // phrase" restait invisible). Corrigé : les trois dictionnaires
+  // ci-dessous (mots / phrases / habillage d'interface) couvrent les 19
+  // langues du sélecteur (voir LANGUES plus haut) et sont assemblés en
+  // options réelles par optionsIdentitePourLangue() plus bas, appelée au
+  // moment de démarrer la séquence (voir demarrerIdentiteSiPremiereFois).
+  //
+  // ⚠️ Première passe de traduction (pas encore relue par un locuteur
+  // natif de chaque langue) — même statut que tout premier jet de
+  // contenu ailleurs sur ce site (voir dialogueKeb/dialogueBek/etc. dans
+  // identite-eleve.js, encore marqués PLACEHOLDER). À faire réviser
+  // langue par langue avant une mise en prod définitive, mais permet dès
+  // maintenant au mécanisme de fonctionner réellement dans les 19 langues
+  // plutôt que seulement en anglais.
+  //
+  // TRADUCTIONS_MOTS_IDENTITE : mot-à-mot, clé = mot français nettoyé en
+  // minuscules tel que produit par identite-eleve.js (afficherBulle /
+  // afficherBulleEnchantes) — doit rester en phase avec les 8 répliques
+  // fixes du fichier (dialogueKeb/dialogueBek/dialogueQuestion et les 4
+  // clés de DIALOGUES_FIXES) si jamais leur texte français change.
+  // TRADUCTIONS_PHRASES_IDENTITE : phrase entière, mêmes clés que le
+  // texte français (dialogueCle / clés de DIALOGUES_FIXES) — {prenom}
+  // laissé tel quel, substitué automatiquement par identite-eleve.js
+  // (voir texteTraductionPhrase()) exactement comme pour le français.
+  // TEXTES_IDENTITE : habillage d'interface (préfixe du champ nom,
+  // messages d'erreur, titres, etc.) — mêmes clés que
+  // TEXTES_PAR_DEFAUT dans identite-eleve.js.
+  // ==================================================================
+
+  const TRADUCTIONS_MOTS_IDENTITE = {
+  en: { "et": "and", "moi": "me", "c'est": "it's", "toi": "you", "tu": "you", "t'appelles": "are called", "comment": "what", "enchantée": "nice to meet you", "enchanté": "nice to meet you", "continuons": "let's continue", "je": "I", "suis": "am", "une": "a", "fille": "girl", "un": "a", "garçon": "boy", "es": "are", "salut": "hi", "choc": "bump", "homme": "man", "respect": "respect", "youpie": "yay", "femme": "woman", "chouette": "great", "bon": "okay", "il": "he", "elle": "she", "est": "is", "prêt": "ready", "prête": "ready", "presque": "almost", "le": "the", "sac": "bag", "oh": "oh", "oui": "yes", "voilà": "there", "génial": "great", "tiens": "here", "pour": "for", "essaie": "try", "tadam": "ta-da!" },
+  es: { "et": "y", "moi": "mí", "c'est": "es", "toi": "tú", "tu": "tú", "t'appelles": "te llamas", "comment": "cómo", "enchantée": "encantada", "enchanté": "encantado", "continuons": "sigamos", "je": "yo", "suis": "soy", "une": "una", "fille": "niña", "un": "un", "garçon": "niño", "es": "eres", "salut": "hola", "choc": "choque", "homme": "hombre", "respect": "respeto", "youpie": "¡yupi!", "femme": "mujer", "chouette": "genial", "bon": "bueno", "il": "él", "elle": "ella", "est": "está", "prêt": "listo", "prête": "lista", "presque": "casi", "le": "el", "sac": "bolsa", "oh": "oh", "oui": "sí", "voilà": "aquí está", "génial": "genial", "tiens": "toma", "pour": "para", "essaie": "prueba", "tadam": "¡tachán!" },
+  it: { "et": "e", "moi": "io", "c'est": "è", "toi": "tu", "tu": "tu", "t'appelles": "ti chiami", "comment": "come", "enchantée": "piacere", "enchanté": "piacere", "continuons": "continuiamo", "je": "io", "suis": "sono", "une": "una", "fille": "ragazza", "un": "un", "garçon": "ragazzo", "es": "sei", "salut": "ciao", "choc": "colpo", "homme": "uomo", "respect": "rispetto", "youpie": "evviva", "femme": "donna", "chouette": "fantastico", "bon": "bene", "il": "lui", "elle": "lei", "est": "è", "prêt": "pronto", "prête": "pronta", "presque": "quasi", "le": "il", "sac": "borsa", "oh": "oh", "oui": "sì", "voilà": "ecco", "génial": "fantastico", "tiens": "tieni", "pour": "per", "essaie": "prova", "tadam": "tada!" },
+  pt: { "et": "e", "moi": "eu", "c'est": "é", "toi": "tu", "tu": "tu", "t'appelles": "chamas-te", "comment": "como", "enchantée": "prazer", "enchanté": "prazer", "continuons": "vamos continuar", "je": "eu", "suis": "sou", "une": "uma", "fille": "menina", "un": "um", "garçon": "menino", "es": "és", "salut": "oi", "choc": "toque", "homme": "homem", "respect": "respeito", "youpie": "uhuu", "femme": "mulher", "chouette": "fixe", "bon": "bem", "il": "ele", "elle": "ela", "est": "está", "prêt": "pronto", "prête": "pronta", "presque": "quase", "le": "o", "sac": "saco", "oh": "ah", "oui": "sim", "voilà": "aqui está", "génial": "fixe", "tiens": "toma", "pour": "para", "essaie": "tenta", "tadam": "tcharam!" },
+  ca: { "et": "i", "moi": "jo", "c'est": "és", "toi": "tu", "tu": "tu", "t'appelles": "et dius", "comment": "com", "enchantée": "encantada", "enchanté": "encantat", "continuons": "continuem", "je": "jo", "suis": "sóc", "une": "una", "fille": "noia", "un": "un", "garçon": "noi", "es": "ets", "salut": "hola", "choc": "cop", "homme": "home", "respect": "respecte", "youpie": "ioupi", "femme": "dona", "chouette": "xulo", "bon": "bé", "il": "ell", "elle": "ella", "est": "està", "prêt": "llest", "prête": "llesta", "presque": "gairebé", "le": "el", "sac": "bossa", "oh": "oh", "oui": "sí", "voilà": "aquí el tens", "génial": "xulo", "tiens": "té", "pour": "per a", "essaie": "prova", "tadam": "tatxan!" },
+  eo: { "et": "kaj", "moi": "mi", "c'est": "estas", "toi": "vi", "tu": "vi", "t'appelles": "vi nomiĝas", "comment": "kiel", "enchantée": "agrable koni vin", "enchanté": "agrable koni vin", "continuons": "ni daŭrigu", "je": "mi", "suis": "estas", "une": "unu", "fille": "knabino", "un": "unu", "garçon": "knabo", "es": "estas", "salut": "saluton", "choc": "frapo", "homme": "viro", "respect": "respekto", "youpie": "hura", "femme": "virino", "chouette": "bonege", "bon": "nu", "il": "li", "elle": "ŝi", "est": "estas", "prêt": "preta", "prête": "preta", "presque": "preskaŭ", "le": "la", "sac": "sako", "oh": "ho", "oui": "jes", "voilà": "jen", "génial": "bonege", "tiens": "jen", "pour": "por", "essaie": "provu", "tadam": "ta-ram!" },
+  zh: { "et": "和", "moi": "我", "c'est": "是", "toi": "你", "tu": "你", "t'appelles": "你叫", "comment": "什么", "enchantée": "很高兴认识你", "enchanté": "很高兴认识你", "continuons": "我们继续", "je": "我", "suis": "是", "une": "一个", "fille": "女孩", "un": "一个", "garçon": "男孩", "es": "是", "salut": "你好", "choc": "碰拳", "homme": "男人", "respect": "尊重", "youpie": "耶", "femme": "女人", "chouette": "太棒了", "bon": "好", "il": "他", "elle": "她", "est": "是", "prêt": "准备好了", "prête": "准备好了", "presque": "差不多", "le": "那个", "sac": "包", "oh": "哦", "oui": "是的", "voilà": "给你", "génial": "太棒了", "tiens": "拿着", "pour": "给", "essaie": "试试", "tadam": "锵锵！" },
+  ja: { "et": "と", "moi": "私", "c'est": "です", "toi": "あなた", "tu": "あなた", "t'appelles": "あなたの名前は", "comment": "何", "enchantée": "はじめまして", "enchanté": "はじめまして", "continuons": "続けましょう", "je": "私", "suis": "です", "une": "一人の", "fille": "女の子", "un": "一人の", "garçon": "男の子", "es": "です", "salut": "やあ", "choc": "タッチ", "homme": "男の人", "respect": "リスペクト", "youpie": "やったー", "femme": "女の人", "chouette": "すてき", "bon": "よし", "il": "彼", "elle": "彼女", "est": "です", "prêt": "準備できた", "prête": "準備できた", "presque": "もうすぐ", "le": "その", "sac": "かばん", "oh": "あ", "oui": "うん", "voilà": "はい、どうぞ", "génial": "すてき", "tiens": "どうぞ", "pour": "ために", "essaie": "やってみて", "tadam": "じゃじゃーん！" },
+  ko: { "et": "그리고", "moi": "나", "c'est": "이다", "toi": "너", "tu": "너", "t'appelles": "네 이름은", "comment": "무엇", "enchantée": "만나서 반가워", "enchanté": "만나서 반가워", "continuons": "계속하자", "je": "나", "suis": "이다", "une": "한", "fille": "소녀", "un": "한", "garçon": "소년", "es": "이다", "salut": "안녕", "choc": "콩", "homme": "남자", "respect": "존중", "youpie": "야호", "femme": "여자", "chouette": "멋져", "bon": "좋아", "il": "그", "elle": "그녀", "est": "이다", "prêt": "준비됐어", "prête": "준비됐어", "presque": "거의", "le": "그", "sac": "가방", "oh": "오", "oui": "응", "voilà": "여기 있어", "génial": "멋져", "tiens": "자", "pour": "위해", "essaie": "해봐", "tadam": "짜잔!" },
+  vi: { "et": "và", "moi": "tôi", "c'est": "là", "toi": "bạn", "tu": "bạn", "t'appelles": "tên bạn là", "comment": "gì", "enchantée": "rất vui được gặp bạn", "enchanté": "rất vui được gặp bạn", "continuons": "hãy tiếp tục", "je": "tôi", "suis": "là", "une": "một", "fille": "cô gái", "un": "một", "garçon": "cậu bé", "es": "là", "salut": "chào", "choc": "chạm", "homme": "người đàn ông", "respect": "tôn trọng", "youpie": "hoan hô", "femme": "người phụ nữ", "chouette": "tuyệt", "bon": "được rồi", "il": "anh ấy", "elle": "cô ấy", "est": "thì", "prêt": "sẵn sàng", "prête": "sẵn sàng", "presque": "gần như", "le": "cái", "sac": "túi", "oh": "ồ", "oui": "vâng", "voilà": "đây rồi", "génial": "tuyệt", "tiens": "này", "pour": "cho", "essaie": "thử đi", "tadam": "tada!" },
+  ht: { "et": "epi", "moi": "mwen", "c'est": "se", "toi": "ou", "tu": "ou", "t'appelles": "ou rele", "comment": "kijan", "enchantée": "kontan konnen w", "enchanté": "kontan konnen w", "continuons": "ann kontinye", "je": "mwen", "suis": "se", "une": "yon", "fille": "fi", "un": "yon", "garçon": "gason", "es": "se", "salut": "alo", "choc": "frap", "homme": "nonm", "respect": "respè", "youpie": "jipi", "femme": "fanm", "chouette": "bèl", "bon": "bon", "il": "li", "elle": "li", "est": "se", "prêt": "pare", "prête": "pare", "presque": "prèske", "le": "la", "sac": "sak", "oh": "o", "oui": "wi", "voilà": "men li", "génial": "bèl", "tiens": "men", "pour": "pou", "essaie": "eseye", "tadam": "tada!" },
+  tl: { "et": "at", "moi": "ako", "c'est": "ito ay", "toi": "ikaw", "tu": "ikaw", "t'appelles": "ang pangalan mo ay", "comment": "ano", "enchantée": "ikinagagalak kitang makilala", "enchanté": "ikinagagalak kitang makilala", "continuons": "magpatuloy tayo", "je": "ako", "suis": "ay", "une": "isang", "fille": "babae", "un": "isang", "garçon": "lalaki", "es": "ay", "salut": "kamusta", "choc": "bump", "homme": "lalaki", "respect": "paggalang", "youpie": "yehey", "femme": "babae", "chouette": "galing", "bon": "sige", "il": "siya", "elle": "siya", "est": "ay", "prêt": "handa", "prête": "handa", "presque": "halos", "le": "ang", "sac": "bag", "oh": "ay", "oui": "oo", "voilà": "heto", "génial": "galing", "tiens": "heto", "pour": "para", "essaie": "subukan", "tadam": "tada!" },
+  id: { "et": "dan", "moi": "aku", "c'est": "adalah", "toi": "kamu", "tu": "kamu", "t'appelles": "namamu", "comment": "apa", "enchantée": "senang bertemu denganmu", "enchanté": "senang bertemu denganmu", "continuons": "ayo lanjutkan", "je": "aku", "suis": "adalah", "une": "seorang", "fille": "gadis", "un": "seorang", "garçon": "anak laki-laki", "es": "adalah", "salut": "hai", "choc": "tos", "homme": "pria", "respect": "hormat", "youpie": "yeay", "femme": "wanita", "chouette": "keren", "bon": "baik", "il": "dia", "elle": "dia", "est": "adalah", "prêt": "siap", "prête": "siap", "presque": "hampir", "le": "itu", "sac": "tas", "oh": "oh", "oui": "ya", "voilà": "ini dia", "génial": "keren", "tiens": "nih", "pour": "untuk", "essaie": "coba", "tadam": "tada!" },
+  nl: { "et": "en", "moi": "ik", "c'est": "dit is", "toi": "jij", "tu": "jij", "t'appelles": "heet je", "comment": "hoe", "enchantée": "aangenaam", "enchanté": "aangenaam", "continuons": "laten we verdergaan", "je": "ik", "suis": "ben", "une": "een", "fille": "meisje", "un": "een", "garçon": "jongen", "es": "bent", "salut": "hoi", "choc": "bonk", "homme": "man", "respect": "respect", "youpie": "jippie", "femme": "vrouw", "chouette": "gaaf", "bon": "oké", "il": "hij", "elle": "zij", "est": "is", "prêt": "klaar", "prête": "klaar", "presque": "bijna", "le": "de", "sac": "tas", "oh": "oh", "oui": "ja", "voilà": "alsjeblieft", "génial": "gaaf", "tiens": "hier", "pour": "voor", "essaie": "probeer", "tadam": "tada!" },
+  de: { "et": "und", "moi": "ich", "c'est": "das ist", "toi": "du", "tu": "du", "t'appelles": "heißt du", "comment": "wie", "enchantée": "freut mich", "enchanté": "freut mich", "continuons": "machen wir weiter", "je": "ich", "suis": "bin", "une": "eine", "fille": "Mädchen", "un": "ein", "garçon": "Junge", "es": "bist", "salut": "hallo", "choc": "Boom", "homme": "Mann", "respect": "Respekt", "youpie": "juhu", "femme": "Frau", "chouette": "klasse", "bon": "gut", "il": "er", "elle": "sie", "est": "ist", "prêt": "bereit", "prête": "bereit", "presque": "fast", "le": "der", "sac": "Tasche", "oh": "oh", "oui": "ja", "voilà": "hier ist es", "génial": "klasse", "tiens": "hier", "pour": "für", "essaie": "probier's", "tadam": "Tadaa!" },
+  fa: { "et": "و", "moi": "من", "c'est": "این است", "toi": "تو", "tu": "تو", "t'appelles": "اسمت است", "comment": "چی", "enchantée": "خوشبختم", "enchanté": "خوشبختم", "continuons": "ادامه دهیم", "je": "من", "suis": "هستم", "une": "یک", "fille": "دختر", "un": "یک", "garçon": "پسر", "es": "هستی", "salut": "سلام", "choc": "ضربه", "homme": "مرد", "respect": "احترام", "youpie": "هورا", "femme": "زن", "chouette": "عالی", "bon": "خب", "il": "او", "elle": "او", "est": "است", "prêt": "آماده", "prête": "آماده", "presque": "تقریباً", "le": "آن", "sac": "کیف", "oh": "آه", "oui": "بله", "voilà": "بفرمایید", "génial": "عالی", "tiens": "بگیر", "pour": "برای", "essaie": "امتحان کن", "tadam": "تادا!" },
+  sv: { "et": "och", "moi": "jag", "c'est": "det är", "toi": "du", "tu": "du", "t'appelles": "heter du", "comment": "vad", "enchantée": "trevligt att träffas", "enchanté": "trevligt att träffas", "continuons": "vi fortsätter", "je": "jag", "suis": "är", "une": "en", "fille": "flicka", "un": "en", "garçon": "pojke", "es": "är", "salut": "hej", "choc": "bums", "homme": "man", "respect": "respekt", "youpie": "hurra", "femme": "kvinna", "chouette": "härligt", "bon": "bra", "il": "han", "elle": "hon", "est": "är", "prêt": "redo", "prête": "redo", "presque": "nästan", "le": "den", "sac": "väska", "oh": "åh", "oui": "ja", "voilà": "varsågod", "génial": "härligt", "tiens": "här", "pour": "till", "essaie": "prova", "tadam": "tada!" },
+  no: { "et": "og", "moi": "jeg", "c'est": "det er", "toi": "du", "tu": "du", "t'appelles": "heter du", "comment": "hva", "enchantée": "hyggelig å møte deg", "enchanté": "hyggelig å møte deg", "continuons": "la oss fortsette", "je": "jeg", "suis": "er", "une": "en", "fille": "jente", "un": "en", "garçon": "gutt", "es": "er", "salut": "hei", "choc": "dask", "homme": "mann", "respect": "respekt", "youpie": "hurra", "femme": "kvinne", "chouette": "kult", "bon": "bra", "il": "han", "elle": "hun", "est": "er", "prêt": "klar", "prête": "klar", "presque": "nesten", "le": "den", "sac": "veske", "oh": "åh", "oui": "ja", "voilà": "vær så god", "génial": "kult", "tiens": "her", "pour": "til", "essaie": "prøv", "tadam": "tada!" },
+  ru: { "et": "и", "moi": "я", "c'est": "это", "toi": "ты", "tu": "ты", "t'appelles": "тебя зовут", "comment": "как", "enchantée": "приятно познакомиться", "enchanté": "приятно познакомиться", "continuons": "продолжим", "je": "я", "suis": "являюсь", "une": "одна", "fille": "девочка", "un": "один", "garçon": "мальчик", "es": "являешься", "salut": "привет", "choc": "чпок", "homme": "мужчина", "respect": "уважение", "youpie": "ура", "femme": "женщина", "chouette": "классно", "bon": "так", "il": "он", "elle": "она", "est": "есть", "prêt": "готов", "prête": "готова", "presque": "почти", "le": "тот", "sac": "сумка", "oh": "ох", "oui": "да", "voilà": "вот", "génial": "классно", "tiens": "держи", "pour": "для", "essaie": "попробуй", "tadam": "та-да!" },
+  };
+
+  const TRADUCTIONS_PHRASES_IDENTITE = {
+  en: { "dialogueKeb": "Hi! I’m Keb.", "dialogueBek": "And I’m Bek!", "dialogueQuestion": "And you, what’s your name?", "enchanteeBek": "Nice to meet you, {prenom}!", "enchanteKeb": "Nice to meet you, {prenom}.", "continuonsBek": "Let's continue. I am a girl.", "garconKeb": "I am a boy.", "etToiBek": "And you? You are…", "reactionGarcon": "You're a boy! Fist bump!", "reactionHomme": "You're a man. Respect!", "reactionFille": "You're a girl! Yay!", "reactionFemme": "You're a woman! Great!", "donSacQuestionM": "Okay! Is he ready?", "donSacQuestionF": "Okay! Is she ready?", "donSacPresque": "Almost! The bag!", "donSacOhOui": "Oh! Right!", "donSacRevientKeb": "Here's the bag!", "donSacRevientBek": "Great!", "donSacPourToiBek": "It's for you!", "donSacTiensKeb": "Here!" },
+  es: { "dialogueKeb": "¡Hola! Soy Keb.", "dialogueBek": "¡Y yo soy Bek!", "dialogueQuestion": "¿Y tú, cómo te llamas?", "enchanteeBek": "¡Encantada, {prenom}!", "enchanteKeb": "Encantado, {prenom}.", "continuonsBek": "Sigamos. Soy una niña.", "garconKeb": "Yo soy un niño.", "etToiBek": "¿Y tú? Eres…", "reactionGarcon": "¡Eres un niño! ¡Choque de puños!", "reactionHomme": "Eres un hombre. ¡Respeto!", "reactionFille": "¡Eres una niña! ¡Yupi!", "reactionFemme": "¡Eres una mujer! ¡Genial!", "donSacQuestionM": "¡Bueno! ¿Está listo?", "donSacQuestionF": "¡Bueno! ¿Está lista?", "donSacPresque": "¡Casi! ¡La bolsa!", "donSacOhOui": "¡Ah! ¡Sí!", "donSacRevientKeb": "¡Aquí está la bolsa!", "donSacRevientBek": "¡Genial!", "donSacPourToiBek": "¡Es para ti!", "donSacTiensKeb": "¡Toma!" },
+  it: { "dialogueKeb": "Ciao! Io sono Keb.", "dialogueBek": "E io sono Bek!", "dialogueQuestion": "E tu, come ti chiami?", "enchanteeBek": "Piacere, {prenom}!", "enchanteKeb": "Piacere, {prenom}.", "continuonsBek": "Continuiamo. Sono una ragazza.", "garconKeb": "Io sono un ragazzo.", "etToiBek": "E tu? Sei…", "reactionGarcon": "Sei un ragazzo! Pugno a pugno!", "reactionHomme": "Sei un uomo. Rispetto!", "reactionFille": "Sei una ragazza! Evviva!", "reactionFemme": "Sei una donna! Fantastico!", "donSacQuestionM": "Bene! È pronto?", "donSacQuestionF": "Bene! È pronta?", "donSacPresque": "Quasi! La borsa!", "donSacOhOui": "Ah! Sì!", "donSacRevientKeb": "Ecco la borsa!", "donSacRevientBek": "Fantastico!", "donSacPourToiBek": "È per te!", "donSacTiensKeb": "Tieni!" },
+  pt: { "dialogueKeb": "Oi! Eu sou o Keb.", "dialogueBek": "E eu sou a Bek!", "dialogueQuestion": "E tu, como te chamas?", "enchanteeBek": "Prazer, {prenom}!", "enchanteKeb": "Prazer, {prenom}.", "continuonsBek": "Vamos continuar. Eu sou uma menina.", "garconKeb": "Eu sou um menino.", "etToiBek": "E tu? És…", "reactionGarcon": "Tu és um menino! Toca aqui!", "reactionHomme": "Tu és um homem. Respeito!", "reactionFille": "Tu és uma menina! Uhuu!", "reactionFemme": "Tu és uma mulher! Fixe!", "donSacQuestionM": "Bem! Ele está pronto?", "donSacQuestionF": "Bem! Ela está pronta?", "donSacPresque": "Quase! O saco!", "donSacOhOui": "Ah! Sim!", "donSacRevientKeb": "Aqui está o saco!", "donSacRevientBek": "Fixe!", "donSacPourToiBek": "É para ti!", "donSacTiensKeb": "Toma!" },
+  ca: { "dialogueKeb": "Hola! Jo sóc en Keb.", "dialogueBek": "I jo sóc la Bek!", "dialogueQuestion": "I tu, com et dius?", "enchanteeBek": "Encantada, {prenom}!", "enchanteKeb": "Encantat, {prenom}.", "continuonsBek": "Continuem. Sóc una noia.", "garconKeb": "Jo sóc un noi.", "etToiBek": "I tu? Ets…", "reactionGarcon": "Ets un noi! Xoca'm els cinc!", "reactionHomme": "Ets un home. Respecte!", "reactionFille": "Ets una noia! Ioupi!", "reactionFemme": "Ets una dona! Xulo!", "donSacQuestionM": "Bé! Està llest?", "donSacQuestionF": "Bé! Està llesta?", "donSacPresque": "Gairebé! La bossa!", "donSacOhOui": "Ah! Sí!", "donSacRevientKeb": "Aquí tens la bossa!", "donSacRevientBek": "Xulo!", "donSacPourToiBek": "És per a tu!", "donSacTiensKeb": "Té!" },
+  eo: { "dialogueKeb": "Saluton! Mi estas Keb.", "dialogueBek": "Kaj mi estas Bek!", "dialogueQuestion": "Kaj vi, kiel vi nomiĝas?", "enchanteeBek": "Agrable koni vin, {prenom}!", "enchanteKeb": "Agrable koni vin, {prenom}.", "continuonsBek": "Ni daŭrigu. Mi estas knabino.", "garconKeb": "Mi estas knabo.", "etToiBek": "Kaj vi? Vi estas…", "reactionGarcon": "Vi estas knabo! Frapu la pugnon!", "reactionHomme": "Vi estas viro. Respekto!", "reactionFille": "Vi estas knabino! Hura!", "reactionFemme": "Vi estas virino! Bonege!", "donSacQuestionM": "Nu! Ĉu li estas preta?", "donSacQuestionF": "Nu! Ĉu ŝi estas preta?", "donSacPresque": "Preskaŭ! La sako!", "donSacOhOui": "Ho! Jes!", "donSacRevientKeb": "Jen la sako!", "donSacRevientBek": "Bonege!", "donSacPourToiBek": "Ĝi estas por vi!", "donSacTiensKeb": "Jen!" },
+  zh: { "dialogueKeb": "你好！我是凯布。", "dialogueBek": "我是贝克！", "dialogueQuestion": "那你呢，你叫什么名字？", "enchanteeBek": "很高兴认识你，{prenom}！", "enchanteKeb": "很高兴认识你，{prenom}。", "continuonsBek": "我们继续吧。我是女孩。", "garconKeb": "我是男孩。", "etToiBek": "那你呢？你是……", "reactionGarcon": "你是男孩！碰拳！", "reactionHomme": "你是男人。尊重！", "reactionFille": "你是女孩！耶！", "reactionFemme": "你是女人！太棒了！", "donSacQuestionM": "好！他准备好了吗？", "donSacQuestionF": "好！她准备好了吗？", "donSacPresque": "差不多！包！", "donSacOhOui": "哦！对！", "donSacRevientKeb": "包在这里！", "donSacRevientBek": "太棒了！", "donSacPourToiBek": "这是给你的！", "donSacTiensKeb": "拿着！" },
+  ja: { "dialogueKeb": "やあ！ぼくはケブだよ。", "dialogueBek": "わたしはベックだよ！", "dialogueQuestion": "きみの名前は何ていうの？", "enchanteeBek": "はじめまして、{prenom}！", "enchanteKeb": "はじめまして、{prenom}。", "continuonsBek": "続けましょう。わたしは女の子だよ。", "garconKeb": "ぼくは男の子だよ。", "etToiBek": "きみは？きみは……", "reactionGarcon": "きみは男の子だね！タッチ！", "reactionHomme": "きみは男の人だね。リスペクト！", "reactionFille": "きみは女の子だね！やったー！", "reactionFemme": "きみは女の人だね！すてき！", "donSacQuestionM": "よし！彼は準備できた？", "donSacQuestionF": "よし！彼女は準備できた？", "donSacPresque": "もうすぐ！かばん！", "donSacOhOui": "あ！うん！", "donSacRevientKeb": "かばんだよ！", "donSacRevientBek": "すてき！", "donSacPourToiBek": "きみのだよ！", "donSacTiensKeb": "はい、どうぞ！" },
+  ko: { "dialogueKeb": "안녕! 나는 케브야.", "dialogueBek": "그리고 나는 베크야!", "dialogueQuestion": "그럼 너는, 이름이 뭐야?", "enchanteeBek": "만나서 반가워, {prenom}!", "enchanteKeb": "만나서 반가워, {prenom}.", "continuonsBek": "계속하자. 나는 소녀야.", "garconKeb": "나는 소년이야.", "etToiBek": "너는? 너는……", "reactionGarcon": "너는 소년이구나! 주먹 콩!", "reactionHomme": "너는 남자구나. 존중해!", "reactionFille": "너는 소녀구나! 야호!", "reactionFemme": "너는 여자구나! 멋져!", "donSacQuestionM": "좋아! 그는 준비됐어?", "donSacQuestionF": "좋아! 그녀는 준비됐어?", "donSacPresque": "거의! 가방!", "donSacOhOui": "오! 맞다!", "donSacRevientKeb": "가방 여기 있어!", "donSacRevientBek": "멋져!", "donSacPourToiBek": "이거 네 거야!", "donSacTiensKeb": "자!" },
+  vi: { "dialogueKeb": "Chào! Mình là Keb.", "dialogueBek": "Còn mình là Bek!", "dialogueQuestion": "Còn bạn, tên bạn là gì?", "enchanteeBek": "Rất vui được gặp bạn, {prenom}!", "enchanteKeb": "Rất vui được gặp bạn, {prenom}.", "continuonsBek": "Hãy tiếp tục nào. Mình là con gái.", "garconKeb": "Mình là con trai.", "etToiBek": "Còn bạn? Bạn là…", "reactionGarcon": "Bạn là con trai! Chạm tay nào!", "reactionHomme": "Bạn là đàn ông. Tôn trọng!", "reactionFille": "Bạn là con gái! Hoan hô!", "reactionFemme": "Bạn là phụ nữ! Tuyệt!", "donSacQuestionM": "Được rồi! Bạn ấy sẵn sàng chưa?", "donSacQuestionF": "Được rồi! Bạn ấy sẵn sàng chưa?", "donSacPresque": "Gần xong rồi! Cái túi!", "donSacOhOui": "Ồ! Đúng rồi!", "donSacRevientKeb": "Túi đây rồi!", "donSacRevientBek": "Tuyệt!", "donSacPourToiBek": "Đây là của bạn!", "donSacTiensKeb": "Này!" },
+  ht: { "dialogueKeb": "Alo! Mwen se Keb.", "dialogueBek": "Epi mwen se Bek!", "dialogueQuestion": "Ak ou menm, kijan ou rele?", "enchanteeBek": "Kontan konnen w, {prenom}!", "enchanteKeb": "Kontan konnen w, {prenom}.", "continuonsBek": "Ann kontinye. Mwen se yon fi.", "garconKeb": "Mwen menm, mwen se yon gason.", "etToiBek": "Ak ou menm? Ou se…", "reactionGarcon": "Ou se yon gason! Frap!", "reactionHomme": "Ou se yon nonm. Respè!", "reactionFille": "Ou se yon fi! Jipi!", "reactionFemme": "Ou se yon fanm! Bèl!", "donSacQuestionM": "Bon! Èske li pare?", "donSacQuestionF": "Bon! Èske li pare?", "donSacPresque": "Prèske! Sak la!", "donSacOhOui": "O! Wi!", "donSacRevientKeb": "Men sak la!", "donSacRevientBek": "Bèl!", "donSacPourToiBek": "Se pou ou!", "donSacTiensKeb": "Men li!" },
+  tl: { "dialogueKeb": "Kamusta! Ako si Keb.", "dialogueBek": "At ako naman si Bek!", "dialogueQuestion": "Ikaw naman, ano ang pangalan mo?", "enchanteeBek": "Ikinagagalak kitang makilala, {prenom}!", "enchanteKeb": "Ikinagagalak kitang makilala, {prenom}.", "continuonsBek": "Magpatuloy tayo. Ako ay babae.", "garconKeb": "Ako naman, ako ay lalaki.", "etToiBek": "Ikaw naman? Ikaw ay…", "reactionGarcon": "Isa kang lalaki! Bump!", "reactionHomme": "Isa kang lalaki. Paggalang!", "reactionFille": "Isa kang babae! Yehey!", "reactionFemme": "Isa kang babae! Galing!", "donSacQuestionM": "Sige! Handa na ba siya?", "donSacQuestionF": "Sige! Handa na ba siya?", "donSacPresque": "Halos! Ang bag!", "donSacOhOui": "Ay! Oo nga!", "donSacRevientKeb": "Heto ang bag!", "donSacRevientBek": "Galing!", "donSacPourToiBek": "Para sa iyo ito!", "donSacTiensKeb": "Heto!" },
+  id: { "dialogueKeb": "Hai! Aku Keb.", "dialogueBek": "Dan aku Bek!", "dialogueQuestion": "Kalau kamu, namamu siapa?", "enchanteeBek": "Senang bertemu denganmu, {prenom}!", "enchanteKeb": "Senang bertemu denganmu, {prenom}.", "continuonsBek": "Ayo lanjutkan. Aku seorang gadis.", "garconKeb": "Aku seorang anak laki-laki.", "etToiBek": "Kalau kamu? Kamu adalah…", "reactionGarcon": "Kamu anak laki-laki! Tos!", "reactionHomme": "Kamu pria. Hormat!", "reactionFille": "Kamu gadis! Yeay!", "reactionFemme": "Kamu wanita! Keren!", "donSacQuestionM": "Baik! Apakah dia sudah siap?", "donSacQuestionF": "Baik! Apakah dia sudah siap?", "donSacPresque": "Hampir! Tasnya!", "donSacOhOui": "Oh! Iya!", "donSacRevientKeb": "Ini tasnya!", "donSacRevientBek": "Keren!", "donSacPourToiBek": "Ini untukmu!", "donSacTiensKeb": "Nih!" },
+  nl: { "dialogueKeb": "Hoi! Ik ben Keb.", "dialogueBek": "En ik ben Bek!", "dialogueQuestion": "En jij, hoe heet je?", "enchanteeBek": "Aangenaam, {prenom}!", "enchanteKeb": "Aangenaam, {prenom}.", "continuonsBek": "Laten we verdergaan. Ik ben een meisje.", "garconKeb": "Ik ben een jongen.", "etToiBek": "En jij? Jij bent…", "reactionGarcon": "Je bent een jongen! Boks!", "reactionHomme": "Je bent een man. Respect!", "reactionFille": "Je bent een meisje! Jippie!", "reactionFemme": "Je bent een vrouw! Gaaf!", "donSacQuestionM": "Oké! Is hij klaar?", "donSacQuestionF": "Oké! Is zij klaar?", "donSacPresque": "Bijna! De tas!", "donSacOhOui": "Oh! Ja!", "donSacRevientKeb": "Hier is de tas!", "donSacRevientBek": "Gaaf!", "donSacPourToiBek": "Hij is voor jou!", "donSacTiensKeb": "Alsjeblieft!" },
+  de: { "dialogueKeb": "Hallo! Ich bin Keb.", "dialogueBek": "Und ich bin Bek!", "dialogueQuestion": "Und du, wie heißt du?", "enchanteeBek": "Freut mich, {prenom}!", "enchanteKeb": "Freut mich, {prenom}.", "continuonsBek": "Machen wir weiter. Ich bin ein Mädchen.", "garconKeb": "Ich bin ein Junge.", "etToiBek": "Und du? Du bist…", "reactionGarcon": "Du bist ein Junge! Boom!", "reactionHomme": "Du bist ein Mann. Respekt!", "reactionFille": "Du bist ein Mädchen! Juhu!", "reactionFemme": "Du bist eine Frau! Klasse!", "donSacQuestionM": "Gut! Ist er bereit?", "donSacQuestionF": "Gut! Ist sie bereit?", "donSacPresque": "Fast! Die Tasche!", "donSacOhOui": "Oh! Ja!", "donSacRevientKeb": "Hier ist die Tasche!", "donSacRevientBek": "Klasse!", "donSacPourToiBek": "Sie ist für dich!", "donSacTiensKeb": "Hier!" },
+  fa: { "dialogueKeb": "سلام! من کِب هستم.", "dialogueBek": "و من بِک هستم!", "dialogueQuestion": "و تو، اسمت چیه؟", "enchanteeBek": "از آشنایی‌ات خوشبختم، {prenom}!", "enchanteKeb": "از آشنایی‌ات خوشبختم، {prenom}.", "continuonsBek": "ادامه بدیم. من یک دخترم.", "garconKeb": "من یک پسرم.", "etToiBek": "و تو؟ تو…", "reactionGarcon": "تو یک پسری! ضربه بزن!", "reactionHomme": "تو یک مردی. احترام!", "reactionFille": "تو یک دختری! هورا!", "reactionFemme": "تو یک زنی! عالی!", "donSacQuestionM": "خب! او آماده است؟", "donSacQuestionF": "خب! او آماده است؟", "donSacPresque": "تقریباً! کیف!", "donSacOhOui": "آه! بله!", "donSacRevientKeb": "کیف اینجاست!", "donSacRevientBek": "عالی!", "donSacPourToiBek": "این برای توئه!", "donSacTiensKeb": "بگیر!" },
+  sv: { "dialogueKeb": "Hej! Jag är Keb.", "dialogueBek": "Och jag är Bek!", "dialogueQuestion": "Och du, vad heter du?", "enchanteeBek": "Trevligt att träffas, {prenom}!", "enchanteKeb": "Trevligt att träffas, {prenom}.", "continuonsBek": "Vi fortsätter. Jag är en flicka.", "garconKeb": "Jag är en pojke.", "etToiBek": "Och du? Du är…", "reactionGarcon": "Du är en pojke! Bums!", "reactionHomme": "Du är en man. Respekt!", "reactionFille": "Du är en flicka! Hurra!", "reactionFemme": "Du är en kvinna! Härligt!", "donSacQuestionM": "Bra! Är han redo?", "donSacQuestionF": "Bra! Är hon redo?", "donSacPresque": "Nästan! Väskan!", "donSacOhOui": "Åh! Ja!", "donSacRevientKeb": "Här är väskan!", "donSacRevientBek": "Härligt!", "donSacPourToiBek": "Den är till dig!", "donSacTiensKeb": "Varsågod!" },
+  no: { "dialogueKeb": "Hei! Jeg er Keb.", "dialogueBek": "Og jeg er Bek!", "dialogueQuestion": "Og du, hva heter du?", "enchanteeBek": "Hyggelig å møte deg, {prenom}!", "enchanteKeb": "Hyggelig å møte deg, {prenom}.", "continuonsBek": "La oss fortsette. Jeg er ei jente.", "garconKeb": "Jeg er en gutt.", "etToiBek": "Og du? Du er…", "reactionGarcon": "Du er en gutt! Dask!", "reactionHomme": "Du er en mann. Respekt!", "reactionFille": "Du er en jente! Hurra!", "reactionFemme": "Du er en kvinne! Kult!", "donSacQuestionM": "Bra! Er han klar?", "donSacQuestionF": "Bra! Er hun klar?", "donSacPresque": "Nesten! Vesken!", "donSacOhOui": "Å! Ja!", "donSacRevientKeb": "Her er vesken!", "donSacRevientBek": "Kult!", "donSacPourToiBek": "Den er til deg!", "donSacTiensKeb": "Vær så god!" },
+  ru: { "dialogueKeb": "Привет! Я Кеб.", "dialogueBek": "А я Бек!", "dialogueQuestion": "А тебя как зовут?", "enchanteeBek": "Приятно познакомиться, {prenom}!", "enchanteKeb": "Приятно познакомиться, {prenom}.", "continuonsBek": "Продолжим. Я девочка.", "garconKeb": "Я мальчик.", "etToiBek": "А ты? Ты…", "reactionGarcon": "Ты мальчик! Чпок!", "reactionHomme": "Ты мужчина. Уважение!", "reactionFille": "Ты девочка! Ура!", "reactionFemme": "Ты женщина! Классно!", "donSacQuestionM": "Так! Он готов?", "donSacQuestionF": "Так! Она готова?", "donSacPresque": "Почти! Сумка!", "donSacOhOui": "Ох! Точно!", "donSacRevientKeb": "Вот сумка!", "donSacRevientBek": "Классно!", "donSacPourToiBek": "Это для тебя!", "donSacTiensKeb": "Держи!" },
+  };
+
+  const TEXTES_IDENTITE = {
+  en: { "labelPrefixeNom": "My name is", "labelChampNom": "your first name", "labelValider": "OK", "erreurVide": "Please type your name.", "erreurTropCourt": "That name seems too short.", "erreurTropLong": "That name seems too long.", "erreurCaracteresEtrangers": "Please use French letters only.", "erreurInapproprie": "That doesn't look like a real name — try again.", "titreChoixRepli": "Let's pick a name for you, then!", "titreSilhouettes": "Which one is you?", "labelChangerNom": "Change my name", "labelTraduirePhrase": "Translate the sentence", "labelMasquerTraduction": "Hide translation", "indiceCarrousel": "Slide, then tap again to choose", "introIndiceTap": "Tap to continue", "indiceMotTraduction": "Tap or click a word to see its translation.", "labelAnnulerChoix": "Cancel", "debloqueTitre": "Item unlocked!", "debloqueNom": "The first bag", "altDebloqueSac": "The backpack, glowing and floating", "altIconeSac": "Your backpack", "sacCarteTitre": "Your backpack", "sacCarteLigneMots": "Double-tap (or double-click) a word to store it here.", "sacCarteLigneDejaSauvegardes": "Good news: the words you already touched are already inside!", "sacCarteLigneObjets": "It will also hold objects, secret codes, and surprises to unlock.", "altEssaie": "Keb and Bek invite you to try double-tapping the word", "essaieInstruction": "Double-tap the word", "etiquetteInformel": "(informal)", "altTadam": "Keb and Bek cheer: ta-dah!", "introIndiceTapSac": "Tap the bag to continue", "altPretBek": "Bek turns to Keb, smiling", "altPretKeb": "Keb looks at you, asking a question", "confirmationLabelNom": "Name", "confirmationLabelGenreAge": "You are", "editionTitre": "Change your details", "editionBtnModifier": "Change", "editionBtnConfirmer": "Confirm", "creationCompteTitre": "Create your account", "creationCompteTexte": "Enter your email — we'll send you a code, no password needed.", "creationCompteLabelEmail": "Email", "creationCompteBtnEnvoyer": "Send code", "creationCompteLabelCode": "Code", "creationCompteBtnVerifier": "Confirm", "creationCompteCodeEnvoye": "Code sent! Check your email.", "creationCompteErreurCourrielVide": "Please enter your email.", "creationCompteErreurCodeVide": "Please enter the code.", "creationCompteEnvoiEnCours": "Sending…", "creationCompteVerificationEnCours": "Checking…", "creationCompteErreurIndisponible": "Account creation isn't available right now.", "creationCompteLienInvite": "Continue without an account", "creationCompteAvertissementInvite": "Your progress could be lost if your browser data is cleared.", "quitterAriaLabel": "Close and go back" },
+  es: { "labelPrefixeNom": "Me llamo", "labelChampNom": "tu nombre", "labelValider": "OK", "erreurVide": "Escribe tu nombre.", "erreurTropCourt": "Ese nombre parece muy corto.", "erreurTropLong": "Ese nombre parece muy largo.", "erreurCaracteresEtrangers": "Usa solo letras francesas.", "erreurInapproprie": "Eso no parece un nombre real — inténtalo de nuevo.", "titreChoixRepli": "¡Elijamos un nombre para ti, entonces!", "titreSilhouettes": "¿Cuál eres tú?", "labelChangerNom": "Cambiar mi nombre", "labelTraduirePhrase": "Traducir la frase", "labelMasquerTraduction": "Ocultar traducción", "indiceCarrousel": "Desliza y luego toca de nuevo para elegir", "introIndiceTap": "Toca para continuar", "indiceMotTraduction": "Toca o haz clic en una palabra para ver su traducción.", "labelAnnulerChoix": "Cancelar", "debloqueTitre": "¡Objeto desbloqueado!", "debloqueNom": "La primera mochila", "altDebloqueSac": "La mochila, brillando y flotando", "altIconeSac": "Tu mochila", "sacCarteTitre": "Tu mochila", "sacCarteLigneMots": "Toca dos veces (o haz doble clic) en una palabra para guardarla aquí.", "sacCarteLigneDejaSauvegardes": "Buena noticia: ¡las palabras que ya tocaste ya están dentro!", "sacCarteLigneObjets": "También guardará objetos, códigos secretos y sorpresas por desbloquear.", "altEssaie": "Keb y Bek te invitan a probar a tocar dos veces la palabra", "essaieInstruction": "Toca dos veces la palabra", "etiquetteInformel": "(informal)", "altTadam": "¡Keb y Bek celebran: tachán!", "introIndiceTapSac": "Toca la mochila para continuar", "altPretBek": "Bek se gira hacia Keb, sonriendo", "altPretKeb": "Keb te mira, haciéndote una pregunta", "confirmationLabelNom": "Nombre", "confirmationLabelGenreAge": "Eres", "editionTitre": "Cambia tus datos", "editionBtnModifier": "Cambiar", "editionBtnConfirmer": "Confirmar", "creationCompteTitre": "Crea tu cuenta", "creationCompteTexte": "Escribe tu correo — te enviaremos un código, sin contraseña.", "creationCompteLabelEmail": "Correo electrónico", "creationCompteBtnEnvoyer": "Enviar código", "creationCompteLabelCode": "Código", "creationCompteBtnVerifier": "Confirmar", "creationCompteCodeEnvoye": "¡Código enviado! Revisa tu correo.", "creationCompteErreurCourrielVide": "Escribe tu correo, por favor.", "creationCompteErreurCodeVide": "Escribe el código, por favor.", "creationCompteEnvoiEnCours": "Enviando…", "creationCompteVerificationEnCours": "Comprobando…", "creationCompteErreurIndisponible": "La creación de cuentas no está disponible ahora mismo.", "creationCompteLienInvite": "Continuar sin cuenta", "creationCompteAvertissementInvite": "Tu progreso podría perderse si se borran los datos del navegador.", "quitterAriaLabel": "Cerrar y volver" },
+  it: { "labelPrefixeNom": "Mi chiamo", "labelChampNom": "il tuo nome", "labelValider": "OK", "erreurVide": "Scrivi il tuo nome.", "erreurTropCourt": "Quel nome sembra troppo corto.", "erreurTropLong": "Quel nome sembra troppo lungo.", "erreurCaracteresEtrangers": "Usa solo lettere francesi.", "erreurInapproprie": "Non sembra un vero nome — riprova.", "titreChoixRepli": "Allora, scegliamo un nome per te!", "titreSilhouettes": "Quale sei tu?", "labelChangerNom": "Cambia il mio nome", "labelTraduirePhrase": "Traduci la frase", "labelMasquerTraduction": "Nascondi la traduzione", "indiceCarrousel": "Scorri, poi tocca di nuovo per scegliere", "introIndiceTap": "Tocca per continuare", "indiceMotTraduction": "Tocca o fai clic su una parola per vederne la traduzione.", "labelAnnulerChoix": "Annulla", "debloqueTitre": "Oggetto sbloccato!", "debloqueNom": "Il primo zaino", "altDebloqueSac": "Lo zaino, luminoso e fluttuante", "altIconeSac": "Il tuo zaino", "sacCarteTitre": "Il tuo zaino", "sacCarteLigneMots": "Tocca due volte (o fai doppio clic) su una parola per salvarla qui.", "sacCarteLigneDejaSauvegardes": "Buona notizia: le parole che hai già toccato sono già dentro!", "sacCarteLigneObjets": "Conterrà anche oggetti, codici segreti e sorprese da sbloccare.", "altEssaie": "Keb e Bek ti invitano a provare a toccare due volte la parola", "essaieInstruction": "Tocca due volte la parola", "etiquetteInformel": "(informale)", "altTadam": "Keb e Bek esultano: tada!", "introIndiceTapSac": "Tocca lo zaino per continuare", "altPretBek": "Bek si gira verso Keb, sorridendo", "altPretKeb": "Keb ti guarda e ti fa una domanda", "confirmationLabelNom": "Nome", "confirmationLabelGenreAge": "Sei", "editionTitre": "Modifica i tuoi dati", "editionBtnModifier": "Modifica", "editionBtnConfirmer": "Conferma", "creationCompteTitre": "Crea il tuo account", "creationCompteTexte": "Inserisci la tua email — ti invieremo un codice, senza password.", "creationCompteLabelEmail": "Email", "creationCompteBtnEnvoyer": "Invia codice", "creationCompteLabelCode": "Codice", "creationCompteBtnVerifier": "Conferma", "creationCompteCodeEnvoye": "Codice inviato! Controlla la tua email.", "creationCompteErreurCourrielVide": "Inserisci la tua email, per favore.", "creationCompteErreurCodeVide": "Inserisci il codice, per favore.", "creationCompteEnvoiEnCours": "Invio in corso…", "creationCompteVerificationEnCours": "Verifica in corso…", "creationCompteErreurIndisponible": "La creazione dell'account non è disponibile al momento.", "creationCompteLienInvite": "Continua senza account", "creationCompteAvertissementInvite": "I tuoi progressi potrebbero andare persi se i dati del browser vengono cancellati.", "quitterAriaLabel": "Chiudi e torna indietro" },
+  pt: { "labelPrefixeNom": "Chamo-me", "labelChampNom": "o teu nome", "labelValider": "OK", "erreurVide": "Escreve o teu nome.", "erreurTropCourt": "Esse nome parece muito curto.", "erreurTropLong": "Esse nome parece muito longo.", "erreurCaracteresEtrangers": "Usa apenas letras francesas.", "erreurInapproprie": "Isso não parece um nome real — tenta outra vez.", "titreChoixRepli": "Então vamos escolher um nome para ti!", "titreSilhouettes": "Qual és tu?", "labelChangerNom": "Mudar o meu nome", "labelTraduirePhrase": "Traduzir a frase", "labelMasquerTraduction": "Ocultar tradução", "indiceCarrousel": "Desliza e depois toca de novo para escolher", "introIndiceTap": "Toca para continuar", "indiceMotTraduction": "Toca ou clica numa palavra para veres a tradução.", "labelAnnulerChoix": "Cancelar", "debloqueTitre": "Item desbloqueado!", "debloqueNom": "A primeira mochila", "altDebloqueSac": "A mochila, a brilhar e a flutuar", "altIconeSac": "A tua mochila", "sacCarteTitre": "A tua mochila", "sacCarteLigneMots": "Toca duas vezes (ou faz duplo clique) numa palavra para a guardar aqui.", "sacCarteLigneDejaSauvegardes": "Boa notícia: as palavras que já tocaste já estão lá dentro!", "sacCarteLigneObjets": "Também vai guardar objetos, códigos secretos e surpresas para desbloquear.", "altEssaie": "Keb e Bek convidam-te a experimentar tocar duas vezes na palavra", "essaieInstruction": "Toca duas vezes na palavra", "etiquetteInformel": "(informal)", "altTadam": "Keb e Bek festejam: tcharã!", "introIndiceTapSac": "Toca na mochila para continuar", "altPretBek": "Bek vira-se para Keb, a sorrir", "altPretKeb": "Keb olha para ti, a fazer uma pergunta", "confirmationLabelNom": "Nome", "confirmationLabelGenreAge": "És", "editionTitre": "Altera os teus dados", "editionBtnModifier": "Alterar", "editionBtnConfirmer": "Confirmar", "creationCompteTitre": "Cria a tua conta", "creationCompteTexte": "Escreve o teu email — enviamos-te um código, sem palavra-passe.", "creationCompteLabelEmail": "Email", "creationCompteBtnEnvoyer": "Enviar código", "creationCompteLabelCode": "Código", "creationCompteBtnVerifier": "Confirmar", "creationCompteCodeEnvoye": "Código enviado! Verifica o teu email.", "creationCompteErreurCourrielVide": "Escreve o teu email, por favor.", "creationCompteErreurCodeVide": "Escreve o código, por favor.", "creationCompteEnvoiEnCours": "A enviar…", "creationCompteVerificationEnCours": "A verificar…", "creationCompteErreurIndisponible": "A criação de conta não está disponível neste momento.", "creationCompteLienInvite": "Continuar sem conta", "creationCompteAvertissementInvite": "O teu progresso pode perder-se se os dados do navegador forem apagados.", "quitterAriaLabel": "Fechar e voltar" },
+  ca: { "labelPrefixeNom": "Em dic", "labelChampNom": "el teu nom", "labelValider": "OK", "erreurVide": "Escriu el teu nom.", "erreurTropCourt": "Aquest nom sembla massa curt.", "erreurTropLong": "Aquest nom sembla massa llarg.", "erreurCaracteresEtrangers": "Fes servir només lletres franceses.", "erreurInapproprie": "Això no sembla un nom real — torna-ho a provar.", "titreChoixRepli": "Doncs triem un nom per a tu!", "titreSilhouettes": "Quin ets tu?", "labelChangerNom": "Canviar el meu nom", "labelTraduirePhrase": "Traduir la frase", "labelMasquerTraduction": "Amaga la traducció", "indiceCarrousel": "Llisca i després toca de nou per triar", "introIndiceTap": "Toca per continuar", "indiceMotTraduction": "Toca o fes clic en una paraula per veure'n la traducció.", "labelAnnulerChoix": "Cancel·la", "debloqueTitre": "Objecte desbloquejat!", "debloqueNom": "La primera motxilla", "altDebloqueSac": "La motxilla, brillant i flotant", "altIconeSac": "La teva motxilla", "sacCarteTitre": "La teva motxilla", "sacCarteLigneMots": "Toca dues vegades (o fes doble clic) en una paraula per desar-la aquí.", "sacCarteLigneDejaSauvegardes": "Bona notícia: les paraules que ja has tocat ja hi són dins!", "sacCarteLigneObjets": "També hi guardarà objectes, codis secrets i sorpreses per desbloquejar.", "altEssaie": "Keb i Bek et conviden a provar de tocar dues vegades la paraula", "essaieInstruction": "Toca dues vegades la paraula", "etiquetteInformel": "(informal)", "altTadam": "Keb i Bek celebren: tatxan!", "introIndiceTapSac": "Toca la motxilla per continuar", "altPretBek": "Bek es gira cap a Keb, somrient", "altPretKeb": "Keb et mira, fent-te una pregunta", "confirmationLabelNom": "Nom", "confirmationLabelGenreAge": "Ets", "editionTitre": "Canvia les teves dades", "editionBtnModifier": "Canvia", "editionBtnConfirmer": "Confirma", "creationCompteTitre": "Crea el teu compte", "creationCompteTexte": "Escriu el teu correu — t'enviarem un codi, sense contrasenya.", "creationCompteLabelEmail": "Correu electrònic", "creationCompteBtnEnvoyer": "Envia el codi", "creationCompteLabelCode": "Codi", "creationCompteBtnVerifier": "Confirma", "creationCompteCodeEnvoye": "Codi enviat! Revisa el teu correu.", "creationCompteErreurCourrielVide": "Escriu el teu correu, si us plau.", "creationCompteErreurCodeVide": "Escriu el codi, si us plau.", "creationCompteEnvoiEnCours": "Enviant…", "creationCompteVerificationEnCours": "Comprovant…", "creationCompteErreurIndisponible": "La creació de comptes no està disponible ara mateix.", "creationCompteLienInvite": "Continua sense compte", "creationCompteAvertissementInvite": "El teu progrés es podria perdre si s'esborren les dades del navegador.", "quitterAriaLabel": "Tanca i torna" },
+  eo: { "labelPrefixeNom": "Mia nomo estas", "labelChampNom": "via nomo", "labelValider": "Bone", "erreurVide": "Bonvolu tajpi vian nomon.", "erreurTropCourt": "Tiu nomo ŝajnas tro mallonga.", "erreurTropLong": "Tiu nomo ŝajnas tro longa.", "erreurCaracteresEtrangers": "Bonvolu uzi nur francajn literojn.", "erreurInapproprie": "Tio ne ŝajnas vera nomo — provu denove.", "titreChoixRepli": "Ni do elektu nomon por vi!", "titreSilhouettes": "Kiu estas vi?", "labelChangerNom": "Ŝanĝi mian nomon", "labelTraduirePhrase": "Traduki la frazon", "labelMasquerTraduction": "Kaŝi la tradukon", "indiceCarrousel": "Glitu, poste tuŝu denove por elekti", "introIndiceTap": "Tuŝu por daŭrigi", "indiceMotTraduction": "Tuŝu aŭ alklaku vorton por vidi ĝian tradukon.", "labelAnnulerChoix": "Nuligi", "debloqueTitre": "Objekto malŝlosita!", "debloqueNom": "La unua sako", "altDebloqueSac": "La saketo, brilanta kaj flosanta", "altIconeSac": "Via saketo", "sacCarteTitre": "Via saketo", "sacCarteLigneMots": "Tuŝu dufoje (aŭ duoble alklaku) vorton por konservi ĝin ĉi tie.", "sacCarteLigneDejaSauvegardes": "Bona novaĵo: la vortoj, kiujn vi jam tuŝis, jam estas interne!", "sacCarteLigneObjets": "Ĝi ankaŭ enhavos objektojn, sekretajn kodojn kaj surprizojn por malŝlosi.", "altEssaie": "Keb kaj Bek invitas vin provi duoble tuŝi la vorton", "essaieInstruction": "Tuŝu dufoje la vorton", "etiquetteInformel": "(neformala)", "altTadam": "Keb kaj Bek festas: taaa-daa!", "introIndiceTapSac": "Frapetu la sakon por daŭrigi", "altPretBek": "Bek turnas sin al Keb, ridetante", "altPretKeb": "Keb rigardas vin, demandante", "confirmationLabelNom": "Nomo", "confirmationLabelGenreAge": "Vi estas", "editionTitre": "Ŝanĝu viajn detalojn", "editionBtnModifier": "Ŝanĝi", "editionBtnConfirmer": "Konfirmi", "creationCompteTitre": "Kreu vian konton", "creationCompteTexte": "Enigu vian retpoŝton — ni sendos al vi kodon, neniu pasvorto necesas.", "creationCompteLabelEmail": "Retpoŝto", "creationCompteBtnEnvoyer": "Sendi kodon", "creationCompteLabelCode": "Kodo", "creationCompteBtnVerifier": "Konfirmi", "creationCompteCodeEnvoye": "Kodo sendita! Kontrolu vian retpoŝton.", "creationCompteErreurCourrielVide": "Bonvolu enigi vian retpoŝton.", "creationCompteErreurCodeVide": "Bonvolu enigi la kodon.", "creationCompteEnvoiEnCours": "Sendante…", "creationCompteVerificationEnCours": "Kontrolante…", "creationCompteErreurIndisponible": "Konto-kreado ne disponeblas nun.", "creationCompteLienInvite": "Daŭrigi sen konto", "creationCompteAvertissementInvite": "Via progreso povus perdiĝi se la retumilaj datumoj estas viŝitaj.", "quitterAriaLabel": "Fermi kaj reveni" },
+  zh: { "labelPrefixeNom": "我的名字是", "labelChampNom": "你的名字", "labelValider": "确定", "erreurVide": "请输入你的名字。", "erreurTropCourt": "这个名字太短了。", "erreurTropLong": "这个名字太长了。", "erreurCaracteresEtrangers": "请只使用法语字母。", "erreurInapproprie": "这看起来不像真名——再试一次。", "titreChoixRepli": "那我们就给你选一个名字吧！", "titreSilhouettes": "哪一个是你？", "labelChangerNom": "更改我的名字", "labelTraduirePhrase": "翻译这句话", "labelMasquerTraduction": "隐藏翻译", "indiceCarrousel": "滑动后再次点击以选择", "introIndiceTap": "点击继续", "indiceMotTraduction": "点击或轻触一个单词，查看它的翻译。", "labelAnnulerChoix": "取消", "debloqueTitre": "解锁物品！", "debloqueNom": "第一个背包", "altDebloqueSac": "闪闪发光、悬浮着的背包", "altIconeSac": "你的背包", "sacCarteTitre": "你的背包", "sacCarteLigneMots": "双击（或双点）一个单词，把它存到这里。", "sacCarteLigneDejaSauvegardes": "好消息：你已经点过的单词已经在里面了！", "sacCarteLigneObjets": "它还会装物品、秘密代码和等待解锁的惊喜。", "altEssaie": "Keb 和 Bek 邀请你试着双击这个单词", "essaieInstruction": "双击这个单词", "etiquetteInformel": "（非正式）", "altTadam": "Keb 和 Bek 欢呼：哒哒！", "introIndiceTapSac": "点一下背包继续", "altPretBek": "贝克微笑着转向凯布", "altPretKeb": "凯布看着你，问了一个问题", "confirmationLabelNom": "名字", "confirmationLabelGenreAge": "你是", "editionTitre": "修改你的信息", "editionBtnModifier": "修改", "editionBtnConfirmer": "确认", "creationCompteTitre": "创建你的账号", "creationCompteTexte": "输入你的邮箱——我们会发一个验证码给你，不需要密码。", "creationCompteLabelEmail": "邮箱", "creationCompteBtnEnvoyer": "发送验证码", "creationCompteLabelCode": "验证码", "creationCompteBtnVerifier": "确认", "creationCompteCodeEnvoye": "验证码已发送！去查看你的邮箱吧。", "creationCompteErreurCourrielVide": "请输入你的邮箱。", "creationCompteErreurCodeVide": "请输入验证码。", "creationCompteEnvoiEnCours": "发送中……", "creationCompteVerificationEnCours": "核对中……", "creationCompteErreurIndisponible": "目前暂时无法创建账号。", "creationCompteLienInvite": "不创建账号，继续", "creationCompteAvertissementInvite": "如果清除浏览器数据，你的学习进度可能会丢失。", "quitterAriaLabel": "关闭并返回" },
+  ja: { "labelPrefixeNom": "わたしの名前は", "labelChampNom": "きみの名前", "labelValider": "OK", "erreurVide": "名前を入力してね。", "erreurTropCourt": "その名前は短すぎるみたい。", "erreurTropLong": "その名前は長すぎるみたい。", "erreurCaracteresEtrangers": "フランス語の文字だけを使ってね。", "erreurInapproprie": "本当の名前じゃなさそう。もう一度試してね。", "titreChoixRepli": "じゃあ、名前を選ぼうね！", "titreSilhouettes": "どれがきみ？", "labelChangerNom": "名前を変える", "labelTraduirePhrase": "この文を訳す", "labelMasquerTraduction": "訳を隠す", "indiceCarrousel": "スライドして、もう一度タップして選んでね", "introIndiceTap": "タップして続ける", "indiceMotTraduction": "単語をタップまたはクリックすると、訳が見られるよ。", "labelAnnulerChoix": "キャンセル", "debloqueTitre": "アイテム解放！", "debloqueNom": "はじめてのかばん", "altDebloqueSac": "光りながら浮かんでいるかばん", "altIconeSac": "きみのかばん", "sacCarteTitre": "きみのかばん", "sacCarteLigneMots": "単語をダブルタップ（またはダブルクリック）すると、ここに保存されるよ。", "sacCarteLigneDejaSauvegardes": "いいお知らせ：もうタップした単語は、すでに入っているよ！", "sacCarteLigneObjets": "アイテムや秘密のコード、解放を待つサプライズも入るようになるよ。", "altEssaie": "ケブとベックが単語をダブルタップしてみるよう誘っているよ", "essaieInstruction": "単語をダブルタップしてね", "etiquetteInformel": "（くだけた言い方）", "altTadam": "ケブとベックが「ジャジャーン！」と喜んでいるよ", "introIndiceTapSac": "バッグをタップして続けよう", "altPretBek": "ベックがケブの方を向いてにっこり", "altPretKeb": "ケブが君を見て質問しているよ", "confirmationLabelNom": "名前", "confirmationLabelGenreAge": "きみは", "editionTitre": "情報を変更する", "editionBtnModifier": "変更", "editionBtnConfirmer": "確定", "creationCompteTitre": "アカウントを作成しよう", "creationCompteTexte": "メールアドレスを入力してね。コードを送るよ、パスワードは不要。", "creationCompteLabelEmail": "メールアドレス", "creationCompteBtnEnvoyer": "コードを送る", "creationCompteLabelCode": "コード", "creationCompteBtnVerifier": "確定", "creationCompteCodeEnvoye": "コードを送ったよ！メールを確認してね。", "creationCompteErreurCourrielVide": "メールアドレスを入力してね。", "creationCompteErreurCodeVide": "コードを入力してね。", "creationCompteEnvoiEnCours": "送信中…", "creationCompteVerificationEnCours": "確認中…", "creationCompteErreurIndisponible": "今はアカウントを作成できません。", "creationCompteLienInvite": "アカウントを作らずに続ける", "creationCompteAvertissementInvite": "ブラウザのデータを消すと、進み具合が失われることがあります。", "quitterAriaLabel": "閉じて戻る" },
+  ko: { "labelPrefixeNom": "제 이름은", "labelChampNom": "네 이름", "labelValider": "확인", "erreurVide": "이름을 입력해줘.", "erreurTropCourt": "이름이 너무 짧은 것 같아.", "erreurTropLong": "이름이 너무 긴 것 같아.", "erreurCaracteresEtrangers": "프랑스어 문자만 사용해줘.", "erreurInapproprie": "진짜 이름 같지 않아 — 다시 시도해줘.", "titreChoixRepli": "그럼 네 이름을 골라보자!", "titreSilhouettes": "어느 게 너야?", "labelChangerNom": "내 이름 바꾸기", "labelTraduirePhrase": "문장 번역하기", "labelMasquerTraduction": "번역 숨기기", "indiceCarrousel": "밀어서 넘긴 다음 다시 눌러서 선택해", "introIndiceTap": "눌러서 계속하기", "indiceMotTraduction": "단어를 탭하거나 클릭하면 번역을 볼 수 있어.", "labelAnnulerChoix": "취소", "debloqueTitre": "아이템 잠금 해제!", "debloqueNom": "첫 번째 가방", "altDebloqueSac": "빛나고 둥둥 떠 있는 가방", "altIconeSac": "네 가방", "sacCarteTitre": "네 가방", "sacCarteLigneMots": "단어를 두 번 탭(또는 더블클릭)하면 여기에 저장돼.", "sacCarteLigneDejaSauvegardes": "좋은 소식: 이미 탭했던 단어들은 벌써 안에 들어 있어!", "sacCarteLigneObjets": "앞으로 물건, 비밀 코드, 잠금 해제할 깜짝 선물도 담기게 될 거야.", "altEssaie": "케브와 베크가 단어를 두 번 탭해 보라고 권하고 있어", "essaieInstruction": "단어를 두 번 탭해봐", "etiquetteInformel": "(반말)", "altTadam": "케브와 베크가 짜잔! 하며 기뻐해요", "introIndiceTapSac": "가방을 탭해서 계속하기", "altPretBek": "베크가 케브를 향해 웃으며 돌아봐요", "altPretKeb": "케브가 너를 보며 질문해요", "confirmationLabelNom": "이름", "confirmationLabelGenreAge": "너는", "editionTitre": "정보 수정하기", "editionBtnModifier": "변경", "editionBtnConfirmer": "확인", "creationCompteTitre": "계정 만들기", "creationCompteTexte": "이메일을 입력해줘 — 코드를 보내줄게, 비밀번호는 필요 없어.", "creationCompteLabelEmail": "이메일", "creationCompteBtnEnvoyer": "코드 보내기", "creationCompteLabelCode": "코드", "creationCompteBtnVerifier": "확인", "creationCompteCodeEnvoye": "코드를 보냈어! 이메일을 확인해봐.", "creationCompteErreurCourrielVide": "이메일을 입력해줘.", "creationCompteErreurCodeVide": "코드를 입력해줘.", "creationCompteEnvoiEnCours": "보내는 중…", "creationCompteVerificationEnCours": "확인하는 중…", "creationCompteErreurIndisponible": "지금은 계정을 만들 수 없어요.", "creationCompteLienInvite": "계정 없이 계속하기", "creationCompteAvertissementInvite": "브라우저 데이터를 지우면 진행 상황이 사라질 수 있어요.", "quitterAriaLabel": "닫고 돌아가기" },
+  vi: { "labelPrefixeNom": "Tên mình là", "labelChampNom": "tên của bạn", "labelValider": "OK", "erreurVide": "Hãy nhập tên của bạn.", "erreurTropCourt": "Tên đó có vẻ quá ngắn.", "erreurTropLong": "Tên đó có vẻ quá dài.", "erreurCaracteresEtrangers": "Vui lòng chỉ dùng chữ cái tiếng Pháp.", "erreurInapproprie": "Cái tên đó có vẻ không thật — hãy thử lại.", "titreChoixRepli": "Vậy hãy chọn một cái tên cho bạn nhé!", "titreSilhouettes": "Bạn là ai trong số này?", "labelChangerNom": "Đổi tên của tôi", "labelTraduirePhrase": "Dịch câu này", "labelMasquerTraduction": "Ẩn bản dịch", "indiceCarrousel": "Vuốt rồi chạm lại để chọn", "introIndiceTap": "Chạm để tiếp tục", "indiceMotTraduction": "Chạm hoặc nhấp vào một từ để xem bản dịch của nó.", "labelAnnulerChoix": "Hủy", "debloqueTitre": "Đã mở khóa vật phẩm!", "debloqueNom": "Chiếc túi đầu tiên", "altDebloqueSac": "Chiếc túi đang phát sáng và lơ lửng", "altIconeSac": "Túi của bạn", "sacCarteTitre": "Túi của bạn", "sacCarteLigneMots": "Chạm hai lần (hoặc nhấp đúp) vào một từ để lưu vào đây.", "sacCarteLigneDejaSauvegardes": "Tin vui: những từ bạn đã chạm rồi đã có sẵn trong này!", "sacCarteLigneObjets": "Túi này còn sẽ chứa đồ vật, mã bí mật và bất ngờ chờ được mở khóa.", "altEssaie": "Keb và Bek mời bạn thử chạm hai lần vào từ này", "essaieInstruction": "Chạm hai lần vào từ này", "etiquetteInformel": "(thân mật)", "altTadam": "Keb và Bek reo lên: Ta-đa!", "introIndiceTapSac": "Chạm vào ba lô để tiếp tục", "altPretBek": "Bek quay sang Keb, mỉm cười", "altPretKeb": "Keb nhìn bạn, hỏi một câu", "confirmationLabelNom": "Tên", "confirmationLabelGenreAge": "Bạn là", "editionTitre": "Thay đổi thông tin của bạn", "editionBtnModifier": "Thay đổi", "editionBtnConfirmer": "Xác nhận", "creationCompteTitre": "Tạo tài khoản của bạn", "creationCompteTexte": "Nhập email của bạn — chúng tôi sẽ gửi mã, không cần mật khẩu.", "creationCompteLabelEmail": "Email", "creationCompteBtnEnvoyer": "Gửi mã", "creationCompteLabelCode": "Mã", "creationCompteBtnVerifier": "Xác nhận", "creationCompteCodeEnvoye": "Đã gửi mã! Hãy kiểm tra email của bạn.", "creationCompteErreurCourrielVide": "Vui lòng nhập email của bạn.", "creationCompteErreurCodeVide": "Vui lòng nhập mã.", "creationCompteEnvoiEnCours": "Đang gửi…", "creationCompteVerificationEnCours": "Đang kiểm tra…", "creationCompteErreurIndisponible": "Hiện chưa thể tạo tài khoản.", "creationCompteLienInvite": "Tiếp tục mà không cần tài khoản", "creationCompteAvertissementInvite": "Tiến trình của bạn có thể bị mất nếu dữ liệu trình duyệt bị xóa.", "quitterAriaLabel": "Đóng và quay lại" },
+  ht: { "labelPrefixeNom": "Non mwen se", "labelChampNom": "non ou", "labelValider": "OK", "erreurVide": "Tanpri ekri non ou.", "erreurTropCourt": "Non sa a sanble twò kout.", "erreurTropLong": "Non sa a sanble twò long.", "erreurCaracteresEtrangers": "Tanpri itilize sèlman lèt fransè.", "erreurInapproprie": "Sa a pa sanble yon vre non — eseye ankò.", "titreChoixRepli": "Ann chwazi yon non pou ou, donk!", "titreSilhouettes": "Kilès ki ou menm?", "labelChangerNom": "Chanje non mwen", "labelTraduirePhrase": "Tradwi fraz la", "labelMasquerTraduction": "Kache tradiksyon an", "indiceCarrousel": "Glise, epi tape ankò pou chwazi", "introIndiceTap": "Tape pou kontinye", "indiceMotTraduction": "Tape oswa klike sou yon mo pou wè tradiksyon li.", "labelAnnulerChoix": "Anile", "debloqueTitre": "Objè debloke!", "debloqueNom": "Premye sak la", "altDebloqueSac": "Sak la, ki klere epi flote", "altIconeSac": "Sak ou", "sacCarteTitre": "Sak ou", "sacCarteLigneMots": "Tape de fwa (oswa doub-klike) sou yon mo pou sere l isit la.", "sacCarteLigneDejaSauvegardes": "Bon nouvèl: mo ou te deja tape yo deja ladan l!", "sacCarteLigneObjets": "L ap gen tou objè, kòd sekrè, ak sipriz pou debloke.", "altEssaie": "Keb ak Bek envite ou eseye tape de fwa sou mo a", "essaieInstruction": "Tape de fwa sou mo a", "etiquetteInformel": "(fanmilye)", "altTadam": "Keb ak Bek fete: ta-da!", "introIndiceTapSac": "Peze sak la pou kontinye", "altPretBek": "Bek vire tounen vè Keb, ap souri", "altPretKeb": "Keb ap gade w, ap poze yon kesyon", "confirmationLabelNom": "Non", "confirmationLabelGenreAge": "Ou se", "editionTitre": "Chanje enfòmasyon ou", "editionBtnModifier": "Chanje", "editionBtnConfirmer": "Konfime", "creationCompteTitre": "Kreye kont ou", "creationCompteTexte": "Antre imèl ou — nou pral voye yon kòd, pa gen modpas.", "creationCompteLabelEmail": "Imèl", "creationCompteBtnEnvoyer": "Voye kòd", "creationCompteLabelCode": "Kòd", "creationCompteBtnVerifier": "Konfime", "creationCompteCodeEnvoye": "Kòd voye! Tcheke imèl ou.", "creationCompteErreurCourrielVide": "Tanpri antre imèl ou.", "creationCompteErreurCodeVide": "Tanpri antre kòd la.", "creationCompteEnvoiEnCours": "Ap voye…", "creationCompteVerificationEnCours": "Ap tcheke…", "creationCompteErreurIndisponible": "Kreyasyon kont pa disponib kounye a.", "creationCompteLienInvite": "Kontinye san kont", "creationCompteAvertissementInvite": "Pwogrè ou ka pèdi si done navigatè a efase.", "quitterAriaLabel": "Fèmen epi retounen" },
+  tl: { "labelPrefixeNom": "Ang pangalan ko ay", "labelChampNom": "ang pangalan mo", "labelValider": "OK", "erreurVide": "Pakisulat ang iyong pangalan.", "erreurTropCourt": "Mukhang masyadong maikli ang pangalang iyon.", "erreurTropLong": "Mukhang masyadong mahaba ang pangalang iyon.", "erreurCaracteresEtrangers": "Mangyaring gumamit lamang ng mga letrang Pranses.", "erreurInapproprie": "Mukhang hindi iyon totoong pangalan — subukan muli.", "titreChoixRepli": "Kung gayon, pumili tayo ng pangalan para sa iyo!", "titreSilhouettes": "Alin dito ang ikaw?", "labelChangerNom": "Baguhin ang pangalan ko", "labelTraduirePhrase": "Isalin ang pangungusap", "labelMasquerTraduction": "Itago ang salin", "indiceCarrousel": "I-slide, pagkatapos i-tap ulit para pumili", "introIndiceTap": "I-tap para magpatuloy", "indiceMotTraduction": "I-tap o i-click ang isang salita para makita ang salin nito.", "labelAnnulerChoix": "Kanselahin", "debloqueTitre": "Na-unlock ang item!", "debloqueNom": "Ang unang bag", "altDebloqueSac": "Ang bag, kumikinang at lumulutang", "altIconeSac": "Ang bag mo", "sacCarteTitre": "Ang bag mo", "sacCarteLigneMots": "I-double tap (o i-double click) ang isang salita para itago ito dito.", "sacCarteLigneDejaSauvegardes": "Magandang balita: nasa loob na ang mga salitang na-tap mo na!", "sacCarteLigneObjets": "Malalagyan din ito ng mga bagay, sikretong kodigo, at mga sorpresang i-a-unlock.", "altEssaie": "Inaanyayahan ka nina Keb at Bek na subukang i-double tap ang salita", "essaieInstruction": "I-double tap ang salita", "etiquetteInformel": "(impormal)", "altTadam": "Nagdiriwang sina Keb at Bek: ta-da!", "introIndiceTapSac": "Pindutin ang bag para magpatuloy", "altPretBek": "Humarap si Bek kay Keb, ngumingiti", "altPretKeb": "Tinitingnan ka ni Keb, nagtatanong", "confirmationLabelNom": "Pangalan", "confirmationLabelGenreAge": "Ikaw ay", "editionTitre": "Baguhin ang iyong mga detalye", "editionBtnModifier": "Baguhin", "editionBtnConfirmer": "Kumpirmahin", "creationCompteTitre": "Gumawa ng iyong account", "creationCompteTexte": "Ilagay ang iyong email — magpapadala kami ng code, walang password na kailangan.", "creationCompteLabelEmail": "Email", "creationCompteBtnEnvoyer": "Ipadala ang code", "creationCompteLabelCode": "Code", "creationCompteBtnVerifier": "Kumpirmahin", "creationCompteCodeEnvoye": "Naipadala na ang code! Tingnan ang iyong email.", "creationCompteErreurCourrielVide": "Pakilagay ang iyong email.", "creationCompteErreurCodeVide": "Pakilagay ang code.", "creationCompteEnvoiEnCours": "Ipinapadala…", "creationCompteVerificationEnCours": "Sinusuri…", "creationCompteErreurIndisponible": "Hindi available sa ngayon ang paggawa ng account.", "creationCompteLienInvite": "Magpatuloy nang walang account", "creationCompteAvertissementInvite": "Maaaring mawala ang iyong progreso kung mabubura ang data ng browser.", "quitterAriaLabel": "Isara at bumalik" },
+  id: { "labelPrefixeNom": "Namaku", "labelChampNom": "namamu", "labelValider": "OK", "erreurVide": "Silakan ketik namamu.", "erreurTropCourt": "Nama itu sepertinya terlalu pendek.", "erreurTropLong": "Nama itu sepertinya terlalu panjang.", "erreurCaracteresEtrangers": "Silakan gunakan huruf Prancis saja.", "erreurInapproprie": "Itu sepertinya bukan nama asli — coba lagi.", "titreChoixRepli": "Kalau begitu, ayo pilih nama untukmu!", "titreSilhouettes": "Yang mana kamu?", "labelChangerNom": "Ubah namaku", "labelTraduirePhrase": "Terjemahkan kalimat", "labelMasquerTraduction": "Sembunyikan terjemahan", "indiceCarrousel": "Geser, lalu ketuk lagi untuk memilih", "introIndiceTap": "Ketuk untuk melanjutkan", "indiceMotTraduction": "Ketuk atau klik sebuah kata untuk melihat terjemahannya.", "labelAnnulerChoix": "Batalkan", "debloqueTitre": "Item terbuka!", "debloqueNom": "Tas pertama", "altDebloqueSac": "Tasnya, bersinar dan melayang", "altIconeSac": "Tasmu", "sacCarteTitre": "Tasmu", "sacCarteLigneMots": "Ketuk dua kali (atau klik dua kali) pada sebuah kata untuk menyimpannya di sini.", "sacCarteLigneDejaSauvegardes": "Kabar baik: kata-kata yang sudah kamu sentuh sudah ada di dalamnya!", "sacCarteLigneObjets": "Tas ini juga akan menyimpan benda, kode rahasia, dan kejutan untuk dibuka.", "altEssaie": "Keb dan Bek mengajakmu mencoba mengetuk dua kali kata itu", "essaieInstruction": "Ketuk dua kali kata itu", "etiquetteInformel": "(informal)", "altTadam": "Keb dan Bek bersorak: taraa!", "introIndiceTapSac": "Ketuk tas untuk melanjutkan", "altPretBek": "Bek menoleh ke Keb sambil tersenyum", "altPretKeb": "Keb menatapmu sambil bertanya", "confirmationLabelNom": "Nama", "confirmationLabelGenreAge": "Kamu adalah", "editionTitre": "Ubah datamu", "editionBtnModifier": "Ubah", "editionBtnConfirmer": "Konfirmasi", "creationCompteTitre": "Buat akunmu", "creationCompteTexte": "Masukkan emailmu — kami akan kirim kode, tanpa kata sandi.", "creationCompteLabelEmail": "Email", "creationCompteBtnEnvoyer": "Kirim kode", "creationCompteLabelCode": "Kode", "creationCompteBtnVerifier": "Konfirmasi", "creationCompteCodeEnvoye": "Kode terkirim! Cek emailmu.", "creationCompteErreurCourrielVide": "Silakan masukkan emailmu.", "creationCompteErreurCodeVide": "Silakan masukkan kode.", "creationCompteEnvoiEnCours": "Mengirim…", "creationCompteVerificationEnCours": "Memeriksa…", "creationCompteErreurIndisponible": "Pembuatan akun belum tersedia saat ini.", "creationCompteLienInvite": "Lanjutkan tanpa akun", "creationCompteAvertissementInvite": "Progresmu bisa hilang jika data browser dihapus.", "quitterAriaLabel": "Tutup dan kembali" },
+  nl: { "labelPrefixeNom": "Mijn naam is", "labelChampNom": "je naam", "labelValider": "OK", "erreurVide": "Typ je naam.", "erreurTropCourt": "Die naam lijkt te kort.", "erreurTropLong": "Die naam lijkt te lang.", "erreurCaracteresEtrangers": "Gebruik alleen Franse letters.", "erreurInapproprie": "Dat lijkt geen echte naam — probeer opnieuw.", "titreChoixRepli": "Laten we dan een naam voor je kiezen!", "titreSilhouettes": "Wie ben jij?", "labelChangerNom": "Mijn naam wijzigen", "labelTraduirePhrase": "Vertaal de zin", "labelMasquerTraduction": "Vertaling verbergen", "indiceCarrousel": "Veeg en tik dan nogmaals om te kiezen", "introIndiceTap": "Tik om door te gaan", "indiceMotTraduction": "Tik of klik op een woord om de vertaling te zien.", "labelAnnulerChoix": "Annuleren", "debloqueTitre": "Item ontgrendeld!", "debloqueNom": "De eerste rugzak", "altDebloqueSac": "De rugzak, gloeiend en zwevend", "altIconeSac": "Jouw rugzak", "sacCarteTitre": "Jouw rugzak", "sacCarteLigneMots": "Dubbeltik (of dubbelklik) op een woord om het hier te bewaren.", "sacCarteLigneDejaSauvegardes": "Goed nieuws: de woorden die je al hebt aangeraakt, zitten er al in!", "sacCarteLigneObjets": "Er komen ook voorwerpen, geheime codes en verrassingen in om te ontgrendelen.", "altEssaie": "Keb en Bek nodigen je uit om het woord dubbel te tikken", "essaieInstruction": "Dubbeltik op het woord", "etiquetteInformel": "(informeel)", "altTadam": "Keb en Bek juichen: tadaa!", "introIndiceTapSac": "Tik op de rugzak om verder te gaan", "altPretBek": "Bek draait zich glimlachend naar Keb", "altPretKeb": "Keb kijkt je aan en stelt een vraag", "confirmationLabelNom": "Naam", "confirmationLabelGenreAge": "Jij bent", "editionTitre": "Wijzig je gegevens", "editionBtnModifier": "Wijzigen", "editionBtnConfirmer": "Bevestigen", "creationCompteTitre": "Maak je account aan", "creationCompteTexte": "Vul je e-mailadres in — we sturen je een code, geen wachtwoord nodig.", "creationCompteLabelEmail": "E-mail", "creationCompteBtnEnvoyer": "Code versturen", "creationCompteLabelCode": "Code", "creationCompteBtnVerifier": "Bevestigen", "creationCompteCodeEnvoye": "Code verstuurd! Check je e-mail.", "creationCompteErreurCourrielVide": "Vul alsjeblieft je e-mailadres in.", "creationCompteErreurCodeVide": "Vul alsjeblieft de code in.", "creationCompteEnvoiEnCours": "Versturen…", "creationCompteVerificationEnCours": "Controleren…", "creationCompteErreurIndisponible": "Account aanmaken is nu niet beschikbaar.", "creationCompteLienInvite": "Doorgaan zonder account", "creationCompteAvertissementInvite": "Je voortgang kan verloren gaan als je browsergegevens worden gewist.", "quitterAriaLabel": "Sluiten en teruggaan" },
+  de: { "labelPrefixeNom": "Ich heiße", "labelChampNom": "dein Name", "labelValider": "OK", "erreurVide": "Bitte gib deinen Namen ein.", "erreurTropCourt": "Der Name scheint zu kurz zu sein.", "erreurTropLong": "Der Name scheint zu lang zu sein.", "erreurCaracteresEtrangers": "Bitte nur französische Buchstaben verwenden.", "erreurInapproprie": "Das sieht nicht wie ein echter Name aus — versuch es noch einmal.", "titreChoixRepli": "Dann lass uns einen Namen für dich aussuchen!", "titreSilhouettes": "Welcher bist du?", "labelChangerNom": "Meinen Namen ändern", "labelTraduirePhrase": "Satz übersetzen", "labelMasquerTraduction": "Übersetzung ausblenden", "indiceCarrousel": "Wischen, dann erneut tippen zum Auswählen", "introIndiceTap": "Zum Fortfahren tippen", "indiceMotTraduction": "Tippe oder klicke auf ein Wort, um seine Übersetzung zu sehen.", "labelAnnulerChoix": "Abbrechen", "debloqueTitre": "Gegenstand freigeschaltet!", "debloqueNom": "Der erste Rucksack", "altDebloqueSac": "Der Rucksack, leuchtend und schwebend", "altIconeSac": "Dein Rucksack", "sacCarteTitre": "Dein Rucksack", "sacCarteLigneMots": "Tippe zweimal (oder doppelklicke) auf ein Wort, um es hier zu speichern.", "sacCarteLigneDejaSauvegardes": "Gute Nachricht: Die Wörter, die du schon berührt hast, sind schon drin!", "sacCarteLigneObjets": "Später kommen auch Gegenstände, Geheimcodes und Überraschungen zum Freischalten dazu.", "altEssaie": "Keb und Bek laden dich ein, das Wort doppelt anzutippen", "essaieInstruction": "Tippe das Wort doppelt an", "etiquetteInformel": "(informell)", "altTadam": "Keb und Bek jubeln: Tada!", "introIndiceTapSac": "Tippe auf den Rucksack, um fortzufahren", "altPretBek": "Bek dreht sich lächelnd zu Keb um", "altPretKeb": "Keb sieht dich an und stellt eine Frage", "confirmationLabelNom": "Name", "confirmationLabelGenreAge": "Du bist", "editionTitre": "Deine Angaben ändern", "editionBtnModifier": "Ändern", "editionBtnConfirmer": "Bestätigen", "creationCompteTitre": "Erstelle dein Konto", "creationCompteTexte": "Gib deine E-Mail-Adresse ein — wir schicken dir einen Code, kein Passwort nötig.", "creationCompteLabelEmail": "E-Mail", "creationCompteBtnEnvoyer": "Code senden", "creationCompteLabelCode": "Code", "creationCompteBtnVerifier": "Bestätigen", "creationCompteCodeEnvoye": "Code gesendet! Sieh in deinem Postfach nach.", "creationCompteErreurCourrielVide": "Bitte gib deine E-Mail-Adresse ein.", "creationCompteErreurCodeVide": "Bitte gib den Code ein.", "creationCompteEnvoiEnCours": "Wird gesendet…", "creationCompteVerificationEnCours": "Wird geprüft…", "creationCompteErreurIndisponible": "Die Kontoerstellung ist gerade nicht verfügbar.", "creationCompteLienInvite": "Ohne Konto fortfahren", "creationCompteAvertissementInvite": "Dein Fortschritt könnte verloren gehen, wenn deine Browserdaten gelöscht werden.", "quitterAriaLabel": "Schließen und zurück" },
+  fa: { "labelPrefixeNom": "اسم من", "labelChampNom": "اسمت", "labelValider": "تأیید", "erreurVide": "لطفاً اسمت را بنویس.", "erreurTropCourt": "این اسم خیلی کوتاه به نظر می‌رسه.", "erreurTropLong": "این اسم خیلی بلند به نظر می‌رسه.", "erreurCaracteresEtrangers": "لطفاً فقط از حروف فرانسوی استفاده کن.", "erreurInapproprie": "این شبیه یک اسم واقعی نیست — دوباره امتحان کن.", "titreChoixRepli": "پس بیا یک اسم برات انتخاب کنیم!", "titreSilhouettes": "کدومش تویی؟", "labelChangerNom": "تغییر اسمم", "labelTraduirePhrase": "ترجمه جمله", "labelMasquerTraduction": "پنهان کردن ترجمه", "indiceCarrousel": "بکش، سپس دوباره لمس کن تا انتخاب کنی", "introIndiceTap": "لمس کن تا ادامه بدی", "indiceMotTraduction": "روی یک کلمه ضربه بزن یا کلیک کن تا ترجمه‌اش را ببینی.", "labelAnnulerChoix": "لغو", "debloqueTitre": "آیتم باز شد!", "debloqueNom": "اولین کوله‌پشتی", "altDebloqueSac": "کوله‌پشتی، درخشان و شناور", "altIconeSac": "کوله‌پشتی تو", "sacCarteTitre": "کوله‌پشتی تو", "sacCarteLigneMots": "روی یک کلمه دوبار ضربه بزن (یا دوبار کلیک کن) تا اینجا ذخیره بشه.", "sacCarteLigneDejaSauvegardes": "خبر خوب: کلماتی که قبلاً لمس کردی، از قبل اینجا هستن!", "sacCarteLigneObjets": "بعداً وسایل، کدهای مخفی و سورپرایزهایی هم برای باز کردن اینجا میان.", "altEssaie": "کب و بک ازت می‌خوان امتحان کنی روی کلمه دوبار ضربه بزنی", "essaieInstruction": "روی کلمه دوبار ضربه بزن", "etiquetteInformel": "(غیررسمی)", "altTadam": "کب و بک با خوشحالی می‌گویند: تاداا!", "introIndiceTapSac": "برای ادامه، روی کوله‌پشتی ضربه بزن", "altPretBek": "بک با لبخند به سمت کب برمی‌گردد", "altPretKeb": "کب به تو نگاه می‌کند و سؤالی می‌پرسد", "confirmationLabelNom": "نام", "confirmationLabelGenreAge": "تو", "editionTitre": "تغییر اطلاعات تو", "editionBtnModifier": "تغییر", "editionBtnConfirmer": "تأیید", "creationCompteTitre": "حساب کاربری‌ات را بساز", "creationCompteTexte": "ایمیلت را وارد کن — کدی برایت می‌فرستیم، بدون رمز عبور.", "creationCompteLabelEmail": "ایمیل", "creationCompteBtnEnvoyer": "ارسال کد", "creationCompteLabelCode": "کد", "creationCompteBtnVerifier": "تأیید", "creationCompteCodeEnvoye": "کد ارسال شد! ایمیلت را چک کن.", "creationCompteErreurCourrielVide": "لطفاً ایمیلت را وارد کن.", "creationCompteErreurCodeVide": "لطفاً کد را وارد کن.", "creationCompteEnvoiEnCours": "در حال ارسال…", "creationCompteVerificationEnCours": "در حال بررسی…", "creationCompteErreurIndisponible": "ساخت حساب کاربری در حال حاضر ممکن نیست.", "creationCompteLienInvite": "ادامه بدون ساخت حساب", "creationCompteAvertissementInvite": "اگر داده‌های مرورگر پاک شود، ممکن است پیشرفتت از بین برود.", "quitterAriaLabel": "بستن و بازگشت" },
+  sv: { "labelPrefixeNom": "Jag heter", "labelChampNom": "ditt namn", "labelValider": "OK", "erreurVide": "Skriv ditt namn.", "erreurTropCourt": "Det namnet verkar för kort.", "erreurTropLong": "Det namnet verkar för långt.", "erreurCaracteresEtrangers": "Använd bara franska bokstäver.", "erreurInapproprie": "Det ser inte ut som ett riktigt namn — försök igen.", "titreChoixRepli": "Då väljer vi ett namn åt dig!", "titreSilhouettes": "Vilken är du?", "labelChangerNom": "Ändra mitt namn", "labelTraduirePhrase": "Översätt meningen", "labelMasquerTraduction": "Dölj översättning", "indiceCarrousel": "Svep och tryck sedan igen för att välja", "introIndiceTap": "Tryck för att fortsätta", "indiceMotTraduction": "Tryck eller klicka på ett ord för att se dess översättning.", "labelAnnulerChoix": "Avbryt", "debloqueTitre": "Föremål upplåst!", "debloqueNom": "Den första ryggsäcken", "altDebloqueSac": "Ryggsäcken, lysande och svävande", "altIconeSac": "Din ryggsäck", "sacCarteTitre": "Din ryggsäck", "sacCarteLigneMots": "Dubbeltryck (eller dubbelklicka) på ett ord för att spara det här.", "sacCarteLigneDejaSauvegardes": "Goda nyheter: orden du redan har rört vid finns redan här inne!", "sacCarteLigneObjets": "Den kommer också rymma föremål, hemliga koder och överraskningar att låsa upp.", "altEssaie": "Keb och Bek bjuder in dig att prova att dubbeltrycka på ordet", "essaieInstruction": "Dubbeltryck på ordet", "etiquetteInformel": "(informellt)", "altTadam": "Keb och Bek jublar: tada!", "introIndiceTapSac": "Tryck på ryggsäcken för att fortsätta", "altPretBek": "Bek vänder sig leende mot Keb", "altPretKeb": "Keb tittar på dig och ställer en fråga", "confirmationLabelNom": "Namn", "confirmationLabelGenreAge": "Du är", "editionTitre": "Ändra dina uppgifter", "editionBtnModifier": "Ändra", "editionBtnConfirmer": "Bekräfta", "creationCompteTitre": "Skapa ditt konto", "creationCompteTexte": "Ange din e-post — vi skickar en kod, inget lösenord behövs.", "creationCompteLabelEmail": "E-post", "creationCompteBtnEnvoyer": "Skicka kod", "creationCompteLabelCode": "Kod", "creationCompteBtnVerifier": "Bekräfta", "creationCompteCodeEnvoye": "Koden är skickad! Kolla din e-post.", "creationCompteErreurCourrielVide": "Ange din e-postadress.", "creationCompteErreurCodeVide": "Ange koden.", "creationCompteEnvoiEnCours": "Skickar…", "creationCompteVerificationEnCours": "Kontrollerar…", "creationCompteErreurIndisponible": "Det går inte att skapa konto just nu.", "creationCompteLienInvite": "Fortsätt utan konto", "creationCompteAvertissementInvite": "Dina framsteg kan gå förlorade om webbläsarens data rensas.", "quitterAriaLabel": "Stäng och gå tillbaka" },
+  no: { "labelPrefixeNom": "Jeg heter", "labelChampNom": "navnet ditt", "labelValider": "OK", "erreurVide": "Skriv inn navnet ditt.", "erreurTropCourt": "Det navnet virker for kort.", "erreurTropLong": "Det navnet virker for langt.", "erreurCaracteresEtrangers": "Bruk bare franske bokstaver.", "erreurInapproprie": "Det ser ikke ut som et ekte navn — prøv igjen.", "titreChoixRepli": "Da velger vi et navn til deg!", "titreSilhouettes": "Hvem er du?", "labelChangerNom": "Endre navnet mitt", "labelTraduirePhrase": "Oversett setningen", "labelMasquerTraduction": "Skjul oversettelse", "indiceCarrousel": "Sveip, trykk deretter igjen for å velge", "introIndiceTap": "Trykk for å fortsette", "indiceMotTraduction": "Trykk eller klikk på et ord for å se oversettelsen.", "labelAnnulerChoix": "Avbryt", "debloqueTitre": "Gjenstand låst opp!", "debloqueNom": "Den første ryggsekken", "altDebloqueSac": "Ryggsekken, som gløder og svever", "altIconeSac": "Ryggsekken din", "sacCarteTitre": "Ryggsekken din", "sacCarteLigneMots": "Dobbelttrykk (eller dobbeltklikk) på et ord for å lagre det her.", "sacCarteLigneDejaSauvegardes": "Gode nyheter: ordene du allerede har trykket på, ligger allerede her!", "sacCarteLigneObjets": "Den vil også romme gjenstander, hemmelige koder og overraskelser å låse opp.", "altEssaie": "Keb og Bek inviterer deg til å prøve å dobbelttrykke på ordet", "essaieInstruction": "Dobbelttrykk på ordet", "etiquetteInformel": "(uformelt)", "altTadam": "Keb og Bek jubler: tada!", "introIndiceTapSac": "Trykk på sekken for å fortsette", "altPretBek": "Bek snur seg smilende mot Keb", "altPretKeb": "Keb ser på deg og stiller et spørsmål", "confirmationLabelNom": "Navn", "confirmationLabelGenreAge": "Du er", "editionTitre": "Endre opplysningene dine", "editionBtnModifier": "Endre", "editionBtnConfirmer": "Bekreft", "creationCompteTitre": "Opprett kontoen din", "creationCompteTexte": "Skriv inn e-posten din — vi sender deg en kode, ikke noe passord nødvendig.", "creationCompteLabelEmail": "E-post", "creationCompteBtnEnvoyer": "Send kode", "creationCompteLabelCode": "Kode", "creationCompteBtnVerifier": "Bekreft", "creationCompteCodeEnvoye": "Koden er sendt! Sjekk e-posten din.", "creationCompteErreurCourrielVide": "Skriv inn e-posten din.", "creationCompteErreurCodeVide": "Skriv inn koden.", "creationCompteEnvoiEnCours": "Sender…", "creationCompteVerificationEnCours": "Sjekker…", "creationCompteErreurIndisponible": "Det er ikke mulig å opprette konto akkurat nå.", "creationCompteLienInvite": "Fortsett uten konto", "creationCompteAvertissementInvite": "Fremgangen din kan gå tapt hvis nettleserdataene slettes.", "quitterAriaLabel": "Lukk og gå tilbake" },
+  ru: { "labelPrefixeNom": "Меня зовут", "labelChampNom": "твоё имя", "labelValider": "ОК", "erreurVide": "Пожалуйста, введи своё имя.", "erreurTropCourt": "Это имя кажется слишком коротким.", "erreurTropLong": "Это имя кажется слишком длинным.", "erreurCaracteresEtrangers": "Пожалуйста, используй только французские буквы.", "erreurInapproprie": "Это не похоже на настоящее имя — попробуй снова.", "titreChoixRepli": "Тогда давай выберем тебе имя!", "titreSilhouettes": "Кто из них ты?", "labelChangerNom": "Изменить моё имя", "labelTraduirePhrase": "Перевести фразу", "labelMasquerTraduction": "Скрыть перевод", "indiceCarrousel": "Прокрути, затем нажми ещё раз, чтобы выбрать", "introIndiceTap": "Нажми, чтобы продолжить", "indiceMotTraduction": "Нажми или кликни на слово, чтобы увидеть перевод.", "labelAnnulerChoix": "Отмена", "debloqueTitre": "Предмет разблокирован!", "debloqueNom": "Первый рюкзак", "altDebloqueSac": "Рюкзак, светящийся и парящий", "altIconeSac": "Твой рюкзак", "sacCarteTitre": "Твой рюкзак", "sacCarteLigneMots": "Дважды коснись слова (или сделай двойной клик), чтобы сохранить его здесь.", "sacCarteLigneDejaSauvegardes": "Хорошая новость: слова, которые ты уже трогал, уже внутри!", "sacCarteLigneObjets": "Здесь также будут появляться предметы, секретные коды и сюрпризы, которые можно разблокировать.", "altEssaie": "Кеб и Бек предлагают тебе попробовать дважды коснуться слова", "essaieInstruction": "Дважды коснись слова", "etiquetteInformel": "(неформально)", "altTadam": "Кеб и Бек радуются: та-дам!", "introIndiceTapSac": "Нажми на рюкзак, чтобы продолжить", "altPretBek": "Бек с улыбкой поворачивается к Кебу", "altPretKeb": "Кеб смотрит на тебя и задаёт вопрос", "confirmationLabelNom": "Имя", "confirmationLabelGenreAge": "Ты —", "editionTitre": "Изменить свои данные", "editionBtnModifier": "Изменить", "editionBtnConfirmer": "Подтвердить", "creationCompteTitre": "Создай свой аккаунт", "creationCompteTexte": "Введи свою почту — мы пришлём код, пароль не нужен.", "creationCompteLabelEmail": "Email", "creationCompteBtnEnvoyer": "Отправить код", "creationCompteLabelCode": "Код", "creationCompteBtnVerifier": "Подтвердить", "creationCompteCodeEnvoye": "Код отправлен! Проверь почту.", "creationCompteErreurCourrielVide": "Пожалуйста, введи свою почту.", "creationCompteErreurCodeVide": "Пожалуйста, введи код.", "creationCompteEnvoiEnCours": "Отправка…", "creationCompteVerificationEnCours": "Проверка…", "creationCompteErreurIndisponible": "Создание аккаунта сейчас недоступно.", "creationCompteLienInvite": "Продолжить без аккаунта", "creationCompteAvertissementInvite": "Твой прогресс может быть потерян, если данные браузера будут очищены.", "quitterAriaLabel": "Закрыть и вернуться" },
+  };
+
+  const zone = document.getElementById('selecteurLangue');
+  const declencheur = document.getElementById('slDeclencheur');
+  const code = document.getElementById('slCode');
+  const fond = document.getElementById('slFond');
+  const personnages = document.getElementById('personnages');
+  const imgNeutre = document.getElementById('imgNeutre');
+  const imgGauche = document.getElementById('imgGauche');
+  const imgSaluent = document.getElementById('imgSaluent');
+  const imgClique = document.getElementById('imgClique');
+  const imgBienvenue = document.getElementById('imgBienvenue');
+  const imgEquipes = document.getElementById('imgEquipes');
+  const imgEquipesSalut = document.getElementById('imgEquipesSalut');
+  const bulleBonjour = document.getElementById('bulleBonjour');
+  const bulleBienvenue = document.getElementById('bulleBienvenue');
+  const zoneCaseSecrete = document.getElementById('zoneCaseSecrete');
+  const premiereFois = document.getElementById('premiereFois');
+  const pfQuestion = document.getElementById('pfQuestion');
+  const pfOui = document.getElementById('pfOui');
+  const pfNon = document.getElementById('pfNon');
+  const lienCoursPrives = document.getElementById('lienCoursPrives');
+  const sacEnteteTitre = document.getElementById('sacEnteteTitre');
+
+  // ==================================================================
+  // Bloc "First time?" — apparaît par le premier de ces deux
+  // déclencheurs à se produire : un vrai choix de langue (voir
+  // choisir() plus bas) ou 15s passées sur la page sans choix. Les deux
+  // chemins appellent cette même fonction, idempotente (classList.add
+  // ne fait rien si "visible" y est déjà) — pas besoin de coordonner
+  // qui a "gagné".
+  // ==================================================================
+  function afficherPremiereFois() {
+    premiereFois.classList.add('visible');
+  }
+  setTimeout(afficherPremiereFois, 15000);
+
+  function rafraichirLienCoursPrives() {
+    lienCoursPrives.textContent = DICO_COURS_PRIVES[langueActuelle] || DICO_COURS_PRIVES.en;
+  }
+  rafraichirLienCoursPrives();
+
+  // 🆕 Même principe que rafraichirLienCoursPrives() ci-dessus, pour le
+  // titre du panneau du sac — réutilise directement TEXTES_IDENTITE
+  // (déjà traduit en 19 langues pour identite-eleve.js, voir
+  // sacCarteTitre) plutôt que de dupliquer une nouvelle traduction
+  // ailleurs pour la même idée ("Your backpack"). #sacEnteteTitre n'a
+  // rien à voir avec identite-eleve.js lui-même : c'est juste le
+  // dictionnaire déjà là qui est réutilisé.
+  function rafraichirEnteteSac() {
+    const dico = TEXTES_IDENTITE[langueActuelle] || TEXTES_IDENTITE.en;
+    sacEnteteTitre.textContent = dico.sacCarteTitre || TEXTES_IDENTITE.en.sacCarteTitre;
+  }
+  rafraichirEnteteSac();
+
+  // Même principe que rafraichirLienCoursPrives() ci-dessus, pour la
+  // question "First time?" — voir DICO_PREMIERE_FOIS plus haut.
+  function rafraichirPremiereFois() {
+    pfQuestion.textContent = DICO_PREMIERE_FOIS[langueActuelle] || DICO_PREMIERE_FOIS.en;
+  }
+  rafraichirPremiereFois();
+
+
+  // Visite de retour avec une langue déjà choisie précédemment : le
+  // choix est déjà fait, donc la radiance d'invitation n'a plus lieu
+  // d'être et le bloc "First time?" peut apparaître tout de suite, sans
+  // attendre les 15s ni un nouveau clic sur une pastille.
+  if (langueSauvegardee()) {
+    zone.classList.remove('invite');
+    afficherPremiereFois();
+  }
+
+  // Destination du menu principal pas encore définie côté contenu (pas
+  // de page suivante précisée) — laissé en point d'ancrage explicite
+  // plutôt que deviné, à brancher dès que la suite existe.
+  // 🆕 allerAuMenuPrincipal() n'est plus un stub — branché sur le
+  // nouveau module menu-principal.js. sequenceIdentite (ou sceneRangee,
+  // selon la réponse "Non" à "First time?") se cache, menuPrincipal
+  // prend sa place. onCreerCompte n'est câblé que si l'élève est
+  // effectivement en mode invité (voir demarrerMenuPrincipal) : relance
+  // la séquence identité à l'étape compte plutôt que de tout reprendre
+  // depuis le début — TODO : identite-eleve.js ne permet pas encore de
+  // démarrer directement à cette étape, à ajouter si ce bouton doit
+  // vraiment fonctionner (pour l'instant, il relance toute la séquence).
+  function allerAuMenuPrincipal(reponse) {
+    sequenceIdentite.style.display = 'none';
+    sceneRangee.style.display = 'none';
+    lienCoursPrives.style.display = 'none';
+    document.getElementById('menuPrincipal').style.display = '';
+    KebBekMenu.demarrerMenuPrincipal('menuPrincipal', {
+      onHistoires: function () { console.info('Menu — "Histoires et leçons" : destination à définir.'); },
+      onPrives: function () { window.location.href = 'cours-prives/'; },
+      onContact: function () { console.info('Menu — "Contact" : destination à définir.'); },
+      onCreerCompte: function () { demarrerIdentiteSiPremiereFois('menu'); }
+    });
+  }
+
+  // 🆕 "Oui" (première visite) ouvre désormais la séquence identité
+  // (identite-eleve.js) avant le menu, comme évoqué par Raphaël — "Non"
+  // continue de mener directement à allerAuMenuPrincipal ci-dessus, rien
+  // de changé de ce côté. La scène d'accueil (personnages + bloc "First
+  // time?" + sélecteur de langue) est masquée pendant la séquence, puis
+  // ce sera au menu principal — pas à cette page — de prendre le relais
+  // une fois onComplet() déclenché (voir note de tête de identite-eleve.js :
+  // ce module ne fait que collecter { prenom, genre, adulte }, jamais de
+  // persistance Supabase/localStorage lui-même).
+  // 🆕 Assemble les options réelles (textes/traductions/traductionsPhrases)
+  // pour la langue actuellement choisie, avec repli anglais si jamais une
+  // clé manquait pour cette langue précise (même principe que
+  // DICO_COURS_PRIVES/DICO_PREMIERE_FOIS ci-dessus) — c'est CE résultat
+  // qu'il faut passer à demarrerSequenceIdentite(), plus jamais un objet
+  // vide.
+  function optionsIdentitePourLangue(codeLangue) {
+    const motsLangue = TRADUCTIONS_MOTS_IDENTITE[codeLangue] || TRADUCTIONS_MOTS_IDENTITE.en;
+    const motsAnglais = TRADUCTIONS_MOTS_IDENTITE.en;
+    const phrasesLangue = TRADUCTIONS_PHRASES_IDENTITE[codeLangue] || TRADUCTIONS_PHRASES_IDENTITE.en;
+    const phrasesAnglais = TRADUCTIONS_PHRASES_IDENTITE.en;
+    const textesLangue = TEXTES_IDENTITE[codeLangue] || TEXTES_IDENTITE.en;
+    const textesAnglais = TEXTES_IDENTITE.en;
+    return {
+      // 🆕 `langue` transmis en plus des dictionnaires — identite-eleve.js
+      // s'en sert pour savoir si la précision "(informel)" doit
+      // s'ajouter à la traduction d'un mot comme "essaie" (voir
+      // LANGUES_SANS_PRECISION_INFORMEL côté .js — l'espagnol est exempté
+      // pour l'instant, sa traduction portant déjà la marque du
+      // tutoiement).
+      langue: codeLangue,
+      textes: Object.assign({}, textesAnglais, textesLangue),
+      traductions: Object.assign({}, motsAnglais, motsLangue),
+      traductionsPhrases: Object.assign({}, phrasesAnglais, phrasesLangue)
+    };
+  }
+
+  const sequenceIdentite = document.getElementById('sequenceIdentite');
+  // 🐛 CORRIGÉ : pointait vers .scene (le conteneur ENTIER, parent direct
+  // de #sequenceIdentite lui-même — voir structure HTML plus haut) au
+  // lieu de #sceneRangee (personnages + sélecteur de langue seulement).
+  // Cacher .scene aurait aussi caché #sequenceIdentite, puisque ce
+  // dernier est un DESCENDANT de .scene : peu importe que son propre
+  // style.display soit remis à '' juste après (voir plus bas), un
+  // display:none sur un ancêtre masque tout de même ses enfants. C'est
+  // la cause réelle de "cliquer sur Oui ne montre rien" qui restait
+  // après le correctif de nesting HTML — celui-ci n'avait corrigé que le
+  // marquage (#sceneRangee existe bel et bien dans le HTML), jamais le
+  // point du JS qui devait s'en servir.
+  const sceneRangee = document.getElementById('sceneRangee');
+
+  // 🐛 CORRIGÉ (signalé par Raphaël) : depuis le bouton "Créer un compte"
+  // du menu (mode invité), cliquer démarrait bien la séquence identité
+  // (Keb/Bek apparaissaient), mais #menuPrincipal restait affiché en
+  // dessous — jamais caché, contrairement à sceneRangee/lienCoursPrives —
+  // donc on ne "quittait" jamais vraiment la page du menu, les deux
+  // panneaux coexistant à l'écran. De plus, onQuitter (annuler en cours
+  // de route) ramenait toujours vers sceneRangee (l'écran de bienvenue
+  // Keb/Bek du tout début), même quand on venait du menu — donc annuler
+  // depuis le menu affichait la scène d'accueil au lieu de redonner le
+  // menu. `origine` ('accueil' par défaut, ou 'menu') permet à
+  // demarrerIdentiteSiPremiereFois() de cacher le bon panneau de départ
+  // ET de savoir vers lequel revenir si l'élève annule.
+  function demarrerIdentiteSiPremiereFois(origine) {
+    origine = origine || 'accueil';
+    if (modeSecretActif()) return; // case secrète prioritaire sur tout le reste
+    sceneRangee.style.display = 'none';
+    // 🐛 CORRIGÉ : lienCoursPrives est maintenant un vrai frère de
+    // #sceneRangee à l'intérieur de .scene (voir correctif de structure
+    // plus haut dans le HTML) — il ne se cache donc plus automatiquement
+    // avec elle comme avant (quand il en était un enfant par erreur).
+    // Caché explicitement ici pour laisser la séquence identité toute la
+    // place, comme c'était le cas (accidentellement) avant ce correctif.
+    lienCoursPrives.style.display = 'none';
+    // 🆕 Cache aussi le menu, si jamais c'est de là qu'on vient (no-op
+    // sans effet si le menu était déjà caché, ex. premier passage).
+    document.getElementById('menuPrincipal').style.display = 'none';
+    sequenceIdentite.style.display = '';
+    // 🐛 CORRIGÉ : options vides ({}) remplacées par le vrai contenu de
+    // traduction pour la langue actuellement choisie — voir
+    // optionsIdentitePourLangue() ci-dessus. C'est la cause du mécanisme
+    // de traduction manquant signalé par Raphaël (survoler/taper un mot
+    // n'affichait rien, le bouton "Traduire la phrase" ne s'affichait
+    // jamais).
+    KebBekIdentite.demarrerSequenceIdentite('sequenceIdentite', optionsIdentitePourLangue(langueActuelle), {
+      onComplet: function (identite) {
+        // identite = { prenom, genre, adulte } — enregistré tout de suite
+        // via KebBekProgression (mode invité, localStorage : aucune
+        // session n'existe sur cette page, voir note du <script> plus
+        // haut). nationalite non transmise ici (undefined = ne pas
+        // modifier ce champ) : elle sera captée plus tard, à la Leçon 1
+        // (exercices.js "choix_identite"), sans écraser ce qu'on vient
+        // d'enregistrer.
+        if (window.KebBekProgression) {
+          window.KebBekProgression
+            .enregistrerIdentite(identite.genre, undefined, identite.prenom, identite.adulte)
+            .catch(function (e) { console.warn('Échec de l\'enregistrement de l\'identité (invité).', e); });
+        } else {
+          console.warn('KebBekProgression indisponible — identité non enregistrée.', identite);
+        }
+        allerAuMenuPrincipal('oui');
+      },
+      // 🆕 Demande de Raphaël : filet de sécurité si "Oui" a été cliqué
+      // par erreur à l'écran "First time ?" — défait exactement ce que
+      // demarrerIdentiteSiPremiereFois() ci-dessus vient de faire, dans
+      // l'ordre inverse. Rien à nettoyer côté KebBekProgression : tant
+      // qu'onComplet() n'a pas été appelé, rien n'a été enregistré (voir
+      // ce callback ci-dessus) — quitter en cours de route ne laisse donc
+      // aucune trace d'identité partielle.
+      // 🐛 CORRIGÉ : ramenait toujours vers sceneRangee, même venant du
+      // menu (origine === 'menu') — voir note de tête de fonction.
+      onQuitter: function () {
+        sequenceIdentite.style.display = 'none';
+        if (origine === 'menu') {
+          document.getElementById('menuPrincipal').style.display = '';
+        } else {
+          sceneRangee.style.display = '';
+          lienCoursPrives.style.display = '';
+          afficherPremiereFois();
+        }
+      }
+    });
+  }
+
+  // 🆕 Petite séquence animée au survol de "Non" : posture normale (01)
+  // → bras levé façon salut (02) pendant un court instant → retour à la
+  // posture normale (01), pour imiter un mouvement de salutation plutôt
+  // qu'un simple changement d'image figé. Minuteries gardées dans des
+  // variables pour pouvoir les annuler si la souris quitte le bouton
+  // avant la fin (arreterSequenceEquipes(), voir masquerApercuPremiereFois
+  // plus bas) — sinon une image pourrait s'afficher après coup, une fois
+  // le survol déjà terminé.
+  let minuterieSalutDebut = null;
+  let minuterieSalutFin = null;
+
+  function jouerSequenceEquipes() {
+    arreterSequenceEquipes();
+    afficherImage(imgEquipes); // 01, posture normale, tout de suite
+    minuterieSalutDebut = setTimeout(() => {
+      afficherImage(imgEquipesSalut); // 02, le salut, une fraction de seconde plus tard
+    }, 180);
+    minuterieSalutFin = setTimeout(() => {
+      afficherImage(imgEquipes); // retour à 01, un peu moins d'une seconde après le salut
+    }, 800);
+  }
+
+  function arreterSequenceEquipes() {
+    clearTimeout(minuterieSalutDebut);
+    clearTimeout(minuterieSalutFin);
+  }
+
+  // 🆕 Aperçu au survol (souris) / tap (tactile) des boutons Oui/Non,
+  // même esprit que le reste des interactions de cette page (sélecteur
+  // de langue, "Bonjour !") : on prévisualise avant même de cliquer.
+  // "Oui" fait apparaître la bulle "Bienvenue !" en plus du changement
+  // d'image ; "Non" déclenche la petite séquence de salut ci-dessus, pas
+  // de bulle, l'image étant pensée pour se suffire à elle-même (HTML).
+  function apercuPremiereFois(cible) {
+    if (modeSecretActif()) return; // case secrète prioritaire sur tout le reste
+    bulleBonjour.classList.remove('visible'); // un seul mot à la fois au-dessus des personnages
+    if (cible === 'oui') {
+      arreterSequenceEquipes();
+      afficherImage(imgBienvenue);
+      bulleBienvenue.classList.add('visible');
+    } else {
+      bulleBienvenue.classList.remove('visible');
+      jouerSequenceEquipes();
+    }
+  }
+
+  function masquerApercuPremiereFois() {
+    arreterSequenceEquipes();
+    bulleBienvenue.classList.remove('visible');
+    if (!modeSecretActif() && !hoverBonjourActif && !estOuvert()) afficherImage(imgNeutre);
+  }
+
+  [pfOui, pfNon].forEach(bouton => {
+    bouton.addEventListener('mouseenter', () => apercuPremiereFois(bouton.dataset.cible));
+    bouton.addEventListener('mouseleave', masquerApercuPremiereFois);
+  });
+  pfOui.addEventListener('click', demarrerIdentiteSiPremiereFois);
+  pfNon.addEventListener('click', () => allerAuMenuPrincipal('non'));
+
+  const panneau = document.getElementById('slPanneau');
+  const recherche = document.getElementById('slRecherche');
+  const grilleConteneur = document.getElementById('slGrille');
+  const grilleVide = document.getElementById('slVide');
+
+  function normaliser(s) {
+    return s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+  }
+
+  // ---------- Construction de la grille ----------
+
+  function creerChipGrille(langue) {
+    const el = document.createElement('div');
+    el.className = 'sl-chip';
+    el.dataset.code = langue.code;
+    el.setAttribute('role', 'option');
+    el.innerHTML = `
+      <span class="sl-chip-natif">${langue.natif}</span>
+      <span class="sl-chip-code">${langue.fr}</span>`;
+    el.addEventListener('click', () => choisir(langue.code));
+    return el;
+  }
+
+  LANGUES.forEach(l => grilleConteneur.appendChild(creerChipGrille(l)));
+
+  function rafraichirSelection() {
+    document.querySelectorAll('.sl-chip').forEach(el => {
+      el.classList.toggle('selectionne', el.dataset.code === langueActuelle);
+    });
+    code.textContent = langueActuelle.toUpperCase();
+  }
+  rafraichirSelection();
+
+  // ---------- Filtrage (recherche) ----------
+
+  function filtrer() {
+    const q = normaliser(recherche.value.trim());
+    let visibles = 0;
+    Array.from(grilleConteneur.children).forEach(el => {
+      const langue = LANGUES.find(l => l.code === el.dataset.code);
+      const correspond = !q || normaliser(langue.natif).includes(q) || normaliser(langue.fr).includes(q);
+      el.hidden = !correspond;
+      if (correspond) visibles++;
+    });
+    grilleVide.hidden = visibles > 0;
+  }
+
+  recherche.addEventListener('input', filtrer);
+
+  // ==================================================================
+  // Affichage des 7 images de #personnages — une seule "active" à la
+  // fois (4 d'origine + 🆕 imgBienvenue/imgEquipes/imgEquipesSalut pour
+  // le bloc "First time?", voir plus haut). Remplace le crossfade en
+  // pur CSS :hover de l'original (.survol dans index (2)) par un point
+  // d'entrée JS unique, pour que le survol du sélecteur de langue, le
+  // mécanisme "Bonjour !" et le bloc "First time?" (voir plus bas et
+  // plus haut) puissent tous décider quelle image montrer sans se
+  // marcher dessus.
+  // ==================================================================
+  function afficherImage(imgAAfficher) {
+    [imgNeutre, imgGauche, imgSaluent, imgClique, imgBienvenue, imgEquipes, imgEquipesSalut].forEach(img => {
+      img.classList.toggle('actif', img === imgAAfficher);
+    });
+  }
+
+  // ==================================================================
+  // Mécanisme "Bonjour !" — COPIÉ de index (2) (BONOMES_v57/v58 :
+  // .survol / .bulle-bonjour / .zone-case / compteur de 50 survols),
+  // adapté à afficherImage() ci-dessus plutôt qu'au crossfade CSS
+  // :hover original (voir CSS). Déclencheur : survol souris DIRECT de
+  // #personnages (le survol du sélecteur de langue reste un
+  // déclencheur séparé, inchangé plus bas) ; sur tactile, où il n'y a
+  // pas de survol, un tap fait office de bascule — même esprit que le
+  // "premier tap ouvre et maintient, tap ailleurs ferme" déjà utilisé
+  // pour .pile-tooltip ailleurs sur le site (voir BONOMES_v61).
+  //
+  // ⚠️ Clé localStorage DISTINCTE de celle d'index (2)
+  // (kebbek_compteur_bonjour) volontairement : cet essai est autonome
+  // et pourrait être ouvert sur le même domaine que le vrai site un
+  // jour — mieux vaut ne pas fausser un compteur réel avec des tests.
+  // ==================================================================
+  const CLE_COMPTEUR_BONJOUR_ESSAI = 'kebbek_essai_compteur_bonjour';
+  const CLE_CASE_SECRETE_ESSAI = 'kebbek_essai_case_secrete_trouvee';
+  const SEUIL_BONJOUR = 50;
+
+  let hoverBonjourActif = false;
+
+  function caseSecreteDejaTrouvee() {
+    return localStorage.getItem(CLE_CASE_SECRETE_ESSAI) === '1';
+  }
+  function lireCompteurBonjour() {
+    return parseInt(localStorage.getItem(CLE_COMPTEUR_BONJOUR_ESSAI) || '0', 10);
+  }
+  function modeSecretActif() {
+    return !caseSecreteDejaTrouvee() && lireCompteurBonjour() >= SEUIL_BONJOUR;
+  }
+
+  // À appeler après tout changement du compteur (ou au chargement de la
+  // page, pour reprendre correctement un compteur déjà élevé lors d'un
+  // rechargement en plein essai — même précaution que index (2)).
+  function majModeSecret() {
+    const actif = modeSecretActif();
+    personnages.classList.toggle('mode-secret', actif);
+    if (actif) {
+      bulleBonjour.classList.remove('visible');
+      afficherImage(imgClique);
+    }
+  }
+
+  function survolBonjourDebut() {
+    if (modeSecretActif()) return; // la case secrète prime sur le "Bonjour !" normal
+    hoverBonjourActif = true;
+    afficherImage(imgSaluent);
+    bulleBonjour.classList.add('visible');
+    if (!caseSecreteDejaTrouvee()) {
+      localStorage.setItem(CLE_COMPTEUR_BONJOUR_ESSAI, String(lireCompteurBonjour() + 1));
+      majModeSecret(); // peut basculer immédiatement en mode secret si le seuil vient d'être atteint
+    }
+  }
+
+  function survolBonjourFin() {
+    hoverBonjourActif = false;
+    bulleBonjour.classList.remove('visible');
+    if (!modeSecretActif() && !estOuvert()) afficherImage(imgNeutre);
+  }
+
+  personnages.addEventListener('mouseenter', survolBonjourDebut);
+  personnages.addEventListener('mouseleave', survolBonjourFin);
+
+  // Tactile : pas d'événement mouseenter, donc le clic en tient lieu.
+  // Un premier tap ouvre (et compte), un tap ailleurs sur la page
+  // referme — la .zone-case (visible seulement en mode secret, voir
+  // CSS) a son propre gestionnaire séparé plus bas et n'est jamais
+  // affectée par celui-ci.
+  personnages.addEventListener('click', (e) => {
+    if (modeSecretActif()) return; // en mode secret, seule .zone-case répond
+    if (hoverBonjourActif) return; // déjà ouvert par la souris : rien à faire
+    e.stopPropagation();
+    survolBonjourDebut();
   });
 
-  // Textes d'interface dans la langue de l'apprenant — voir INTERFACE plus
-  // haut. rendreEtape() gère déjà btnSuivant (Continuer/Terminer varie par
-  // étape) ; ceux-ci sont fixes, donc réglés une seule fois ici.
-  btnPrecedent.textContent = '\u2039 ' + texteInterface('precedent');
-  document.getElementById('titrePileDialogue').textContent = texteInterface('ceQuiAEteDit');
-  document.getElementById('titrePileGrammaire').textContent = texteInterface('aRetenir');
+  document.addEventListener('click', (e) => {
+    if (hoverBonjourActif && !personnages.contains(e.target)) survolBonjourFin();
+  });
 
-  rendreEtape();
+  // ---------- Case secrète (4e image, "clique ici") ----------
+  //
+  // Succès si le clic tombe exactement dans .zone-case (coordonnées
+  // calibrées sur la bulle "CLIQUE ICI" de la 4e image, voir CSS).
+  zoneCaseSecrete.addEventListener('click', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    localStorage.setItem(CLE_CASE_SECRETE_ESSAI, '1');
+    localStorage.setItem(CLE_COMPTEUR_BONJOUR_ESSAI, '0');
+    personnages.classList.remove('mode-secret');
+    hoverBonjourActif = false;
+    bulleBonjour.classList.remove('visible');
+    afficherImage(imgNeutre);
+    declencherSucces();
+  });
+
+  function declencherSucces() {
+    // Cet essai est autonome (sac-a-dos.js pas chargé ici, voir tête de
+    // fichier de sac-a-dos.js) — indicateur visuel simple pour
+    // l'instant. À remplacer par un vrai ajouterAuSac('succes', {...})
+    // le jour où ce mécanisme est intégré dans une page qui charge le
+    // sac à dos.
+    personnages.classList.add('succes-flash');
+    setTimeout(() => personnages.classList.remove('succes-flash'), 900);
+  }
+
+  majModeSecret(); // reprise correcte si la page est rechargée en pleine série de survols
+
+  // ---------- Ouverture / fermeture ----------
+  //
+  // Le survol (mouseenter / mouseleave) est la manière PRINCIPALE
+  // d'ouvrir et de fermer le panneau : dès que la souris touche le
+  // déclencheur ou le panneau, ça s'ouvre et les personnages se
+  // tournent. Un petit délai de fermeture évite que le panneau se
+  // referme si la souris traverse rapidement l'espace entre le
+  // déclencheur et le panneau. Le clic reste disponible en secours
+  // (tactile, clavier) pour basculer l'ouverture manuellement.
+
+  const DELAI_FERMETURE = 180; // ms
+  let minuteurFermeture = null;
+  let ouvertParClic = false;
+
+  function estOuvert() {
+    return zone.classList.contains('ouvert');
+  }
+
+  function ouvrir() {
+    clearTimeout(minuteurFermeture);
+    if (estOuvert()) return;
+    if (modeSecretActif()) return; // case secrète prioritaire, voir mécanisme "Bonjour !" plus haut
+    zone.classList.add('ouvert');
+    declencheur.setAttribute('aria-expanded', 'true');
+    afficherImage(imgGauche);
+  }
+
+  function fermer() {
+    clearTimeout(minuteurFermeture);
+    zone.classList.remove('ouvert');
+    declencheur.setAttribute('aria-expanded', 'false');
+    ouvertParClic = false;
+    recherche.value = '';
+    filtrer();
+    // Ne reprend l'image neutre que si rien d'autre ne se dispute
+    // l'affichage en ce moment (survol "Bonjour !" en cours, ou mode
+    // secret déjà actif) — évite un clignotement vers "neutre" entre
+    // deux états.
+    if (!modeSecretActif() && !hoverBonjourActif) afficherImage(imgNeutre);
+  }
+
+  function programmerFermeture() {
+    clearTimeout(minuteurFermeture);
+    minuteurFermeture = setTimeout(() => {
+      if (!ouvertParClic) fermer();
+    }, DELAI_FERMETURE);
+  }
+
+  function choisir(codeLangue) {
+    langueActuelle = codeLangue;
+    sauvegarderLangue(codeLangue);
+    appliquerDirectionLangue(codeLangue);
+    rafraichirSelection();
+    code.style.transform = 'scale(0.7)';
+    requestAnimationFrame(() => {
+      code.style.transition = 'transform 0.28s cubic-bezier(.34,1.6,.4,1)';
+      code.style.transform = 'scale(1)';
+    });
+    zone.classList.remove('invite');
+    afficherPremiereFois();
+    rafraichirLienCoursPrives();
+    rafraichirPremiereFois();
+    rafraichirEnteteSac();
+    fermer();
+  }
+
+  // Survol de toute la zone (déclencheur + pont + panneau) : ouvre.
+  zone.addEventListener('mouseenter', ouvrir);
+  zone.addEventListener('mouseleave', programmerFermeture);
+
+  // Focus clavier : ouvre aussi, pour l'accessibilité.
+  declencheur.addEventListener('focus', ouvrir);
+  zone.addEventListener('focusout', (e) => {
+    if (!zone.contains(e.relatedTarget)) fermer();
+  });
+
+  // Clic sur le déclencheur : bascule manuellement (utile au tactile,
+  // où il n'y a pas de survol).
+  declencheur.addEventListener('click', () => {
+    if (estOuvert()) {
+      ouvertParClic = false;
+      fermer();
+    } else {
+      ouvertParClic = true;
+      ouvrir();
+    }
+  });
+
+  fond.addEventListener('click', fermer);
+
+  document.addEventListener('click', (e) => {
+    if (!zone.contains(e.target) && estOuvert()) fermer();
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && estOuvert()) fermer();
+  });
 </script>
 
 </body>

@@ -504,7 +504,7 @@
     { speaker: 'keb', texte: 'J\u2019ai faim.', img: '../../images/dialogues/d1/d1_01_bonomes_keb_bek_jai-faim_.png', grammaire: 'gJai' },
     { speaker: 'bek', texte: 'Mange\u00A0!', img: '../../images/dialogues/d1/d1_02_bonomes_keb_bek_mange_.png', grammaire: 'gImperatif' },
     { speaker: 'keb', texte: 'Mange quoi\u00A0?', img: '../../images/dialogues/d1/d1_03_bonomes_keb_bek_mange_quoi.png', grammaire: 'gQuoi' },
-    { speaker: 'bek', texte: 'Mange... mon sandwich\u00A0?', img: '../../images/dialogues/d1/d1_04_bonomes_keb_bek_mange-mon-mange_.png' },
+    { speaker: 'bek', texte: 'Mange... un sandwich\u00A0?', img: '../../images/dialogues/d1/d1_04_bonomes_keb_bek_mange-mon-mange_.png' },
     // 🆕 (session du 08-08-2026, 4e échange) : étape 5a — Keb réalise que
     // Bek n'a pas de sandwich sur elle. 'sequenceAuto' : liste d'images qui
     // s'enchaînent SEULES (pas de clic entre elles) dès que l'élève clique
@@ -517,7 +517,7 @@
     // dès que Raphaël fournit les vrais noms, comme pour 01-04.
     {
       speaker: 'keb',
-      texte: 'Ton sandwich\u00A0?',
+      texte: 'Un sandwich\u00A0?',
       img: '../../images/dialogues/d1/d1_05a_bonomes_keb_bek_ton-sandwich_.png',
       sequenceAuto: [
         '../../images/dialogues/d1/d1_05b_bonomes_keb_bek_ton-sandwich_.png',
@@ -934,6 +934,33 @@
     greffe.appendChild(lueur);
     greffe.appendChild(imgSandwich);
     wrapper.appendChild(greffe);
+
+    // 🆕 Condition de déblocage Bravo ("Le sandwich de Ginette") — voir
+    // bravo-mecanique-synthese v4, section 2/16. Toucher le sandwich greffé
+    // enregistre la condition 'd1_clic_sandwich' (idempotent côté Supabase,
+    // rien ne se passe mal si l'élève touche plusieurs fois). e.stopPropagation()
+    // EMPÊCHE ce tap de déclencher aussi suivant() via elScene (voir plus bas
+    // dans ce fichier, "Tap direct sur la scène = avancer seulement") — même
+    // motif que les mots cliquables (afficherTraductionMot) juste au-dessus.
+    greffe.style.cursor = 'pointer';
+    greffe.tabIndex = 0;
+    greffe.setAttribute('role', 'button');
+    greffe.setAttribute('aria-label', 'Le sandwich');
+    let sandwichDejaTouche = false; // évite un appel réseau à chaque tap répété dans la même visite
+    function toucherSandwich(e) {
+      e.stopPropagation();
+      if (sandwichDejaTouche) return;
+      sandwichDejaTouche = true;
+      if (window.KebBekProgression && window.KebBekProgression.marquerConditionComplete) {
+        window.KebBekProgression.marquerConditionComplete('d1_clic_sandwich')
+          .catch(function (err) { console.warn('dialogue-d1.html : marquerConditionComplete a échoué.', err); });
+      }
+    }
+    greffe.addEventListener('click', toucherSandwich);
+    greffe.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toucherSandwich(e); }
+    });
+
     return wrapper;
   }
 
@@ -1055,7 +1082,7 @@
   // bouton, tap sur la scène, ou clavier — est bloquée pendant l'animation,
   // peu importe le chemin par lequel elle est déclenchée.
   let animationEnCours = false;
-  const sequencesJouees = new Set(); // 🆕 (5e échange) : étapes dont la séquence auto a déjà joué
+  const sequenceAJouePourEtapeActuelle = { valeur: false }; // 🔧 (7e échange) : remplace l'ancien Set sequencesJouees. Remis à false à CHAQUE rendreEtape() (voir plus bas), peu importe la direction de navigation — élimine le besoin de le gérer manuellement dans precedent(), et donc le risque de désynchronisation qui causait le bug "5a → 6 sans rejouer la séquence" signalé par Raphaël (09-08-2026).
 
   function ajouterLigneDialogue(def) {
     const div = document.createElement('div');
@@ -1080,6 +1107,11 @@
   function rendreEtape() {
     const def = ETAPES[etape];
     elCompteur.textContent = (etape + 1) + ' / ' + ETAPES.length;
+
+    // 🔧 (7e échange) : remis à false ICI, inconditionnellement — dès qu'on
+    // affiche une étape (par suivant() OU precedent()), sa séquence auto,
+    // si elle en a une, n'a par définition pas encore joué "cette fois-ci".
+    sequenceAJouePourEtapeActuelle.valeur = false;
 
     // Bulle unique — remplacée, jamais empilée. Mots cliquables (voir
     // construireBulleMots) : clic/tap = traduction, double-clic/double-tap
@@ -1138,14 +1170,14 @@
       const def = ETAPES[etape];
       // 🆕 (5e échange) : la séquence s'arrête maintenant à 5d — elle ne
       // fait PLUS avancer automatiquement jusqu'à l'étape 6. Une fois
-      // jouée, sequencesJouees empêche de la rejouer : le clic Continuer
+      // jouée, le drapeau empêche de la rejouer : le clic Continuer
       // suivant se comporte alors comme une avance normale vers l'étape 6.
-      if (def.sequenceAuto && !sequencesJouees.has(etape)) {
+      if (def.sequenceAuto && !sequenceAJouePourEtapeActuelle.valeur) {
         animationEnCours = true;
         btnPrecedent.disabled = true;
         btnSuivant.disabled = true;
         jouerSequenceAuto(def.sequenceAuto, function () {
-          sequencesJouees.add(etape);
+          sequenceAJouePourEtapeActuelle.valeur = true;
           animationEnCours = false;
           btnPrecedent.disabled = (etape === 0);
           btnSuivant.disabled = false;
@@ -1163,7 +1195,8 @@
     if (animationEnCours) return;
     if (etape === 0) return;
     etape--;
-    if (ETAPES[etape].sequenceAuto) sequencesJouees.delete(etape); // 🆕 rejoue si on repasse par ici
+    // 🔧 (7e échange) : plus besoin de nettoyer sequencesJouees ici — voir
+    // rendreEtape(), qui remet maintenant le drapeau à zéro à chaque appel.
     // Reconstruit les deux piles depuis le début plutôt que de retirer
     // juste le dernier élément — même stratégie que precedent() dans
     // intro-bonomes.html : plus simple et sans risque de désynchronisation

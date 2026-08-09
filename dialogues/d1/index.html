@@ -534,26 +534,103 @@
         }
       ]
     },
-    { speaker: 'keb', texte: 'Oh, merci\u00A0!', img: '../../images/dialogues/d1/d1_06_bonomes_keb_bek_ton-sandwich_.png' }
+    { speaker: 'keb', texte: 'Oh, merci\u00A0!', img: '../../images/dialogues/d1/d1_06_bonomes_keb_bek_ton-sandwich_.png', grammaire: 'gMerci' }
   ];
 
-  // Notes grammaticales dans la langue de l'apprenant. Seules fr/en sont
-  // complètes pour l'instant (même choix minimal que menu-principal.js à
-  // sa création) — repli automatique sur l'anglais pour toute autre langue
-  // (voir texteGrammaire ci-dessous), plutôt que de traduire à l'avance un
-  // texte que Raphaël pourrait encore vouloir ajuster.
+  // Notes grammaticales dans la langue de l'apprenant, dans les 19 langues
+  // du site — repli sur l'anglais pour toute clé qui manquerait malgré
+  // tout (voir texteGrammaire ci-dessous).
   const GRAMMAIRE = {
     gJai: {
       fr: '« J\u2019ai » vient du verbe avoir. Avec « faim », ça donne littéralement « I have hunger » — mais en anglais, on dit plutôt « I\u2019m hungry ».',
-      en: '"J\u2019ai" comes from the verb avoir ("to have"). With "faim," it literally reads "I have hunger" — but in natural English, you\u2019d just say "I\u2019m hungry."'
+      en: '"J\u2019ai" comes from the verb avoir ("to have"). With "faim," it literally reads "I have hunger" — but in natural English, you\u2019d just say "I\u2019m hungry."',
+      es: '"J\u2019ai" viene del verbo avoir ("tener"). Con "faim", dice literalmente "tengo hambre" — en español ya decimos "tengo hambre" de forma natural, ¡así que aquí calza perfecto!',
+      it: '"J\u2019ai" viene dal verbo avoir ("avere"). Con "faim" significa letteralmente "ho fame" — proprio come in italiano!',
+      pt: '"J\u2019ai" vem do verbo avoir ("ter"). Com "faim", significa literalmente "tenho fome" — tal como se diz em português.',
+      ca: '"J\u2019ai" ve del verb avoir ("tenir"). Amb "faim" vol dir literalment "tinc gana" — igual que en català!',
+      eo: '"J\u2019ai" venas de la verbo avoir ("havi"). Kun "faim" ĝi laŭvorte signifas "mi havas malsaton" — en Esperanto oni simple diras "mi malsatas".',
+      zh: '"J\u2019ai" 来自动词 avoir（"有"）。加上 "faim"，字面意思是"我拥有饥饿"——但自然的说法其实就是"我饿了"。',
+      ja: '"J\u2019ai" は動詞 avoir（「持つ」）から来ています。"faim" と組み合わせると、直訳では「私は空腹を持っています」となりますが、自然な言い方では単に「お腹がすいた」と言います。',
+      ko: '"J\u2019ai"는 동사 avoir("가지다")에서 왔어요. "faim"과 함께 쓰면 직역하면 "나는 배고픔을 가지고 있다"가 되지만, 자연스럽게는 그냥 "나는 배고프다"라고 말해요.',
+      vi: '"J\u2019ai" bắt nguồn từ động từ avoir ("có"). Khi đi với "faim", nghĩa đen là "tôi có cơn đói" — nhưng cách nói tự nhiên trong tiếng Việt chỉ đơn giản là "tôi đói".',
+      ht: '"J\u2019ai" soti nan vèb avoir ("genyen"). Ansanm ak "faim", li vle di literalman "mwen genyen grangou" — men fason natirèl la se senpleman di "mwen grangou".',
+      tl: '"J\u2019ai" ay mula sa pandiwang avoir ("magkaroon"). Kapag kasama ang "faim", literal itong nangangahulugang "mayroon akong gutom" — pero sa natural na pananalita, sinasabi lang na "gutom ako".',
+      id: '"J\u2019ai" berasal dari kata kerja avoir ("punya"). Bersama "faim", artinya secara harfiah "saya punya lapar" — tapi cara alami mengatakannya cukup "saya lapar".',
+      nl: '"J\u2019ai" komt van het werkwoord avoir ("hebben"). Samen met "faim" betekent het letterlijk "ik heb honger" — precies zoals we dat ook in het Nederlands zeggen.',
+      de: '"J\u2019ai" kommt vom Verb avoir ("haben"). Zusammen mit "faim" bedeutet es wörtlich "ich habe Hunger" — genauso, wie man es auch auf Deutsch sagt.',
+      fa: '"J\u2019ai" از فعل avoir ("داشتن") می\u200cآید. همراه با "faim"، به\u200cطور تحت\u200cاللفظی یعنی "من گرسنگی دارم" — اما در فارسیِ طبیعی، فقط می\u200cگوییم "من گرسنه\u200cام".',
+      sv: '"J\u2019ai" kommer från verbet avoir ("att ha"). Tillsammans med "faim" betyder det bokstavligen "jag har hunger" — men naturligt säger man bara "jag är hungrig".',
+      no: '"J\u2019ai" kommer fra verbet avoir ("å ha"). Sammen med "faim" betyr det bokstavelig "jeg har sult" — men naturlig sier man bare "jeg er sulten".',
+      ru: '"J\u2019ai" происходит от глагола avoir ("иметь"). Вместе с "faim" это буквально означает "у меня есть голод" — но по-русски мы просто говорим "я голоден".'
     },
     gImperatif: {
       fr: '« Mange\u00A0! » est l\u2019impératif informel (tutoiement) du verbe « manger » : un ordre ou une suggestion directe. On y reviendra plus en détail bientôt.',
-      en: '"Mange!" is the informal (tu-form) imperative of manger ("to eat") — a direct order or suggestion. We\u2019ll dig deeper into this soon.'
+      en: '"Mange!" is the informal (tu-form) imperative of manger ("to eat") — a direct order or suggestion. We\u2019ll dig deeper into this soon.',
+      es: '"Mange\u00A0!" es el imperativo informal (tuteo) del verbo "manger" ("comer"): una orden o sugerencia directa. Volveremos sobre esto pronto.',
+      it: '"Mange\u00A0!" è l\u2019imperativo informale (tu) del verbo "manger" ("mangiare"): un ordine o un suggerimento diretto. Ne riparleremo presto.',
+      pt: '"Mange\u00A0!" é o imperativo informal (tu) do verbo "manger" ("comer"): uma ordem ou sugestão direta. Vamos aprofundar isto em breve.',
+      ca: '"Mange\u00A0!" és l\u2019imperatiu informal (tu) del verb "manger" ("menjar"): una ordre o un suggeriment directe. Hi tornarem aviat.',
+      eo: '"Mange\u00A0!" estas la neformala imperativo (tu-formo) de la verbo "manger" ("manĝi"): rekta ordono aŭ sugesto. Ni reparolos pri tio baldaŭ.',
+      zh: '"Mange\uFF01" 是动词 "manger"（"吃"）的非正式（tu 形式）命令式：直接的命令或建议。我们很快会更深入讲解。',
+      ja: '"Mange\uFF01" は動詞 "manger"（「食べる」）のくだけた（tu 形の）命令形で、直接的な命令や提案を表します。この点は後ほど詳しく見ていきます。',
+      ko: '"Mange\uFF01"는 동사 "manger"("먹다")의 비격식(tu형) 명령형으로, 직접적인 명령이나 제안을 나타내요. 곧 더 자세히 다룰 거예요.',
+      vi: '"Mange\uFF01" là thể mệnh lệnh thân mật (dạng tu) của động từ "manger" ("ăn"): một mệnh lệnh hoặc gợi ý trực tiếp. Chúng ta sẽ tìm hiểu kỹ hơn về điều này sau.',
+      ht: '"Mange\uFF01" se yon lòd enfòmèl (fòm tu) vèb "manger" ("manje") : yon lòd oswa yon sijesyon dirèk. N ap gade sa pi an detay talè.',
+      tl: '"Mange\uFF01" ay ang impormal (tu-form) na pautos ng pandiwang "manger" ("kumain"): isang direktang utos o mungkahi. Babalikan natin ito nang mas detalyado sa hinaharap.',
+      id: '"Mange\uFF01" adalah bentuk perintah informal (bentuk tu) dari kata kerja "manger" ("makan"): perintah atau saran langsung. Kita akan membahasnya lebih dalam nanti.',
+      nl: '"Mange\uFF01" is de informele (tu-vorm) gebiedende wijs van het werkwoord "manger" ("eten"): een direct bevel of voorstel. Hier gaan we binnenkort dieper op in.',
+      de: '"Mange\uFF01" ist der informelle (Du-Form) Imperativ des Verbs "manger" ("essen"): ein direkter Befehl oder Vorschlag. Wir gehen bald genauer darauf ein.',
+      fa: '"Mange\uFF01" شکل غیررسمیِ امری (صیغه\u200cی tu) فعل "manger" ("خوردن") است: یک دستور یا پیشنهاد مستقیم. به\u200cزودی بیشتر درباره\u200cی آن صحبت می\u200cکنیم.',
+      sv: '"Mange\uFF01" är den informella (du-formen) imperativen av verbet "manger" ("äta"): en direkt uppmaning eller ett förslag. Vi går djupare in på det här snart.',
+      no: '"Mange\uFF01" er den uformelle (du-formen) imperativen av verbet "manger" ("å spise"): en direkte befaling eller et forslag. Vi går nærmere inn på dette snart.',
+      ru: '"Mange\uFF01" — неформальная (форма tu) повелительная форма глагола "manger" ("есть"): прямой приказ или предложение. Мы вернёмся к этому подробнее чуть позже.'
     },
     gQuoi: {
       fr: '« Quoi\u00A0? » placé juste après le verbe, comme dans « Mange quoi\u00A0? », est la façon la plus spontanée et la plus courante de demander une précision à l\u2019oral, en contexte informel.',
-      en: 'Placing "quoi" ("what") right after the verb — as in "Mange quoi?" — is the most spontaneous and common way to ask for clarification out loud, in an informal setting.'
+      en: 'Placing "quoi" ("what") right after the verb — as in "Mange quoi?" — is the most spontaneous and common way to ask for clarification out loud, in an informal setting.',
+      es: 'Poner "quoi" ("qué") justo después del verbo, como en "Mange quoi\u00A0?", es la forma más espontánea y común de pedir una aclaración al hablar, en un contexto informal.',
+      it: 'Mettere "quoi" ("cosa") subito dopo il verbo, come in "Mange quoi\u00A0?", è il modo più spontaneo e comune per chiedere un chiarimento a voce, in un contesto informale.',
+      pt: 'Colocar "quoi" ("o quê") logo a seguir ao verbo, como em "Mange quoi\u00A0?", é a forma mais espontânea e comum de pedir um esclarecimento oralmente, num contexto informal.',
+      ca: 'Posar "quoi" ("què") just després del verb, com a "Mange quoi\u00A0?", és la manera més espontània i habitual de demanar un aclariment en parlar, en un context informal.',
+      eo: 'Meti "quoi" ("kio") tuj post la verbo, kiel en "Mange quoi\u00A0?", estas la plej spontanea kaj ofta maniero peti klarigon parole, en neformala kunteksto.',
+      zh: '把 "quoi"（"什么"）直接放在动词后面，像 "Mange quoi\uFF1F" 这样，是口语中最自然、最常见的追问方式，用于非正式场合。',
+      ja: '"Mange quoi\uFF1F" のように、動詞の直後に "quoi"（「何」）を置くのは、話し言葉でくだけた場面において、最も自然でよく使われる聞き返し方です。',
+      ko: '"Mange quoi\uFF1F"처럼 동사 바로 뒤에 "quoi"("무엇")를 붙이는 것은, 비격식적인 상황에서 말할 때 되묻는 가장 자연스럽고 흔한 방법이에요.',
+      vi: 'Đặt "quoi" ("gì") ngay sau động từ, như trong "Mange quoi\uFF1F", là cách tự nhiên và phổ biến nhất để hỏi lại khi nói, trong bối cảnh thân mật.',
+      ht: 'Mete "quoi" ("ki sa") jis apre vèb la, tankou nan "Mange quoi\uFF1F", se fason ki pi natirèl e pi komen pou mande yon presizyon lè w ap pale, nan yon kontèks enfòmèl.',
+      tl: 'Ang paglalagay ng "quoi" ("ano") kaagad pagkatapos ng pandiwa, gaya sa "Mange quoi\uFF1F", ang pinaka-natural at karaniwang paraan ng paghingi ng linaw kapag nagsasalita, sa impormal na sitwasyon.',
+      id: 'Meletakkan "quoi" ("apa") tepat setelah kata kerja, seperti pada "Mange quoi\uFF1F", adalah cara paling spontan dan umum untuk meminta penjelasan saat berbicara, dalam suasana santai.',
+      nl: '"Quoi" ("wat") direct na het werkwoord plaatsen, zoals in "Mange quoi\uFF1F", is de meest spontane en gebruikelijke manier om mondeling om verduidelijking te vragen, in een informele context.',
+      de: '"Quoi" ("was") direkt nach dem Verb zu stellen, wie in "Mange quoi\uFF1F", ist die spontanste und gebräuchlichste Art, mündlich nach einer Erklärung zu fragen, in einem informellen Rahmen.',
+      fa: 'گذاشتن "quoi" ("چی") درست بعد از فعل، مثل "Mange quoi\uFF1F"، طبیعی\u200cترین و رایج\u200cترین راه برای خواستن توضیح بیشتر هنگام صحبت\u200cکردن، در یک بافت غیررسمی است.',
+      sv: 'Att placera "quoi" ("vad") direkt efter verbet, som i "Mange quoi\uFF1F", är det mest spontana och vanliga sättet att muntligt be om ett förtydligande, i ett informellt sammanhang.',
+      no: 'Å plassere "quoi" ("hva") rett etter verbet, som i "Mange quoi\uFF1F", er den mest spontane og vanlige måten å be om en presisering muntlig, i en uformell sammenheng.',
+      ru: 'Постановка "quoi" ("что") сразу после глагола, как в "Mange quoi\uFF1F", — самый естественный и распространённый способ переспросить в устной речи, в неформальной обстановке.'
+    },
+    // 🆕 Demande de Raphaël : « merci » n\u2019est pas réservé au formel — on
+    // l\u2019emploie tout autant entre amis, en famille, dès qu\u2019un service est
+    // rendu.
+    gMerci: {
+      fr: '« Merci » ne sert pas seulement dans les situations formelles\u00A0: on l\u2019emploie tout autant entre amis, en famille, ou n\u2019importe quand un service est rendu, aussi petit soit-il.',
+      en: '"Merci" isn\u2019t reserved for formal situations — it\u2019s just as natural between friends, with family, or any time someone does something for you, however small.',
+      es: '"Merci" no se reserva para situaciones formales: se usa igual entre amigos, en familia, o cada vez que alguien te hace un favor, por pequeño que sea.',
+      it: '"Merci" non è riservato alle situazioni formali: si usa tanto tra amici, in famiglia, o ogni volta che qualcuno ti fa un favore, per quanto piccolo.',
+      pt: '"Merci" não se usa só em situações formais: usa-se tanto entre amigos, em família, ou sempre que alguém te faz um favor, por pequeno que seja.',
+      ca: '"Merci" no es reserva per a situacions formals: s\u2019utilitza igual entre amics, en família, o cada vegada que algú et fa un favor, per petit que sigui.',
+      eo: '"Merci" ne estas rezervita por formalaj situacioj: oni uzas ĝin same inter amikoj, en familio, aŭ ĉiam kiam iu faras servon al vi, kiel ajn malgrandan.',
+      zh: '"Merci" 并不只用于正式场合：朋友之间、家人之间，或者任何时候别人帮了你一个忙，无论多小，都可以说。',
+      ja: '"Merci" は改まった場面だけのものではありません。友達同士でも、家族の間でも、誰かがどんな小さなことでもしてくれたときには、いつでも使われます。',
+      ko: '"Merci"는 격식 있는 상황에만 쓰는 말이 아니에요. 친구 사이에서도, 가족끼리도, 누군가 아무리 작은 일이라도 도와줬을 때는 언제든 쓸 수 있어요.',
+      vi: '"Merci" không chỉ dùng trong những tình huống trang trọng: nó cũng được dùng giữa bạn bè, trong gia đình, hay bất cứ khi nào ai đó giúp bạn một việc gì, dù nhỏ.',
+      ht: '"Merci" pa rezève sèlman pou sitiyasyon fòmèl\u00A0: yo itilize l menm jan ant zanmi, nan fanmi, oswa nenpòt lè yon moun rann ou yon sèvis, kèlkeswa ki jan li piti.',
+      tl: 'Hindi lang para sa pormal na sitwasyon ang "Merci": ginagamit din ito sa pagitan ng magkaibigan, sa pamilya, o kahit kailan may gumawa ng pabor sa iyo, gaano man ito kaliit.',
+      id: '"Merci" tidak hanya untuk situasi resmi: kata ini digunakan sama-sama di antara teman, dalam keluarga, atau kapan pun seseorang melakukan sesuatu untukmu, sekecil apa pun itu.',
+      nl: '"Merci" is niet alleen voor formele situaties: je gebruikt het net zo goed onder vrienden, binnen de familie, of wanneer iemand iets voor je doet, hoe klein ook.',
+      de: '"Merci" ist nicht nur für formelle Situationen reserviert: Man verwendet es genauso unter Freunden, in der Familie, oder immer dann, wenn dir jemand einen Gefallen tut, egal wie klein.',
+      fa: '"Merci" فقط برای موقعیت\u200cهای رسمی نیست: بین دوستان، در خانواده، یا هر وقت کسی، هرچند کوچک، کاری برایت انجام می\u200cدهد، به همان اندازه استفاده می\u200cشود.',
+      sv: '"Merci" är inte förbehållet formella situationer: man använder det lika gärna bland vänner, inom familjen, eller när som helst någon gör dig en tjänst, hur liten den än är.',
+      no: '"Merci" er ikke forbeholdt formelle situasjoner: det brukes like gjerne blant venner, i familien, eller når som helst noen gjør deg en tjeneste, uansett hvor liten.',
+      ru: '"Merci" используется не только в формальных ситуациях: его говорят и между друзьями, и в семье, и всякий раз, когда кто-то оказывает тебе услугу, какой бы маленькой она ни была.'
     }
   };
 
@@ -565,10 +642,6 @@
   // demande explicite de Raphaël, "le mécanisme du sac demeure partout" :
   // un clic/tap affiche la traduction, un double-clic/double-tap range le
   // mot dans le sac (pas d'ajout automatique au simple clic ici).
-  //
-  // TRADUCTIONS : seule fr→en est complète pour l\u2019instant (même repli
-  // minimal que GRAMMAIRE ci-dessus et que menu-principal.js à sa
-  // création) — à étoffer langue par langue plutôt que deviné à l\u2019avance.
   const TRADUCTIONS = {
     en: {
       'j\u2019ai': 'I have',
@@ -579,20 +652,223 @@
       'sandwich': 'sandwich',
       'oh': 'oh',
       'merci': 'thank you'
+    },
+    es: {
+      'j\u2019ai': 'tengo',
+      'faim': 'hambre (= tener hambre)',
+      'mange': '¡come!',
+      'quoi': 'qué',
+      'mon': 'mi',
+      'sandwich': 'sándwich',
+      'oh': 'oh',
+      'merci': 'gracias'
+    },
+    it: {
+      'j\u2019ai': 'ho',
+      'faim': 'fame (= avere fame)',
+      'mange': 'mangia!',
+      'quoi': 'cosa',
+      'mon': 'il mio',
+      'sandwich': 'panino',
+      'oh': 'oh',
+      'merci': 'grazie'
+    },
+    pt: {
+      'j\u2019ai': 'tenho',
+      'faim': 'fome (= estar com fome)',
+      'mange': 'come!',
+      'quoi': 'o quê',
+      'mon': 'o meu',
+      'sandwich': 'sandes',
+      'oh': 'oh',
+      'merci': 'obrigado'
+    },
+    ca: {
+      'j\u2019ai': 'tinc',
+      'faim': 'gana (= tenir gana)',
+      'mange': 'menja!',
+      'quoi': 'què',
+      'mon': 'el meu',
+      'sandwich': 'entrepà',
+      'oh': 'oh',
+      'merci': 'gràcies'
+    },
+    eo: {
+      'j\u2019ai': 'mi havas',
+      'faim': 'malsato (= malsati)',
+      'mange': 'manĝu!',
+      'quoi': 'kio',
+      'mon': 'mia',
+      'sandwich': 'sandviĉo',
+      'oh': 'ho',
+      'merci': 'dankon'
+    },
+    zh: {
+      'j\u2019ai': '我有',
+      'faim': '饿（=饥饿）',
+      'mange': '吃！',
+      'quoi': '什么',
+      'mon': '我的',
+      'sandwich': '三明治',
+      'oh': '哦',
+      'merci': '谢谢'
+    },
+    ja: {
+      'j\u2019ai': '持っている',
+      'faim': '空腹（＝お腹がすいた）',
+      'mange': '食べて！',
+      'quoi': '何',
+      'mon': '私の',
+      'sandwich': 'サンドイッチ',
+      'oh': 'ああ',
+      'merci': 'ありがとう'
+    },
+    ko: {
+      'j\u2019ai': '나는 있다',
+      'faim': '배고픔 (= 배고프다)',
+      'mange': '먹어!',
+      'quoi': '무엇',
+      'mon': '나의',
+      'sandwich': '샌드위치',
+      'oh': '오',
+      'merci': '고마워'
+    },
+    vi: {
+      'j\u2019ai': 'tôi có',
+      'faim': 'đói (= bị đói)',
+      'mange': 'ăn đi!',
+      'quoi': 'gì',
+      'mon': 'của tôi',
+      'sandwich': 'bánh sandwich',
+      'oh': 'ồ',
+      'merci': 'cảm ơn'
+    },
+    ht: {
+      'j\u2019ai': 'mwen genyen',
+      'faim': 'grangou',
+      'mange': 'manje!',
+      'quoi': 'ki sa',
+      'mon': 'pa mwen',
+      'sandwich': 'sandwich',
+      'oh': 'oh',
+      'merci': 'mèsi'
+    },
+    tl: {
+      'j\u2019ai': 'mayroon ako',
+      'faim': 'gutom (= nagugutom)',
+      'mange': 'kumain ka!',
+      'quoi': 'ano',
+      'mon': 'akin',
+      'sandwich': 'sandwich',
+      'oh': 'oh',
+      'merci': 'salamat'
+    },
+    id: {
+      'j\u2019ai': 'saya punya',
+      'faim': 'lapar (= merasa lapar)',
+      'mange': 'makan!',
+      'quoi': 'apa',
+      'mon': 'milikku',
+      'sandwich': 'sandwich',
+      'oh': 'oh',
+      'merci': 'terima kasih'
+    },
+    nl: {
+      'j\u2019ai': 'ik heb',
+      'faim': 'honger (= honger hebben)',
+      'mange': 'eet!',
+      'quoi': 'wat',
+      'mon': 'mijn',
+      'sandwich': 'boterham',
+      'oh': 'oh',
+      'merci': 'dank je'
+    },
+    de: {
+      'j\u2019ai': 'ich habe',
+      'faim': 'Hunger (= hungrig sein)',
+      'mange': 'iss!',
+      'quoi': 'was',
+      'mon': 'mein',
+      'sandwich': 'Sandwich',
+      'oh': 'oh',
+      'merci': 'danke'
+    },
+    fa: {
+      'j\u2019ai': 'من دارم',
+      'faim': 'گرسنگی (= گرسنه بودن)',
+      'mange': 'بخور!',
+      'quoi': 'چی',
+      'mon': 'مال من',
+      'sandwich': 'ساندویچ',
+      'oh': 'اوه',
+      'merci': 'ممنون'
+    },
+    sv: {
+      'j\u2019ai': 'jag har',
+      'faim': 'hunger (= vara hungrig)',
+      'mange': 'ät!',
+      'quoi': 'vad',
+      'mon': 'min',
+      'sandwich': 'smörgås',
+      'oh': 'åh',
+      'merci': 'tack'
+    },
+    no: {
+      'j\u2019ai': 'jeg har',
+      'faim': 'sult (= være sulten)',
+      'mange': 'spis!',
+      'quoi': 'hva',
+      'mon': 'min',
+      'sandwich': 'smørbrød',
+      'oh': 'å',
+      'merci': 'takk'
+    },
+    ru: {
+      'j\u2019ai': 'у меня есть',
+      'faim': 'голод (= быть голодным)',
+      'mange': 'ешь!',
+      'quoi': 'что',
+      'mon': 'мой',
+      'sandwich': 'сэндвич',
+      'oh': 'о',
+      'merci': 'спасибо'
     }
   };
 
   // 'mange' est un tutoiement (impératif informel) — seul mot informel de
   // ce dialogue à ce jour, voir gImperatif ci-dessus.
   const MOTS_INFORMELS = new Set(['mange']);
-  const ETIQUETTE_INFORMEL = { fr: '(tutoiement)', en: '(informal)' };
+  const ETIQUETTE_INFORMEL = {
+    fr: '(tutoiement)', en: '(informal)', es: '(informal)', it: '(informale)',
+    pt: '(informal)', ca: '(informal)', eo: '(neformala)', zh: '（非正式）',
+    ja: '（くだけた表現）', ko: '(비격식)', vi: '(thân mật)', ht: '(enfòmèl)',
+    tl: '(impormal)', id: '(informal)', nl: '(informeel)', de: '(informell)',
+    fa: '(غیررسمی)', sv: '(informellt)', no: '(uformelt)', ru: '(неформально)'
+  };
 
-  // 🆕 (6e échange) : textes d'interface (boutons, titres de pile) dans la
-  // langue de l'apprenant — même repli minimal fr/en que GRAMMAIRE et
-  // TRADUCTIONS ci-dessus (anglais par défaut pour toute autre langue).
+  // Textes d'interface (boutons, titres de pile) dans la langue de
+  // l'apprenant, dans les 19 langues du site.
   const INTERFACE = {
     fr: { precedent: 'Précédent', continuer: 'Continuer', terminer: 'Terminer', ceQuiAEteDit: 'Ce qui a été dit', aRetenir: 'À retenir' },
-    en: { precedent: 'Back', continuer: 'Continue', terminer: 'Finish', ceQuiAEteDit: 'What was said', aRetenir: 'Good to know' }
+    en: { precedent: 'Back', continuer: 'Continue', terminer: 'Finish', ceQuiAEteDit: 'What was said', aRetenir: 'Good to know' },
+    es: { precedent: 'Atrás', continuer: 'Continuar', terminer: 'Terminar', ceQuiAEteDit: 'Lo que se dijo', aRetenir: 'Para recordar' },
+    it: { precedent: 'Indietro', continuer: 'Continua', terminer: 'Fine', ceQuiAEteDit: 'Cosa è stato detto', aRetenir: 'Da ricordare' },
+    pt: { precedent: 'Voltar', continuer: 'Continuar', terminer: 'Terminar', ceQuiAEteDit: 'O que foi dito', aRetenir: 'A reter' },
+    ca: { precedent: 'Enrere', continuer: 'Continua', terminer: 'Acaba', ceQuiAEteDit: 'El que s\u2019ha dit', aRetenir: 'Per recordar' },
+    eo: { precedent: 'Reen', continuer: 'Daŭrigi', terminer: 'Fini', ceQuiAEteDit: 'Kio estis dirita', aRetenir: 'Por memori' },
+    zh: { precedent: '返回', continuer: '继续', terminer: '完成', ceQuiAEteDit: '已说内容', aRetenir: '记住这个' },
+    ja: { precedent: '戻る', continuer: '続ける', terminer: '終了', ceQuiAEteDit: '話されたこと', aRetenir: '覚えておこう' },
+    ko: { precedent: '뒤로', continuer: '계속', terminer: '완료', ceQuiAEteDit: '나눈 이야기', aRetenir: '기억해두기' },
+    vi: { precedent: 'Quay lại', continuer: 'Tiếp tục', terminer: 'Hoàn thành', ceQuiAEteDit: 'Những gì đã nói', aRetenir: 'Ghi nhớ' },
+    ht: { precedent: 'Tounen', continuer: 'Kontinye', terminer: 'Fini', ceQuiAEteDit: 'Sa ki te di', aRetenir: 'Pou sonje' },
+    tl: { precedent: 'Bumalik', continuer: 'Magpatuloy', terminer: 'Tapusin', ceQuiAEteDit: 'Ang nasabi na', aRetenir: 'Dapat tandaan' },
+    id: { precedent: 'Kembali', continuer: 'Lanjut', terminer: 'Selesai', ceQuiAEteDit: 'Yang sudah dikatakan', aRetenir: 'Perlu diingat' },
+    nl: { precedent: 'Terug', continuer: 'Verder', terminer: 'Klaar', ceQuiAEteDit: 'Wat er gezegd is', aRetenir: 'Om te onthouden' },
+    de: { precedent: 'Zurück', continuer: 'Weiter', terminer: 'Fertig', ceQuiAEteDit: 'Was gesagt wurde', aRetenir: 'Zum Merken' },
+    fa: { precedent: 'بازگشت', continuer: 'ادامه', terminer: 'پایان', ceQuiAEteDit: 'آنچه گفته شد', aRetenir: 'نکته\u200cی مهم' },
+    sv: { precedent: 'Tillbaka', continuer: 'Fortsätt', terminer: 'Klart', ceQuiAEteDit: 'Vad som sagts', aRetenir: 'Bra att veta' },
+    no: { precedent: 'Tilbake', continuer: 'Fortsett', terminer: 'Ferdig', ceQuiAEteDit: 'Det som ble sagt', aRetenir: 'Verdt å huske' },
+    ru: { precedent: 'Назад', continuer: 'Далее', terminer: 'Готово', ceQuiAEteDit: 'Что было сказано', aRetenir: 'Важно запомнить' }
   };
 
   function texteInterface(cle) {
@@ -768,6 +1044,17 @@
 
   let etape = 0;
   let reconstructionEnCours = false;
+  // 🐛 CORRIGÉ (diagnostiqué par l'autre Claude, terminé ici) : le
+  // raccourci clavier (flèche/espace) appelait suivant() directement, sans
+  // passer par la vérification `disabled` des boutons — une pression du
+  // clavier pendant l'animation 5a→5d pouvait donc démarrer une deuxième
+  // séquence en parallèle de la première, ce qui brouillait l'affichage
+  // (la séquence rejouée depuis 5, une fois reculée puis relancée, sautait
+  // b→d et allait directement à 6). `animationEnCours` est vérifié en tête
+  // de suivant() ET precedent(), donc TOUTE tentative de navigation —
+  // bouton, tap sur la scène, ou clavier — est bloquée pendant l'animation,
+  // peu importe le chemin par lequel elle est déclenchée.
+  let animationEnCours = false;
   const sequencesJouees = new Set(); // 🆕 (5e échange) : étapes dont la séquence auto a déjà joué
 
   function ajouterLigneDialogue(def) {
@@ -823,18 +1110,6 @@
   // réutilisé ailleurs. Enchaîne les images avec un léger fondu, SANS
   // attendre de clic, pendant que la navigation est désactivée pour éviter
   // qu'un clic mal placé saute une étape ou casse l'état. ----------
-  // 🆕 (7e échange) : verrou centralisé contre le double-déclenchement.
-  // Cause du bogue signalé (séquence sautée un coup sur deux après un
-  // retour en arrière) : le raccourci clavier (flèche/espace, tout en bas
-  // du fichier) appelait suivant() DIRECTEMENT, sans jamais vérifier
-  // btnSuivant.disabled — donc une pression pendant l'animation démarrait
-  // une 2e séquence en parallèle de la première, et les deux se
-  // marchaient dessus sur elScene. Un verrou unique, vérifié en tout
-  // premier dans suivant()/precedent() peu importe la source (clic sur
-  // bouton, tap sur la scène, ou clavier), règle ça à la racine — plus
-  // besoin de jouer au add/removeEventListener sur elScene.
-  let navigationVerrouillee = false;
-
   function jouerSequenceAuto(chemins, auTermine) {
     let i = 0;
     function etapeSuivante() {
@@ -847,29 +1122,33 @@
         ? creerImage(item)
         : creerImageComposite(item.img, item.superposition);
       nouveau.style.opacity = '0';
-      nouveau.style.transition = 'opacity 0.55s ease';
+      nouveau.style.transition = 'opacity 0.55s ease'; /* 🆕 (5e échange) : plus lent qu'avant */
       elScene.innerHTML = '';
       elScene.appendChild(nouveau);
       requestAnimationFrame(() => requestAnimationFrame(() => { nouveau.style.opacity = '1'; }));
       i++;
-      setTimeout(etapeSuivante, 1700);
+      setTimeout(etapeSuivante, 1700); /* 🆕 (5e échange) : 1000 → 1700 ms */
     }
     etapeSuivante();
   }
 
   function suivant() {
-    if (navigationVerrouillee) return; // 🆕 ignore tout déclenchement pendant l'animation
+    if (animationEnCours) return;
     if (etape < ETAPES.length - 1) {
       const def = ETAPES[etape];
+      // 🆕 (5e échange) : la séquence s'arrête maintenant à 5d — elle ne
+      // fait PLUS avancer automatiquement jusqu'à l'étape 6. Une fois
+      // jouée, sequencesJouees empêche de la rejouer : le clic Continuer
+      // suivant se comporte alors comme une avance normale vers l'étape 6.
       if (def.sequenceAuto && !sequencesJouees.has(etape)) {
-        navigationVerrouillee = true;
+        animationEnCours = true;
         btnPrecedent.disabled = true;
         btnSuivant.disabled = true;
         jouerSequenceAuto(def.sequenceAuto, function () {
           sequencesJouees.add(etape);
+          animationEnCours = false;
           btnPrecedent.disabled = (etape === 0);
           btnSuivant.disabled = false;
-          navigationVerrouillee = false;
         });
         return;
       }
@@ -881,10 +1160,10 @@
   }
 
   function precedent() {
-    if (navigationVerrouillee) return; // 🆕 pas de retour en arrière pendant l'animation
+    if (animationEnCours) return;
     if (etape === 0) return;
     etape--;
-    if (ETAPES[etape].sequenceAuto) sequencesJouees.delete(etape); // rejoue si on repasse par ici
+    if (ETAPES[etape].sequenceAuto) sequencesJouees.delete(etape); // 🆕 rejoue si on repasse par ici
     // Reconstruit les deux piles depuis le début plutôt que de retirer
     // juste le dernier élément — même stratégie que precedent() dans
     // intro-bonomes.html : plus simple et sans risque de désynchronisation
@@ -899,7 +1178,7 @@
     }
     elPileDialogue.querySelectorAll('.pile-item').forEach(el => el.classList.add('in'));
     elPileGrammaire.querySelectorAll('.grammaire-item').forEach(el => el.classList.add('in'));
-    rendreEtape(); // appelé AVANT de repasser reconstructionEnCours à false
+    rendreEtape(); // 🆕 (6e échange) : appelé AVANT de repasser reconstructionEnCours à false
     reconstructionEnCours = false; // sinon rendreEtape() ci-dessus rajoute une 2e fois la ligne courante
   }
 
@@ -908,36 +1187,11 @@
   // ⚠️ N'attribue PAS encore de P$/PB (voir note en tête de fichier) —
   // en attente d'un montant/une logique confirmés par Raphaël.
   let leconTerminee = false;
-  // 🆕 (8e échange) : établit la vraie session/profil — manquant jusqu'ici
-  // dans ce fichier (contrairement à parcours.html, qui le fait déjà via
-  // initProgressionReelle()). Sans ça, marquerChapitreComplete() et
-  // attribuerRecompensePremiereFois() traitaient silencieusement TOUT
-  // élève connecté comme un invité, puisque progression.js ne bascule en
-  // mode "compte" que si sessionActuelle ET profilActifId sont posés
-  // (voir clientOuAutoCree()/estInvite() dans progression.js) — jamais
-  // d'erreur visible, juste la mauvaise ligne créditée (locale au lieu du
-  // compte réel). Lancé tout de suite (en parallèle du rendu de la
-  // leçon), mais AWAITÉ dans terminerLecon() avant l'enregistrement —
-  // même construction que initProgressionReelle() dans parcours.html.
-  const pretProgressionReelle = (async () => {
-    await KebBekProgression.initSession();
-    if (KebBekProgression.session) {
-      const dernier = KebBekProgression.dernierProfilConnu();
-      if (dernier) {
-        KebBekProgression.profilActifId = dernier;
-      } else {
-        const profils = await KebBekProgression.profilsDuCompte();
-        if (profils.length === 1) KebBekProgression.profilActifId = profils[0].id;
-      }
-    }
-  })();
-
   async function terminerLecon() {
     if (leconTerminee) return;
     leconTerminee = true;
     btnSuivant.disabled = true;
     btnSuivant.textContent = 'Enregistrement…';
-    await pretProgressionReelle; // 🆕 s'assure que la session/profil est prête avant d'enregistrer
     try {
       await KebBekProgression.marquerChapitreComplete('d1');
     } catch (e) {
@@ -951,7 +1205,7 @@
     } catch (e) {
       console.warn('dialogue-d1.html : impossible d\u2019attribuer la récompense (RPC pas encore créée ?).', e);
     }
-    window.location.href = '../../parcours.html'; // 🆕 (8e échange) : corrigé — était un chemin non-relatif ('parcours.html'), incohérent avec le lien "retour" en haut de page qui, lui, utilisait déjà ../../
+    window.location.href = 'parcours.html';
   }
 
   btnSuivant.addEventListener('click', suivant);

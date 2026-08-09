@@ -351,6 +351,47 @@
     return marquerChapitreInvite(chapitreId);
   }
 
+  // ---------- Conditions de déblocage (micro-actions, sous le chapitre) ----------
+  //
+  // 🆕 AJOUT — mécanique Bravo (synthèse v4) : certaines cartes exigent
+  // plusieurs petites actions préalables (ex. "cliquer sur le sandwich
+  // dans d1"), plus fines qu'un chapitre entier. Même symétrie
+  // compte/invité que marquerChapitreComplete()/marquerChapitreInvite()
+  // ci-dessus, table conditions_completees + RPC marquer_condition_complete
+  // côté Supabase (garde d'appartenance + idempotence, comme toutes les
+  // écritures de ce module).
+  //
+  // conditionId : identifiant texte de la condition, convention retenue
+  // "{chapitre_id}_{action}" (ex. 'd1_clic_sandwich') pour rester lisible
+  // et cohérent avec chapitre_id déjà utilisé partout ailleurs.
+
+  const CLE_CONDITIONS_INVITE = 'kebbek_conditions_invite'; // { [condition_id]: true }
+
+  function conditionsInviteLocales() {
+    try { return JSON.parse(localStorage.getItem(CLE_CONDITIONS_INVITE) || '{}'); }
+    catch (e) { return {}; }
+  }
+
+  function marquerConditionInvite(conditionId) {
+    const c = conditionsInviteLocales();
+    if (c[conditionId]) return false; // déjà fait, rien de nouveau à signaler
+    c[conditionId] = true;
+    localStorage.setItem(CLE_CONDITIONS_INVITE, JSON.stringify(c));
+    return true;
+  }
+
+  async function marquerConditionComplete(conditionId) {
+    if (sessionActuelle && profilActifId && clientSupabase) {
+      const { data, error } = await clientSupabase.rpc('marquer_condition_complete', {
+        p_eleve_id: profilActifId,
+        p_condition_id: conditionId
+      });
+      if (error) { console.warn('progression.js : marquerConditionComplete (compte) a échoué.', error); return false; }
+      return true;
+    }
+    return marquerConditionInvite(conditionId);
+  }
+
   // ---------- Migration invité → compte ----------
   //
   // À appeler UNE SEULE FOIS, immédiatement après un creerProfil() réussi
@@ -463,6 +504,7 @@
     deconnecter,
     lireProgression,
     marquerChapitreComplete,
+    marquerConditionComplete,
     attribuerRecompensePremiereFois,
     migrerProgressionInviteVersCompte,
     lireIdentite,

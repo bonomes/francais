@@ -299,6 +299,37 @@
     margin: 0 0 6px 4px;
   }
 
+  /* 🆕 En-tête de "Ce qui a été dit" : titre + bouton de bascule globale
+     pour la traduction phrase par phrase (demande de Raphaël — le
+     mot-à-mot seul "n'est pas suffisant"). */
+  .pile-entete {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin: 0 0 6px 4px;
+  }
+  .pile-entete .pile-section-titre { margin: 0; }
+  .btn-toggle-trad {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    border: 1px solid var(--gris-verrou, #DDD2C4);
+    background: #FFFFFF;
+    color: var(--brun-clair, #8A7364);
+    border-radius: 999px;
+    padding: 3px 10px 3px 8px;
+    font-family: inherit;
+    font-size: 0.66rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease;
+  }
+  .btn-toggle-trad:hover { background: var(--beige-doux, #F4EEE4); }
+  .btn-toggle-trad svg { width: 12px; height: 12px; }
+  .btn-toggle-trad.actif { background: var(--peche-fonce, #D98C63); border-color: var(--peche-fonce, #D98C63); color: #FFFFFF; }
+
   .pile-dialogue { display: flex; flex-direction: column; gap: 2px; }
 
   .pile-item {
@@ -310,7 +341,7 @@
     overflow: hidden;
     transition: max-height 0.3s ease, opacity 0.3s ease, margin 0.3s ease;
   }
-  .pile-item.in { opacity: 1; max-height: 120px; margin: 7px 0; overflow: visible; }
+  .pile-item.in { opacity: 1; max-height: 220px; margin: 7px 0; overflow: visible; }
 
   .pile-avatar {
     flex-shrink: 0;
@@ -324,13 +355,39 @@
     font-weight: 700;
     color: #FFFFFF;
     background: var(--c, var(--brun));
+    /* 🆕 Cliquable/touchable : révèle la traduction de CETTE réplique
+       seule (en plus du bouton global). Même logique que le mot-à-mot :
+       un clic/tap direct sur l'élément d'intérêt. */
+    cursor: pointer;
+    border: none;
+    padding: 0;
+    font-family: inherit;
+    transition: transform 0.15s ease;
   }
+  .pile-avatar:hover { transform: scale(1.08); }
   .pile-item.keb { --c: var(--keb-couleur); }
   .pile-item.bek { --c: var(--bek-couleur); }
 
   .pile-corps { flex: 1; min-width: 0; }
   .pile-qui { display: block; font-size: 0.68rem; font-weight: 700; color: var(--c, var(--brun)); margin-bottom: 1px; }
-  .pile-texte { font-size: 0.92rem; line-height: 1.35; }
+  .pile-texte {
+    font-size: 0.92rem;
+    line-height: 1.35;
+    cursor: pointer;
+    /* 🆕 Le texte lui-même est aussi cliquable — deuxième façon d'accéder
+       à la traduction de la phrase, en plus du cercle-avatar. */
+  }
+  .pile-trad {
+    font-size: 0.82rem;
+    line-height: 1.3;
+    color: var(--peche-fonce, #D98C63);
+    font-style: italic;
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+    transition: max-height 0.25s ease, opacity 0.25s ease, margin 0.25s ease;
+  }
+  .pile-trad.visible { max-height: 80px; opacity: 1; margin-top: 3px; }
 
   /* Notes grammaticales — même langage visuel qu'un contenu d'aide
      ponctuel ailleurs sur le site (.sac-intro dans sac-a-dos.css,
@@ -485,7 +542,13 @@
 
 <div class="piles-conteneur">
   <div>
-    <div class="pile-section-titre" id="titrePileDialogue">Ce qui a été dit</div>
+    <div class="pile-entete">
+      <div class="pile-section-titre" id="titrePileDialogue">Ce qui a été dit</div>
+      <button type="button" class="btn-toggle-trad" id="btnToggleTraductions" aria-pressed="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h7"/><path d="M9 3v2c0 4.5-2 8-6 10"/><path d="M5 9c1.5 2.5 4 4 7 4"/><path d="m13 20 4-9 4 9"/><path d="M14.5 17h5"/></svg>
+        <span id="txtToggleTraductions">Afficher la traduction</span>
+      </button>
+    </div>
     <div class="pile-dialogue" id="pileDialogue"></div>
   </div>
   <div id="blocGrammaire" style="display:none;">
@@ -501,10 +564,55 @@
   // les étapes n'en ont pas (ici : seulement 1 et 2).
   // ================================================================
   const ETAPES = [
-    { speaker: 'keb', texte: 'J\u2019ai faim.', img: '../../images/dialogues/d1/d1_01_bonomes_keb_bek_jai-faim_.png', grammaire: 'gJai' },
-    { speaker: 'bek', texte: 'Mange\u00A0!', img: '../../images/dialogues/d1/d1_02_bonomes_keb_bek_mange_.png', grammaire: 'gImperatif' },
-    { speaker: 'keb', texte: 'Mange quoi\u00A0?', img: '../../images/dialogues/d1/d1_03_bonomes_keb_bek_mange_quoi.png', grammaire: 'gQuoi' },
-    { speaker: 'bek', texte: 'Mange... un sandwich\u00A0?', img: '../../images/dialogues/d1/d1_04_bonomes_keb_bek_mange-mon-mange_.png' },
+    {
+      speaker: 'keb', texte: 'J\u2019ai faim.',
+      img: '../../images/dialogues/d1/d1_01_bonomes_keb_bek_jai-faim_.png', grammaire: 'gJai',
+      // 🆕 Traduction de la phrase complète (demande de Raphaël, en plus
+      // du mot-à-mot déjà existant) — voir traductionPhrase() plus bas.
+      trad: {
+        en: 'I\u2019m hungry.', es: 'Tengo hambre.', it: 'Ho fame.', pt: 'Tenho fome.',
+        ca: 'Tinc gana.', eo: 'Mi malsatas.', zh: '我饿了。', ja: 'お腹がすいた。',
+        ko: '나는 배고파.', vi: 'Tôi đói.', ht: 'Mwen grangou.', tl: 'Gutom ako.',
+        id: 'Saya lapar.', nl: 'Ik heb honger.', de: 'Ich habe Hunger.',
+        fa: '\u0645\u0646 \u06af\u0631\u0633\u0646\u0647\u200c\u0627\u0645.', sv: 'Jag är hungrig.',
+        no: 'Jeg er sulten.', ru: '\u042f \u0433\u043e\u043b\u043e\u0434\u0435\u043d.'
+      }
+    },
+    {
+      speaker: 'bek', texte: 'Mange\u00A0!',
+      img: '../../images/dialogues/d1/d1_02_bonomes_keb_bek_mange_.png', grammaire: 'gImperatif',
+      trad: {
+        en: 'Eat!', es: '\u00A1Come!', it: 'Mangia!', pt: 'Come!', ca: 'Menja!',
+        eo: 'Man\u011du!', zh: '吃吧！', ja: '食べて！', ko: '먹어!', vi: 'Ăn đi!',
+        ht: 'Manje!', tl: 'Kain!', id: 'Makan!', nl: 'Eet!', de: 'Iss!',
+        fa: '\u0628\u062e\u0648\u0631!', sv: 'Ät!', no: 'Spis!', ru: '\u0415\u0448\u044c!'
+      }
+    },
+    {
+      speaker: 'keb', texte: 'Mange quoi\u00A0?',
+      img: '../../images/dialogues/d1/d1_03_bonomes_keb_bek_mange_quoi.png', grammaire: 'gQuoi',
+      trad: {
+        en: 'Eat what?', es: '\u00BFComer qu\u00E9?', it: 'Mangiare cosa?', pt: 'Comer o qu\u00EA?',
+        ca: 'Menjar qu\u00E8?', eo: 'Man\u011di kion?', zh: '吃什么？', ja: '何を食べるの？',
+        ko: '뭘 먹어?', vi: 'Ăn gì?', ht: 'Manje ki sa?', tl: 'Kumain ng ano?',
+        id: 'Makan apa?', nl: 'Wat eten?', de: 'Was essen?',
+        fa: '\u0686\u06CC \u0628\u062E\u0648\u0631\u0645\u061F', sv: 'Äta vad?', no: 'Spise hva?',
+        ru: '\u0415\u0441\u0442\u044c \u0447\u0442\u043e?'
+      }
+    },
+    {
+      speaker: 'bek', texte: 'Mange... un sandwich\u00A0?',
+      img: '../../images/dialogues/d1/d1_04_bonomes_keb_bek_mange-mon-mange_.png',
+      trad: {
+        en: 'Eat... a sandwich?', es: 'Come... \u00BFun s\u00E1ndwich?', it: 'Mangia... un panino?',
+        pt: 'Come... uma sandes?', ca: 'Menja... un entrep\u00E0?', eo: 'Man\u011du... sandvi\u0109on?',
+        zh: '吃……三明治？', ja: '食べて…サンドイッチ？', ko: '먹어... 샌드위치?',
+        vi: 'Ăn... bánh sandwich?', ht: 'Manje... yon sandwich?', tl: 'Kain... ng sandwich?',
+        id: 'Makan... sandwich?', nl: 'Eet... een sandwich?', de: 'Iss... ein Sandwich?',
+        fa: '\u0628\u062E\u0648\u0631... \u06CC\u06A9 \u0633\u0627\u0646\u062F\u0648\u06CC\u0686\u061F',
+        sv: 'Ät... en smörgås?', no: 'Spis... en sandwich?', ru: '\u0415\u0448\u044c... \u0441\u044D\u043D\u0434\u0432\u0438\u0447?'
+      }
+    },
     // 🆕 (session du 08-08-2026, 4e échange) : étape 5a — Keb réalise que
     // Bek n'a pas de sandwich sur elle. 'sequenceAuto' : liste d'images qui
     // s'enchaînent SEULES (pas de clic entre elles) dès que l'élève clique
@@ -519,6 +627,14 @@
       speaker: 'keb',
       texte: 'Un sandwich\u00A0?',
       img: '../../images/dialogues/d1/d1_05a_bonomes_keb_bek_ton-sandwich_.png',
+      trad: {
+        en: 'A sandwich?', es: '\u00BFUn s\u00E1ndwich?', it: 'Un panino?', pt: 'Uma sandes?',
+        ca: 'Un entrep\u00E0?', eo: 'Sandvi\u0109on?', zh: '三明治？', ja: 'サンドイッチ？',
+        ko: '샌드위치?', vi: 'Bánh sandwich?', ht: 'Yon sandwich?', tl: 'Sandwich?',
+        id: 'Sandwich?', nl: 'Een sandwich?', de: 'Ein Sandwich?',
+        fa: '\u06CC\u06A9 \u0633\u0627\u0646\u062F\u0648\u06CC\u0686\u061F', sv: 'En smörgås?',
+        no: 'En sandwich?', ru: '\u0421\u044D\u043D\u0434\u0432\u0438\u0447?'
+      },
       sequenceAuto: [
         '../../images/dialogues/d1/d1_05b_bonomes_keb_bek_ton-sandwich_.png',
         '../../images/dialogues/d1/d1_05c_bonomes_keb_bek_ton-sandwich_.png',
@@ -534,7 +650,18 @@
         }
       ]
     },
-    { speaker: 'keb', texte: 'Oh, merci\u00A0!', img: '../../images/dialogues/d1/d1_06_bonomes_keb_bek_ton-sandwich_.png', grammaire: 'gMerci' }
+    {
+      speaker: 'keb', texte: 'Oh, merci\u00A0!',
+      img: '../../images/dialogues/d1/d1_06_bonomes_keb_bek_ton-sandwich_.png', grammaire: 'gMerci',
+      trad: {
+        en: 'Oh, thanks!', es: '\u00A1Oh, gracias!', it: 'Oh, grazie!', pt: 'Oh, obrigado!',
+        ca: 'Oh, gr\u00E0cies!', eo: 'Ho, dankon!', zh: '哦，谢谢！', ja: 'あ、ありがとう！',
+        ko: '오, 고마워!', vi: 'Ồ, cảm ơn!', ht: 'O, mèsi!', tl: 'Oh, salamat!',
+        id: 'Oh, terima kasih!', nl: 'Oh, bedankt!', de: 'Oh, danke!',
+        fa: '\u0627\u0648\u0647\u060C \u0645\u0645\u0646\u0648\u0646!', sv: 'Åh, tack!', no: 'Å, takk!',
+        ru: '\u041E, \u0441\u043F\u0430\u0441\u0438\u0431\u043E!'
+      }
+    }
   ];
 
   // Notes grammaticales dans la langue de l'apprenant, dans les 19 langues
@@ -868,26 +995,26 @@
   // Textes d'interface (boutons, titres de pile) dans la langue de
   // l'apprenant, dans les 19 langues du site.
   const INTERFACE = {
-    fr: { precedent: 'Précédent', continuer: 'Continuer', terminer: 'Terminer', ceQuiAEteDit: 'Ce qui a été dit', aRetenir: 'À retenir' },
-    en: { precedent: 'Back', continuer: 'Continue', terminer: 'Finish', ceQuiAEteDit: 'What was said', aRetenir: 'Good to know' },
-    es: { precedent: 'Atrás', continuer: 'Continuar', terminer: 'Terminar', ceQuiAEteDit: 'Lo que se dijo', aRetenir: 'Para recordar' },
-    it: { precedent: 'Indietro', continuer: 'Continua', terminer: 'Fine', ceQuiAEteDit: 'Cosa è stato detto', aRetenir: 'Da ricordare' },
-    pt: { precedent: 'Voltar', continuer: 'Continuar', terminer: 'Terminar', ceQuiAEteDit: 'O que foi dito', aRetenir: 'A reter' },
-    ca: { precedent: 'Enrere', continuer: 'Continua', terminer: 'Acaba', ceQuiAEteDit: 'El que s\u2019ha dit', aRetenir: 'Per recordar' },
-    eo: { precedent: 'Reen', continuer: 'Daŭrigi', terminer: 'Fini', ceQuiAEteDit: 'Kio estis dirita', aRetenir: 'Por memori' },
-    zh: { precedent: '返回', continuer: '继续', terminer: '完成', ceQuiAEteDit: '已说内容', aRetenir: '记住这个' },
-    ja: { precedent: '戻る', continuer: '続ける', terminer: '終了', ceQuiAEteDit: '話されたこと', aRetenir: '覚えておこう' },
-    ko: { precedent: '뒤로', continuer: '계속', terminer: '완료', ceQuiAEteDit: '나눈 이야기', aRetenir: '기억해두기' },
-    vi: { precedent: 'Quay lại', continuer: 'Tiếp tục', terminer: 'Hoàn thành', ceQuiAEteDit: 'Những gì đã nói', aRetenir: 'Ghi nhớ' },
-    ht: { precedent: 'Tounen', continuer: 'Kontinye', terminer: 'Fini', ceQuiAEteDit: 'Sa ki te di', aRetenir: 'Pou sonje' },
-    tl: { precedent: 'Bumalik', continuer: 'Magpatuloy', terminer: 'Tapusin', ceQuiAEteDit: 'Ang nasabi na', aRetenir: 'Dapat tandaan' },
-    id: { precedent: 'Kembali', continuer: 'Lanjut', terminer: 'Selesai', ceQuiAEteDit: 'Yang sudah dikatakan', aRetenir: 'Perlu diingat' },
-    nl: { precedent: 'Terug', continuer: 'Verder', terminer: 'Klaar', ceQuiAEteDit: 'Wat er gezegd is', aRetenir: 'Om te onthouden' },
-    de: { precedent: 'Zurück', continuer: 'Weiter', terminer: 'Fertig', ceQuiAEteDit: 'Was gesagt wurde', aRetenir: 'Zum Merken' },
-    fa: { precedent: 'بازگشت', continuer: 'ادامه', terminer: 'پایان', ceQuiAEteDit: 'آنچه گفته شد', aRetenir: 'نکته\u200cی مهم' },
-    sv: { precedent: 'Tillbaka', continuer: 'Fortsätt', terminer: 'Klart', ceQuiAEteDit: 'Vad som sagts', aRetenir: 'Bra att veta' },
-    no: { precedent: 'Tilbake', continuer: 'Fortsett', terminer: 'Ferdig', ceQuiAEteDit: 'Det som ble sagt', aRetenir: 'Verdt å huske' },
-    ru: { precedent: 'Назад', continuer: 'Далее', terminer: 'Готово', ceQuiAEteDit: 'Что было сказано', aRetenir: 'Важно запомнить' }
+    fr: { precedent: 'Précédent', continuer: 'Continuer', terminer: 'Terminer', ceQuiAEteDit: 'Ce qui a été dit', aRetenir: 'À retenir' , afficherTrad: 'Afficher la traduction', cacherTrad: 'Cacher la traduction' },
+    en: { precedent: 'Back', continuer: 'Continue', terminer: 'Finish', ceQuiAEteDit: 'What was said', aRetenir: 'Good to know' , afficherTrad: 'Show translation', cacherTrad: 'Hide translation' },
+    es: { precedent: 'Atrás', continuer: 'Continuar', terminer: 'Terminar', ceQuiAEteDit: 'Lo que se dijo', aRetenir: 'Para recordar' , afficherTrad: 'Mostrar traducción', cacherTrad: 'Ocultar traducción' },
+    it: { precedent: 'Indietro', continuer: 'Continua', terminer: 'Fine', ceQuiAEteDit: 'Cosa è stato detto', aRetenir: 'Da ricordare' , afficherTrad: 'Mostra traduzione', cacherTrad: 'Nascondi traduzione' },
+    pt: { precedent: 'Voltar', continuer: 'Continuar', terminer: 'Terminar', ceQuiAEteDit: 'O que foi dito', aRetenir: 'A reter' , afficherTrad: 'Mostrar tradução', cacherTrad: 'Ocultar tradução' },
+    ca: { precedent: 'Enrere', continuer: 'Continua', terminer: 'Acaba', ceQuiAEteDit: 'El que s\u2019ha dit', aRetenir: 'Per recordar' , afficherTrad: 'Mostra la traducció', cacherTrad: 'Amaga la traducció' },
+    eo: { precedent: 'Reen', continuer: 'Daŭrigi', terminer: 'Fini', ceQuiAEteDit: 'Kio estis dirita', aRetenir: 'Por memori' , afficherTrad: 'Montri tradukon', cacherTrad: 'Kaŝi tradukon' },
+    zh: { precedent: '返回', continuer: '继续', terminer: '完成', ceQuiAEteDit: '已说内容', aRetenir: '记住这个' , afficherTrad: '显示翻译', cacherTrad: '隐藏翻译' },
+    ja: { precedent: '戻る', continuer: '続ける', terminer: '終了', ceQuiAEteDit: '話されたこと', aRetenir: '覚えておこう' , afficherTrad: '翻訳を表示', cacherTrad: '翻訳を隠す' },
+    ko: { precedent: '뒤로', continuer: '계속', terminer: '완료', ceQuiAEteDit: '나눈 이야기', aRetenir: '기억해두기' , afficherTrad: '번역 보기', cacherTrad: '번역 숨기기' },
+    vi: { precedent: 'Quay lại', continuer: 'Tiếp tục', terminer: 'Hoàn thành', ceQuiAEteDit: 'Những gì đã nói', aRetenir: 'Ghi nhớ' , afficherTrad: 'Hiện bản dịch', cacherTrad: 'Ẩn bản dịch' },
+    ht: { precedent: 'Tounen', continuer: 'Kontinye', terminer: 'Fini', ceQuiAEteDit: 'Sa ki te di', aRetenir: 'Pou sonje' , afficherTrad: 'Montre tradiksyon', cacherTrad: 'Kache tradiksyon' },
+    tl: { precedent: 'Bumalik', continuer: 'Magpatuloy', terminer: 'Tapusin', ceQuiAEteDit: 'Ang nasabi na', aRetenir: 'Dapat tandaan' , afficherTrad: 'Ipakita ang salin', cacherTrad: 'Itago ang salin' },
+    id: { precedent: 'Kembali', continuer: 'Lanjut', terminer: 'Selesai', ceQuiAEteDit: 'Yang sudah dikatakan', aRetenir: 'Perlu diingat' , afficherTrad: 'Tampilkan terjemahan', cacherTrad: 'Sembunyikan terjemahan' },
+    nl: { precedent: 'Terug', continuer: 'Verder', terminer: 'Klaar', ceQuiAEteDit: 'Wat er gezegd is', aRetenir: 'Om te onthouden' , afficherTrad: 'Vertaling tonen', cacherTrad: 'Vertaling verbergen' },
+    de: { precedent: 'Zurück', continuer: 'Weiter', terminer: 'Fertig', ceQuiAEteDit: 'Was gesagt wurde', aRetenir: 'Zum Merken' , afficherTrad: 'Übersetzung anzeigen', cacherTrad: 'Übersetzung ausblenden' },
+    fa: { precedent: 'بازگشت', continuer: 'ادامه', terminer: 'پایان', ceQuiAEteDit: 'آنچه گفته شد', aRetenir: 'نکته\u200cی مهم' , afficherTrad: 'نمایش ترجمه', cacherTrad: 'پنهان کردن ترجمه' },
+    sv: { precedent: 'Tillbaka', continuer: 'Fortsätt', terminer: 'Klart', ceQuiAEteDit: 'Vad som sagts', aRetenir: 'Bra att veta' , afficherTrad: 'Visa översättning', cacherTrad: 'Dölj översättning' },
+    no: { precedent: 'Tilbake', continuer: 'Fortsett', terminer: 'Ferdig', ceQuiAEteDit: 'Det som ble sagt', aRetenir: 'Verdt å huske' , afficherTrad: 'Vis oversettelse', cacherTrad: 'Skjul oversettelse' },
+    ru: { precedent: 'Назад', continuer: 'Далее', terminer: 'Готово', ceQuiAEteDit: 'Что было сказано', aRetenir: 'Важно запомнить', afficherTrad: 'Показать перевод', cacherTrad: 'Скрыть перевод' }
   };
 
   function texteInterface(cle) {
@@ -914,6 +1041,14 @@
     const dict = GRAMMAIRE[cle];
     if (!dict) return '';
     return dict[langueActuelle()] || dict.en;
+  }
+
+  // 🆕 Traduction de la phrase complète (demande de Raphaël : le mot-à-mot
+  // seul "n'est pas suffisant"). Même repli sur l'anglais que le reste du
+  // site si la langue de l'apprenant manque pour une raison quelconque.
+  function traductionPhrase(def) {
+    if (!def.trad) return '';
+    return def.trad[langueActuelle()] || def.trad.en || '';
   }
 
   // ---------- Image avec repli "pas encore prête" (même patron que
@@ -1103,12 +1238,28 @@
   let animationEnCours = false;
   const sequenceAJouePourEtapeActuelle = { valeur: false }; // 🔧 (7e échange) : remplace l'ancien Set sequencesJouees. Remis à false à CHAQUE rendreEtape() (voir plus bas), peu importe la direction de navigation — élimine le besoin de le gérer manuellement dans precedent(), et donc le risque de désynchronisation qui causait le bug "5a → 6 sans rejouer la séquence" signalé par Raphaël (09-08-2026).
 
+  // 🆕 État global d'affichage des traductions de phrase (voir demande de
+  // Raphaël) — appliqué par défaut à chaque nouvelle réplique ajoutée à la
+  // pile ; un clic sur l'avatar ou le texte d'UNE réplique bascule
+  // seulement celle-là, sans toucher à ce réglage global.
+  let traductionsVisiblesParDefaut = false;
+
   function ajouterLigneDialogue(def) {
     const div = document.createElement('div');
     div.className = 'pile-item ' + def.speaker;
-    div.innerHTML = '<div class="pile-avatar">' + INITIALES[def.speaker] + '</div>' +
+    const trad = traductionPhrase(def);
+    div.innerHTML = '<button type="button" class="pile-avatar" aria-label="' + texteInterface('afficherTrad') + '">' + INITIALES[def.speaker] + '</button>' +
       '<div class="pile-corps"><span class="pile-qui">' + NOMS[def.speaker] + '</span>' +
-      '<div class="pile-texte">' + def.texte + '</div></div>';
+      '<div class="pile-texte">' + def.texte + '</div>' +
+      (trad ? '<div class="pile-trad">' + trad + '</div>' : '') +
+      '</div>';
+    const elTrad = div.querySelector('.pile-trad');
+    if (elTrad && traductionsVisiblesParDefaut) elTrad.classList.add('visible');
+    if (elTrad) {
+      const bascule = () => elTrad.classList.toggle('visible');
+      div.querySelector('.pile-avatar').addEventListener('click', bascule);
+      div.querySelector('.pile-texte').addEventListener('click', bascule);
+    }
     elPileDialogue.appendChild(div);
     requestAnimationFrame(() => requestAnimationFrame(() => div.classList.add('in')));
   }
@@ -1285,6 +1436,25 @@
   btnPrecedent.textContent = '\u2039 ' + texteInterface('precedent');
   document.getElementById('titrePileDialogue').textContent = texteInterface('ceQuiAEteDit');
   document.getElementById('titrePileGrammaire').textContent = texteInterface('aRetenir');
+
+  // 🆕 Bouton global "Afficher/Cacher la traduction" (demande de Raphaël).
+  // Force TOUTES les répliques déjà dans la pile à l'état choisi, et
+  // devient le réglage par défaut pour les prochaines répliques ajoutées
+  // — un clic individuel sur un avatar/texte reste possible ensuite pour
+  // consulter une seule phrase sans toucher à ce réglage global.
+  const btnToggleTraductions = document.getElementById('btnToggleTraductions');
+  const txtToggleTraductions = document.getElementById('txtToggleTraductions');
+  function metAJourBoutonToggleTraductions() {
+    txtToggleTraductions.textContent = texteInterface(traductionsVisiblesParDefaut ? 'cacherTrad' : 'afficherTrad');
+    btnToggleTraductions.setAttribute('aria-pressed', String(traductionsVisiblesParDefaut));
+    btnToggleTraductions.classList.toggle('actif', traductionsVisiblesParDefaut);
+  }
+  btnToggleTraductions.addEventListener('click', () => {
+    traductionsVisiblesParDefaut = !traductionsVisiblesParDefaut;
+    elPileDialogue.querySelectorAll('.pile-trad').forEach(el => el.classList.toggle('visible', traductionsVisiblesParDefaut));
+    metAJourBoutonToggleTraductions();
+  });
+  metAJourBoutonToggleTraductions();
 
   rendreEtape();
 </script>

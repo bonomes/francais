@@ -645,6 +645,7 @@
   const TRADUCTIONS = {
     en: {
       'j\u2019ai': 'I have',
+      'un': 'a',
       'faim': 'hunger (= hungry)',
       'mange': 'eat!',
       'quoi': 'what',
@@ -655,6 +656,7 @@
     },
     es: {
       'j\u2019ai': 'tengo',
+      'un': 'un',
       'faim': 'hambre (= tener hambre)',
       'mange': '¡come!',
       'quoi': 'qué',
@@ -665,6 +667,7 @@
     },
     it: {
       'j\u2019ai': 'ho',
+      'un': 'un',
       'faim': 'fame (= avere fame)',
       'mange': 'mangia!',
       'quoi': 'cosa',
@@ -675,6 +678,7 @@
     },
     pt: {
       'j\u2019ai': 'tenho',
+      'un': 'um',
       'faim': 'fome (= estar com fome)',
       'mange': 'come!',
       'quoi': 'o quê',
@@ -685,6 +689,7 @@
     },
     ca: {
       'j\u2019ai': 'tinc',
+      'un': 'un',
       'faim': 'gana (= tenir gana)',
       'mange': 'menja!',
       'quoi': 'què',
@@ -695,6 +700,7 @@
     },
     eo: {
       'j\u2019ai': 'mi havas',
+      'un': '(Esperanto ne havas nedifinan artikolon)',
       'faim': 'malsato (= malsati)',
       'mange': 'manĝu!',
       'quoi': 'kio',
@@ -705,6 +711,7 @@
     },
     zh: {
       'j\u2019ai': '我有',
+      'un': '（中文没有冠词）',
       'faim': '饿（=饥饿）',
       'mange': '吃！',
       'quoi': '什么',
@@ -715,6 +722,7 @@
     },
     ja: {
       'j\u2019ai': '持っている',
+      'un': '（日本語に冠詞はない）',
       'faim': '空腹（＝お腹がすいた）',
       'mange': '食べて！',
       'quoi': '何',
@@ -725,6 +733,7 @@
     },
     ko: {
       'j\u2019ai': '나는 있다',
+      'un': '(한국어에는 관사가 없음)',
       'faim': '배고픔 (= 배고프다)',
       'mange': '먹어!',
       'quoi': '무엇',
@@ -735,6 +744,7 @@
     },
     vi: {
       'j\u2019ai': 'tôi có',
+      'un': '(tiếng Việt không có mạo từ)',
       'faim': 'đói (= bị đói)',
       'mange': 'ăn đi!',
       'quoi': 'gì',
@@ -745,6 +755,7 @@
     },
     ht: {
       'j\u2019ai': 'mwen genyen',
+      'un': 'yon',
       'faim': 'grangou',
       'mange': 'manje!',
       'quoi': 'ki sa',
@@ -755,6 +766,7 @@
     },
     tl: {
       'j\u2019ai': 'mayroon ako',
+      'un': 'isang',
       'faim': 'gutom (= nagugutom)',
       'mange': 'kumain ka!',
       'quoi': 'ano',
@@ -765,6 +777,7 @@
     },
     id: {
       'j\u2019ai': 'saya punya',
+      'un': 'sebuah',
       'faim': 'lapar (= merasa lapar)',
       'mange': 'makan!',
       'quoi': 'apa',
@@ -775,6 +788,7 @@
     },
     nl: {
       'j\u2019ai': 'ik heb',
+      'un': 'een',
       'faim': 'honger (= honger hebben)',
       'mange': 'eet!',
       'quoi': 'wat',
@@ -785,6 +799,7 @@
     },
     de: {
       'j\u2019ai': 'ich habe',
+      'un': 'ein',
       'faim': 'Hunger (= hungrig sein)',
       'mange': 'iss!',
       'quoi': 'was',
@@ -795,6 +810,7 @@
     },
     fa: {
       'j\u2019ai': 'من دارم',
+      'un': 'یک',
       'faim': 'گرسنگی (= گرسنه بودن)',
       'mange': 'بخور!',
       'quoi': 'چی',
@@ -805,6 +821,7 @@
     },
     sv: {
       'j\u2019ai': 'jag har',
+      'un': 'en',
       'faim': 'hunger (= vara hungrig)',
       'mange': 'ät!',
       'quoi': 'vad',
@@ -815,6 +832,7 @@
     },
     no: {
       'j\u2019ai': 'jeg har',
+      'un': 'en',
       'faim': 'sult (= være sulten)',
       'mange': 'spis!',
       'quoi': 'hva',
@@ -825,6 +843,7 @@
     },
     ru: {
       'j\u2019ai': 'у меня есть',
+      'un': '(в русском нет артиклей)',
       'faim': 'голод (= быть голодным)',
       'mange': 'ешь!',
       'quoi': 'что',
@@ -1238,7 +1257,14 @@
     } catch (e) {
       console.warn('dialogue-d1.html : impossible d\u2019attribuer la récompense (RPC pas encore créée ?).', e);
     }
-    window.location.href = 'parcours.html';
+    // 🐛 CORRIGÉ (retour Raphaël, capture 404) : cette ligne écrivait
+    // 'parcours.html' — un chemin RELATIF au dossier courant
+    // (francais/dialogues/d1/), donc résolu vers .../d1/parcours.html,
+    // qui n'a jamais existé → 404. Le vrai parcours.html vit deux
+    // dossiers plus haut (francais/parcours.html) — exactement comme le
+    // lien retour tout en haut du fichier (voir <a class="retour"
+    // href="../../parcours.html">). Même chemin relatif ici.
+    window.location.href = '../../parcours.html';
   }
 
   btnSuivant.addEventListener('click', suivant);

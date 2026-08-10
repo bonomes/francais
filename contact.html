@@ -286,12 +286,13 @@
   // (voir cours-prives/index.html, methode.html, tarifs.html) : une
   // seule clé localStorage partagée (CLE_LANGUE), posée au moment du
   // choix de langue sur l'écran d'accueil, lue ici sans aucun
-  // sélecteur visible. Seules en/es/pt sont couvertes pour l'instant ;
-  // toute autre langue retombe sur l'anglais via t().
+  // sélecteur visible. Les 19 langues du site sont couvertes
+  // (voir TRADUCTIONS ci-dessous) ; toute langue absente retomberait
+  // sur l'anglais via t().
   //
   // Les adresses courriel elles-mêmes ne sont volontairement PAS dans
   // TRADUCTIONS : une adresse ne se traduit pas, elle reste identique
-  // dans les 19 langues à venir. Seuls les libellés autour changent.
+  // dans les 19 langues. Seuls les libellés autour changent.
   // ==================================================================
   const CLE_LANGUE = 'kebbek_langue';
   function langueActuelle() {

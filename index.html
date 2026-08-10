@@ -1300,7 +1300,7 @@
     KebBekMenu.demarrerMenuPrincipal('menuPrincipal', {
       onHistoires: function () { window.location.href = 'parcours.html'; },
       onPrives: function () { window.location.href = 'cours-prives/'; },
-      onContact: function () { console.info('Menu — "Contact" : destination à définir.'); },
+      onContact: function () { window.location.href = 'contact.html'; },
       onCreerCompte: function () { demarrerIdentiteSiPremiereFois('menu'); }
     });
   }
@@ -1757,6 +1757,19 @@
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && estOuvert()) fermer();
   });
+
+  // 🆕 (retour Raphaël) : quitter parcours.html renvoyait toujours à
+  // l'écran d'accueil (Keb et Bek, "Bonjour"), jamais au menu — le lien
+  // de retour pointe bien vers index.html#menu-principal (voir
+  // parcours.html), mais rien ici ne lisait ce fragment. On saute
+  // directement au menu si une langue est déjà enregistrée (le cas
+  // normal en sortant du parcours, puisqu'il faut être passé par
+  // l'accueil pour y arriver) ; sinon on laisse le parcours d'accueil
+  // habituel se dérouler, plutôt que de risquer d'amener un nouvel
+  // élève droit au menu sans être passé par le choix de langue.
+  if (location.hash === '#menu-principal' && langueSauvegardee()) {
+    allerAuMenuPrincipal('retour');
+  }
 </script>
 
 </body>

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Apprends le français avec Keb &amp; Bek — Learn French with Keb &amp; Bek</title>
+<title>Apprends le français avec les Bonomes — Learn French with the Bonomes</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;700&family=Chewy&display=swap" rel="stylesheet">
@@ -795,6 +795,16 @@
       </div>
     </div>
 
+   </div>
+
+    <!-- 🆕 (retour Raphaël) : déplacé hors de #sceneRangee — il y vivait
+         depuis le début, donc il disparaissait dès qu'on quittait l'écran
+         d'accueil (display:none sur son parent), impossible de changer de
+         langue depuis la séquence d'identité ou le menu principal. Même
+         élément, mêmes IDs, même JS (juste plus bas dans ce fichier) —
+         seulement sa position dans le DOM change, pour qu'il reste monté
+         en permanence comme enfant direct de .scene, peu importe lequel
+         de #sceneRangee/#sequenceIdentite/#menuPrincipal est actif. -->
     <div class="selecteur-langue invite" id="selecteurLangue">
       <div class="sl-fond" id="slFond"></div>
 
@@ -811,7 +821,6 @@
         <p class="sl-vide" id="slVide" hidden>Aucune langue trouvée</p>
       </div>
     </div>
-   </div>
 
   <!-- 🐛 CORRIGÉ (2 allers-retours plus tard) : #sequenceIdentite et le
        lien "cours privés" restent ICI, À L'INTÉRIEUR de .scene — pas à

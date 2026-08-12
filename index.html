@@ -455,42 +455,37 @@
   /* ==================================================================
      Sélecteur de langue — déclencheur + panneau grille
 
-     Le déclencheur est un vrai élément flex, frère de .personnages
-     dans .scene (gap fixe entre les deux, voir .scene ci-dessus) —
-     plus de positionnement en pourcentage du viewport, donc plus de
-     dérive selon la largeur d'écran. `order: -1` le place visuellement
-     à GAUCHE du personnage sans toucher à l'ordre du DOM (accessibilité
-     inchangée).
+     🐛 CORRIGÉ (retour Raphaël) : le déclencheur vivait autrefois dans
+     .scene-rangee (flex EN LIGNE avec .personnages), où `order: -1` le
+     plaçait bien à GAUCHE du personnage. Une session précédente l'a
+     sorti de .scene-rangee pour qu'il reste monté en permanence, même
+     hors de l'écran d'accueil (sinon impossible de changer de langue
+     depuis la séquence identité ou le menu principal) — mais son
+     nouveau parent, .scene, est un conteneur flex EN COLONNE : le même
+     `order: -1` n'y signifie plus "à gauche" mais "en haut", d'où le
+     bouton qui atterrissait tout seul en haut de l'écran, détaché des
+     personnages.
 
-     Le panneau (.sl-panneau) a deux comportements distincts, séparés
-     par largeur d'écran :
-       - en dessous de 1200px : recouvrement centré plein écran (comme
-         avant sur mobile) — accepté même si ça passe par-dessus le
-         personnage, cf. échange précédent ;
-       - à partir de 1200px : panneau ancré qui s'ouvre vers la GAUCHE
-         du déclencheur, donc à l'opposé du personnage — la marge
-         disponible à 1200px+ est calculée pour qu'il ne puisse
-         jamais toucher le personnage ni sortir de l'écran.
+     Solution : sortir complètement le déclencheur du flux flex (plus
+     aucune dépendance à un `order` ou à la présence de .personnages) et
+     l'ancrer en `position: fixed` dans le coin supérieur gauche de
+     l'ÉCRAN ENTIER. Ça le garde "à gauche" sur les trois écrans
+     (accueil, séquence identité, menu principal), de façon identique et
+     sans recalcul, puisqu'il ne dépend plus du layout autour de lui.
+
+     Le panneau (.sl-panneau) n'a donc plus qu'UN SEUL comportement, à
+     toutes les largeurs : recouvrement centré plein écran. L'ancien
+     mode "dropdown ancré s'ouvrant à gauche du déclencheur" (dès
+     1200px) supposait de la place disponible à gauche du bouton — ce
+     qui n'est plus vrai maintenant que celui-ci est planté dans le coin
+     de l'écran, donc ce mode a été retiré plutôt que raccommodé.
      ================================================================== */
 
   .selecteur-langue {
-    position: relative;
-    order: -1;
-    flex-shrink: 0;
+    position: fixed;
+    top: 20px;
+    left: 20px;
     z-index: 10;
-  }
-
-  /* Petit pont invisible entre le déclencheur et le panneau : évite
-     que la souris "sorte" de la zone survolée pendant le trajet et
-     ferme le panneau par erreur. */
-  .selecteur-langue::after {
-    content: "";
-    position: absolute;
-    top: 50%;
-    right: 100%;
-    width: 18px;
-    height: 140%;
-    transform: translateY(-50%);
   }
 
   .sl-declencheur {
@@ -552,9 +547,8 @@
   /* ---------- Panneau (grille) ---------- */
 
   .sl-panneau {
-    /* Défaut (< 1200px) : recouvrement centré plein écran, cf.
-       commentaire plus haut — voir le bloc @media (min-width: 1200px)
-       plus bas pour le mode « panneau ancré » du grand écran. */
+    /* Seul mode désormais, à toutes les largeurs : recouvrement centré
+       plein écran, cf. commentaire plus haut sur .selecteur-langue. */
     position: fixed;
     top: 50%;
     left: 50%;
@@ -665,9 +659,14 @@
   }
 
   /* ---------- Fond estompé ----------
-     Visible par défaut (mode recouvrement plein écran) ; désactivé
-     à partir de 1200px, où le panneau devient un dropdown ancré qui
-     n'a pas besoin d'assombrir la scène. */
+     Toujours actif : le panneau n'a plus qu'un seul mode (recouvrement
+     centré plein écran, à toutes les largeurs), donc le fond assombri
+     aussi. Il fait aussi partie de la zone survolée (.selecteur-langue
+     mouseenter/mouseleave, voir JS) : une fois ouvert, il couvre tout
+     l'écran, donc le trajet de la souris depuis le déclencheur (coin
+     supérieur gauche) jusqu'au panneau (centre) reste toujours à
+     l'intérieur de la zone survolée et ne referme pas le panneau en
+     route. */
 
   .sl-fond {
     display: block;
@@ -687,36 +686,6 @@
 
   @media (max-width: 460px) {
     .personnages { width: min(70vw, 320px); }
-  }
-
-  /* ==================================================================
-     À partir de 1200px : le panneau devient un dropdown ancré au
-     déclencheur, qui s'ouvre vers la GAUCHE — donc à l'opposé du
-     personnage, qui est toujours à sa droite (voir .scene / order:-1
-     plus haut). Le seuil de 1200px n'est pas arbitraire : à cette
-     largeur, la marge disponible à gauche du déclencheur (une fois
-     .scene centrée) dépasse toujours la largeur du panneau (280px)
-     + son décalage (14px), donc le panneau ne peut ni chevaucher le
-     personnage ni sortir de l'écran.
-     ================================================================== */
-
-  @media (min-width: 1200px) {
-    .sl-fond { display: none; }
-
-    .sl-panneau {
-      position: absolute;
-      top: 50%;
-      left: auto;
-      right: calc(100% + 14px);
-      transform: translateY(-50%) scale(0.85);
-      transform-origin: right center;
-      width: 280px;
-      max-height: min(62vh, 460px);
-    }
-
-    .selecteur-langue.ouvert .sl-panneau {
-      transform: translateY(-50%) scale(1);
-    }
   }
 </style>
 </head>
@@ -797,14 +766,17 @@
 
    </div>
 
-    <!-- 🆕 (retour Raphaël) : déplacé hors de #sceneRangee — il y vivait
-         depuis le début, donc il disparaissait dès qu'on quittait l'écran
-         d'accueil (display:none sur son parent), impossible de changer de
-         langue depuis la séquence d'identité ou le menu principal. Même
-         élément, mêmes IDs, même JS (juste plus bas dans ce fichier) —
-         seulement sa position dans le DOM change, pour qu'il reste monté
+    <!-- Déplacé hors de #sceneRangee — il y vivait depuis le début, donc
+         il disparaissait dès qu'on quittait l'écran d'accueil
+         (display:none sur son parent), impossible de changer de langue
+         depuis la séquence d'identité ou le menu principal. Reste monté
          en permanence comme enfant direct de .scene, peu importe lequel
-         de #sceneRangee/#sequenceIdentite/#menuPrincipal est actif. -->
+         de #sceneRangee/#sequenceIdentite/#menuPrincipal est actif.
+         🐛 CORRIGÉ (retour Raphaël) : ce changement de parent l'avait
+         fait atterrir en haut de l'écran au lieu de rester à gauche
+         (voir le long commentaire CSS sur .selecteur-langue) — il est
+         maintenant en `position: fixed` dans le coin supérieur gauche
+         de l'écran, indépendant du flex de .scene. -->
     <div class="selecteur-langue invite" id="selecteurLangue">
       <div class="sl-fond" id="slFond"></div>
 

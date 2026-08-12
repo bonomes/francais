@@ -1265,7 +1265,15 @@
   }
   .carte-info .titre-trad:empty { display: none; margin: 0 0 8px; }
 
-  .carte-info button {
+  /* 🆕 (retour Raphaël, capture) : .carte-info button ciblait TOUS les
+     <button> de .carte-info, y compris .carte-info-fermer (qui en est
+     un aussi, mais un enfant direct de .carte-info, pas de
+     .carte-info-corps) — le bouton fermer héritait donc du padding
+     10px 30px et du fond plein pêche pensés pour "Commencer", d'où la
+     grosse pilule pleine à la place du petit cercle discret, avec son
+     × devenu minuscule et peu visible dedans. Resserré à
+     .carte-info-corps, qui ne contient que le vrai bouton CTA. */
+  .carte-info-corps button {
     font-family: 'Baloo 2', sans-serif;
     font-size: 0.98rem;
     font-weight: 700;
@@ -1279,15 +1287,15 @@
     box-shadow: 0 4px 0 var(--peche-ombre);
     transition: transform 0.12s ease, box-shadow 0.12s ease;
   }
-  .carte-info button:hover { transform: translateY(2px); box-shadow: 0 2px 0 var(--peche-ombre); }
-  .carte-info button:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--peche-ombre); }
+  .carte-info-corps button:hover { transform: translateY(2px); box-shadow: 0 2px 0 var(--peche-ombre); }
+  .carte-info-corps button:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--peche-ombre); }
 
-  .carte-info button.examen-bouton {
+  .carte-info-corps button.examen-bouton {
     background: var(--or);
     box-shadow: 0 4px 0 var(--or-ombre);
   }
-  .carte-info button.examen-bouton:hover { box-shadow: 0 2px 0 var(--or-ombre); }
-  .carte-info button.examen-bouton:active { box-shadow: 0 1px 0 var(--or-ombre); }
+  .carte-info-corps button.examen-bouton:hover { box-shadow: 0 2px 0 var(--or-ombre); }
+  .carte-info-corps button.examen-bouton:active { box-shadow: 0 1px 0 var(--or-ombre); }
 
   .carte-info .indice {
     display: flex;

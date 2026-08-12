@@ -504,6 +504,21 @@
     z-index: 10;
   }
 
+  /* Anneau invisible autour du déclencheur — voir commentaire HTML
+     au-dessus de #zoneApercuGauche. Dimensions du bouton réel (~75px
+     × 38px, cf. .sl-declencheur) + ~40px de marge de chaque côté
+     (environ 1cm à l'écran) ; z-index 9, juste sous le bouton (10),
+     pour ne jamais lui voler le survol/clic. */
+  .zone-apercu-gauche {
+    position: fixed;
+    top: calc(280px - 40px);
+    left: calc(20px - 40px);
+    width: calc(75px + 80px);
+    height: calc(38px + 80px);
+    z-index: 9;
+    pointer-events: auto;
+  }
+
   .sl-declencheur {
     display: flex;
     align-items: center;
@@ -809,6 +824,22 @@
         <p class="sl-vide" id="slVide" hidden>Aucune langue trouvée</p>
       </div>
     </div>
+
+    <!-- 🆕 (retour Raphaël) : zone de survol/tap ÉLARGIE autour du
+         déclencheur — UNIQUEMENT pour montrer la pose "Keb et Bek
+         regardent vers la gauche" (#imgGauche), SANS ouvrir le panneau
+         (qui garde son propre survol inchangé, limité au bouton réel).
+         Élément séparé de #selecteurLangue plutôt qu'un simple
+         agrandissement de sa zone de survol : agrandir #selecteurLangue
+         lui-même aurait aussi élargi la zone qui OUVRE le panneau (même
+         gestionnaire mouseenter), ce qui n'est pas ce qui est demandé.
+         En z-index juste en dessous du bouton (voir CSS) pour ne jamais
+         intercepter un clic/survol destiné au bouton lui-même — cette
+         zone ne réagit que sur l'anneau tout autour.
+         N'agit que sur l'écran d'accueil (seul endroit où #imgGauche
+         et .personnages existent visuellement) — voir la garde dans le
+         JS plus bas. -->
+    <div class="zone-apercu-gauche" id="zoneApercuGauche" aria-hidden="true"></div>
 
   <!-- 🐛 CORRIGÉ (2 allers-retours plus tard) : #sequenceIdentite et le
        lien "cours privés" restent ICI, À L'INTÉRIEUR de .scene — pas à
@@ -1214,6 +1245,7 @@
   const declencheur = document.getElementById('slDeclencheur');
   const code = document.getElementById('slCode');
   const fond = document.getElementById('slFond');
+  const zoneApercuGauche = document.getElementById('zoneApercuGauche');
   const personnages = document.getElementById('personnages');
   const imgNeutre = document.getElementById('imgNeutre');
   const imgGauche = document.getElementById('imgGauche');
@@ -1726,6 +1758,64 @@
   // Survol de toute la zone (déclencheur + pont + panneau) : ouvre.
   zone.addEventListener('mouseenter', ouvrir);
   zone.addEventListener('mouseleave', programmerFermeture);
+
+  // ---------- Anneau de survol/tap élargi (juste la pose, pas le panneau) ----------
+  //
+  // 🆕 (retour Raphaël) : #zoneApercuGauche (voir HTML/CSS) est un
+  // anneau invisible d'environ 1cm tout autour du déclencheur. Il ne
+  // touche JAMAIS à .ouvert (donc n'ouvre jamais le panneau) — il
+  // bascule seulement vers la pose "Keb et Bek regardent vers la
+  // gauche" (imgGauche), pour que le geste soit plus facile à
+  // découvrir qu'un tout petit bouton isolé dans le coin de l'écran.
+  //
+  // Garde sur #sceneRangee : n'agit que sur l'écran d'ACCUEIL, seul
+  // endroit où #imgGauche/.personnages existent visuellement (sur les
+  // autres écrans, #sceneRangee passe en display:none — voir
+  // demarrerIdentiteSiPremiereFois()/demarrerMenuPrincipal()) ; lu à
+  // chaque survol plutôt que mis en cache, pour rester exact même si
+  // l'écran change pendant que la page est ouverte.
+  function surAccueil() {
+    const sr = document.getElementById('sceneRangee');
+    return !!sr && sr.style.display !== 'none';
+  }
+
+  let apercuGaucheActif = false;
+
+  function survolApercuGaucheDebut() {
+    if (!surAccueil()) return;
+    // Ne dispute rien d'autre déjà affiché (panneau ouvert, mode
+    // secret, ou survol "Bonjour !" en cours sur les personnages).
+    if (estOuvert() || modeSecretActif() || hoverBonjourActif) return;
+    apercuGaucheActif = true;
+    afficherImage(imgGauche);
+  }
+
+  function survolApercuGaucheFin() {
+    if (!apercuGaucheActif) return;
+    apercuGaucheActif = false;
+    if (!estOuvert() && !modeSecretActif() && !hoverBonjourActif) afficherImage(imgNeutre);
+  }
+
+  zoneApercuGauche.addEventListener('mouseenter', survolApercuGaucheDebut);
+  zoneApercuGauche.addEventListener('mouseleave', survolApercuGaucheFin);
+
+  // Tactile : pas de survol, donc un tap dans l'anneau affiche la pose
+  // (un tap AILLEURS referme, jamais un second tap au même endroit) —
+  // même patron que .personnages/survolBonjourDebut plus haut.
+  // 🐛 Une première version « bascule » (tap referme si déjà actif) a dû
+  // être abandonnée : mouseenter se déclenche juste avant click, même
+  // au doigt sur la plupart des navigateurs mobiles, donc le tap voyait
+  // l'aperçu déjà actif (via mouseenter) et le refermait aussitôt.
+  zoneApercuGauche.addEventListener('click', (e) => {
+    if (!surAccueil()) return;
+    if (apercuGaucheActif) return; // déjà affiché (survol en cours) : rien à faire
+    e.stopPropagation();
+    survolApercuGaucheDebut();
+  });
+
+  document.addEventListener('click', (e) => {
+    if (apercuGaucheActif && !zoneApercuGauche.contains(e.target)) survolApercuGaucheFin();
+  });
 
   // Focus clavier : ouvre aussi, pour l'accessibilité.
   declencheur.addEventListener('focus', ouvrir);

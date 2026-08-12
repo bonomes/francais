@@ -468,10 +468,26 @@
 
      Solution : sortir complètement le déclencheur du flux flex (plus
      aucune dépendance à un `order` ou à la présence de .personnages) et
-     l'ancrer en `position: fixed` dans le coin supérieur gauche de
-     l'ÉCRAN ENTIER. Ça le garde "à gauche" sur les trois écrans
-     (accueil, séquence identité, menu principal), de façon identique et
-     sans recalcul, puisqu'il ne dépend plus du layout autour de lui.
+     l'ancrer en `position: fixed` à GAUCHE de l'ÉCRAN ENTIER. Ça le
+     garde "à gauche" sur les trois écrans (accueil, séquence identité,
+     menu principal), de façon identique et sans recalcul, puisqu'il ne
+     dépend plus du layout autour de lui.
+
+     🐛 CORRIGÉ (2ᵉ retour Raphaël) : `top: 20px` le plaçait juste sous
+     le coin supérieur gauche — collision directe avec le bouton "×"
+     (.iden-btn-quitter, voir identite-eleve.css, lui-même en
+     position:fixed;top:14px;left:14px) affiché pendant toute la
+     séquence identité : les deux se chevauchaient. Descendu à
+     `top: 280px`, mesuré (via Playwright, capture d'écran à l'appui)
+     pour tomber au niveau des BRAS des personnages plutôt que de leur
+     tête — dégage largement le bouton "×" (qui occupe 14–56px) et
+     retombe visuellement au niveau des bras aussi bien sur l'écran
+     d'accueil (.personnages) que sur la séquence identité
+     (.iden-personnages), malgré leurs mises en page différentes. Une
+     valeur unique ne peut pas suivre les bras au pixel près sur TOUTES
+     les tailles d'écran (la mesure réelle varie d'environ 256px à
+     330px selon l'écran et la hauteur de viewport testées) — 280px est
+     le compromis qui les couvre toutes le plus fidèlement.
 
      Le panneau (.sl-panneau) n'a donc plus qu'UN SEUL comportement, à
      toutes les largeurs : recouvrement centré plein écran. L'ancien
@@ -483,7 +499,7 @@
 
   .selecteur-langue {
     position: fixed;
-    top: 20px;
+    top: 280px;
     left: 20px;
     z-index: 10;
   }

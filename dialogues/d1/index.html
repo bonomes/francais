@@ -1341,6 +1341,16 @@
       id: 'd1_e2',
       image: '../../images/dialogues/d1/d1_05d_sandwich_.png',
       reponse: ['un', 'sandwich'],
+      // 🆕 (retour Raphaël, 13-08-2026) : "le sandwich" est une réponse
+      // tout aussi valable à "Qu'est-ce que c'est ?" que "un sandwich"
+      // — la question reste telle quelle, mais on accepte maintenant les
+      // deux. `reponsesAlternatives` : autres suites de mots acceptées
+      // comme entièrement correctes, en plus de `reponse`. Voir
+      // reponsesAcceptees() plus bas (utilisée par les deux modes) ;
+      // en mode facile (mots à choisir), chaque alternative doit avoir
+      // la MÊME longueur que `reponse`, car nbAChoisir s'appuie sur
+      // ex.reponse.length pour savoir quand déclencher la vérification.
+      reponsesAlternatives: [['le', 'sandwich']],
       distracteurs: ['le', 'des'],
       instruction: {
         fr: 'Regarde l\u2019image. Qu\u2019est-ce que c\u2019est\u00A0?',
@@ -1469,6 +1479,17 @@
     }
     const correct = i === reponseAttendue.length && motsSaisis.length === reponseAttendue.length;
     return { correct: correct, indexErreur: i };
+  }
+
+  // 🆕 Réponses acceptées pour un exercice : la réponse principale
+  // (ex.reponse), plus toute alternative entièrement correcte déclarée
+  // dans ex.reponsesAlternatives (voir note sur d1_e2 ci-dessus).
+  // Toujours au moins un élément (ex.reponse). Utilisée par les deux
+  // modes de vérification (difficile : creerZoneDifficile ; facile :
+  // creerZoneFacile), pour qu'un exercice à réponses multiples se
+  // comporte pareil dans les deux modes sans dupliquer la liste.
+  function reponsesAcceptees(ex) {
+    return [ex.reponse].concat(ex.reponsesAlternatives || []);
   }
 
   function traductionDeMot(mot) {
@@ -2049,11 +2070,23 @@
 
     function verifier() {
       const saisieComplete = motsAcquis.join(' ') + (motsAcquis.length ? ' ' : '') + champ.value;
-      const resultat = evaluerReponseExercice(ex.reponse, saisieComplete);
       essais++;
 
-      if (resultat.correct) {
-        champ.value = ex.reponse.join(' ');
+      // 🆕 Teste la saisie contre chaque réponse acceptée (principale +
+      // alternatives, voir reponsesAcceptees). Dès qu'une correspond
+      // entièrement, c'est gagné. Sinon, on garde pour la suite (chips
+      // de progrès) la réponse qui a le mieux avancé — utile si l'élève
+      // commence à taper une alternative valable (ex. "le sandwich")
+      // plutôt que la réponse principale : son progrès n'est pas perdu.
+      let meilleurResultat = null;
+      let meilleureReponse = ex.reponse;
+      reponsesAcceptees(ex).forEach(function (reponseCandidate) {
+        const resultat = evaluerReponseExercice(reponseCandidate, saisieComplete);
+        if (resultat.correct) { meilleurResultat = resultat; meilleureReponse = reponseCandidate; }
+      });
+
+      if (meilleurResultat && meilleurResultat.correct) {
+        champ.value = meilleureReponse.join(' ');
         champ.classList.remove('fautive');
         champ.classList.add('correcte');
         champ.disabled = true;
@@ -2064,8 +2097,14 @@
         return;
       }
 
-      // Progrès partiel : on verrouille ce qui est déjà juste.
-      motsAcquis = ex.reponse.slice(0, resultat.indexErreur);
+      // Aucune réponse acceptée n'est encore complète : le progrès
+      // partiel (chips) reste calculé sur la réponse PRINCIPALE
+      // uniquement (jamais une alternative) — sinon les chips affichés
+      // pourraient mélanger des mots de deux formulations différentes,
+      // en désaccord avec le texte "La réponse était : ..." plus bas,
+      // qui montre toujours ex.reponse.
+      const resultatPrincipal = evaluerReponseExercice(ex.reponse, saisieComplete);
+      motsAcquis = ex.reponse.slice(0, resultatPrincipal.indexErreur);
       chips.innerHTML = '';
       motsAcquis.forEach(function (mot) {
         const chip = document.createElement('span');

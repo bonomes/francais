@@ -191,16 +191,33 @@
   // Retourne la session (ou null) — jamais d'exception qui remonte, même
   // philosophie que clientOuAutoCree()/deconnecter() : un échec réseau
   // laisse simplement la page en mode invité plutôt que de la bloquer.
+  // 🐛 CORRIGÉ (13-08-2026, signalé par Raphaël) : dernierProfilConnu()
+  // était fait confiance aveuglément, sans jamais vérifier qu'il
+  // appartenait bien au compte ACTUELLEMENT connecté. Sur un navigateur
+  // ayant déjà servi à tester un autre compte, kebbek_dernier_profil
+  // pointait encore vers l'eleve_id de cet autre compte — RLS bloquait
+  // alors silencieusement la lecture (0 ligne, aucune erreur), et
+  // lireProgression() paraissait juste vide, faisant croire qu'aucun
+  // chapitre n'était complété alors que la progression réelle existait
+  // bel et bien pour le bon profil. Repéré avec deux profils appelés
+  // « Raphaël » sur deux comptes différents, où rien à l'écran (même
+  // prénom affiché) ne trahissait la confusion. Le repli est maintenant
+  // toujours validé contre profilsDuCompte() du compte courant avant
+  // d'être utilisé ; un dernier-profil qui n'appartient plus à ce compte
+  // est traité comme absent (repli sur l'auto-sélection à profil unique,
+  // ou aucun profil actif si plusieurs — comportement déjà existant pour
+  // ce cas, voir note plus bas dans parcours.html).
   async function restaurerSessionEtProfil() {
     try {
       await initSession();
       if (sessionActuelle) {
+        const profils = await profilsDuCompte();
         const dernier = dernierProfilConnu();
-        if (dernier) {
+        const dernierValide = dernier && profils.some(function (p) { return p.id === dernier; });
+        if (dernierValide) {
           definirProfilActif(dernier);
-        } else {
-          const profils = await profilsDuCompte();
-          if (profils.length === 1) definirProfilActif(profils[0].id);
+        } else if (profils.length === 1) {
+          definirProfilActif(profils[0].id);
         }
       }
     } catch (e) {

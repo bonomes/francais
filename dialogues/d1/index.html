@@ -493,6 +493,38 @@
   }
   .iden-mot-vole.en-vol { transform: translate(var(--vol-dx), var(--vol-dy)) scale(0.3); opacity: 0; }
 
+  /* 🆕 Récompense P$/PB à la section exercices (demande de Raphaël,
+     session du 13-08-2026) : un petit badge apparaît près du bouton
+     Terminer pour indiquer QUAND et COMBIEN de P$/PB viennent d'être
+     gagnés (uniquement quand il y a effectivement un gain — voir
+     afficherRecompenseEtEnvoyerAuSac plus bas), puis s'envole vers
+     #sacBouton — même mécanique de vol que .iden-mot-vole ci-dessus,
+     dans une classe séparée pour ne jamais se confondre avec le vol
+     des mots. */
+  .recompense-toast {
+    position: fixed;
+    z-index: 260;
+    left: 50%;
+    background: #FFFFFF;
+    color: var(--peche-fonce);
+    font-weight: 700;
+    font-size: 0.95rem;
+    padding: 10px 18px;
+    border-radius: 999px;
+    box-shadow: 0 4px 16px var(--ombre);
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transform: translate(-50%, 12px) scale(0.85);
+    transition: transform 0.35s cubic-bezier(.34, 1.56, .64, 1), opacity 0.35s ease;
+  }
+  .recompense-toast.montre { opacity: 1; transform: translate(-50%, 0) scale(1); }
+  .recompense-toast.en-vol {
+    transition: transform 0.55s cubic-bezier(.4, 0, .3, 1), opacity 0.55s ease;
+    transform: translate(var(--vol-dx), var(--vol-dy)) scale(0.3);
+    opacity: 0;
+  }
+
   .iden-tooltip-mot {
     position: absolute;
     left: 50%;
@@ -711,6 +743,25 @@
     cursor: pointer;
     padding: 4px;
   }
+
+  /* 🆕 Lien de bascule tuiles ↔ saisie manuelle (demande de Raphaël,
+     session du 13-08-2026) — même habillage discret que
+     .exercice-btn-recommencer (jamais une pilule pleine : c'est une
+     option annexe, pas l'action principale de la carte), aligné à
+     gauche sous la banque de mots. */
+  .exercice-lien-bascule {
+    border: none;
+    background: transparent;
+    color: var(--brun-clair, #8A7364);
+    font-family: inherit;
+    font-weight: 700;
+    font-size: 0.78rem;
+    text-decoration: underline;
+    cursor: pointer;
+    padding: 4px;
+    align-self: flex-start;
+  }
+  .exercice-lien-bascule:hover { color: var(--peche-fonce); }
 
   /* 🆕 Remarque affichée une fois les 4 exercices réussis en mode
      difficile — deuxième condition de déblocage de « Le sandwich de
@@ -1303,26 +1354,26 @@
   // Textes d'interface (boutons, titres de pile) dans la langue de
   // l'apprenant, dans les 19 langues du site.
   const INTERFACE = {
-    fr: { precedent: 'Précédent', continuer: 'Continuer', terminer: 'Terminer', ceQuiAEteDit: 'Ce qui a été dit', aRetenir: 'À retenir' , afficherTrad: 'Afficher la traduction', cacherTrad: 'Cacher la traduction', exercicesTitre: 'On s\u2019entraîne\u00A0?', exercicesIntro: 'Pas d\u2019examen ici — juste deux petites mises en situation pour ancrer ce que tu viens de voir.', niveauFacile: 'Facile', niveauDifficile: 'Difficile', boutonVerifier: 'Vérifier', feedbackCorrect: 'C\u2019est ça\u00A0!', feedbackPresque: 'Presque\u00A0! Il manque un mot\u00A0:', reponseEtait: 'La réponse était\u00A0:', placeholderReponse: 'Écris ta réponse ici…', boutonRecommencer: 'Recommencer', remarqueQuatreDifficile: 'Bravo\u00A0! Tu as réussi les quatre exercices en mode difficile\u00A0\u2014\u00A0une belle étape de franchie.', niveauGlobalLabel: 'Niveau\u00A0:', raccourciExercices: 'Passer aux exercices' },
-    en: { precedent: 'Back', continuer: 'Continue', terminer: 'Finish', ceQuiAEteDit: 'What was said', aRetenir: 'Good to know' , afficherTrad: 'Show translation', cacherTrad: 'Hide translation', exercicesTitre: 'Let\u2019s practice!', exercicesIntro: 'No test here — just two quick situations to help what you just saw sink in.', niveauFacile: 'Easy', niveauDifficile: 'Hard', boutonVerifier: 'Check', feedbackCorrect: 'That\u2019s it!', feedbackPresque: 'Almost! One word is missing:', reponseEtait: 'The answer was:', placeholderReponse: 'Type your answer here…', boutonRecommencer: 'Try again', remarqueQuatreDifficile: 'Nice work! You completed all four exercises in Hard mode \u2014 that\u2019s a real milestone.', niveauGlobalLabel: 'Level:', raccourciExercices: 'Skip to exercises' },
-    es: { precedent: 'Atrás', continuer: 'Continuar', terminer: 'Terminar', ceQuiAEteDit: 'Lo que se dijo', aRetenir: 'Para recordar' , afficherTrad: 'Mostrar traducción', cacherTrad: 'Ocultar traducción', exercicesTitre: '¡A practicar!', exercicesIntro: 'Nada de examen — solo cuatro situaciones rápidas para que se te quede lo que acabas de ver.', niveauFacile: 'Fácil', niveauDifficile: 'Difícil', boutonVerifier: 'Comprobar', feedbackCorrect: '¡Eso es!', feedbackPresque: '¡Casi! Falta una palabra:', reponseEtait: 'La respuesta era:', placeholderReponse: 'Escribe tu respuesta aquí…', boutonRecommencer: 'Intentar de nuevo', remarqueQuatreDifficile: '¡Muy bien\u00A0! Completaste los cuatro ejercicios en modo difícil \u2014 es un logro importante.', niveauGlobalLabel: 'Nivel:', raccourciExercices: 'Saltar a los ejercicios' },
-    it: { precedent: 'Indietro', continuer: 'Continua', terminer: 'Fine', ceQuiAEteDit: 'Cosa è stato detto', aRetenir: 'Da ricordare' , afficherTrad: 'Mostra traduzione', cacherTrad: 'Nascondi traduzione', exercicesTitre: 'Ci alleniamo?', exercicesIntro: 'Niente esame — solo quattro situazioni veloci per far restare quello che hai appena visto.', niveauFacile: 'Facile', niveauDifficile: 'Difficile', boutonVerifier: 'Verifica', feedbackCorrect: 'Esatto!', feedbackPresque: 'Quasi! Manca una parola:', reponseEtait: 'La risposta era:', placeholderReponse: 'Scrivi qui la tua risposta…', boutonRecommencer: 'Riprova', remarqueQuatreDifficile: 'Ottimo lavoro! Hai completato tutti e quattro gli esercizi in modalità difficile \u2014 un bel traguardo.', niveauGlobalLabel: 'Livello:', raccourciExercices: 'Vai agli esercizi' },
-    pt: { precedent: 'Voltar', continuer: 'Continuar', terminer: 'Terminar', ceQuiAEteDit: 'O que foi dito', aRetenir: 'A reter' , afficherTrad: 'Mostrar tradução', cacherTrad: 'Ocultar tradução', exercicesTitre: 'Vamos praticar?', exercicesIntro: 'Nada de exame — só quatro situações rápidas para fixar o que acabaste de ver.', niveauFacile: 'Fácil', niveauDifficile: 'Difícil', boutonVerifier: 'Verificar', feedbackCorrect: 'É isso!', feedbackPresque: 'Quase! Falta uma palavra:', reponseEtait: 'A resposta era:', placeholderReponse: 'Escreve aqui a tua resposta…', boutonRecommencer: 'Tentar outra vez', remarqueQuatreDifficile: 'Bom trabalho! Completaste os quatro exercícios no nível difícil \u2014 uma etapa importante.', niveauGlobalLabel: 'Nível:', raccourciExercices: 'Saltar para os exercícios' },
-    ca: { precedent: 'Enrere', continuer: 'Continua', terminer: 'Acaba', ceQuiAEteDit: 'El que s\u2019ha dit', aRetenir: 'Per recordar' , afficherTrad: 'Mostra la traducció', cacherTrad: 'Amaga la traducció', exercicesTitre: 'Practiquem?', exercicesIntro: 'Res d\u2019examen — només quatre situacions ràpides perquè se\u2019t quedi el que acabes de veure.', niveauFacile: 'Fàcil', niveauDifficile: 'Difícil', boutonVerifier: 'Comprova', feedbackCorrect: 'Això mateix!', feedbackPresque: 'Quasi! Falta una paraula:', reponseEtait: 'La resposta era:', placeholderReponse: 'Escriu la teva resposta aquí…', boutonRecommencer: 'Torna-ho a provar', remarqueQuatreDifficile: 'Molt bé! Has completat els quatre exercicis en mode difícil \u2014 una bona fita.', niveauGlobalLabel: 'Nivell:', raccourciExercices: 'Salta als exercicis' },
-    eo: { precedent: 'Reen', continuer: 'Daŭrigi', terminer: 'Fini', ceQuiAEteDit: 'Kio estis dirita', aRetenir: 'Por memori' , afficherTrad: 'Montri tradukon', cacherTrad: 'Kaŝi tradukon', exercicesTitre: 'Ni ekzercu?', exercicesIntro: 'Neniu ekzameno ĉi tie — nur kvar rapidaj situacioj por ke tio, kion vi ĵus vidis, restu en la memoro.', niveauFacile: 'Facila', niveauDifficile: 'Malfacila', boutonVerifier: 'Kontroli', feedbackCorrect: 'Ĝuste!', feedbackPresque: 'Preskaŭ! Mankas unu vorto:', reponseEtait: 'La respondo estis:', placeholderReponse: 'Skribu vian respondon ĉi tie…', boutonRecommencer: 'Reprovi', remarqueQuatreDifficile: 'Bonege! Vi kompletigis ĉiujn kvar ekzercojn en malfacila reĝimo \u2014 vera atingo.', niveauGlobalLabel: 'Nivelo:', raccourciExercices: 'Salti al la ekzercoj' },
-    zh: { precedent: '返回', continuer: '继续', terminer: '完成', ceQuiAEteDit: '已说内容', aRetenir: '记住这个' , afficherTrad: '显示翻译', cacherTrad: '隐藏翻译', exercicesTitre: '来练习一下？', exercicesIntro: '不是考试——只是四个小情境，帮你记住刚才学的内容。', niveauFacile: '简单', niveauDifficile: '困难', boutonVerifier: '检查', feedbackCorrect: '对啦！', feedbackPresque: '差一点！还差一个词：', reponseEtait: '正确答案是：', placeholderReponse: '在这里输入你的答案……', boutonRecommencer: '再试一次', remarqueQuatreDifficile: '太棒了！你在困难模式下完成了全部四个练习——这是一个重要的里程碑。', niveauGlobalLabel: '难度：', raccourciExercices: '跳到练习' },
-    ja: { precedent: '戻る', continuer: '続ける', terminer: '終了', ceQuiAEteDit: '話されたこと', aRetenir: '覚えておこう' , afficherTrad: '翻訳を表示', cacherTrad: '翻訳を隠す', exercicesTitre: 'ちょっと練習しよう！', exercicesIntro: 'テストじゃないよ——今学んだことを覚えるための、ちょっとした場面が4つあるだけ。', niveauFacile: 'かんたん', niveauDifficile: 'むずかしい', boutonVerifier: '確認する', feedbackCorrect: 'そのとおり！', feedbackPresque: 'おしい！あと1語たりない：', reponseEtait: '正解は：', placeholderReponse: 'ここに答えを書いてね…', boutonRecommencer: 'もう一度', remarqueQuatreDifficile: 'すごい！むずかしいモードで4つの練習を全部クリアしたね \u2014 大きな一歩だよ。', niveauGlobalLabel: 'レベル：', raccourciExercices: '練習にスキップ' },
-    ko: { precedent: '뒤로', continuer: '계속', terminer: '완료', ceQuiAEteDit: '나눈 이야기', aRetenir: '기억해두기' , afficherTrad: '번역 보기', cacherTrad: '번역 숨기기', exercicesTitre: '연습해 볼까?', exercicesIntro: '시험이 아니에요 — 방금 배운 걸 익히도록 짧은 상황 네 개만 준비했어요.', niveauFacile: '쉬움', niveauDifficile: '어려움', boutonVerifier: '확인', feedbackCorrect: '맞아요!', feedbackPresque: '거의 다 왔어요! 단어 하나가 빠졌어요:', reponseEtait: '정답은:', placeholderReponse: '여기에 답을 써 보세요…', boutonRecommencer: '다시 해보기', remarqueQuatreDifficile: '잘했어요! 어려움 모드에서 네 가지 연습을 모두 완료했어요 \u2014 정말 큰 성과예요.', niveauGlobalLabel: '레벨:', raccourciExercices: '연습으로 건너뛰기' },
-    vi: { precedent: 'Quay lại', continuer: 'Tiếp tục', terminer: 'Hoàn thành', ceQuiAEteDit: 'Những gì đã nói', aRetenir: 'Ghi nhớ' , afficherTrad: 'Hiện bản dịch', cacherTrad: 'Ẩn bản dịch', exercicesTitre: 'Luyện tập một chút nhé?', exercicesIntro: 'Không phải bài kiểm tra đâu — chỉ là bốn tình huống nhỏ để nhớ những gì bạn vừa học.', niveauFacile: 'Dễ', niveauDifficile: 'Khó', boutonVerifier: 'Kiểm tra', feedbackCorrect: 'Đúng rồi!', feedbackPresque: 'Gần đúng rồi! Còn thiếu một từ:', reponseEtait: 'Đáp án là:', placeholderReponse: 'Viết câu trả lời của bạn ở đây…', boutonRecommencer: 'Thử lại', remarqueQuatreDifficile: 'Làm tốt lắm! Bạn đã hoàn thành cả bốn bài tập ở chế độ Khó \u2014 đó là một cột mốc thực sự.', niveauGlobalLabel: 'Mức độ:', raccourciExercices: 'Bỏ qua đến phần bài tập' },
-    ht: { precedent: 'Tounen', continuer: 'Kontinye', terminer: 'Fini', ceQuiAEteDit: 'Sa ki te di', aRetenir: 'Pou sonje' , afficherTrad: 'Montre tradiksyon', cacherTrad: 'Kache tradiksyon', exercicesTitre: 'Annou pratike?', exercicesIntro: 'Se pa yon egzamen — se sèlman kat ti sitiyasyon rapid pou ede ou sonje sa ou fèk wè a.', niveauFacile: 'Fasil', niveauDifficile: 'Difisil', boutonVerifier: 'Verifye', feedbackCorrect: 'Se sa!', feedbackPresque: 'Prèske! Manke yon mo:', reponseEtait: 'Repons lan te:', placeholderReponse: 'Ekri repons ou isit la…', boutonRecommencer: 'Eseye ankò', remarqueQuatreDifficile: 'Bon travay! Ou fin fè tout kat egzèsis yo nan mòd difisil \u2014 se yon bèl etap.', niveauGlobalLabel: 'Nivo:', raccourciExercices: 'Sote ale nan egzèsis yo' },
-    tl: { precedent: 'Bumalik', continuer: 'Magpatuloy', terminer: 'Tapusin', ceQuiAEteDit: 'Ang nasabi na', aRetenir: 'Dapat tandaan' , afficherTrad: 'Ipakita ang salin', cacherTrad: 'Itago ang salin', exercicesTitre: 'Mag-ensayo tayo?', exercicesIntro: 'Walang pagsusulit dito — apat na maiikling sitwasyon lang para maalala mo ang natutunan mo.', niveauFacile: 'Madali', niveauDifficile: 'Mahirap', boutonVerifier: 'Suriin', feedbackCorrect: 'Tama iyan!', feedbackPresque: 'Halos tama! Kulang ng isang salita:', reponseEtait: 'Ang sagot ay:', placeholderReponse: 'Isulat ang iyong sagot dito…', boutonRecommencer: 'Subukan ulit', remarqueQuatreDifficile: 'Ang galing! Natapos mo ang apat na ehersisyo sa Mahirap na antas \u2014 isa itong malaking tagumpay.', niveauGlobalLabel: 'Antas:', raccourciExercices: 'Lumaktaw sa mga ehersisyo' },
-    id: { precedent: 'Kembali', continuer: 'Lanjut', terminer: 'Selesai', ceQuiAEteDit: 'Yang sudah dikatakan', aRetenir: 'Perlu diingat' , afficherTrad: 'Tampilkan terjemahan', cacherTrad: 'Sembunyikan terjemahan', exercicesTitre: 'Yuk, latihan!', exercicesIntro: 'Bukan ujian kok — cuma empat situasi singkat biar apa yang baru kamu lihat makin nempel.', niveauFacile: 'Mudah', niveauDifficile: 'Sulit', boutonVerifier: 'Periksa', feedbackCorrect: 'Betul!', feedbackPresque: 'Hampir! Masih kurang satu kata:', reponseEtait: 'Jawabannya adalah:', placeholderReponse: 'Tulis jawabanmu di sini…', boutonRecommencer: 'Coba lagi', remarqueQuatreDifficile: 'Kerja bagus! Kamu berhasil menyelesaikan keempat latihan di mode Sulit \u2014 ini pencapaian yang keren.', niveauGlobalLabel: 'Level:', raccourciExercices: 'Lompat ke latihan' },
-    nl: { precedent: 'Terug', continuer: 'Verder', terminer: 'Klaar', ceQuiAEteDit: 'Wat er gezegd is', aRetenir: 'Om te onthouden' , afficherTrad: 'Vertaling tonen', cacherTrad: 'Vertaling verbergen', exercicesTitre: 'Zullen we oefenen?', exercicesIntro: 'Geen examen hoor — gewoon vier korte situaties om vast te houden wat je net hebt gezien.', niveauFacile: 'Makkelijk', niveauDifficile: 'Moeilijk', boutonVerifier: 'Controleren', feedbackCorrect: 'Dat is \u2019m!', feedbackPresque: 'Bijna! Er ontbreekt nog één woord:', reponseEtait: 'Het antwoord was:', placeholderReponse: 'Typ hier je antwoord…', boutonRecommencer: 'Opnieuw proberen', remarqueQuatreDifficile: 'Goed gedaan! Je hebt alle vier de oefeningen op het niveau Moeilijk voltooid \u2014 een mooie mijlpaal.', niveauGlobalLabel: 'Niveau:', raccourciExercices: 'Naar de oefeningen springen' },
-    de: { precedent: 'Zurück', continuer: 'Weiter', terminer: 'Fertig', ceQuiAEteDit: 'Was gesagt wurde', aRetenir: 'Zum Merken' , afficherTrad: 'Übersetzung anzeigen', cacherTrad: 'Übersetzung ausblenden', exercicesTitre: 'Lust zu üben?', exercicesIntro: 'Keine Prüfung — nur vier kurze Situationen, damit das Gelernte hängen bleibt.', niveauFacile: 'Leicht', niveauDifficile: 'Schwer', boutonVerifier: 'Prüfen', feedbackCorrect: 'Genau!', feedbackPresque: 'Fast! Ein Wort fehlt noch:', reponseEtait: 'Die Antwort war:', placeholderReponse: 'Schreib hier deine Antwort…', boutonRecommencer: 'Nochmal versuchen', remarqueQuatreDifficile: 'Gut gemacht! Du hast alle vier Übungen im Modus Schwer abgeschlossen \u2014 ein echter Meilenstein.', niveauGlobalLabel: 'Stufe:', raccourciExercices: 'Zu den Übungen springen' },
-    fa: { precedent: 'بازگشت', continuer: 'ادامه', terminer: 'پایان', ceQuiAEteDit: 'آنچه گفته شد', aRetenir: 'نکته\u200cی مهم' , afficherTrad: 'نمایش ترجمه', cacherTrad: 'پنهان کردن ترجمه', exercicesTitre: 'کمی تمرین کنیم؟', exercicesIntro: 'این امتحان نیست — فقط چهار موقعیت کوتاه برای اینکه چیزی که الان دیدی بهتر یادت بماند.', niveauFacile: 'آسان', niveauDifficile: 'سخت', boutonVerifier: 'بررسی', feedbackCorrect: 'درسته!', feedbackPresque: 'تقریباً! یک کلمه کم داری:', reponseEtait: 'جواب این بود:', placeholderReponse: 'پاسخت را اینجا بنویس…', boutonRecommencer: 'دوباره امتحان کن', remarqueQuatreDifficile: 'آفرین! هر چهار تمرین را در حالت سخت کامل کردی \u2014 این یک دستاورد واقعی است.', niveauGlobalLabel: 'سطح:', raccourciExercices: 'پرش به تمرین\u200cها' },
-    sv: { precedent: 'Tillbaka', continuer: 'Fortsätt', terminer: 'Klart', ceQuiAEteDit: 'Vad som sagts', aRetenir: 'Bra att veta' , afficherTrad: 'Visa översättning', cacherTrad: 'Dölj översättning', exercicesTitre: 'Ska vi öva?', exercicesIntro: 'Inget prov här — bara fyra snabba situationer så att det du just sett fastnar.', niveauFacile: 'Lätt', niveauDifficile: 'Svårt', boutonVerifier: 'Kontrollera', feedbackCorrect: 'Just det!', feedbackPresque: 'Nästan! Ett ord saknas:', reponseEtait: 'Svaret var:', placeholderReponse: 'Skriv ditt svar här…', boutonRecommencer: 'Försök igen', remarqueQuatreDifficile: 'Snyggt jobbat! Du klarade alla fyra övningarna på svårt läge \u2014 en riktig milstolpe.', niveauGlobalLabel: 'Nivå:', raccourciExercices: 'Hoppa till övningarna' },
-    no: { precedent: 'Tilbake', continuer: 'Fortsett', terminer: 'Ferdig', ceQuiAEteDit: 'Det som ble sagt', aRetenir: 'Verdt å huske' , afficherTrad: 'Vis oversettelse', cacherTrad: 'Skjul oversettelse', exercicesTitre: 'Skal vi øve litt?', exercicesIntro: 'Ingen prøve her — bare fire raske situasjoner for å feste det du nettopp så.', niveauFacile: 'Lett', niveauDifficile: 'Vanskelig', boutonVerifier: 'Sjekk', feedbackCorrect: 'Akkurat!', feedbackPresque: 'Nesten! Ett ord mangler:', reponseEtait: 'Svaret var:', placeholderReponse: 'Skriv svaret ditt her…', boutonRecommencer: 'Prøv igjen', remarqueQuatreDifficile: 'Bra jobbet! Du fullførte alle fire øvelsene på vanskelig nivå \u2014 en fin milepæl.', niveauGlobalLabel: 'Nivå:', raccourciExercices: 'Hopp til øvelsene' },
-    ru: { precedent: 'Назад', continuer: 'Далее', terminer: 'Готово', ceQuiAEteDit: 'Что было сказано', aRetenir: 'Важно запомнить', afficherTrad: 'Показать перевод', cacherTrad: 'Скрыть перевод', exercicesTitre: 'Потренируемся?', exercicesIntro: 'Это не экзамен — всего четыре коротких ситуации, чтобы закрепить то, что ты только что увидел(а).', niveauFacile: 'Легко', niveauDifficile: 'Сложно', boutonVerifier: 'Проверить', feedbackCorrect: 'Верно!', feedbackPresque: 'Почти! Не хватает одного слова:', reponseEtait: 'Правильный ответ:', placeholderReponse: 'Напиши свой ответ здесь…', boutonRecommencer: 'Попробовать снова', remarqueQuatreDifficile: 'Отлично! Ты выполнил(а) все четыре упражнения на сложном уровне \u2014 это настоящее достижение.', niveauGlobalLabel: 'Уровень:', raccourciExercices: 'Перейти к упражнениям' }
+    fr: { precedent: 'Précédent', continuer: 'Continuer', terminer: 'Terminer', ceQuiAEteDit: 'Ce qui a été dit', aRetenir: 'À retenir' , afficherTrad: 'Afficher la traduction', cacherTrad: 'Cacher la traduction', exercicesTitre: 'On s\u2019entraîne\u00A0?', exercicesIntro: 'Pas d\u2019examen ici — juste deux petites mises en situation pour ancrer ce que tu viens de voir.', niveauFacile: 'Facile', niveauDifficile: 'Difficile', boutonVerifier: 'Vérifier', feedbackCorrect: 'C\u2019est ça\u00A0!', feedbackPresque: 'Presque\u00A0! Il manque un mot\u00A0:', reponseEtait: 'La réponse était\u00A0:', placeholderReponse: 'Écris ta réponse ici…', boutonRecommencer: 'Recommencer', basculerVersTexte: 'Écrire la réponse plutôt', basculerVersTuiles: 'Revenir aux tuiles', remarqueQuatreDifficile: 'Bravo\u00A0! Tu as réussi les quatre exercices en mode difficile\u00A0\u2014\u00A0une belle étape de franchie.', niveauGlobalLabel: 'Niveau\u00A0:', raccourciExercices: 'Passer aux exercices' },
+    en: { precedent: 'Back', continuer: 'Continue', terminer: 'Finish', ceQuiAEteDit: 'What was said', aRetenir: 'Good to know' , afficherTrad: 'Show translation', cacherTrad: 'Hide translation', exercicesTitre: 'Let\u2019s practice!', exercicesIntro: 'No test here — just two quick situations to help what you just saw sink in.', niveauFacile: 'Easy', niveauDifficile: 'Hard', boutonVerifier: 'Check', feedbackCorrect: 'That\u2019s it!', feedbackPresque: 'Almost! One word is missing:', reponseEtait: 'The answer was:', placeholderReponse: 'Type your answer here…', boutonRecommencer: 'Try again', basculerVersTexte: 'Type the answer instead', basculerVersTuiles: 'Back to the tiles', remarqueQuatreDifficile: 'Nice work! You completed all four exercises in Hard mode \u2014 that\u2019s a real milestone.', niveauGlobalLabel: 'Level:', raccourciExercices: 'Skip to exercises' },
+    es: { precedent: 'Atrás', continuer: 'Continuar', terminer: 'Terminar', ceQuiAEteDit: 'Lo que se dijo', aRetenir: 'Para recordar' , afficherTrad: 'Mostrar traducción', cacherTrad: 'Ocultar traducción', exercicesTitre: '¡A practicar!', exercicesIntro: 'Nada de examen — solo cuatro situaciones rápidas para que se te quede lo que acabas de ver.', niveauFacile: 'Fácil', niveauDifficile: 'Difícil', boutonVerifier: 'Comprobar', feedbackCorrect: '¡Eso es!', feedbackPresque: '¡Casi! Falta una palabra:', reponseEtait: 'La respuesta era:', placeholderReponse: 'Escribe tu respuesta aquí…', boutonRecommencer: 'Intentar de nuevo', basculerVersTexte: 'Escribir la respuesta en su lugar', basculerVersTuiles: 'Volver a las fichas', remarqueQuatreDifficile: '¡Muy bien\u00A0! Completaste los cuatro ejercicios en modo difícil \u2014 es un logro importante.', niveauGlobalLabel: 'Nivel:', raccourciExercices: 'Saltar a los ejercicios' },
+    it: { precedent: 'Indietro', continuer: 'Continua', terminer: 'Fine', ceQuiAEteDit: 'Cosa è stato detto', aRetenir: 'Da ricordare' , afficherTrad: 'Mostra traduzione', cacherTrad: 'Nascondi traduzione', exercicesTitre: 'Ci alleniamo?', exercicesIntro: 'Niente esame — solo quattro situazioni veloci per far restare quello che hai appena visto.', niveauFacile: 'Facile', niveauDifficile: 'Difficile', boutonVerifier: 'Verifica', feedbackCorrect: 'Esatto!', feedbackPresque: 'Quasi! Manca una parola:', reponseEtait: 'La risposta era:', placeholderReponse: 'Scrivi qui la tua risposta…', boutonRecommencer: 'Riprova', basculerVersTexte: 'Scrivi invece la risposta', basculerVersTuiles: 'Torna alle tessere', remarqueQuatreDifficile: 'Ottimo lavoro! Hai completato tutti e quattro gli esercizi in modalità difficile \u2014 un bel traguardo.', niveauGlobalLabel: 'Livello:', raccourciExercices: 'Vai agli esercizi' },
+    pt: { precedent: 'Voltar', continuer: 'Continuar', terminer: 'Terminar', ceQuiAEteDit: 'O que foi dito', aRetenir: 'A reter' , afficherTrad: 'Mostrar tradução', cacherTrad: 'Ocultar tradução', exercicesTitre: 'Vamos praticar?', exercicesIntro: 'Nada de exame — só quatro situações rápidas para fixar o que acabaste de ver.', niveauFacile: 'Fácil', niveauDifficile: 'Difícil', boutonVerifier: 'Verificar', feedbackCorrect: 'É isso!', feedbackPresque: 'Quase! Falta uma palavra:', reponseEtait: 'A resposta era:', placeholderReponse: 'Escreve aqui a tua resposta…', boutonRecommencer: 'Tentar outra vez', basculerVersTexte: 'Escrever a resposta em vez disso', basculerVersTuiles: 'Voltar às peças', remarqueQuatreDifficile: 'Bom trabalho! Completaste os quatro exercícios no nível difícil \u2014 uma etapa importante.', niveauGlobalLabel: 'Nível:', raccourciExercices: 'Saltar para os exercícios' },
+    ca: { precedent: 'Enrere', continuer: 'Continua', terminer: 'Acaba', ceQuiAEteDit: 'El que s\u2019ha dit', aRetenir: 'Per recordar' , afficherTrad: 'Mostra la traducció', cacherTrad: 'Amaga la traducció', exercicesTitre: 'Practiquem?', exercicesIntro: 'Res d\u2019examen — només quatre situacions ràpides perquè se\u2019t quedi el que acabes de veure.', niveauFacile: 'Fàcil', niveauDifficile: 'Difícil', boutonVerifier: 'Comprova', feedbackCorrect: 'Això mateix!', feedbackPresque: 'Quasi! Falta una paraula:', reponseEtait: 'La resposta era:', placeholderReponse: 'Escriu la teva resposta aquí…', boutonRecommencer: 'Torna-ho a provar', basculerVersTexte: 'Escriure la resposta en comptes d’això', basculerVersTuiles: 'Tornar a les fitxes', remarqueQuatreDifficile: 'Molt bé! Has completat els quatre exercicis en mode difícil \u2014 una bona fita.', niveauGlobalLabel: 'Nivell:', raccourciExercices: 'Salta als exercicis' },
+    eo: { precedent: 'Reen', continuer: 'Daŭrigi', terminer: 'Fini', ceQuiAEteDit: 'Kio estis dirita', aRetenir: 'Por memori' , afficherTrad: 'Montri tradukon', cacherTrad: 'Kaŝi tradukon', exercicesTitre: 'Ni ekzercu?', exercicesIntro: 'Neniu ekzameno ĉi tie — nur kvar rapidaj situacioj por ke tio, kion vi ĵus vidis, restu en la memoro.', niveauFacile: 'Facila', niveauDifficile: 'Malfacila', boutonVerifier: 'Kontroli', feedbackCorrect: 'Ĝuste!', feedbackPresque: 'Preskaŭ! Mankas unu vorto:', reponseEtait: 'La respondo estis:', placeholderReponse: 'Skribu vian respondon ĉi tie…', boutonRecommencer: 'Reprovi', basculerVersTexte: 'Skribi la respondon anstataŭ', basculerVersTuiles: 'Reveni al la kaheloj', remarqueQuatreDifficile: 'Bonege! Vi kompletigis ĉiujn kvar ekzercojn en malfacila reĝimo \u2014 vera atingo.', niveauGlobalLabel: 'Nivelo:', raccourciExercices: 'Salti al la ekzercoj' },
+    zh: { precedent: '返回', continuer: '继续', terminer: '完成', ceQuiAEteDit: '已说内容', aRetenir: '记住这个' , afficherTrad: '显示翻译', cacherTrad: '隐藏翻译', exercicesTitre: '来练习一下？', exercicesIntro: '不是考试——只是四个小情境，帮你记住刚才学的内容。', niveauFacile: '简单', niveauDifficile: '困难', boutonVerifier: '检查', feedbackCorrect: '对啦！', feedbackPresque: '差一点！还差一个词：', reponseEtait: '正确答案是：', placeholderReponse: '在这里输入你的答案……', boutonRecommencer: '再试一次', basculerVersTexte: '改成手动输入', basculerVersTuiles: '返回方块', remarqueQuatreDifficile: '太棒了！你在困难模式下完成了全部四个练习——这是一个重要的里程碑。', niveauGlobalLabel: '难度：', raccourciExercices: '跳到练习' },
+    ja: { precedent: '戻る', continuer: '続ける', terminer: '終了', ceQuiAEteDit: '話されたこと', aRetenir: '覚えておこう' , afficherTrad: '翻訳を表示', cacherTrad: '翻訳を隠す', exercicesTitre: 'ちょっと練習しよう！', exercicesIntro: 'テストじゃないよ——今学んだことを覚えるための、ちょっとした場面が4つあるだけ。', niveauFacile: 'かんたん', niveauDifficile: 'むずかしい', boutonVerifier: '確認する', feedbackCorrect: 'そのとおり！', feedbackPresque: 'おしい！あと1語たりない：', reponseEtait: '正解は：', placeholderReponse: 'ここに答えを書いてね…', boutonRecommencer: 'もう一度', basculerVersTexte: '代わりに書いて答える', basculerVersTuiles: 'タイルに戻る', remarqueQuatreDifficile: 'すごい！むずかしいモードで4つの練習を全部クリアしたね \u2014 大きな一歩だよ。', niveauGlobalLabel: 'レベル：', raccourciExercices: '練習にスキップ' },
+    ko: { precedent: '뒤로', continuer: '계속', terminer: '완료', ceQuiAEteDit: '나눈 이야기', aRetenir: '기억해두기' , afficherTrad: '번역 보기', cacherTrad: '번역 숨기기', exercicesTitre: '연습해 볼까?', exercicesIntro: '시험이 아니에요 — 방금 배운 걸 익히도록 짧은 상황 네 개만 준비했어요.', niveauFacile: '쉬움', niveauDifficile: '어려움', boutonVerifier: '확인', feedbackCorrect: '맞아요!', feedbackPresque: '거의 다 왔어요! 단어 하나가 빠졌어요:', reponseEtait: '정답은:', placeholderReponse: '여기에 답을 써 보세요…', boutonRecommencer: '다시 해보기', basculerVersTexte: '대신 답을 입력하기', basculerVersTuiles: '타일로 돌아가기', remarqueQuatreDifficile: '잘했어요! 어려움 모드에서 네 가지 연습을 모두 완료했어요 \u2014 정말 큰 성과예요.', niveauGlobalLabel: '레벨:', raccourciExercices: '연습으로 건너뛰기' },
+    vi: { precedent: 'Quay lại', continuer: 'Tiếp tục', terminer: 'Hoàn thành', ceQuiAEteDit: 'Những gì đã nói', aRetenir: 'Ghi nhớ' , afficherTrad: 'Hiện bản dịch', cacherTrad: 'Ẩn bản dịch', exercicesTitre: 'Luyện tập một chút nhé?', exercicesIntro: 'Không phải bài kiểm tra đâu — chỉ là bốn tình huống nhỏ để nhớ những gì bạn vừa học.', niveauFacile: 'Dễ', niveauDifficile: 'Khó', boutonVerifier: 'Kiểm tra', feedbackCorrect: 'Đúng rồi!', feedbackPresque: 'Gần đúng rồi! Còn thiếu một từ:', reponseEtait: 'Đáp án là:', placeholderReponse: 'Viết câu trả lời của bạn ở đây…', boutonRecommencer: 'Thử lại', basculerVersTexte: 'Viết câu trả lời thay vào đó', basculerVersTuiles: 'Quay lại các ô từ', remarqueQuatreDifficile: 'Làm tốt lắm! Bạn đã hoàn thành cả bốn bài tập ở chế độ Khó \u2014 đó là một cột mốc thực sự.', niveauGlobalLabel: 'Mức độ:', raccourciExercices: 'Bỏ qua đến phần bài tập' },
+    ht: { precedent: 'Tounen', continuer: 'Kontinye', terminer: 'Fini', ceQuiAEteDit: 'Sa ki te di', aRetenir: 'Pou sonje' , afficherTrad: 'Montre tradiksyon', cacherTrad: 'Kache tradiksyon', exercicesTitre: 'Annou pratike?', exercicesIntro: 'Se pa yon egzamen — se sèlman kat ti sitiyasyon rapid pou ede ou sonje sa ou fèk wè a.', niveauFacile: 'Fasil', niveauDifficile: 'Difisil', boutonVerifier: 'Verifye', feedbackCorrect: 'Se sa!', feedbackPresque: 'Prèske! Manke yon mo:', reponseEtait: 'Repons lan te:', placeholderReponse: 'Ekri repons ou isit la…', boutonRecommencer: 'Eseye ankò', basculerVersTexte: 'Ekri repons lan pito', basculerVersTuiles: 'Retounen nan mo yo', remarqueQuatreDifficile: 'Bon travay! Ou fin fè tout kat egzèsis yo nan mòd difisil \u2014 se yon bèl etap.', niveauGlobalLabel: 'Nivo:', raccourciExercices: 'Sote ale nan egzèsis yo' },
+    tl: { precedent: 'Bumalik', continuer: 'Magpatuloy', terminer: 'Tapusin', ceQuiAEteDit: 'Ang nasabi na', aRetenir: 'Dapat tandaan' , afficherTrad: 'Ipakita ang salin', cacherTrad: 'Itago ang salin', exercicesTitre: 'Mag-ensayo tayo?', exercicesIntro: 'Walang pagsusulit dito — apat na maiikling sitwasyon lang para maalala mo ang natutunan mo.', niveauFacile: 'Madali', niveauDifficile: 'Mahirap', boutonVerifier: 'Suriin', feedbackCorrect: 'Tama iyan!', feedbackPresque: 'Halos tama! Kulang ng isang salita:', reponseEtait: 'Ang sagot ay:', placeholderReponse: 'Isulat ang iyong sagot dito…', boutonRecommencer: 'Subukan ulit', basculerVersTexte: 'Isulat na lang ang sagot', basculerVersTuiles: 'Bumalik sa mga tile', remarqueQuatreDifficile: 'Ang galing! Natapos mo ang apat na ehersisyo sa Mahirap na antas \u2014 isa itong malaking tagumpay.', niveauGlobalLabel: 'Antas:', raccourciExercices: 'Lumaktaw sa mga ehersisyo' },
+    id: { precedent: 'Kembali', continuer: 'Lanjut', terminer: 'Selesai', ceQuiAEteDit: 'Yang sudah dikatakan', aRetenir: 'Perlu diingat' , afficherTrad: 'Tampilkan terjemahan', cacherTrad: 'Sembunyikan terjemahan', exercicesTitre: 'Yuk, latihan!', exercicesIntro: 'Bukan ujian kok — cuma empat situasi singkat biar apa yang baru kamu lihat makin nempel.', niveauFacile: 'Mudah', niveauDifficile: 'Sulit', boutonVerifier: 'Periksa', feedbackCorrect: 'Betul!', feedbackPresque: 'Hampir! Masih kurang satu kata:', reponseEtait: 'Jawabannya adalah:', placeholderReponse: 'Tulis jawabanmu di sini…', boutonRecommencer: 'Coba lagi', basculerVersTexte: 'Ketik saja jawabannya', basculerVersTuiles: 'Kembali ke ubin', remarqueQuatreDifficile: 'Kerja bagus! Kamu berhasil menyelesaikan keempat latihan di mode Sulit \u2014 ini pencapaian yang keren.', niveauGlobalLabel: 'Level:', raccourciExercices: 'Lompat ke latihan' },
+    nl: { precedent: 'Terug', continuer: 'Verder', terminer: 'Klaar', ceQuiAEteDit: 'Wat er gezegd is', aRetenir: 'Om te onthouden' , afficherTrad: 'Vertaling tonen', cacherTrad: 'Vertaling verbergen', exercicesTitre: 'Zullen we oefenen?', exercicesIntro: 'Geen examen hoor — gewoon vier korte situaties om vast te houden wat je net hebt gezien.', niveauFacile: 'Makkelijk', niveauDifficile: 'Moeilijk', boutonVerifier: 'Controleren', feedbackCorrect: 'Dat is \u2019m!', feedbackPresque: 'Bijna! Er ontbreekt nog één woord:', reponseEtait: 'Het antwoord was:', placeholderReponse: 'Typ hier je antwoord…', boutonRecommencer: 'Opnieuw proberen', basculerVersTexte: 'Antwoord liever typen', basculerVersTuiles: 'Terug naar de tegels', remarqueQuatreDifficile: 'Goed gedaan! Je hebt alle vier de oefeningen op het niveau Moeilijk voltooid \u2014 een mooie mijlpaal.', niveauGlobalLabel: 'Niveau:', raccourciExercices: 'Naar de oefeningen springen' },
+    de: { precedent: 'Zurück', continuer: 'Weiter', terminer: 'Fertig', ceQuiAEteDit: 'Was gesagt wurde', aRetenir: 'Zum Merken' , afficherTrad: 'Übersetzung anzeigen', cacherTrad: 'Übersetzung ausblenden', exercicesTitre: 'Lust zu üben?', exercicesIntro: 'Keine Prüfung — nur vier kurze Situationen, damit das Gelernte hängen bleibt.', niveauFacile: 'Leicht', niveauDifficile: 'Schwer', boutonVerifier: 'Prüfen', feedbackCorrect: 'Genau!', feedbackPresque: 'Fast! Ein Wort fehlt noch:', reponseEtait: 'Die Antwort war:', placeholderReponse: 'Schreib hier deine Antwort…', boutonRecommencer: 'Nochmal versuchen', basculerVersTexte: 'Antwort stattdessen tippen', basculerVersTuiles: 'Zurück zu den Kacheln', remarqueQuatreDifficile: 'Gut gemacht! Du hast alle vier Übungen im Modus Schwer abgeschlossen \u2014 ein echter Meilenstein.', niveauGlobalLabel: 'Stufe:', raccourciExercices: 'Zu den Übungen springen' },
+    fa: { precedent: 'بازگشت', continuer: 'ادامه', terminer: 'پایان', ceQuiAEteDit: 'آنچه گفته شد', aRetenir: 'نکته\u200cی مهم' , afficherTrad: 'نمایش ترجمه', cacherTrad: 'پنهان کردن ترجمه', exercicesTitre: 'کمی تمرین کنیم؟', exercicesIntro: 'این امتحان نیست — فقط چهار موقعیت کوتاه برای اینکه چیزی که الان دیدی بهتر یادت بماند.', niveauFacile: 'آسان', niveauDifficile: 'سخت', boutonVerifier: 'بررسی', feedbackCorrect: 'درسته!', feedbackPresque: 'تقریباً! یک کلمه کم داری:', reponseEtait: 'جواب این بود:', placeholderReponse: 'پاسخت را اینجا بنویس…', boutonRecommencer: 'دوباره امتحان کن', basculerVersTexte: 'در عوض پاسخ را بنویس', basculerVersTuiles: 'بازگشت به کاشی‌ها', remarqueQuatreDifficile: 'آفرین! هر چهار تمرین را در حالت سخت کامل کردی \u2014 این یک دستاورد واقعی است.', niveauGlobalLabel: 'سطح:', raccourciExercices: 'پرش به تمرین\u200cها' },
+    sv: { precedent: 'Tillbaka', continuer: 'Fortsätt', terminer: 'Klart', ceQuiAEteDit: 'Vad som sagts', aRetenir: 'Bra att veta' , afficherTrad: 'Visa översättning', cacherTrad: 'Dölj översättning', exercicesTitre: 'Ska vi öva?', exercicesIntro: 'Inget prov här — bara fyra snabba situationer så att det du just sett fastnar.', niveauFacile: 'Lätt', niveauDifficile: 'Svårt', boutonVerifier: 'Kontrollera', feedbackCorrect: 'Just det!', feedbackPresque: 'Nästan! Ett ord saknas:', reponseEtait: 'Svaret var:', placeholderReponse: 'Skriv ditt svar här…', boutonRecommencer: 'Försök igen', basculerVersTexte: 'Skriv svaret istället', basculerVersTuiles: 'Tillbaka till brickorna', remarqueQuatreDifficile: 'Snyggt jobbat! Du klarade alla fyra övningarna på svårt läge \u2014 en riktig milstolpe.', niveauGlobalLabel: 'Nivå:', raccourciExercices: 'Hoppa till övningarna' },
+    no: { precedent: 'Tilbake', continuer: 'Fortsett', terminer: 'Ferdig', ceQuiAEteDit: 'Det som ble sagt', aRetenir: 'Verdt å huske' , afficherTrad: 'Vis oversettelse', cacherTrad: 'Skjul oversettelse', exercicesTitre: 'Skal vi øve litt?', exercicesIntro: 'Ingen prøve her — bare fire raske situasjoner for å feste det du nettopp så.', niveauFacile: 'Lett', niveauDifficile: 'Vanskelig', boutonVerifier: 'Sjekk', feedbackCorrect: 'Akkurat!', feedbackPresque: 'Nesten! Ett ord mangler:', reponseEtait: 'Svaret var:', placeholderReponse: 'Skriv svaret ditt her…', boutonRecommencer: 'Prøv igjen', basculerVersTexte: 'Skriv svaret i stedet', basculerVersTuiles: 'Tilbake til brikkene', remarqueQuatreDifficile: 'Bra jobbet! Du fullførte alle fire øvelsene på vanskelig nivå \u2014 en fin milepæl.', niveauGlobalLabel: 'Nivå:', raccourciExercices: 'Hopp til øvelsene' },
+    ru: { precedent: 'Назад', continuer: 'Далее', terminer: 'Готово', ceQuiAEteDit: 'Что было сказано', aRetenir: 'Важно запомнить', afficherTrad: 'Показать перевод', cacherTrad: 'Скрыть перевод', exercicesTitre: 'Потренируемся?', exercicesIntro: 'Это не экзамен — всего четыре коротких ситуации, чтобы закрепить то, что ты только что увидел(а).', niveauFacile: 'Легко', niveauDifficile: 'Сложно', boutonVerifier: 'Проверить', feedbackCorrect: 'Верно!', feedbackPresque: 'Почти! Не хватает одного слова:', reponseEtait: 'Правильный ответ:', placeholderReponse: 'Напиши свой ответ здесь…', boutonRecommencer: 'Попробовать снова', basculerVersTexte: 'Ввести ответ вручную', basculerVersTuiles: 'Вернуться к плиткам', remarqueQuatreDifficile: 'Отлично! Ты выполнил(а) все четыре упражнения на сложном уровне \u2014 это настоящее достижение.', niveauGlobalLabel: 'Уровень:', raccourciExercices: 'Перейти к упражнениям' }
   };
 
   function texteInterface(cle) {
@@ -2130,19 +2181,97 @@
   // composite eleve_id+chapitre_id) — n'importe quelle chaîne convient
   // comme clé d'idempotence, une par palier.
   function verifierRecompensesExercices() {
+    // 🆕 Les trois paliers peuvent se déclencher au même moment (ex. :
+    // le 4e exercice, résolu du premier coup en mode difficile, complète
+    // base + parfait + parfaitDifficile d'un seul coup) — on cumule donc
+    // les gains de CE passage et on ne déclenche qu'UNE seule animation
+    // à la fin, avec le total, plutôt que trois badges qui se chevauchent.
+    // Demande de Raphaël (session du 13-08-2026) : indiquer quand et
+    // combien de P$/PB sont gagnés, uniquement s'il y a lieu — d'où le
+    // if final, qui n'anime rien quand aucun palier n'a bougé.
+    let piassesGagnees = 0;
+    let pointsBonisGagnes = 0;
     if (!recompensesExercicesDonnees.base && exercicesResolus.size === EXERCICES.length) {
       recompensesExercicesDonnees.base = true;
       attribuerRecompenseExercice('d1_exercices_base', 5, 0);
+      piassesGagnees += 5;
     }
     if (!recompensesExercicesDonnees.parfait && exercicesResolusSansErreur.size === EXERCICES.length) {
       recompensesExercicesDonnees.parfait = true;
       attribuerRecompenseExercice('d1_exercices_parfait', 5, 0);
+      piassesGagnees += 5;
     }
     if (!recompensesExercicesDonnees.parfaitDifficile && exercicesResolusSansErreurDifficile.size === EXERCICES.length) {
       recompensesExercicesDonnees.parfaitDifficile = true;
       attribuerRecompenseExercice('d1_exercices_parfait_difficile', 0, 1);
+      pointsBonisGagnes += 1;
+    }
+    if (piassesGagnees > 0 || pointsBonisGagnes > 0) {
+      afficherRecompenseEtEnvoyerAuSac(piassesGagnees, pointsBonisGagnes);
     }
   }
+
+  // 🆕 Badge "+X P$ · +X PB" qui apparaît près du bouton Terminer puis
+  // s'envole vers #sacBouton — demande de Raphaël (session du
+  // 13-08-2026) : que l'apprenant voie clairement combien il vient de
+  // gagner et que ces points rejoignent visuellement le sac. Repli
+  // silencieux si le sac est absent/masqué, même prudence
+  // qu'animerMotVersSac (identité du mécanisme sur tout le site).
+  function afficherRecompenseEtEnvoyerAuSac(piasses, pointsBonis) {
+    const bouton = document.getElementById('sacBouton');
+    if (!bouton || getComputedStyle(bouton).display === 'none') return;
+
+    const morceaux = [];
+    if (piasses > 0) morceaux.push('+' + piasses + ' P$');
+    if (pointsBonis > 0) morceaux.push('+' + pointsBonis + ' PB');
+    if (morceaux.length === 0) return;
+
+    // Ancré juste au-dessus du bouton Terminer (visible dès qu'un palier
+    // se débloque, puisque ça n'arrive qu'une fois les 4 exercices
+    // traités, moment où ce bouton est déjà à l'écran).
+    const ancre = btnTerminerExercices.getBoundingClientRect();
+    const toast = document.createElement('div');
+    toast.className = 'recompense-toast';
+    toast.textContent = morceaux.join(' \u00b7 ');
+    toast.style.top = (ancre.top - 54) + 'px';
+    document.body.appendChild(toast);
+    requestAnimationFrame(function () { toast.classList.add('montre'); });
+
+    setTimeout(function () {
+      const depart = toast.getBoundingClientRect();
+      const arrivee = bouton.getBoundingClientRect();
+      const dx = (arrivee.left + arrivee.width / 2) - (depart.left + depart.width / 2);
+      const dy = (arrivee.top + arrivee.height / 2) - (depart.top + depart.height / 2);
+      toast.style.setProperty('--vol-dx', dx + 'px');
+      toast.style.setProperty('--vol-dy', dy + 'px');
+      toast.classList.add('en-vol');
+      toast.addEventListener('transitionend', function () { toast.remove(); }, { once: true });
+      bouton.classList.add('sac-recoit');
+      setTimeout(function () {
+        bouton.classList.remove('sac-recoit');
+        // Mise à jour optimiste de l'affichage du solde déjà présent
+        // dans le panneau du sac (#sacSoldePiasses/#sacSoldePointsBonis)
+        // — le gain est de toute façon déjà écrit sur Supabase via
+        // attribuerRecompenseExercice/attribuerRecompensePremiereFois ;
+        // ceci évite juste d'attendre une réouverture du panneau pour
+        // voir le nouveau total. Repli silencieux si ces champs
+        // n'existent pas encore ou ne contiennent pas encore un nombre
+        // (sac-a-dos.js pas encore initialisé).
+        const elPiasses = document.getElementById('sacSoldePiasses');
+        const elPointsBonis = document.getElementById('sacSoldePointsBonis');
+        if (elPiasses && piasses > 0) {
+          const actuel = parseInt(elPiasses.textContent, 10);
+          if (!isNaN(actuel)) elPiasses.textContent = String(actuel + piasses);
+        }
+        if (elPointsBonis && pointsBonis > 0) {
+          const actuel = parseInt(elPointsBonis.textContent, 10);
+          if (!isNaN(actuel)) elPointsBonis.textContent = String(actuel + pointsBonis);
+        }
+      }, DELAI_FERMETURE_SAC_APRES_RECEPTION);
+    }, DUREE_AFFICHAGE_RECOMPENSE);
+  }
+
+  const DUREE_AFFICHAGE_RECOMPENSE = 900; // le badge reste lisible avant de s'envoler
 
   // 🐛 CORRIGÉ : attend restaurationSessionPromesse (voir tout en haut
   // du fichier) avant d'écrire — même raison que toucherSandwich().
@@ -2274,6 +2403,19 @@
   }
 
   // ---------- Mode facile : mots fournis, à remettre en ordre ----------
+  // 🆕 (session du 13-08-2026, demande de Raphaël) : en plus des tuiles,
+  // l'élève peut maintenant basculer vers une saisie manuelle — même
+  // champ/bouton que le mode difficile (classes .exercice-champ/
+  // .exercice-btn-verifier réutilisées telles quelles), mais avec la
+  // correction "tout ou rien" du mode facile (comparaison à la phrase
+  // entière, PAS la correction progressive mot à mot du mode difficile
+  // — voir evaluerReponseExercice, réservée à creerZoneDifficile) :
+  // rester fidèle à l'esprit "facile" même en tapant. Le compteur
+  // d'essais (2 avant révélation) est PARTAGÉ entre les deux méthodes de
+  // saisie — un élève qui rate une fois aux tuiles puis bascule vers le
+  // clavier n'obtient pas un essai supplémentaire gratuit. La bascule
+  // elle-même se désactive une fois l'exercice résolu ou révélé, comme
+  // le reste de la carte.
   function creerZoneFacile(ex, carte) {
     const wrapper = document.createElement('div');
     wrapper.style.display = 'flex';
@@ -2286,6 +2428,40 @@
     const banque = document.createElement('div');
     banque.className = 'exercice-banque-mots';
 
+    const zoneTuiles = document.createElement('div');
+    zoneTuiles.style.display = 'flex';
+    zoneTuiles.style.flexDirection = 'column';
+    zoneTuiles.style.gap = '10px';
+    zoneTuiles.appendChild(phraseConstruite);
+    zoneTuiles.appendChild(banque);
+
+    // ---------- Zone saisie manuelle (repliée par défaut) ----------
+    const champ = document.createElement('input');
+    champ.type = 'text';
+    champ.className = 'exercice-champ';
+    champ.placeholder = texteInterface('placeholderReponse');
+    champ.autocomplete = 'off';
+    champ.autocapitalize = 'off';
+    champ.spellcheck = false;
+
+    const btnVerifierTexte = document.createElement('button');
+    btnVerifierTexte.type = 'button';
+    btnVerifierTexte.className = 'exercice-btn-verifier';
+    btnVerifierTexte.textContent = texteInterface('boutonVerifier');
+
+    const ligneActionTexte = document.createElement('div');
+    ligneActionTexte.className = 'exercice-ligne-action';
+    ligneActionTexte.appendChild(champ);
+    ligneActionTexte.appendChild(btnVerifierTexte);
+
+    const zoneTexte = document.createElement('div');
+    zoneTexte.style.display = 'none';
+    zoneTexte.appendChild(ligneActionTexte);
+
+    const lienBascule = document.createElement('button');
+    lienBascule.type = 'button';
+    lienBascule.className = 'exercice-lien-bascule';
+
     const feedback = document.createElement('div');
     feedback.className = 'exercice-feedback';
 
@@ -2297,6 +2473,8 @@
     btnRecommencer.style.alignSelf = 'flex-start';
 
     let essais = 0;
+    let modeSaisie = 'tuiles'; // 'tuiles' | 'texte'
+    let resolu = false; // correct OU révélé — gèle les deux méthodes de saisie
     // reponseChoisie contient des { mot, index } — index se référant à
     // motsMelanges, pour permettre de retirer précisément un mot cliqué
     // par erreur (utile depuis l'ajout des distracteurs, sinon un seul
@@ -2309,6 +2487,19 @@
     const nbAChoisir = ex.banqueFacile ? 1 : ex.reponse.length;
     const motsDisponibles = ex.banqueFacile ? ex.banqueFacile.slice() : ex.reponse.concat(ex.distracteurs || []);
     let motsMelanges = melangerMots(motsDisponibles);
+
+    function metAJourLienBascule() {
+      lienBascule.textContent = texteInterface(modeSaisie === 'tuiles' ? 'basculerVersTexte' : 'basculerVersTuiles');
+    }
+
+    function basculerModeSaisie() {
+      modeSaisie = modeSaisie === 'tuiles' ? 'texte' : 'tuiles';
+      zoneTuiles.style.display = modeSaisie === 'tuiles' ? 'flex' : 'none';
+      zoneTexte.style.display = modeSaisie === 'texte' ? 'block' : 'none';
+      metAJourLienBascule();
+      if (modeSaisie === 'texte') { champ.value = ''; champ.classList.remove('fautive', 'correcte'); champ.focus(); }
+    }
+    lienBascule.addEventListener('click', basculerModeSaisie);
 
     function rendreBanque() {
       banque.innerHTML = '';
@@ -2327,7 +2518,9 @@
           btn.classList.add('utilise');
           reponseChoisie.push({ mot: mot, index: i });
           rendrePhraseConstruite();
-          if (reponseChoisie.length === nbAChoisir) verifierFacile();
+          if (reponseChoisie.length === nbAChoisir) {
+            verifier(reponseChoisie.map(function (item) { return item.mot; }).join(' '));
+          }
         });
         banque.appendChild(btn);
       });
@@ -2341,6 +2534,7 @@
         chip.textContent = item.mot;
         chip.title = texteInterface('boutonRecommencer');
         chip.addEventListener('click', function () {
+          if (resolu) return;
           // Retirer ce mot précis (et non tout recommencer) — remet le
           // bouton correspondant dans la banque.
           reponseChoisie = reponseChoisie.filter(function (autre) { return autre.index !== item.index; });
@@ -2357,6 +2551,8 @@
     function reinitialiser() {
       reponseChoisie = [];
       motsMelanges = melangerMots(motsDisponibles);
+      champ.value = '';
+      champ.classList.remove('fautive', 'correcte');
       feedback.textContent = '';
       feedback.className = 'exercice-feedback';
       btnRecommencer.style.display = 'none';
@@ -2364,41 +2560,61 @@
       rendrePhraseConstruite();
     }
 
-    function verifierFacile() {
+    // 🆕 Cœur commun aux deux méthodes de saisie — reçoit la phrase déjà
+    // assemblée (jointe par des espaces), qu'elle vienne des tuiles
+    // cliquées ou du champ texte. Correction "tout ou rien", identique
+    // à l'ancien verifierFacile() : c'est ce qui distingue ce mode du
+    // mode difficile (progressif, voir creerZoneDifficile), même quand
+    // la saisie se fait maintenant au clavier ici aussi.
+    function verifier(texteBrutChoisi) {
+      if (resolu) return;
       essais++;
-      const texteChoisi = reponseChoisie.map(function (item) { return item.mot; }).join(' ').toLowerCase();
-      // 🆕 Accepte la réponse principale OU toute alternative déclarée
-      // dans ex.reponsesAlternatives (voir reponsesAcceptees, même liste
-      // que le mode difficile) — ex. "le sandwich" en plus de "un
-      // sandwich" pour d1_e2. Chaque alternative doit avoir la même
-      // longueur que ex.reponse (nbAChoisir s'appuie sur cette longueur).
+      const texteChoisi = texteBrutChoisi.trim().toLowerCase();
       const correct = reponsesAcceptees(ex).some(function (reponseCandidate) {
         return texteChoisi === reponseCandidate.join(' ').toLowerCase();
       });
       if (correct) {
+        resolu = true;
         feedback.className = 'exercice-feedback correct';
         feedback.textContent = texteInterface('feedbackCorrect');
+        champ.value = ex.reponse.join(' ');
+        champ.classList.remove('fautive');
+        champ.classList.add('correcte');
+        champ.disabled = true;
+        btnVerifierTexte.disabled = true;
+        lienBascule.style.display = 'none';
         marquerCarteResolue(carte, ex, 'facile', essais === 1);
         return;
       }
       if (essais >= 2) {
+        resolu = true;
         feedback.className = 'exercice-feedback revele';
         feedback.textContent = texteInterface('reponseEtait') + ' ' + ex.reponse.join(' ');
         reponseChoisie = ex.reponse.map(function (mot) { return { mot: mot, index: -1 }; });
         rendrePhraseConstruite();
+        champ.value = ex.reponse.join(' ');
+        champ.classList.remove('fautive');
+        champ.disabled = true;
+        btnVerifierTexte.disabled = true;
+        lienBascule.style.display = 'none';
         marquerCarteResolue(carte, ex, 'facile', false);
       } else {
         feedback.className = 'exercice-feedback presque';
         feedback.textContent = texteInterface('feedbackPresque');
+        champ.classList.add('fautive');
         btnRecommencer.style.display = 'inline-block';
       }
     }
 
+    btnVerifierTexte.addEventListener('click', function () { verifier(champ.value); });
+    champ.addEventListener('keydown', function (e) { if (e.key === 'Enter') verifier(champ.value); });
     btnRecommencer.addEventListener('click', reinitialiser);
 
+    metAJourLienBascule();
     rendreBanque();
-    wrapper.appendChild(phraseConstruite);
-    wrapper.appendChild(banque);
+    wrapper.appendChild(zoneTuiles);
+    wrapper.appendChild(zoneTexte);
+    wrapper.appendChild(lienBascule);
     wrapper.appendChild(feedback);
     wrapper.appendChild(btnRecommencer);
     return wrapper;

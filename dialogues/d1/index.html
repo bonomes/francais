@@ -2180,32 +2180,49 @@
   // est un TEXT libre, clé de recompenses_chapitre_attribuees (PK
   // composite eleve_id+chapitre_id) — n'importe quelle chaîne convient
   // comme clé d'idempotence, une par palier.
-  function verifierRecompensesExercices() {
-    // 🆕 Les trois paliers peuvent se déclencher au même moment (ex. :
-    // le 4e exercice, résolu du premier coup en mode difficile, complète
-    // base + parfait + parfaitDifficile d'un seul coup) — on cumule donc
-    // les gains de CE passage et on ne déclenche qu'UNE seule animation
-    // à la fin, avec le total, plutôt que trois badges qui se chevauchent.
-    // Demande de Raphaël (session du 13-08-2026) : indiquer quand et
-    // combien de P$/PB sont gagnés, uniquement s'il y a lieu — d'où le
-    // if final, qui n'anime rien quand aucun palier n'a bougé.
-    let piassesGagnees = 0;
-    let pointsBonisGagnes = 0;
+  // 🐛 CORRIGÉ (13-08-2026) : même angle mort que le bug #1 (animation de
+  // fin de chapitre) — cette fonction animait sur la seule foi de l'état
+  // LOCAL (exercicesResolus etc., un Set qui repart à zéro à chaque
+  // chargement), sans jamais regarder si le serveur avait réellement
+  // accordé un gain neuf. Résultat : un "Revoir" où l'élève referait les
+  // exercices parfaitement rejouerait l'animation "+10 P$ · +1 PB" (et
+  // gonflerait le solde affiché par la mise à jour optimiste plus bas),
+  // alors que attribuer_recompense_premiere_fois refuse silencieusement
+  // (on conflict do nothing) puisque ces paliers étaient déjà donnés.
+  // Le drapeau local recompensesExercicesDonnees reste utile pour éviter
+  // de rappeler la RPC en boucle une fois un palier atteint DANS ce même
+  // passage, mais l'animation, elle, attend maintenant la confirmation
+  // serveur (true = gain neuf) avant de se déclencher.
+  async function verifierRecompensesExercices() {
+    const attributions = [];
     if (!recompensesExercicesDonnees.base && exercicesResolus.size === EXERCICES.length) {
       recompensesExercicesDonnees.base = true;
-      attribuerRecompenseExercice('d1_exercices_base', 5, 0);
-      piassesGagnees += 5;
+      attributions.push(attribuerRecompenseExercice('d1_exercices_base', 5, 0).then(function (accorde) {
+        return accorde ? { piasses: 5, pointsBonis: 0 } : null;
+      }));
     }
     if (!recompensesExercicesDonnees.parfait && exercicesResolusSansErreur.size === EXERCICES.length) {
       recompensesExercicesDonnees.parfait = true;
-      attribuerRecompenseExercice('d1_exercices_parfait', 5, 0);
-      piassesGagnees += 5;
+      attributions.push(attribuerRecompenseExercice('d1_exercices_parfait', 5, 0).then(function (accorde) {
+        return accorde ? { piasses: 5, pointsBonis: 0 } : null;
+      }));
     }
     if (!recompensesExercicesDonnees.parfaitDifficile && exercicesResolusSansErreurDifficile.size === EXERCICES.length) {
       recompensesExercicesDonnees.parfaitDifficile = true;
-      attribuerRecompenseExercice('d1_exercices_parfait_difficile', 0, 1);
-      pointsBonisGagnes += 1;
+      attributions.push(attribuerRecompenseExercice('d1_exercices_parfait_difficile', 0, 1).then(function (accorde) {
+        return accorde ? { piasses: 0, pointsBonis: 1 } : null;
+      }));
     }
+    if (attributions.length === 0) return;
+
+    const resultats = await Promise.all(attributions);
+    let piassesGagnees = 0;
+    let pointsBonisGagnes = 0;
+    resultats.forEach(function (r) {
+      if (!r) return; // palier déjà donné avant (confirmé par le serveur) : pas de gain réel, pas d'animation
+      piassesGagnees += r.piasses;
+      pointsBonisGagnes += r.pointsBonis;
+    });
     if (piassesGagnees > 0 || pointsBonisGagnes > 0) {
       afficherRecompenseEtEnvoyerAuSac(piassesGagnees, pointsBonisGagnes);
     }
@@ -2275,11 +2292,21 @@
 
   // 🐛 CORRIGÉ : attend restaurationSessionPromesse (voir tout en haut
   // du fichier) avant d'écrire — même raison que toucherSandwich().
+  // 🐛 CORRIGÉ (13-08-2026) : renvoie maintenant le booléen du serveur
+  // (true = gain neuf réellement accordé, false = palier déjà donné
+  // avant) au lieu de l'avaler — verifierRecompensesExercices() en a
+  // besoin pour ne pas animer un gain qui n'a pas eu lieu. En cas
+  // d'erreur réseau/RPC, on renvoie false par prudence : mieux vaut ne
+  // pas animer un gain qu'on n'est pas sûr d'avoir écrit.
   async function attribuerRecompenseExercice(cle, piasses, pointsBonis) {
-    if (!window.KebBekProgression || !window.KebBekProgression.attribuerRecompensePremiereFois) return;
+    if (!window.KebBekProgression || !window.KebBekProgression.attribuerRecompensePremiereFois) return false;
     await restaurationSessionPromesse;
-    window.KebBekProgression.attribuerRecompensePremiereFois(cle, piasses, pointsBonis)
-      .catch(function (err) { console.warn('dialogue-d1.html : attribuerRecompensePremiereFois(' + cle + ') a échoué.', err); });
+    try {
+      return await window.KebBekProgression.attribuerRecompensePremiereFois(cle, piasses, pointsBonis);
+    } catch (err) {
+      console.warn('dialogue-d1.html : attribuerRecompensePremiereFois(' + cle + ') a échoué.', err);
+      return false;
+    }
   }
 
   function afficherRemarqueDifficile() {

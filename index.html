@@ -318,6 +318,30 @@
     box-shadow: 4px 4px 14px var(--ombre);
   }
 
+  /* 🆕 "Se reconnecter" — simple lien texte sous Oui/Non, jamais une
+     pilule pleine comme .pf-bouton (ne doit pas concurrencer la
+     question "First time?"). Même logique que .iden-lien-invite dans
+     identite-eleve.css. */
+  .lien-se-reconnecter {
+    display: block;
+    margin: 6px auto 0;
+    border: none;
+    background: transparent;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 700;
+    font-size: 0.72rem;
+    color: var(--brun);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    cursor: pointer;
+    opacity: 0.75;
+  }
+  .lien-se-reconnecter:hover,
+  .lien-se-reconnecter:focus-visible {
+    opacity: 1;
+    color: var(--peche);
+  }
+
   /* ==================================================================
      Lien "Information et cours privés" — voir note dans le HTML.
      Discret par construction : texte plutôt qu'un bloc plein, opacité
@@ -792,6 +816,15 @@
           <button class="pf-bouton pf-oui" id="pfOui" type="button" data-cible="oui">Oui</button>
           <button class="pf-bouton pf-non" id="pfNon" type="button" data-cible="non">Non</button>
         </div>
+        <!-- 🆕 "Se reconnecter" (demande de Raphaël, session du
+             13-08-2026) — pour un élève qui a déjà un compte et revient
+             sur un nouvel appareil/fureteur. Volontairement discret
+             (lien texte, pas une pilule pf-bouton) pour ne jamais
+             concurrencer visuellement Oui/Non, qui restent la première
+             question posée à tout le monde. Ouvre directement l'écran
+             courriel+code (voir demarrerReconnexionDepuisIndex plus
+             bas), sans repasser par prénom/genre/silhouette. -->
+        <button class="lien-se-reconnecter" id="btnSeReconnecterIndex" type="button">Se reconnecter</button>
       </div>
     </div>
 
@@ -1456,6 +1489,33 @@
       }
     });
   }
+
+  // 🆕 "Se reconnecter" (demande de Raphaël) — même repli visuel que
+  // demarrerIdentiteSiPremiereFois() (cache sceneRangee/lienCoursPrives/
+  // menuPrincipal, affiche #sequenceIdentite), mais avec
+  // etapeDepart:'reconnexion' pour sauter directement à l'écran
+  // courriel+code (voir identite-eleve.js, demarrerSequenceIdentite).
+  // onComplet() une fois reconnecté·e ramène au menu principal, comme le
+  // "Oui" normal — la seule différence est l'écran de départ.
+  function demarrerReconnexionDepuisIndex() {
+    if (modeSecretActif()) return;
+    sceneRangee.style.display = 'none';
+    lienCoursPrives.style.display = 'none';
+    document.getElementById('menuPrincipal').style.display = 'none';
+    sequenceIdentite.style.display = '';
+    const optionsAvecDepart = optionsIdentitePourLangue(langueActuelle);
+    optionsAvecDepart.etapeDepart = 'reconnexion';
+    KebBekIdentite.demarrerSequenceIdentite('sequenceIdentite', optionsAvecDepart, {
+      onComplet: function () { allerAuMenuPrincipal('oui'); },
+      onQuitter: function () {
+        sequenceIdentite.style.display = 'none';
+        sceneRangee.style.display = '';
+        lienCoursPrives.style.display = '';
+        afficherPremiereFois();
+      }
+    });
+  }
+  document.getElementById('btnSeReconnecterIndex').addEventListener('click', demarrerReconnexionDepuisIndex);
 
   // 🆕 Petite séquence animée au survol de "Non" : posture normale (01)
   // → bras levé façon salut (02) pendant un court instant → retour à la

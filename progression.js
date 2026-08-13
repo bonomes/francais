@@ -267,6 +267,29 @@
     return progressionInviteLocale();
   }
 
+  // 🆕 Récompenses P$/PB attribuées par palier d'exercice (voir
+  // attribuer_recompense_premiere_fois / recompenses_chapitre_attribuees)
+  // — même forme de sortie que lireProgression() : { [chapitre_id]: true },
+  // où chapitre_id est ici la clé de PALIER (ex. 'd1_exercices_base'), pas
+  // l'id du chapitre lui-même. Sert à parcours.html pour savoir quels
+  // chapitres ont été complétés "parfaitement" (badge étoile), en plus de
+  // savoir juste s'ils sont complétés (lireProgression). Pas d'équivalent
+  // invité : un invité n'a aucune ligne dans cette table (voir lireSolde),
+  // {} est donc la réponse honnête, pas une approximation.
+  async function lireRecompensesAttribuees() {
+    if (sessionActuelle && profilActifId && clientSupabase) {
+      const { data, error } = await clientSupabase
+        .from('recompenses_chapitre_attribuees')
+        .select('chapitre_id')
+        .eq('eleve_id', profilActifId);
+      if (error) { console.warn('progression.js : lireRecompensesAttribuees a échoué.', error); return {}; }
+      const carte = {};
+      (data || []).forEach(r => { carte[r.chapitre_id] = true; });
+      return carte;
+    }
+    return {};
+  }
+
   // ---------- Identité (genre/nationalité) — v51/COMPTES_ELEVES, étape 3 ----------
   //
   // Introduit pour le mécanisme d'identification de la Leçon 1 (voir
@@ -575,6 +598,7 @@
     dernierProfilConnu,
     deconnecter,
     lireProgression,
+    lireRecompensesAttribuees,
     marquerChapitreComplete,
     marquerConditionComplete,
     attribuerRecompensePremiereFois,

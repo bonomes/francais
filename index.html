@@ -1396,25 +1396,39 @@
   // depuis le début — TODO : identite-eleve.js ne permet pas encore de
   // démarrer directement à cette étape, à ajouter si ce bouton doit
   // vraiment fonctionner (pour l'instant, il relance toute la séquence).
-  function allerAuMenuPrincipal(reponse) {
+  // 🐛 CORRIGÉ (session du 13-08-2026, signalé par Raphaël) : cette
+  // fonction rendait le menu principal SANS jamais restaurer la session
+  // Supabase ni le profil actif sur CETTE page — progression.js garde
+  // sessionActuelle/profilActifId en simple mémoire JS, remis à null à
+  // chaque nouveau chargement de page. Un élève connecté qui naviguait
+  // vers parcours.html (qui restaure correctement, voir
+  // initProgressionReelle()) puis REVENAIT sur index.html retombait donc
+  // sur l'identité invité stockée en localStorage (ex. "Bel") au lieu de
+  // son vrai prénom de compte (ex. "Raphaël") — la session Supabase
+  // elle-même n'était jamais perdue, seulement jamais re-consultée ici.
+  // Corrigé en reprenant EXACTEMENT la même restauration que
+  // initProgressionReelle() dans parcours.html, juste avant de rendre le
+  // menu — même repli "profil unique auto-sélectionné" si aucun
+  // dernierProfilConnu() n'est mémorisé.
+  async function allerAuMenuPrincipal(reponse) {
     sequenceIdentite.style.display = 'none';
     sceneRangee.style.display = 'none';
     lienCoursPrives.style.display = 'none';
     document.getElementById('menuPrincipal').style.display = '';
-    // 🐛 CORRIGÉ (13-08-2026, suite au signalement du sac qui disparaît) :
-    // display:none n'était jamais levé sur #sacBouton pour QUI QUE CE SOIT
-    // qui n'a pas VU l'animation lancerDeblocageSac (atterrir(), dans
-    // identite-eleve.js) — donc jamais pour "Non" (reponse === 'non'),
-    // jamais pour une reconnexion (etapeDepart:'reconnexion' saute
-    // entièrement cette animation), et jamais pour un retour depuis
-    // parcours.html (#menu-principal, reponse === 'retour'). Un élève qui
-    // a déjà son sac (par définition, s'il arrive jusqu'au menu — invité
-    // revenant ou compte existant) doit toujours le voir. Idempotent et
-    // sans effet pour le cas "oui" tout juste débloqué : le style inline
-    // est déjà à '' à ce moment-là, cette ligne ne fait alors que le
-    // confirmer.
-    const boutonSacMenu = document.getElementById('sacBouton');
-    if (boutonSacMenu) boutonSacMenu.style.display = '';
+
+    if (window.KebBekProgression) {
+      await KebBekProgression.initSession();
+      if (KebBekProgression.session) {
+        const dernier = KebBekProgression.dernierProfilConnu();
+        if (dernier) {
+          KebBekProgression.profilActifId = dernier;
+        } else {
+          const profils = await KebBekProgression.profilsDuCompte();
+          if (profils.length === 1) KebBekProgression.profilActifId = profils[0].id;
+        }
+      }
+    }
+
     KebBekMenu.demarrerMenuPrincipal('menuPrincipal', {
       onHistoires: function () { window.location.href = 'parcours.html'; },
       onPrives: function () { window.location.href = 'cours-prives/'; },

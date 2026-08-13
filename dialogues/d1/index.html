@@ -634,6 +634,8 @@
   }
   .exercice-mot-btn:hover { transform: translateY(-1px); }
   .exercice-mot-btn.utilise { opacity: 0.35; pointer-events: none; }
+  .exercice-chip-amovible { cursor: pointer; }
+  .exercice-chip-amovible:hover { background: #FDEDEA; border-color: var(--peche); }
   .exercice-phrase-construite {
     min-height: 44px;
     display: flex;
@@ -1228,8 +1230,11 @@
   // 🆕 Section exercices — deux mises en situation confirmées par
   // Raphaël (session du 12-08-2026). `reponse` : mots dans l'ordre
   // attendu, en français, utilisés pour la correction progressive
-  // (voir evaluerReponseExercice) ET pour construire la banque de mots
-  // du mode facile. `instruction` : dans la langue de l'apprenant —
+  // (voir evaluerReponseExercice) ET comme mots corrects de la banque
+  // du mode facile. `distracteurs` (optionnel) : mots supplémentaires
+  // mélangés dans la même banque pour empêcher les réponses évidentes
+  // — ne comptent jamais comme bons dans la vérification.
+  // `instruction` : dans la langue de l'apprenant —
   // pour l'exercice 1, contient volontairement le sens (« I'm hungry »)
   // mais jamais le français, pour ne pas donner la réponse.
   const EXERCICES = [
@@ -1237,6 +1242,7 @@
       id: 'd1_e1',
       image: '../../images/dialogues/d1/d1_e1_bek-a-faim_01.webp',
       reponse: ["j'ai", 'faim'],
+      distracteurs: ['jé', 'fin'],
       instruction: {
         fr: 'Bek a faim. Comment dit-elle « J\u2019ai faim » ?',
         en: 'Bek is hungry. How does she say "I\u2019m hungry"?',
@@ -1264,6 +1270,7 @@
       id: 'd1_e2',
       image: '../../images/dialogues/d1/d1_e2_bek-sandwich_01.webp',
       reponse: ['merci'],
+      distracteurs: ["c'est", 'un'],
       instruction: {
         fr: 'Tu es Keb. Bek te donne un sandwich. Que dis-tu\u00A0?',
         en: 'You\u2019re Keb. Bek hands you a sandwich. What do you say?',
@@ -1905,8 +1912,13 @@
     btnRecommencer.style.alignSelf = 'flex-start';
 
     let essais = 0;
+    // reponseChoisie contient des { mot, index } — index se référant à
+    // motsMelanges, pour permettre de retirer précisément un mot cliqué
+    // par erreur (utile depuis l'ajout des distracteurs, sinon un seul
+    // clic sur un leurre forçait un recommencement complet).
     let reponseChoisie = [];
-    let motsMelanges = melangerMots(ex.reponse);
+    const motsDisponibles = ex.reponse.concat(ex.distracteurs || []);
+    let motsMelanges = melangerMots(motsDisponibles);
 
     function rendreBanque() {
       banque.innerHTML = '';
@@ -1916,12 +1928,16 @@
         btn.className = 'exercice-mot-btn';
         btn.textContent = mot;
         btn.dataset.indexMot = i;
+        if (reponseChoisie.some(function (item) { return item.index === i; })) {
+          btn.classList.add('utilise');
+        }
         btn.addEventListener('click', function () {
           if (btn.classList.contains('utilise')) return;
+          if (reponseChoisie.length >= ex.reponse.length) return;
           btn.classList.add('utilise');
-          reponseChoisie.push(mot);
+          reponseChoisie.push({ mot: mot, index: i });
           rendrePhraseConstruite();
-          if (reponseChoisie.length === motsMelanges.length) verifierFacile();
+          if (reponseChoisie.length === ex.reponse.length) verifierFacile();
         });
         banque.appendChild(btn);
       });
@@ -1929,17 +1945,28 @@
 
     function rendrePhraseConstruite() {
       phraseConstruite.innerHTML = '';
-      reponseChoisie.forEach(function (mot) {
+      reponseChoisie.forEach(function (item) {
         const chip = document.createElement('span');
-        chip.className = 'exercice-chip';
-        chip.textContent = mot;
+        chip.className = 'exercice-chip exercice-chip-amovible';
+        chip.textContent = item.mot;
+        chip.title = texteInterface('boutonRecommencer');
+        chip.addEventListener('click', function () {
+          // Retirer ce mot précis (et non tout recommencer) — remet le
+          // bouton correspondant dans la banque.
+          reponseChoisie = reponseChoisie.filter(function (autre) { return autre.index !== item.index; });
+          const btnCorrespondant = banque.querySelector('[data-index-mot="' + item.index + '"]');
+          if (btnCorrespondant) btnCorrespondant.classList.remove('utilise');
+          feedback.textContent = '';
+          feedback.className = 'exercice-feedback';
+          rendrePhraseConstruite();
+        });
         phraseConstruite.appendChild(chip);
       });
     }
 
     function reinitialiser() {
       reponseChoisie = [];
-      motsMelanges = melangerMots(ex.reponse);
+      motsMelanges = melangerMots(motsDisponibles);
       feedback.textContent = '';
       feedback.className = 'exercice-feedback';
       btnRecommencer.style.display = 'none';
@@ -1949,7 +1976,7 @@
 
     function verifierFacile() {
       essais++;
-      const correct = reponseChoisie.join(' ').toLowerCase() === ex.reponse.join(' ').toLowerCase();
+      const correct = reponseChoisie.map(function (item) { return item.mot; }).join(' ').toLowerCase() === ex.reponse.join(' ').toLowerCase();
       if (correct) {
         feedback.className = 'exercice-feedback correct';
         feedback.textContent = texteInterface('feedbackCorrect');
@@ -1959,7 +1986,7 @@
       if (essais >= 2) {
         feedback.className = 'exercice-feedback revele';
         feedback.textContent = texteInterface('reponseEtait') + ' ' + ex.reponse.join(' ');
-        reponseChoisie = ex.reponse.slice();
+        reponseChoisie = ex.reponse.map(function (mot) { return { mot: mot, index: -1 }; });
         rendrePhraseConstruite();
         marquerCarteResolue(carte, ex);
       } else {

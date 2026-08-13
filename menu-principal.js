@@ -51,6 +51,7 @@ const DICO_MENU = {
     menuContact: 'Contact',
     ficheInvite: 'Tu explores en mode invité pour l\u2019instant.',
     ficheBtnCompte: 'Créer un compte',
+    ficheBtnReconnexion: 'Se reconnecter',
     ficheConnecte: 'Connecté(e)',
     ficheBtnDeconnexion: 'Se déconnecter',
     ficheDeconnexionEnCours: 'Déconnexion…'
@@ -66,6 +67,7 @@ const DICO_MENU = {
     menuContact: 'Contact',
     ficheInvite: 'You\u2019re exploring as a guest for now.',
     ficheBtnCompte: 'Create an account',
+    ficheBtnReconnexion: 'Log in',
     ficheConnecte: 'Signed in',
     ficheBtnDeconnexion: 'Sign out',
     ficheDeconnexionEnCours: 'Signing out…'
@@ -81,6 +83,7 @@ const DICO_MENU = {
     menuContact: 'Contacto',
     ficheInvite: 'Por ahora est\u00e1s explorando como invitado.',
     ficheBtnCompte: 'Crear una cuenta',
+    ficheBtnReconnexion: 'Iniciar sesión',
     ficheConnecte: 'Sesi\u00f3n iniciada',
     ficheBtnDeconnexion: 'Cerrar sesi\u00f3n',
     ficheDeconnexionEnCours: 'Cerrando sesi\u00f3n\u2026'
@@ -96,6 +99,7 @@ const DICO_MENU = {
     menuContact: 'Contatto',
     ficheInvite: 'Per ora stai esplorando come ospite.',
     ficheBtnCompte: 'Crea un account',
+    ficheBtnReconnexion: 'Accedi',
     ficheConnecte: 'Accesso effettuato',
     ficheBtnDeconnexion: 'Disconnetti',
     ficheDeconnexionEnCours: 'Disconnessione\u2026'
@@ -111,6 +115,7 @@ const DICO_MENU = {
     menuContact: 'Contato',
     ficheInvite: 'Voc\u00ea est\u00e1 explorando como convidado por enquanto.',
     ficheBtnCompte: 'Criar uma conta',
+    ficheBtnReconnexion: 'Entrar',
     ficheConnecte: 'Sess\u00e3o iniciada',
     ficheBtnDeconnexion: 'Sair',
     ficheDeconnexionEnCours: 'Saindo\u2026'
@@ -126,6 +131,7 @@ const DICO_MENU = {
     menuContact: 'Contacte',
     ficheInvite: 'Ara mateix estàs explorant com a convidat.',
     ficheBtnCompte: 'Crear un compte',
+    ficheBtnReconnexion: 'Inicia sessió',
     ficheConnecte: 'Sessi\u00f3 iniciada',
     ficheBtnDeconnexion: 'Tancar sessi\u00f3',
     ficheDeconnexionEnCours: 'Tancant sessi\u00f3\u2026'
@@ -141,6 +147,7 @@ const DICO_MENU = {
     menuContact: 'Kontakto',
     ficheInvite: 'Vi nun esploras kiel gasto.',
     ficheBtnCompte: 'Krei konton',
+    ficheBtnReconnexion: 'Ensaluti',
     ficheConnecte: 'Ensalutinta',
     ficheBtnDeconnexion: 'Elsaluti',
     ficheDeconnexionEnCours: 'Elsalutante\u2026'
@@ -156,6 +163,7 @@ const DICO_MENU = {
     menuContact: '\u8054\u7cfb\u6211\u4eec',
     ficheInvite: '\u4f60\u76ee\u524d\u4ee5\u8bbf\u5ba2\u8eab\u4efd\u6d4f\u89c8\u3002',
     ficheBtnCompte: '\u521b\u5efa\u8d26\u53f7',
+    ficheBtnReconnexion: '登录',
     ficheConnecte: '\u5df2\u767b\u5f55',
     ficheBtnDeconnexion: '\u9000\u51fa\u767b\u5f55',
     ficheDeconnexionEnCours: '\u6b63\u5728\u9000\u51fa\u2026'
@@ -171,6 +179,7 @@ const DICO_MENU = {
     menuContact: '\u304a\u554f\u3044\u5408\u308f\u305b',
     ficheInvite: '\u4eca\u306f\u30b2\u30b9\u30c8\u3068\u3057\u3066\u5229\u7528\u3057\u3066\u3044\u307e\u3059\u3002',
     ficheBtnCompte: '\u30a2\u30ab\u30a6\u30f3\u30c8\u3092\u4f5c\u6210',
+    ficheBtnReconnexion: 'ログイン',
     ficheConnecte: '\u30ed\u30b0\u30a4\u30f3\u4e2d',
     ficheBtnDeconnexion: '\u30ed\u30b0\u30a2\u30a6\u30c8',
     ficheDeconnexionEnCours: '\u30ed\u30b0\u30a2\u30a6\u30c8\u4e2d\u2026'
@@ -186,6 +195,7 @@ const DICO_MENU = {
     menuContact: '\ubb38\uc758\ud558\uae30',
     ficheInvite: '\uc9c0\uae08\uc740 \uac8c\uc2a4\ud2b8\ub85c \ub458\ub7ec\ubcf4\uace0 \uc788\uc5b4\uc694.',
     ficheBtnCompte: '\uacc4\uc815 \ub9cc\ub4e4\uae30',
+    ficheBtnReconnexion: '로그인',
     ficheConnecte: '\ub85c\uadf8\uc778\ub428',
     ficheBtnDeconnexion: '\ub85c\uadf8\uc544\uc6c3',
     ficheDeconnexionEnCours: '\ub85c\uadf8\uc544\uc6c3 \uc911\u2026'
@@ -201,6 +211,7 @@ const DICO_MENU = {
     menuContact: 'Li\u00ean h\u1ec7',
     ficheInvite: 'B\u1ea1n \u0111ang kh\u00e1m ph\u00e1 v\u1edbi t\u01b0 c\u00e1ch kh\u00e1ch.',
     ficheBtnCompte: 'T\u1ea1o t\u00e0i kho\u1ea3n',
+    ficheBtnReconnexion: 'Đăng nhập',
     ficheConnecte: '\u0110\u00e3 \u0111\u0103ng nh\u1eadp',
     ficheBtnDeconnexion: '\u0110\u0103ng xu\u1ea5t',
     ficheDeconnexionEnCours: '\u0110ang \u0111\u0103ng xu\u1ea5t\u2026'
@@ -216,6 +227,7 @@ const DICO_MENU = {
     menuContact: 'Kontak',
     ficheInvite: 'Kounye a ou ap eksplore k\u00f2m envite.',
     ficheBtnCompte: 'Kreye yon kont',
+    ficheBtnReconnexion: 'Konekte',
     ficheConnecte: 'Konekte',
     ficheBtnDeconnexion: 'Dekonekte',
     ficheDeconnexionEnCours: 'Ap dekonekte\u2026'
@@ -231,6 +243,7 @@ const DICO_MENU = {
     menuContact: 'Makipag-ugnayan',
     ficheInvite: 'Kasalukuyan kang naggagalugad bilang bisita.',
     ficheBtnCompte: 'Gumawa ng account',
+    ficheBtnReconnexion: 'Mag-log in',
     ficheConnecte: 'Naka-sign in',
     ficheBtnDeconnexion: 'Mag-sign out',
     ficheDeconnexionEnCours: 'Nagsa-sign out\u2026'
@@ -246,6 +259,7 @@ const DICO_MENU = {
     menuContact: 'Kontak',
     ficheInvite: 'Kamu sedang menjelajah sebagai tamu.',
     ficheBtnCompte: 'Buat akun',
+    ficheBtnReconnexion: 'Masuk',
     ficheConnecte: 'Sudah masuk',
     ficheBtnDeconnexion: 'Keluar',
     ficheDeconnexionEnCours: 'Sedang keluar\u2026'
@@ -261,6 +275,7 @@ const DICO_MENU = {
     menuContact: 'Contact',
     ficheInvite: 'Je verkent nu als gast.',
     ficheBtnCompte: 'Account aanmaken',
+    ficheBtnReconnexion: 'Inloggen',
     ficheConnecte: 'Ingelogd',
     ficheBtnDeconnexion: 'Uitloggen',
     ficheDeconnexionEnCours: 'Bezig met uitloggen\u2026'
@@ -276,6 +291,7 @@ const DICO_MENU = {
     menuContact: 'Kontakt',
     ficheInvite: 'Du erkundest gerade als Gast.',
     ficheBtnCompte: 'Konto erstellen',
+    ficheBtnReconnexion: 'Anmelden',
     ficheConnecte: 'Angemeldet',
     ficheBtnDeconnexion: 'Abmelden',
     ficheDeconnexionEnCours: 'Wird abgemeldet\u2026'
@@ -291,6 +307,7 @@ const DICO_MENU = {
     menuContact: '\u062a\u0645\u0627\u0633',
     ficheInvite: '\u0627\u0644\u0627\u0646 \u0628\u0647\u200c\u0635\u0648\u0631\u062a \u0645\u0647\u0645\u0627\u0646 \u062f\u0631 \u062d\u0627\u0644 \u06a9\u0627\u0648\u0634 \u0647\u0633\u062a\u06cc.',
     ficheBtnCompte: '\u0633\u0627\u062e\u062a \u062d\u0633\u0627\u0628 \u06a9\u0627\u0631\u0628\u0631\u06cc',
+    ficheBtnReconnexion: 'ورود',
     ficheConnecte: '\u0648\u0627\u0631\u062f \u0634\u062f\u0647',
     ficheBtnDeconnexion: '\u062e\u0631\u0648\u062c',
     ficheDeconnexionEnCours: '\u062f\u0631 \u062d\u0627\u0644 \u062e\u0631\u0648\u062c\u2026'
@@ -306,6 +323,7 @@ const DICO_MENU = {
     menuContact: 'Kontakt',
     ficheInvite: 'Du utforskar just nu som g\u00e4st.',
     ficheBtnCompte: 'Skapa ett konto',
+    ficheBtnReconnexion: 'Logga in',
     ficheConnecte: 'Inloggad',
     ficheBtnDeconnexion: 'Logga ut',
     ficheDeconnexionEnCours: 'Loggar ut\u2026'
@@ -321,6 +339,7 @@ const DICO_MENU = {
     menuContact: 'Kontakt',
     ficheInvite: 'Du utforsker n\u00e5 som gjest.',
     ficheBtnCompte: 'Opprett konto',
+    ficheBtnReconnexion: 'Logg inn',
     ficheConnecte: 'Logget inn',
     ficheBtnDeconnexion: 'Logg ut',
     ficheDeconnexionEnCours: 'Logger ut\u2026'
@@ -336,6 +355,7 @@ const DICO_MENU = {
     menuContact: '\u041a\u043e\u043d\u0442\u0430\u043a\u0442\u044b',
     ficheInvite: '\u0421\u0435\u0439\u0447\u0430\u0441 \u0442\u044b \u0432 \u0433\u043e\u0441\u0442\u0435\u0432\u043e\u043c \u0440\u0435\u0436\u0438\u043c\u0435.',
     ficheBtnCompte: '\u0421\u043e\u0437\u0434\u0430\u0442\u044c \u0430\u043a\u043a\u0430\u0443\u043d\u0442',
+    ficheBtnReconnexion: 'Войти',
     ficheConnecte: '\u0412\u044b \u0432\u043e\u0448\u043b\u0438 \u0432 \u0441\u0438\u0441\u0442\u0435\u043c\u0443',
     ficheBtnDeconnexion: '\u0412\u044b\u0439\u0442\u0438',
     ficheDeconnexionEnCours: '\u0412\u044b\u0445\u043e\u0434\u2026'
@@ -376,10 +396,12 @@ function svgIconeMenu(id) {
  *
  * @param {string} idConteneur - id de l'élément hôte (vidé puis rempli).
  * @param {object} callbacks - { onHistoires, onPrives, onContact,
- *   onCreerCompte } — chacun optionnel ; non fourni = bouton inactif
- *   plutôt qu'une erreur. onCreerCompte est appelé depuis "Ma fiche" en
- *   mode invité (destination — probablement relancer la séquence
- *   identité — décidée par la page hôte, ce module ne le sait pas).
+ *   onCreerCompte, onSeReconnecter } — chacun optionnel ; non fourni =
+ *   bouton inactif plutôt qu'une erreur. onCreerCompte et onSeReconnecter
+ *   sont tous deux appelés depuis "Ma fiche" en mode invité (destination —
+ *   probablement relancer la séquence identité, à l'étape compte ou
+ *   directement en mode reconnexion — décidée par la page hôte, ce module
+ *   ne le sait pas).
  */
 async function demarrerMenuPrincipal(idConteneur, callbacks) {
   callbacks = callbacks || {};
@@ -464,10 +486,25 @@ async function demarrerMenuPrincipal(idConteneur, callbacks) {
         '<p class="kbm-fiche-texte">' + tMenuOuDefaut('ficheInvite', 'You\u2019re exploring as a guest for now.') + '</p>' +
         '<button type="button" class="kbm-fiche-btn kbm-fiche-btn-principal" id="kbmBtnCreerCompte">' +
           tMenuOuDefaut('ficheBtnCompte', 'Create an account') +
+        '</button>' +
+        // 🆕 "Se reconnecter" (demande de Raphaël, session du 13-08-2026) —
+        // un élève qui a déjà un compte mais se retrouve en mode invité sur
+        // cet appareil/fureteur (pas juste un tout nouvel élève) doit
+        // pouvoir le faire depuis "Ma fiche" aussi, pas seulement depuis le
+        // lien discret de l'écran "First time?" (index.html). Style discret
+        // (kbm-fiche-btn-discret, déjà utilisé pour "Se déconnecter") pour
+        // ne jamais concurrencer visuellement "Créer un compte", qui reste
+        // le choix par défaut pour la majorité des invités.
+        '<button type="button" class="kbm-fiche-btn kbm-fiche-btn-discret" id="kbmBtnSeReconnecter">' +
+          tMenuOuDefaut('ficheBtnReconnexion', 'Log in') +
         '</button>';
       const btnCompte = document.getElementById('kbmBtnCreerCompte');
       if (btnCompte && typeof callbacks.onCreerCompte === 'function') {
         btnCompte.addEventListener('click', callbacks.onCreerCompte);
+      }
+      const btnReconnexion = document.getElementById('kbmBtnSeReconnecter');
+      if (btnReconnexion && typeof callbacks.onSeReconnecter === 'function') {
+        btnReconnexion.addEventListener('click', callbacks.onSeReconnecter);
       }
     } else {
       panneauFiche.innerHTML =

@@ -492,6 +492,34 @@
 .iden-lien-invite:hover { color: var(--brun); }
 .iden-lien-invite:disabled { opacity: 0.5; cursor: not-allowed; }
 
+/* 🆕 Écran "Qui es-tu ?" (session du 13-08-2026) — un compte avec
+   plusieurs profils (ex. deux enfants) après reconnexion. Chaque
+   prénom est une pilule pleine cliquable, sur le même modèle visuel que
+   .iden-btn-valider mais empilées plutôt qu'un seul bouton d'action. */
+.iden-profil-choix-liste {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 8px 0 4px;
+}
+.iden-profil-choix-btn {
+  font-family: inherit;
+  font-size: 0.95rem;
+  font-weight: 700;
+  padding: 12px 20px;
+  border-radius: 100px;
+  border: 1.5px solid var(--peche);
+  background: #FFFFFF;
+  color: var(--brun);
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease, transform 0.15s ease;
+}
+.iden-profil-choix-btn:hover {
+  background: var(--peche);
+  color: #FFFFFF;
+  transform: translateY(-1px);
+}
+
 .iden-avertissement-invite {
   font-size: 0.72rem;
   color: var(--brun-clair, #8A7364);

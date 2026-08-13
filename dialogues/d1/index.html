@@ -1429,11 +1429,24 @@
       // — la question reste telle quelle, mais on accepte maintenant les
       // deux. `reponsesAlternatives` : autres suites de mots acceptées
       // comme entièrement correctes, en plus de `reponse`. Voir
-      // reponsesAcceptees() plus bas (utilisée par les deux modes) ;
-      // en mode facile (mots à choisir), chaque alternative doit avoir
-      // la MÊME longueur que `reponse`, car nbAChoisir s'appuie sur
-      // ex.reponse.length pour savoir quand déclencher la vérification.
-      reponsesAlternatives: [['le', 'sandwich']],
+      // reponsesAcceptees() plus bas (utilisée par les deux modes).
+      // Note : en mode facile « tuiles » (mots à choisir), nbAChoisir
+      // est fixé sur ex.reponse.length, donc une alternative plus
+      // longue n'est simplement pas atteignable par clic (aucune erreur
+      // — voir plus bas) ; elle reste acceptée en mode texte/difficile.
+      // 🆕 (retour Raphaël, 13-08-2026) : "C'est un sandwich" (phrase
+      // complète) est une troisième formulation acceptée, en plus de
+      // "un sandwich" et "le sandwich" — un élève plus avancé répond
+      // souvent par une phrase complète plutôt qu'un groupe nominal
+      // seul. Cette alternative a une longueur différente de reponse
+      // (3 mots contre 2) : elle reste invisible en mode facile
+      // « tuiles » (la tuile "c'est" n'existe pas dans motsDisponibles,
+      // donc cette formulation n'est simplement pas atteignable par
+      // clic — sans erreur), mais elle est bien acceptée dès que
+      // l'élève tape au clavier, en mode facile texte ou en mode
+      // difficile (voir reponsesAcceptees, evaluerReponseExercice,
+      // aucun des deux n'impose de longueur commune).
+      reponsesAlternatives: [['le', 'sandwich'], ["c'est", 'un', 'sandwich']],
       distracteurs: ['le', 'des'],
       instruction: {
         fr: 'Regarde l\u2019image. Qu\u2019est-ce que c\u2019est\u00A0?',
@@ -1462,6 +1475,9 @@
       id: 'd1_e3',
       image: '../../images/dialogues/d1/d1_e2_bek-sandwich_01.webp',
       reponse: ['merci'],
+      // 🆕 (retour Raphaël, 13-08-2026) : "Merci beaucoup" accepté en
+      // plus de "merci" seul — même logique que d1_e2 ci-dessus.
+      reponsesAlternatives: [['merci', 'beaucoup']],
       distracteurs: ["c'est", 'un'],
       instruction: {
         fr: 'Tu es Keb. Bek te donne un sandwich. Que dis-tu\u00A0?',
@@ -1497,6 +1513,20 @@
       // La bonne réponse dans banqueFacile doit correspondre exactement
       // à reponse.join(' ').
       reponse: ['Mange', '!'],
+      // 🆕 (retour Raphaël, 13-08-2026) : banqueFacile reste des
+      // variantes d'orthographe/erreurs de "Mange !" (mode facile,
+      // clic — une seule réponse exacte attendue). reponsesAlternatives
+      // ci-dessous couvre plutôt d'autres FORMULATIONS correctes qu'un
+      // élève plus avancé pourrait taper ("Mange ça", "Allez, mange",
+      // "Mange-le") — comparées mot à mot par evaluerReponseExercice,
+      // donc acceptées en mode difficile et en mode facile texte
+      // (bascule clavier), mais pas construisibles avec les tuiles de
+      // banqueFacile (voir note sur d1_e2).
+      reponsesAlternatives: [
+        ['Mange', 'ça', '!'],
+        ['Allez', 'mange', '!'],
+        ['Mange-le', '!']
+      ],
       banqueFacile: ['Mange !', 'Manger !', 'Mang !', 'Manj !', 'Manje !'],
       instruction: {
         fr: 'C\u2019est Bek qui demande à Keb de manger. Comment dis-tu à ton ami de commencer à manger\u00A0?',

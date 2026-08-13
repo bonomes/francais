@@ -2672,17 +2672,17 @@
   // être jamais passé par le sélecteur de index.html ne peut pas être
   // départagé — la progression affichée reste alors celle d'invité
   // (locale) jusqu'à ce qu'un profil soit choisi sur index.html.
+  // 🆕 Simplifié (session du 13-08-2026) : cette page avait la BONNE
+  // logique de restauration depuis le début — c'est elle qui a servi de
+  // modèle pour corriger index.html et dialogue-d1.html, qui en étaient
+  // dépourvues. Cette logique vit désormais dans une seule fonction
+  // partagée, KebBekProgression.restaurerSessionEtProfil() (progression.js),
+  // pour qu'un futur changement (ex. gérer les comptes à 2+ profils
+  // arrivant directement ici, voir note ci-dessus) n'ait plus qu'un seul
+  // endroit à corriger plutôt que trois copies à garder synchronisées.
   async function initProgressionReelle() {
-    await KebBekProgression.initSession();
-
-    if (KebBekProgression.session) {
-      const dernier = KebBekProgression.dernierProfilConnu();
-      if (dernier) {
-        KebBekProgression.profilActifId = dernier;
-      } else {
-        const profils = await KebBekProgression.profilsDuCompte();
-        if (profils.length === 1) KebBekProgression.profilActifId = profils[0].id;
-      }
+    if (window.KebBekProgression) {
+      await KebBekProgression.restaurerSessionEtProfil();
     }
 
     const progression = await KebBekProgression.lireProgression();

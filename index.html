@@ -1401,6 +1401,20 @@
     sceneRangee.style.display = 'none';
     lienCoursPrives.style.display = 'none';
     document.getElementById('menuPrincipal').style.display = '';
+    // 🐛 CORRIGÉ (13-08-2026, suite au signalement du sac qui disparaît) :
+    // display:none n'était jamais levé sur #sacBouton pour QUI QUE CE SOIT
+    // qui n'a pas VU l'animation lancerDeblocageSac (atterrir(), dans
+    // identite-eleve.js) — donc jamais pour "Non" (reponse === 'non'),
+    // jamais pour une reconnexion (etapeDepart:'reconnexion' saute
+    // entièrement cette animation), et jamais pour un retour depuis
+    // parcours.html (#menu-principal, reponse === 'retour'). Un élève qui
+    // a déjà son sac (par définition, s'il arrive jusqu'au menu — invité
+    // revenant ou compte existant) doit toujours le voir. Idempotent et
+    // sans effet pour le cas "oui" tout juste débloqué : le style inline
+    // est déjà à '' à ce moment-là, cette ligne ne fait alors que le
+    // confirmer.
+    const boutonSacMenu = document.getElementById('sacBouton');
+    if (boutonSacMenu) boutonSacMenu.style.display = '';
     KebBekMenu.demarrerMenuPrincipal('menuPrincipal', {
       onHistoires: function () { window.location.href = 'parcours.html'; },
       onPrives: function () { window.location.href = 'cours-prives/'; },

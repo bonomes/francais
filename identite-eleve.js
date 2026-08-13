@@ -430,7 +430,21 @@ const KebBekIdentite = (function () {
     creationCompteAvertissementInvite: 'Your progress could be lost if your browser data is cleared.',
     // 🆕 Bouton "quitter" persistant (voir callbacks.onQuitter) —
     // demande de Raphaël.
-    quitterAriaLabel: 'Close and go back'
+    quitterAriaLabel: 'Close and go back',
+    // 🆕 Reconnexion (session du 13-08-2026) — repli anglais uniquement,
+    // même principe que le reste de TEXTES_PAR_DEFAUT : aucune entrée
+    // 'fr' n'existe dans TEXTES_IDENTITE (index.html), donc ce repli
+    // sert déjà toutes les langues tant que Raphaël n'a pas fourni de
+    // traductions dédiées à ces nouvelles clés.
+    reconnexionTitre: 'Log back in',
+    reconnexionTexte: 'Enter your email again — we\u2019ll send you a new code.',
+    reconnexionBtnEnvoyer: 'Send code',
+    reconnexionErreurCompteInconnu: 'No account found for that email. Want to create one instead?',
+    reconnexionLienDepuisConfirmation: 'I already have an account — log me in',
+    reconnexionBoutonMenu: 'Log in',
+    profilChoixTitre: 'Who are you?',
+    profilChoixAjouter: '+ Add a profile',
+    profilPrenomTitre: 'What\u2019s your first name?'
   };
 
   function texte(options, cle) {
@@ -1318,7 +1332,19 @@ const KebBekIdentite = (function () {
       else reculerActif(); // glissé vers la droite : image précédente
     }, { passive: false });
 
-    afficherBulle(IMAGES_INTRO[0].dialogueCle);
+    // 🆕 options.etapeDepart === 'reconnexion' (session du 13-08-2026) —
+    // saute entièrement l'intro Keb/Bek/prénom/silhouette pour arriver
+    // directement à l'écran courriel+code, en mode reconnexion
+    // (lancerCreationCompte(null) — voir ce mode plus bas). Utilisé par
+    // le bouton "Se reconnecter" d'index.html, hors séquence normale.
+    // #idenPersonnages reste affiché tel quel (image Keb statique, même
+    // habillage que l'étape de création de compte dans le parcours
+    // normal) — seule la bulle de dialogue d'intro est sautée.
+    if (options.etapeDepart === 'reconnexion') {
+      lancerCreationCompte(null);
+    } else {
+      afficherBulle(IMAGES_INTRO[0].dialogueCle);
+    }
 
     // 🐛 CORRIGÉ (session navigation) : avoir tabIndex=0 sur #idenPersonnages
     // le rend focusable, mais ne lui donne PAS le focus automatiquement —
@@ -2971,6 +2997,21 @@ const KebBekIdentite = (function () {
 
       action.appendChild(boutons);
 
+      // 🆕 "Se reconnecter" (demande de Raphaël, session du 13-08-2026) —
+      // pour l'élève qui a déjà un compte mais s'est retrouvé·e ici (ex.
+      // a cliqué "Oui, première fois ?" par erreur, ou a oublié). Ignore
+      // volontairement le {prenom, genre, adulte} qu'on vient de
+      // collecter (s) : lancerCreationCompte(null) bascule en mode
+      // reconnexion, qui redemande courriel+code puis retrouve le VRAI
+      // profil existant via apresAuthentification(), plutôt que de créer
+      // une fiche avec ce qui vient d'être saisi ici par erreur.
+      const btnReconnexion = document.createElement('button');
+      btnReconnexion.type = 'button';
+      btnReconnexion.className = 'iden-lien-invite iden-lien-reconnexion';
+      btnReconnexion.textContent = texte(options, 'reconnexionLienDepuisConfirmation');
+      btnReconnexion.addEventListener('click', function () { lancerCreationCompte(null); });
+      action.appendChild(btnReconnexion);
+
       etapeScene = 'inactive';
       avancerActif = function () {};
       reculerActif = function () {};
@@ -3140,19 +3181,30 @@ const KebBekIdentite = (function () {
     // CDN Supabase avant lui — voir index.html) plutôt que de créer son
     // propre client, pour ne jamais désynchroniser deux instances
     // différentes du SDK sur la même page.
+    // 🆕 s === null signale le mode RECONNEXION (session du 13-08-2026) :
+    // appelé soit depuis demarrerSequenceIdentite(..., 'reconnexion')
+    // (bouton sur index.html, hors séquence), soit depuis le lien "J'ai
+    // déjà un compte" de lancerConfirmationIdentite ci-dessus (l'élève
+    // vient de passer par prénom/genre/silhouette mais a en fait déjà un
+    // compte). Dans ce mode : pas de "continuer en invité" (n'a pas de
+    // sens ici), shouldCreateUser:false (un courriel inconnu ne doit PAS
+    // silencieusement créer un nouveau compte Auth), et après le code,
+    // apresAuthentification(null) retrouve le/les profils existants sans
+    // jamais appeler creerProfil() à l'aveugle.
     function lancerCreationCompte(s) {
+      const modeReconnexion = !s;
       action.innerHTML = '';
       indice.style.display = 'none';
 
       const titre = document.createElement('div');
       titre.className = 'iden-titre';
-      titre.textContent = texte(options, 'creationCompteTitre');
+      titre.textContent = texte(options, modeReconnexion ? 'reconnexionTitre' : 'creationCompteTitre');
       action.appendChild(titre);
 
       const intro = document.createElement('p');
       intro.className = 'iden-indice';
       intro.style.margin = '-6px 0 0';
-      intro.textContent = texte(options, 'creationCompteTexte');
+      intro.textContent = texte(options, modeReconnexion ? 'reconnexionTexte' : 'creationCompteTexte');
       action.appendChild(intro);
 
       const champEmail = document.createElement('input');
@@ -3165,7 +3217,7 @@ const KebBekIdentite = (function () {
       const btnEnvoyer = document.createElement('button');
       btnEnvoyer.type = 'button';
       btnEnvoyer.className = 'iden-btn-valider';
-      btnEnvoyer.textContent = texte(options, 'creationCompteBtnEnvoyer');
+      btnEnvoyer.textContent = texte(options, modeReconnexion ? 'reconnexionBtnEnvoyer' : 'creationCompteBtnEnvoyer');
       action.appendChild(btnEnvoyer);
 
       const msgDiv = document.createElement('div');
@@ -3188,29 +3240,33 @@ const KebBekIdentite = (function () {
       // (dessinerEtapeCode), qui route automatiquement vers le stockage
       // local quand aucune session n'est active (voir sa propre
       // implémentation dans progression.js) — rien de spécifique à coder
-      // ici pour le mode invité lui-même.
-      const btnInvite = document.createElement('button');
-      btnInvite.type = 'button';
-      btnInvite.className = 'iden-lien-invite';
-      btnInvite.textContent = texte(options, 'creationCompteLienInvite');
-      action.appendChild(btnInvite);
+      // ici pour le mode invité lui-même. Absent en mode reconnexion : on
+      // n'a pas de `s` (identité) à enregistrer pour un invité ici, et ça
+      // n'aurait de toute façon aucun sens dans ce contexte.
+      if (!modeReconnexion) {
+        const btnInvite = document.createElement('button');
+        btnInvite.type = 'button';
+        btnInvite.className = 'iden-lien-invite';
+        btnInvite.textContent = texte(options, 'creationCompteLienInvite');
+        action.appendChild(btnInvite);
 
-      const avertissementInvite = document.createElement('p');
-      avertissementInvite.className = 'iden-avertissement-invite';
-      avertissementInvite.textContent = texte(options, 'creationCompteAvertissementInvite');
-      action.appendChild(avertissementInvite);
+        const avertissementInvite = document.createElement('p');
+        avertissementInvite.className = 'iden-avertissement-invite';
+        avertissementInvite.textContent = texte(options, 'creationCompteAvertissementInvite');
+        action.appendChild(avertissementInvite);
 
-      btnInvite.addEventListener('click', async function () {
-        btnInvite.disabled = true;
-        if (window.KebBekProgression) {
-          try {
-            await window.KebBekProgression.enregistrerIdentite(s.genre, undefined, undefined, s.adulte);
-          } catch (e) {
-            console.warn('lancerCreationCompte : enregistrerIdentite (invité) a échoué.', e);
+        btnInvite.addEventListener('click', async function () {
+          btnInvite.disabled = true;
+          if (window.KebBekProgression) {
+            try {
+              await window.KebBekProgression.enregistrerIdentite(s.genre, undefined, undefined, s.adulte);
+            } catch (e) {
+              console.warn('lancerCreationCompte : enregistrerIdentite (invité) a échoué.', e);
+            }
           }
-        }
-        if (typeof callbacks.onComplet === 'function') callbacks.onComplet(s);
-      });
+          if (typeof callbacks.onComplet === 'function') callbacks.onComplet(s);
+        });
+      }
 
       btnEnvoyer.addEventListener('click', async function () {
         const email = champEmail.value.trim();
@@ -3226,9 +3282,16 @@ const KebBekIdentite = (function () {
           btnEnvoyer.disabled = false;
           return;
         }
-        const { error } = await client.auth.signInWithOtp({ email: email, options: { shouldCreateUser: true } });
+        // 🆕 shouldCreateUser: !modeReconnexion — en reconnexion, un
+        // courriel qui n'a AUCUN compte ne doit pas en créer un
+        // silencieusement (message dédié ci-dessous plutôt que le texte
+        // brut renvoyé par Supabase, pas toujours limpide pour un élève).
+        const { error } = await client.auth.signInWithOtp({ email: email, options: { shouldCreateUser: !modeReconnexion } });
         btnEnvoyer.disabled = false;
-        if (error) { afficherMsg(error.message, true); return; }
+        if (error) {
+          afficherMsg(modeReconnexion ? texte(options, 'reconnexionErreurCompteInconnu') : error.message, true);
+          return;
+        }
         afficherMsg(texte(options, 'creationCompteCodeEnvoye'), false);
         dessinerEtapeCode(email);
       });
@@ -3238,7 +3301,7 @@ const KebBekIdentite = (function () {
 
         const titreCode = document.createElement('div');
         titreCode.className = 'iden-titre';
-        titreCode.textContent = texte(options, 'creationCompteTitre');
+        titreCode.textContent = texte(options, modeReconnexion ? 'reconnexionTitre' : 'creationCompteTitre');
         action.appendChild(titreCode);
 
         const msgEnvoye = document.createElement('p');
@@ -3291,22 +3354,12 @@ const KebBekIdentite = (function () {
           // jamais son nom change là-bas.
           try { localStorage.removeItem('kebbek_invite'); } catch (e) {}
 
-          const resultat = await window.KebBekProgression.creerProfil(s.prenom);
-          if (resultat && resultat.profil && resultat.profil.id) {
-            window.KebBekProgression.definirProfilActif(resultat.profil.id);
-            if (resultat.estNouveau) {
-              await window.KebBekProgression.migrerProgressionInviteVersCompte(resultat.profil.id);
-              await window.KebBekProgression.migrerIdentiteInviteVersCompte(resultat.profil.id);
-            }
-            // prenom/nationalite non touchés ici (undefined) : le prénom
-            // est déjà écrit via creerProfil ci-dessus, la nationalité
-            // n'est pas encore collectée à ce stade de la séquence.
-            await window.KebBekProgression.enregistrerIdentite(s.genre, undefined, undefined, s.adulte);
-          } else {
-            console.warn('lancerCreationCompte : creerProfil n\'a pas retourné de profil exploitable.', resultat);
-          }
-
-          if (typeof callbacks.onComplet === 'function') callbacks.onComplet(s);
+          // 🆕 Routeur commun compte/reconnexion (voir apresAuthentification
+          // plus bas) — remplace l'ancien appel direct à creerProfil(),
+          // qui créait une fiche élève VIERGE à chaque reconnexion (bug
+          // signalé par Raphaël), sans jamais vérifier si le compte en
+          // avait déjà une.
+          await apresAuthentification(s);
         });
         champCode.addEventListener('keydown', function (e) { if (e.key === 'Enter') btnVerifier.click(); });
         champCode.focus();
@@ -3314,6 +3367,159 @@ const KebBekIdentite = (function () {
 
       champEmail.addEventListener('keydown', function (e) { if (e.key === 'Enter') btnEnvoyer.click(); });
       champEmail.focus();
+
+      etapeScene = 'inactive';
+      avancerActif = function () {};
+      reculerActif = function () {};
+      personnages.focus();
+    }
+
+    // ================================================================
+    // 🆕 Routeur post-authentification (session du 13-08-2026) — appelé
+    // une fois le code OTP vérifié avec succès, que ce soit depuis
+    // "Créer un compte" (s connu : {prenom, genre, adulte}) ou
+    // "Se reconnecter" (s === null, rien encore collecté). Décide QUOI
+    // FAIRE du compte selon ce qui existe déjà côté Supabase, plutôt que
+    // de toujours appeler creerProfil() à l'aveugle :
+    //   - 0 profil  → vraiment un nouveau compte → creerNouveauProfil(s)
+    //     (demande un prénom d'abord si s est encore null, ex. quelqu'un
+    //     qui clique "Se reconnecter" sur un compte flambant neuf jamais
+    //     complété).
+    //   - 1 profil  → reconnexion normale, AUCUNE nouvelle fiche créée
+    //     → on adopte directement ce profil-là.
+    //   - 2+ profils → plusieurs enfants sur le même courriel (cas prévu
+    //     de longue date, voir profilsDuCompte()) → écran "Qui es-tu ?"
+    //     pour choisir, avec une option pour en ajouter un nouveau.
+    // ================================================================
+    async function apresAuthentification(s) {
+      let profils = [];
+      try {
+        profils = await window.KebBekProgression.profilsDuCompte();
+      } catch (e) {
+        console.warn('apresAuthentification : profilsDuCompte a échoué.', e);
+      }
+
+      if (profils.length === 1) { utiliserProfilExistant(profils[0]); return; }
+      if (profils.length > 1) { dessinerChoixProfil(profils, s); return; }
+      await creerNouveauProfil(s);
+    }
+
+    // Adopte un profil DÉJÀ existant — jamais de migration invité→compte
+    // ici (règle de fusion : uniquement au tout premier creerProfil()
+    // réussi, jamais sur une reconnexion normale), jamais d'écriture non
+    // plus (on ne touche pas à une identité déjà enregistrée).
+    function utiliserProfilExistant(profil) {
+      window.KebBekProgression.definirProfilActif(profil.id);
+      if (typeof callbacks.onComplet === 'function') {
+        callbacks.onComplet({ prenom: profil.prenom, genre: profil.genre, adulte: profil.adulte });
+      }
+    }
+
+    // Crée une toute nouvelle fiche élève. Si s est encore null (venu du
+    // mode reconnexion, aucun prénom collecté), demande d'abord un
+    // prénom minimal (dessinerDemandePrenomSeul) avant de continuer —
+    // pas besoin de rejouer toute la séquence silhouette/genre pour ce
+    // cas marginal, ces champs restent modifiables ensuite via l'écran
+    // "Modifier mes informations" déjà existant.
+    async function creerNouveauProfil(s) {
+      if (!s) { dessinerDemandePrenomSeul(creerNouveauProfil); return; }
+      const resultat = await window.KebBekProgression.creerProfil(s.prenom);
+      if (resultat && resultat.profil && resultat.profil.id) {
+        window.KebBekProgression.definirProfilActif(resultat.profil.id);
+        if (resultat.estNouveau) {
+          await window.KebBekProgression.migrerProgressionInviteVersCompte(resultat.profil.id);
+          await window.KebBekProgression.migrerIdentiteInviteVersCompte(resultat.profil.id);
+        }
+        // prenom/nationalite non touchés ici (undefined) : le prénom est
+        // déjà écrit via creerProfil ci-dessus, la nationalité n'est pas
+        // encore collectée à ce stade de la séquence.
+        await window.KebBekProgression.enregistrerIdentite(s.genre, undefined, undefined, s.adulte);
+      } else {
+        console.warn('creerNouveauProfil : creerProfil n\'a pas retourné de profil exploitable.', resultat);
+      }
+      if (typeof callbacks.onComplet === 'function') callbacks.onComplet(s);
+    }
+
+    // 🆕 Écran "Qui es-tu ?" — un profil par prénom existant (tap =
+    // utiliserProfilExistant), + une option pour en ajouter un nouveau
+    // (tap = creerNouveauProfil, qui redemande un prénom si besoin, voir
+    // ci-dessus). Réutilise action/indice comme le reste de la séquence.
+    function dessinerChoixProfil(profils, s) {
+      action.innerHTML = '';
+      indice.style.display = 'none';
+
+      const titre = document.createElement('div');
+      titre.className = 'iden-titre';
+      titre.textContent = texte(options, 'profilChoixTitre');
+      action.appendChild(titre);
+
+      const liste = document.createElement('div');
+      liste.className = 'iden-profil-choix-liste';
+      profils.forEach(function (profil) {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'iden-profil-choix-btn';
+        btn.textContent = profil.prenom;
+        btn.addEventListener('click', function () { utiliserProfilExistant(profil); });
+        liste.appendChild(btn);
+      });
+      action.appendChild(liste);
+
+      const btnAjouter = document.createElement('button');
+      btnAjouter.type = 'button';
+      btnAjouter.className = 'iden-lien-invite';
+      btnAjouter.textContent = texte(options, 'profilChoixAjouter');
+      btnAjouter.addEventListener('click', function () { creerNouveauProfil(s); });
+      action.appendChild(btnAjouter);
+
+      etapeScene = 'inactive';
+      avancerActif = function () {};
+      reculerActif = function () {};
+      personnages.focus();
+    }
+
+    // 🆕 Mini-formulaire prénom seul — utilisé uniquement quand on arrive
+    // à creerNouveauProfil() sans prénom déjà connu (mode reconnexion,
+    // 0 ou 2+ profils avec "Ajouter un profil"). Réutilise validerNom()/
+    // messageErreur(), déjà en place pour la vraie séquence de saisie du
+    // nom plus haut, plutôt que de dupliquer une validation différente.
+    function dessinerDemandePrenomSeul(suite) {
+      action.innerHTML = '';
+      indice.style.display = 'none';
+
+      const titre = document.createElement('div');
+      titre.className = 'iden-titre';
+      titre.textContent = texte(options, 'profilPrenomTitre');
+      action.appendChild(titre);
+
+      const champ = document.createElement('input');
+      champ.type = 'text';
+      champ.className = 'iden-champ-nom';
+      champ.placeholder = texte(options, 'labelChampNom');
+      action.appendChild(champ);
+
+      const btnValider = document.createElement('button');
+      btnValider.type = 'button';
+      btnValider.className = 'iden-btn-valider';
+      btnValider.textContent = texte(options, 'labelValider');
+      action.appendChild(btnValider);
+
+      const erreurDiv = document.createElement('div');
+      erreurDiv.className = 'iden-erreur';
+      action.appendChild(erreurDiv);
+
+      btnValider.addEventListener('click', function () {
+        const resultat = validerNom(champ.value);
+        if (!resultat.valide) {
+          erreurDiv.textContent = messageErreur(resultat.raison);
+          erreurDiv.classList.add('in');
+          return;
+        }
+        btnValider.disabled = true;
+        suite({ prenom: champ.value.trim(), genre: undefined, adulte: undefined });
+      });
+      champ.addEventListener('keydown', function (e) { if (e.key === 'Enter') btnValider.click(); });
+      champ.focus();
 
       etapeScene = 'inactive';
       avancerActif = function () {};

@@ -984,6 +984,21 @@
   // 'mange' est un tutoiement (impératif informel) — seul mot informel de
   // ce dialogue à ce jour, voir gImperatif ci-dessus.
   const MOTS_INFORMELS = new Set(['mange']);
+
+  // Nature grammaticale de chaque mot de ce dialogue — alimente le
+  // sous-groupement par nature du sac à dos (voir NATURES_MOTS dans
+  // sac-a-dos.js). Un mot absent d'ici tombe dans 'autre' côté sac,
+  // donc toute nouvelle réplique ajoutée au dialogue doit penser à
+  // compléter cette table.
+  const NATURE_MOTS = {
+    "j'ai": 'verbe', 'un': 'article', 'faim': 'nom', 'mange': 'verbe',
+    'quoi': 'pronom', 'mon': 'adjectif', 'sandwich': 'nom',
+    'oh': 'interjection', 'merci': 'interjection'
+  };
+
+  function natureDeMot(mot) {
+    return NATURE_MOTS[mot.toLowerCase()] || 'autre';
+  }
   const ETIQUETTE_INFORMEL = {
     fr: '(tutoiement)', en: '(informal)', es: '(informal)', it: '(informale)',
     pt: '(informal)', ca: '(informal)', eo: '(neformala)', zh: '（非正式）',
@@ -1165,7 +1180,7 @@
   function ajouterMotAuSac(span, mot) {
     if (typeof window.ajouterAuSac !== 'function') return; // sac-a-dos.js absent : repli silencieux
     const cle = mot.toLowerCase();
-    window.ajouterAuSac('mots', { mot: cle, trad: traductionDeMot(mot) || '', informel: motEstInformel(mot) });
+    window.ajouterAuSac('mots', { mot: cle, trad: traductionDeMot(mot) || '', informel: motEstInformel(mot), type: natureDeMot(mot) });
     animerMotVersSac(span);
     if (motsDejaAjoutes.has(cle)) return;
     motsDejaAjoutes.add(cle);

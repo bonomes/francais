@@ -73,10 +73,14 @@
      marquerCarteResolue() à chaque exercice résolu, best-effort via
      KebBekProgression.attribuerRecompensePremiereFois(cle, piasses,
      pointsBonis), une clé distincte par palier (d1_exercices_base /
-     d1_exercices_parfait / d1_exercices_parfait_difficile). Suppose
-     cette fonction générique et idempotente PAR clé (déjà observé avec
-     la clé 'd1' de l'ancien système) — jamais vérifié directement dans
-     progression.js (fichier non fourni à ce jour). À confirmer.
+     d1_exercices_parfait / d1_exercices_parfait_difficile). VÉRIFIÉ
+     directement sur Supabase (projet Bravo, session du 13-08-2026, via
+     le connecteur) : attribuer_recompense_premiere_fois(p_eleve_id uuid,
+     p_chapitre_id text, p_piasses int, p_points_bonis int) existe bien ;
+     p_chapitre_id est un TEXT libre (aucune contrainte vers une table
+     chapitres), utilisé comme clé de recompenses_chapitre_attribuees
+     dont la PK composite est (eleve_id, chapitre_id) — donc n'importe
+     quelle chaîne fonctionne comme clé d'idempotence, une par palier.
      ================================================================== */
 
   :root {
@@ -2061,11 +2065,10 @@
   // les exercices avaient été faits — voir terminerLecon(), qui ne gère
   // plus que marquerChapitreComplete (déblocage du parcours), une
   // notion distincte de la monnaie.
-  // ⚠️ Suppose que attribuerRecompensePremiereFois(cle, piasses, pointsBonis)
-  // accepte une clé arbitraire et est idempotente PAR clé — comportement
-  // déjà observé avec la clé 'd1' existante, mais jamais vérifié
-  // directement dans progression.js (fichier non fourni). À confirmer
-  // avant mise en prod si possible.
+  // ✅ Vérifié sur Supabase (projet Bravo, 13-08-2026) : p_chapitre_id
+  // est un TEXT libre, clé de recompenses_chapitre_attribuees (PK
+  // composite eleve_id+chapitre_id) — n'importe quelle chaîne convient
+  // comme clé d'idempotence, une par palier.
   function verifierRecompensesExercices() {
     if (!recompensesExercicesDonnees.base && exercicesResolus.size === EXERCICES.length) {
       recompensesExercicesDonnees.base = true;

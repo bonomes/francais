@@ -1357,49 +1357,43 @@
     </svg>
   </button>
 
-  <!-- Sac à dos : même prototype de Raphaël (demo_sac_a_dos.html) que sur
-       index.html, mêmes ids/classes/fonctions — voir commentaire CSS
-       ci-dessus. Doit suivre l'apprenant sur toutes les pages post-
-       connexion (BONOMES_v35) ; intégré ici en premier après index.html.
-       Contenu encore vide en pratique (rien ne débloque quoi que ce soit
-       ailleurs sur le site pour l'instant) : le bouton "+ item test" sert
-       seulement à vérifier l'affichage, à retirer une fois le site
-       connecté à de vraies sources (leçons, succès, etc.), en même temps
-       que sur index.html. -->
-  <button type="button" id="sacBouton" aria-label="Sac à dos" onclick="toggleSacADos()">
-    <svg id="iconeSac" width="26" height="26" viewBox="0 0 64 64" fill="none">
-      <path d="M22 22 C20 14, 24 8, 32 8 C40 8, 44 14, 42 22" stroke="#8A7364" stroke-width="3" stroke-linecap="round" fill="none"/>
-      <rect x="14" y="24" width="36" height="30" rx="10" fill="#C99A7C"/>
-      <rect x="20" y="38" width="24" height="14" rx="7" fill="#B5825F"/>
-      <g class="contenu-eclat">
-        <circle cx="26" cy="30" r="2.4" fill="#F0A98B"/>
-        <circle cx="34" cy="28" r="1.8" fill="#EAF3DE"/>
-        <circle cx="38" cy="32" r="2" fill="#F0A98B"/>
-      </g>
-      <g class="rabat">
-        <path d="M14 30 C14 20, 18 16, 32 16 C46 16, 50 20, 50 30 L50 24 C50 20, 46 18, 32 18 C18 18, 14 20, 14 24 Z" fill="#C99A7C"/>
-        <path d="M14 24 C14 16, 18 12, 32 12 C46 12, 50 16, 50 24 C50 25.5, 49 26, 47.5 26 L16.5 26 C15 26, 14 25.5, 14 24 Z" fill="#DCB396"/>
-        <circle cx="32" cy="24" r="2.6" fill="#8A7364"/>
-      </g>
-    </svg>
-    <span class="sac-badge" id="sacBadge">0</span>
+  <!-- 🆕 Sac à dos : VRAIE intégration de sac-a-dos.js/.css, remplace
+       l'ancien prototype (SVG maison, ids sacTitre/sacAvertissement/
+       btnAjouterTest) qui n'avait jamais été migré depuis l'extraction de
+       sac-a-dos.js — voir échange avec Raphaël du 13-08-2026 : c'était la
+       cause du "vieux sac" affiché sur cette page. Structure copiée à
+       l'identique de dialogue-d1.html (référence confirmée fonctionnelle),
+       chemins simplement ramenés à la racine (parcours.html est au même
+       niveau qu'index.html, pas dans lecons/**). #btnAjouterTest retiré
+       comme sur dialogue-d1.html/intro-bonomes.html : plus de bouton de
+       test une fois une vraie page connectée. Visible dès le chargement
+       (pas de style="display:none") : parcours.html n'est atteignable
+       qu'après le menu principal, donc le sac est par définition déjà
+       acquis ici — même raisonnement que dialogue-d1.html. -->
+  <button type="button" id="sacBouton" onclick="toggleSacADos()" aria-label="Backpack">
+    <span id="iconeSac" class="sac-icone">
+      <img class="sac-icone-img sac-icone-fermee" src="images/accueil/index_bonomes_icone_sac_01.webp" width="26" height="26" alt="">
+      <img class="sac-icone-img sac-icone-ouverte" src="images/accueil/index_bonomes_icone_sac_01_ouvert.webp" width="26" height="26" alt="">
+    </span>
+    <span class="sac-badge vide" id="sacBadge">0</span>
   </button>
 
   <div id="sacPanneau">
     <div class="sac-entete">
-      <span id="sacTitre">My backpack</span>
-      <div class="sac-sous-titre" id="sacSousTitre">nothing yet</div>
+      <span id="sacEnteteTitre">Your backpack</span>
+      <div class="sac-sous-titre" id="sacSousTitre"></div>
     </div>
-
-    <div class="sac-corps" id="sacCorps"><!-- rempli par JS --></div>
-
-    <div class="sac-avertissement" id="sacAvertissement">
-      This backpack is saved on this device only. Sign in to keep it for good, even if you switch devices.
+    <!-- Solde P$/PB — rempli par rafraichirSoldeSac() dans sac-a-dos.js
+         (voir progression.js:lireSolde()), absent de l'ancien prototype. -->
+    <div class="sac-solde" id="sacSolde">
+      <span class="sac-solde-item"><span class="sac-solde-valeur" id="sacSoldePiasses">0</span><span class="sac-solde-etiquette">P$</span></span>
+      <span class="sac-solde-item"><span class="sac-solde-valeur" id="sacSoldePointsBonis">0</span><span class="sac-solde-etiquette">PB</span></span>
     </div>
-
+    <div class="sac-corps" id="sacCorps"></div>
     <div class="sac-pied">
-      <button id="btnConnexionDepuisSac" onclick="window.location.href = 'index.html#connexion'">Sign in</button>
-      <button id="btnAjouterTest" onclick="ajouterExempleAleatoireSac()">+ test item</button>
+      <button type="button" id="btnCopierToutSac" onclick="copierToutSac(this)">Copy the whole backpack</button>
+      <button type="button" id="btnViderToutSac" onclick="viderToutSac()">Clear everything</button>
+      <button type="button" id="btnFermerSac" onclick="toggleSacADos()" aria-label="Close" title="Close">&times;</button>
     </div>
   </div>
 
@@ -1654,11 +1648,14 @@
   document.getElementById('rechercheInput').placeholder = t('recherche_placeholder');
   document.getElementById('imgMarqueur').alt = t('marqueur_alt');
   document.getElementById('carteInfoFermer').setAttribute('aria-label', t('fermer_aria'));
-  document.getElementById('sacBouton').setAttribute('aria-label', t('sacTitre'));
-  document.getElementById('sacTitre').textContent = t('sacTitre');
-  document.getElementById('sacAvertissement').textContent = t('sacAvertissement');
-  document.getElementById('btnConnexionDepuisSac').textContent = t('sacConnexion');
-  document.getElementById('btnAjouterTest').textContent = t('sacTestItem');
+  // 🆕 Les 5 lignes qui vivaient ici (sacBouton aria-label, #sacTitre,
+  // #sacAvertissement, #btnConnexionDepuisSac, #btnAjouterTest) référençaient
+  // des ids de l'ancien prototype de sac, retiré (voir bloc HTML plus haut) —
+  // elles auraient fait planter le reste de ce script (élément introuvable)
+  // dès le premier changement de langue. Le sac se traduit maintenant
+  // lui-même, en interne, via DICO_SAC/tSacOuDefaut()/langueActuelleSac()
+  // dans sac-a-dos.js — exactement comme sur index.html et dialogue-d1.html,
+  // rien à faire ici.
 
   // ==================================================================
   // Son — synthèse légère via Web Audio, pas de fichier audio (aucun

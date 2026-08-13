@@ -828,6 +828,29 @@
 
 <script>
 
+  // 🐛 CORRIGÉ (session du 13-08-2026, signalé par Raphaël, même défaut
+  // que index.html/allerAuMenuPrincipal) : cette page n'appelait JAMAIS
+  // KebBekProgression.initSession() ni ne restaurait profilActifId.
+  // Comme progression.js garde sessionActuelle/profilActifId en simple
+  // mémoire JS (remis à null à chaque nouveau chargement de page), un
+  // élève CONNECTÉ qui arrivait directement sur dialogue-d1.html (depuis
+  // parcours.html, un lien, un signet...) voyait marquerChapitreComplete/
+  // marquerConditionComplete/attribuerRecompensePremiereFois retomber
+  // silencieusement en mode invité : sa progression et ses récompenses
+  // s'écrivaient dans le localStorage au lieu de son compte Supabase —
+  // perdues au prochain nettoyage du navigateur ou sur un autre appareil.
+  // 🆕 Simplifié depuis : appelle désormais
+  // KebBekProgression.restaurerSessionEtProfil() (progression.js), la
+  // même fonction partagée qu'index.html/parcours.html — un seul endroit
+  // à corriger si cette logique doit changer un jour, plutôt qu'une
+  // copie par page. Lancée tout en haut du script (avant tout écouteur
+  // d'interaction) pour que la session soit rétablie avant qu'un élève
+  // ait la moindre chance de cliquer sur le sandwich, un exercice, ou
+  // "Terminer".
+  let restaurationSessionPromesse = window.KebBekProgression
+    ? KebBekProgression.restaurerSessionEtProfil()
+    : Promise.resolve();
+
   // ================================================================
   // Contenu du dialogue — confirmé par Raphaël (session du 08-08-2026).
   // 'grammaire' est une clé optionnelle vers GRAMMAIRE ci-dessous ; toutes
@@ -1596,10 +1619,16 @@
     greffe.setAttribute('role', 'button');
     greffe.setAttribute('aria-label', 'Le sandwich');
     let sandwichDejaTouche = false; // évite un appel réseau à chaque tap répété dans la même visite
-    function toucherSandwich(e) {
+    async function toucherSandwich(e) {
       e.stopPropagation();
       if (sandwichDejaTouche) return;
       sandwichDejaTouche = true;
+      // 🐛 CORRIGÉ : attend la restauration session/profil (voir tout en
+      // haut du fichier) — sans ce await, un tap assez rapide sur le
+      // sandwich pouvait s'exécuter AVANT que initSession() ait fini de
+      // résoudre, et retombait donc en mode invité malgré un élève
+      // connecté.
+      await restaurationSessionPromesse;
       if (window.KebBekProgression && window.KebBekProgression.marquerConditionComplete) {
         window.KebBekProgression.marquerConditionComplete('d1_clic_sandwich')
           .catch(function (err) { console.warn('dialogue-d1.html : marquerConditionComplete a échoué.', err); });
@@ -2065,10 +2094,16 @@
       // sur les quatre exercices.
       if (exercicesResolusDifficile.size === EXERCICES.length) {
         afficherRemarqueDifficile();
-        if (window.KebBekProgression && window.KebBekProgression.marquerConditionComplete) {
-          window.KebBekProgression.marquerConditionComplete('d1_exercices_completes')
-            .catch(function (err) { console.warn('dialogue-d1.html : marquerConditionComplete (exercices difficiles) a échoué.', err); });
-        }
+        // 🐛 CORRIGÉ : attend restaurationSessionPromesse avant d'écrire —
+        // même raison que toucherSandwich(). IIFE async car ce bloc n'est
+        // pas lui-même dans une fonction async (marquerCarteResolue).
+        (async function () {
+          await restaurationSessionPromesse;
+          if (window.KebBekProgression && window.KebBekProgression.marquerConditionComplete) {
+            window.KebBekProgression.marquerConditionComplete('d1_exercices_completes')
+              .catch(function (err) { console.warn('dialogue-d1.html : marquerConditionComplete (exercices difficiles) a échoué.', err); });
+          }
+        })();
       }
     }
     verifierRecompensesExercices();
@@ -2109,8 +2144,11 @@
     }
   }
 
-  function attribuerRecompenseExercice(cle, piasses, pointsBonis) {
+  // 🐛 CORRIGÉ : attend restaurationSessionPromesse (voir tout en haut
+  // du fichier) avant d'écrire — même raison que toucherSandwich().
+  async function attribuerRecompenseExercice(cle, piasses, pointsBonis) {
     if (!window.KebBekProgression || !window.KebBekProgression.attribuerRecompensePremiereFois) return;
+    await restaurationSessionPromesse;
     window.KebBekProgression.attribuerRecompensePremiereFois(cle, piasses, pointsBonis)
       .catch(function (err) { console.warn('dialogue-d1.html : attribuerRecompensePremiereFois(' + cle + ') a échoué.', err); });
   }
@@ -2389,6 +2427,13 @@
     btnSuivant.disabled = true;
     btnSuivant.textContent = 'Enregistrement…';
     try {
+      // 🐛 CORRIGÉ : attend restaurationSessionPromesse (voir tout en
+      // haut du fichier) avant d'écrire — même raison que
+      // toucherSandwich(). C'est ici le point le plus critique : sans ce
+      // await, un élève connecté qui termine vite pourrait voir tout le
+      // chapitre 'd1' marqué complété en mode invité (localStorage) au
+      // lieu de son compte.
+      await restaurationSessionPromesse;
       await KebBekProgression.marquerChapitreComplete('d1');
     } catch (e) {
       console.warn('dialogue-d1.html : impossible d\u2019enregistrer la fin du dialogue.', e);

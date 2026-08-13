@@ -662,6 +662,30 @@
   .noeud-chapitre .badge-brouillon svg { width: 9px; height: 9px; }
   .noeud-chapitre.deverrouillable:hover .badge-brouillon { transform: scale(1.12); }
 
+  /* 🆕 Badge étoile — signale une réussite "parfaite" (les 3 paliers
+     d'exercices complétés) sur un chapitre déjà complété. Coin opposé au
+     badge-verrou (bottom-right) pour ne jamais se chevaucher avec lui ;
+     même coin que badge-brouillon, mais les deux ne peuvent pas
+     apparaître ensemble en pratique (un chapitre "* brouillon" n'a pas
+     encore de contenu réel à compléter parfaitement). */
+  .badge-parfait {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--or);
+    color: #FFFFFF;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid var(--fond-carte);
+    z-index: 2;
+  }
+  .badge-parfait svg { width: 11px; height: 11px; }
+  .noeud-chapitre.deverrouillable:hover .badge-parfait { transform: scale(1.12); }
+
   .noeud-niveau.complete { border-color: var(--peche-fonce); background: #FFF9F5; }
   .noeud-niveau.complete .num { color: var(--peche-fonce); }
 
@@ -1530,7 +1554,7 @@
   }
 
   const DICO = {
-    fr: { titre_page: "Ton parcours", instruction_niveau_html: "Clique sur un <b>niveau</b> pour déployer ses chapitres.", pour_deplacer: "pour se déplacer,", pour_choisir: "pour choisir.", touche_entree: "Entrée", note_provisoire_html: "Les titres suivis d'un <b>*</b> sont provisoires, en attente du contenu final.", retour_aria: "Retour", type_niveau: "Niveau", type_dialogue: "Dialogue", type_histoire: "Histoire", type_examen: "Examen", bouton_commencer: "Commencer", bouton_revoir: "Revoir", bouton_examen: "Passer l'examen", indice_chapitre_verrouille: "Termine les étapes précédentes pour débloquer ceci.", indice_niveau_ouvrir: "Clique pour déployer les chapitres.", indice_niveau_verrouille: "Termine le niveau précédent pour débloquer celui-ci.", avis_revoir: "Tu revois ce chapitre (démo) ✏️", avis_niveau_debloque: "✨ Niveau terminé — le suivant est débloqué !", avis_chapitre_debloque: "✨ Chapitre débloqué !", avis_preparation: "Ce chapitre est encore en préparation ✏️", marqueur_alt: "Keb et Bek", son_actif: "Son activé", son_inactif: "Son désactivé", sacTitre: "Mon sac à dos", sacVide: "rien pour l'instant", sacUnItem: "{n} élément enregistré", sacPlusieursItems: "{n} éléments enregistrés", sacAvertissement: "Ce sac à dos est enregistré uniquement sur cet appareil. Connecte-toi pour le garder pour de bon, même si tu changes d'appareil.", sacConnexion: "Se connecter", sacTestItem: "+ élément test", sacRienIci: "Rien ici pour l'instant.", catMots: "Mots appris", catCodes: "Codes", catSucces: "Réussites", catTrophees: "Trophées", catCartes: "Cartes", recherche_placeholder: "Rechercher une leçon…", recherche_aucun_resultat: "Aucun résultat.", sous_titre_page: "Apprends • Explore • Grandis", niveau_actuel_progression: "{fait}/{total} leçons", bouton_continuer_niveau: "Continuer", fermer_aria: "Fermer", bouton_aide: "Aide" },
+    fr: { titre_page: "Ton parcours", instruction_niveau_html: "Clique sur un <b>niveau</b> pour déployer ses chapitres.", pour_deplacer: "pour se déplacer,", pour_choisir: "pour choisir.", touche_entree: "Entrée", note_provisoire_html: "Les titres suivis d'un <b>*</b> sont provisoires, en attente du contenu final.", retour_aria: "Retour", type_niveau: "Niveau", type_dialogue: "Dialogue", type_histoire: "Histoire", type_examen: "Examen", bouton_commencer: "Commencer", bouton_revoir: "Revoir", bouton_examen: "Passer l'examen", indice_chapitre_verrouille: "Termine les étapes précédentes pour débloquer ceci.", indice_niveau_ouvrir: "Clique pour déployer les chapitres.", indice_niveau_verrouille: "Termine le niveau précédent pour débloquer celui-ci.", avis_revoir: "Tu revois ce chapitre (démo) ✏️", avis_niveau_debloque: "✨ Niveau terminé — le suivant est débloqué !", avis_chapitre_debloque: "✨ Chapitre débloqué !", avis_preparation: "Ce chapitre est encore en préparation ✏️", marqueur_alt: "Keb et Bek", son_actif: "Son activé", son_inactif: "Son désactivé", sacTitre: "Mon sac à dos", sacVide: "rien pour l'instant", sacUnItem: "{n} élément enregistré", sacPlusieursItems: "{n} éléments enregistrés", sacAvertissement: "Ce sac à dos est enregistré uniquement sur cet appareil. Connecte-toi pour le garder pour de bon, même si tu changes d'appareil.", sacConnexion: "Se connecter", sacTestItem: "+ élément test", sacRienIci: "Rien ici pour l'instant.", catMots: "Mots appris", catCodes: "Codes", catSucces: "Réussites", catTrophees: "Trophées", catCartes: "Cartes", recherche_placeholder: "Rechercher une leçon…", recherche_aucun_resultat: "Aucun résultat.", sous_titre_page: "Apprends • Explore • Grandis", niveau_actuel_progression: "{fait}/{total} leçons", bouton_continuer_niveau: "Continuer", fermer_aria: "Fermer", bouton_aide: "Aide", badge_parfait_titre: "Réussi sans erreur, en mode difficile" },
     en: { titre_page: "Your journey", instruction_niveau_html: "Click on a <b>level</b> to open its chapters.", pour_deplacer: "to move,", pour_choisir: "to choose.", touche_entree: "Enter", note_provisoire_html: "Titles with a <b>*</b> are still placeholders, pending final content.", retour_aria: "Back", type_niveau: "Level", type_dialogue: "Dialogue", type_histoire: "Story", type_examen: "Exam", bouton_commencer: "Start", bouton_revoir: "Review", bouton_examen: "Take the exam", indice_chapitre_verrouille: "Finish the previous steps to unlock this.", indice_niveau_ouvrir: "Click to open the chapters.", indice_niveau_verrouille: "Finish the previous level to unlock this one.", avis_revoir: "Reviewing this chapter (demo) ✏️", avis_niveau_debloque: "✨ Level complete — the next one is unlocked!", avis_chapitre_debloque: "✨ Chapter unlocked!", avis_preparation: "This chapter is still being prepared ✏️", marqueur_alt: "Keb and Bek", son_actif: "Sound on", son_inactif: "Sound off", sacTitre: "My backpack", sacVide: "nothing yet", sacUnItem: "{n} item saved", sacPlusieursItems: "{n} items saved", sacAvertissement: "This backpack is saved on this device only. Sign in to keep it for good, even if you switch devices.", sacConnexion: "Sign in", sacTestItem: "+ test item", sacRienIci: "Nothing here yet.", catMots: "Words learned", catCodes: "Codes", catSucces: "Achievements", catTrophees: "Trophies", catCartes: "Cards", recherche_placeholder: "Search for a lesson…", recherche_aucun_resultat: "No results.", sous_titre_page: "Learn • Explore • Grow", niveau_actuel_progression: "{fait}/{total} lessons", bouton_continuer_niveau: "Continue", fermer_aria: "Close", bouton_aide: "Help" },
     es: { titre_page: "Tu recorrido", instruction_niveau_html: "Haz clic en un <b>nivel</b> para desplegar sus capítulos.", pour_deplacer: "para moverte,", pour_choisir: "para elegir.", touche_entree: "Intro", note_provisoire_html: "Los títulos con un <b>*</b> son provisionales, a la espera del contenido final.", badge_confirme: "confirmado", retour_aria: "Volver", type_niveau: "Nivel", type_dialogue: "Diálogo", type_histoire: "Historia", type_examen: "Examen", bouton_commencer: "Empezar", bouton_revoir: "Repasar", bouton_examen: "Hacer el examen", indice_chapitre_verrouille: "Termina los pasos anteriores para desbloquear esto.", indice_niveau_ouvrir: "Haz clic para desplegar los capítulos.", indice_niveau_verrouille: "Termina el nivel anterior para desbloquear este.", avis_revoir: "Estás repasando este capítulo (demo) ✏️", avis_niveau_debloque: "✨ ¡Nivel completado, se ha desbloqueado el siguiente!", avis_chapitre_debloque: "✨ ¡Capítulo desbloqueado!", avis_preparation: "Este capítulo todavía se está preparando ✏️", marqueur_alt: "Keb y Bek", son_actif: "Sonido activado", son_inactif: "Sonido desactivado", sacTitre: "Mi mochila", sacVide: "nada todavía", sacUnItem: "{n} elemento guardado", sacPlusieursItems: "{n} elementos guardados", sacAvertissement: "Esta mochila se guarda solo en este dispositivo. Inicia sesión para conservarla siempre, incluso si cambias de dispositivo.", sacConnexion: "Iniciar sesión", sacTestItem: "+ elemento de prueba", sacRienIci: "Todavía no hay nada aquí.", catMots: "Palabras aprendidas", catCodes: "Códigos", catSucces: "Logros", catTrophees: "Trofeos", catCartes: "Cartas", niveau_actuel_progression: "{fait}/{total} lecciones", bouton_continuer_niveau: "Continuar" },
     pt: { titre_page: "O teu percurso", instruction_niveau_html: "Clica num <b>nível</b> para abrir os seus capítulos.", pour_deplacer: "para te moveres,", pour_choisir: "para escolheres.", touche_entree: "Enter", note_provisoire_html: "Os títulos seguidos de <b>*</b> são provisórios, à espera do conteúdo final.", badge_confirme: "confirmado", retour_aria: "Voltar", type_niveau: "Nível", type_dialogue: "Diálogo", type_histoire: "História", type_examen: "Exame", bouton_commencer: "Começar", bouton_revoir: "Rever", bouton_examen: "Fazer o exame", indice_chapitre_verrouille: "Termina as etapas anteriores para desbloquear isto.", indice_niveau_ouvrir: "Clica para abrir os capítulos.", indice_niveau_verrouille: "Termina o nível anterior para desbloquear este.", avis_revoir: "Estás a rever este capítulo (demo) ✏️", avis_niveau_debloque: "✨ Nível concluído — o seguinte foi desbloqueado!", avis_chapitre_debloque: "✨ Capítulo desbloqueado!", avis_preparation: "Este capítulo ainda está em preparação ✏️", marqueur_alt: "Keb e Bek", son_actif: "Som ativado", son_inactif: "Som desativado", sacTitre: "A minha mochila", sacVide: "nada ainda", sacUnItem: "{n} item guardado", sacPlusieursItems: "{n} itens guardados", sacAvertissement: "Esta mochila só é guardada neste dispositivo. Inicie sessão para a guardar para sempre, mesmo trocando de dispositivo.", sacConnexion: "Entrar", sacTestItem: "+ item de teste", sacRienIci: "Ainda não há nada aqui.", catMots: "Palavras aprendidas", catCodes: "Códigos", catSucces: "Sucessos", catTrophees: "Troféus", catCartes: "Cartas", niveau_actuel_progression: "{fait}/{total} lições", bouton_continuer_niveau: "Continuar" },
@@ -1771,6 +1795,10 @@
 
   function badgeVerrou() { return '<span class="badge-verrou-mini" aria-hidden="true">' + iconeVerrou() + '</span>'; }
 
+  // 🆕 Réutilise iconeEtoile() (déjà utilisée pour l'examen) — même
+  // symbole, contexte différent (mini-badge plutôt qu'icône principale).
+  function badgeParfait() { return '<span class="badge-parfait" aria-hidden="true" title="' + t('badge_parfait_titre') + '">' + iconeEtoile() + '</span>'; }
+
   function iconePourChapitre(ch) {
     if (ch.etat === 'verrouille') {
       const iconeType = ch.type === 'examen' ? iconeEtoile() : (ch.type === 'dialogue' ? iconeDialogue() : iconeHistoire());
@@ -1990,7 +2018,7 @@
           (i === niveauOuvertIdx && j === curseurChapitre ? ' selection' : '') +
           (provisoireChapitre ? ' brouillon' : '');
         nc.innerHTML = iconePourChapitre(ch) + '<div class="etiquette-mini">' + ch.titre + '</div>' +
-          (provisoireChapitre ? badgeBrouillon() : '');
+          (provisoireChapitre ? badgeBrouillon() : (ch.parfait ? badgeParfait() : ''));
         if (vientDouvrirCeNiveau) {
           nc.classList.add('stagger-in');
           nc.style.transitionDelay = (j * 65) + 'ms';
@@ -2642,11 +2670,24 @@
   // n'importe quel chapitre marqué ch.reel — générique, pas seulement d1,
   // pour ne pas avoir à y retoucher quand d2/h1/etc. deviendront réels à
   // leur tour.
-  function synchroniserChapitresReels(progression) {
+  function synchroniserChapitresReels(progression, recompenses) {
     NIVEAUX.forEach((niveau, niveauIdx) => {
       niveau.chapitres.forEach((ch, chapitreIdx) => {
         if (!ch.reel || !progression[ch.id]) return; // pas réel, ou pas encore complété : rien à changer
         ch.etat = 'complete';
+        // 🆕 Badge étoile — demande de Raphaël (session du 13-08-2026) :
+        // signaler une réussite "parfaite" (les 3 paliers d'exercices
+        // complétés : base + parfait + parfaitDifficile, soit 10 P$ +
+        // 1 PB), distincte du simple fait d'avoir complété le chapitre.
+        // Les 3 clés sont vérifiées explicitement plutôt que de se fier
+        // uniquement à parfaitDifficile (qui les implique mathématiquement
+        // côté dialogue-d1.html, voir marquerCarteResolue) — plus robuste
+        // si cette logique change un jour côté leçon.
+        ch.parfait = !!(
+          recompenses[ch.id + '_exercices_base'] &&
+          recompenses[ch.id + '_exercices_parfait'] &&
+          recompenses[ch.id + '_exercices_parfait_difficile']
+        );
         const suivantChapitre = niveau.chapitres[chapitreIdx + 1];
         if (suivantChapitre && suivantChapitre.etat === 'verrouille') {
           suivantChapitre.etat = 'actuel';
@@ -2685,8 +2726,11 @@
       await KebBekProgression.restaurerSessionEtProfil();
     }
 
-    const progression = await KebBekProgression.lireProgression();
-    synchroniserChapitresReels(progression);
+    const [progression, recompenses] = await Promise.all([
+      KebBekProgression.lireProgression(),
+      KebBekProgression.lireRecompensesAttribuees()
+    ]);
+    synchroniserChapitresReels(progression, recompenses);
     rafraichir(); // reflète l'état réel (d1 complété, h1 débloqué, etc.) dès le chargement
   }
   initProgressionReelle();

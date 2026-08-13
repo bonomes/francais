@@ -1406,10 +1406,14 @@
   // sur l'identité invité stockée en localStorage (ex. "Bel") au lieu de
   // son vrai prénom de compte (ex. "Raphaël") — la session Supabase
   // elle-même n'était jamais perdue, seulement jamais re-consultée ici.
-  // Corrigé en reprenant EXACTEMENT la même restauration que
-  // initProgressionReelle() dans parcours.html, juste avant de rendre le
-  // menu — même repli "profil unique auto-sélectionné" si aucun
-  // dernierProfilConnu() n'est mémorisé.
+  // 🆕 Simplifié depuis : la restauration ne se réécrit plus ici au cas
+  // par cas — elle passe désormais par KebBekProgression.
+  // restaurerSessionEtProfil() (progression.js), un seul endroit
+  // partagé par toutes les pages (parcours.html, dialogue-d1.html, et
+  // toute future page de leçon). demarrerMenuPrincipal() l'appelle
+  // aussi lui-même en filet de sécurité (voir menu-principal.js) —
+  // l'appel explicite ici reste néanmoins fait, par précaution
+  // supplémentaire (l'appel est idempotent, donc sans coût réel).
   async function allerAuMenuPrincipal(reponse) {
     sequenceIdentite.style.display = 'none';
     sceneRangee.style.display = 'none';
@@ -1417,16 +1421,7 @@
     document.getElementById('menuPrincipal').style.display = '';
 
     if (window.KebBekProgression) {
-      await KebBekProgression.initSession();
-      if (KebBekProgression.session) {
-        const dernier = KebBekProgression.dernierProfilConnu();
-        if (dernier) {
-          KebBekProgression.profilActifId = dernier;
-        } else {
-          const profils = await KebBekProgression.profilsDuCompte();
-          if (profils.length === 1) KebBekProgression.profilActifId = profils[0].id;
-        }
-      }
+      await KebBekProgression.restaurerSessionEtProfil();
     }
 
     KebBekMenu.demarrerMenuPrincipal('menuPrincipal', {

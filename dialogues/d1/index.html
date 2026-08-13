@@ -485,6 +485,179 @@
   }
   .iden-tooltip-mot::after { bottom: 100%; border-bottom: 7px solid var(--peche); }
   .iden-tooltip-mot::before { bottom: calc(100% - 1.5px); border-bottom: 6px solid #FFFFFF; z-index: 1; }
+
+  /* ---------- 🆕 Section exercices ---------- */
+  #sectionExercices {
+    width: min(92vw, 560px);
+    margin: 34px 0 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+  }
+
+  .exercices-transition { text-align: center; padding: 6px 8px 2px; }
+  .exercices-transition-titre {
+    font-family: 'Baloo 2', sans-serif;
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--peche-fonce);
+    margin-bottom: 6px;
+  }
+  .exercices-transition-intro {
+    font-size: 0.88rem;
+    color: var(--brun-clair, #8A7364);
+    line-height: 1.4;
+  }
+
+  .exercice-carte {
+    background: #FFFFFF;
+    border-radius: 20px;
+    box-shadow: 0 14px 36px var(--ombre);
+    padding: 18px 18px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    transition: box-shadow 0.2s ease;
+  }
+  .exercice-carte.resolue { box-shadow: 0 6px 18px var(--ombre); }
+
+  .exercice-image-cadre {
+    width: 100%;
+    max-height: 220px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    border-radius: 14px;
+    background: var(--peche-pale);
+  }
+  .exercice-image-cadre img { max-width: 100%; max-height: 220px; object-fit: contain; }
+  .exercice-image-cadre .repli-image-manquante {
+    font-size: 0.75rem;
+    color: var(--brun-clair, #8A7364);
+    padding: 30px 10px;
+  }
+
+  .exercice-instruction {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--brun-fonce);
+    line-height: 1.35;
+  }
+
+  .exercice-niveau-toggle { display: inline-flex; align-self: flex-start; border-radius: 999px; background: var(--fond); padding: 3px; gap: 2px; }
+  .exercice-niveau-btn {
+    border: none;
+    background: transparent;
+    color: var(--brun-clair, #8A7364);
+    font-family: inherit;
+    font-weight: 700;
+    font-size: 0.74rem;
+    padding: 6px 14px;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease;
+  }
+  .exercice-niveau-btn.actif { background: var(--peche-fonce); color: #FFFFFF; }
+
+  /* Champ libre — volontairement invitant : coins très arrondis, halo
+     doux au focus, dans la couleur d'identité du personnage concerné. */
+  .exercice-champ {
+    width: 100%;
+    font-family: inherit;
+    font-size: 1.05rem;
+    padding: 13px 16px;
+    border-radius: 16px;
+    border: 2px solid var(--peche-pale);
+    background: var(--fond);
+    color: var(--brun-fonce);
+    outline: none;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+  }
+  .exercice-champ::placeholder { color: var(--brun-clair, #8A7364); opacity: 0.65; }
+  .exercice-champ:focus {
+    border-color: var(--peche-fonce);
+    background: #FFFFFF;
+    box-shadow: 0 0 0 4px rgba(224, 136, 103, 0.18);
+  }
+  .exercice-champ.correcte { border-color: #6FAE7A; background: #F1FAF2; }
+  .exercice-champ.fautive { border-color: #E0876A; }
+
+  .exercice-chips { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+  .exercice-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: #F1FAF2;
+    border: 1.5px solid #BFE0C4;
+    color: #3E7A49;
+    border-radius: 999px;
+    padding: 5px 12px;
+    font-weight: 700;
+    font-size: 0.92rem;
+  }
+
+  .exercice-ligne-action { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .exercice-btn-verifier {
+    border: none;
+    background: var(--peche-fonce);
+    color: #FFFFFF;
+    font-family: inherit;
+    font-weight: 700;
+    font-size: 0.88rem;
+    padding: 10px 20px;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: transform 0.15s ease, opacity 0.15s ease;
+  }
+  .exercice-btn-verifier:hover { transform: translateY(-1px); }
+  .exercice-btn-verifier:disabled { opacity: 0.5; cursor: default; transform: none; }
+
+  .exercice-feedback { font-size: 0.86rem; font-weight: 700; min-height: 1.2em; }
+  .exercice-feedback.correct { color: #3E7A49; }
+  .exercice-feedback.presque { color: var(--peche-fonce); }
+  .exercice-feedback.revele { color: var(--brun-clair, #8A7364); font-weight: 600; }
+
+  /* Mode facile — mots à taper dans l'ordre */
+  .exercice-banque-mots { display: flex; flex-wrap: wrap; gap: 8px; }
+  .exercice-mot-btn {
+    border: 1.5px solid var(--peche);
+    background: #FFFFFF;
+    color: var(--brun-fonce);
+    font-family: inherit;
+    font-weight: 700;
+    font-size: 0.95rem;
+    padding: 8px 16px;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: transform 0.12s ease, opacity 0.12s ease;
+  }
+  .exercice-mot-btn:hover { transform: translateY(-1px); }
+  .exercice-mot-btn.utilise { opacity: 0.35; pointer-events: none; }
+  .exercice-phrase-construite {
+    min-height: 44px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+    padding: 8px 12px;
+    border-radius: 14px;
+    background: var(--fond);
+    border: 2px dashed var(--peche-pale);
+  }
+  .exercice-btn-recommencer {
+    border: none;
+    background: transparent;
+    color: var(--brun-clair, #8A7364);
+    font-family: inherit;
+    font-weight: 700;
+    font-size: 0.78rem;
+    text-decoration: underline;
+    cursor: pointer;
+    padding: 4px;
+  }
+
+  .bouton-terminer-exercices { align-self: center; }
 </style>
 </head>
 <body>
@@ -557,7 +730,22 @@
   </div>
 </div>
 
+<!-- 🆕 Section exercices — apparaît à la place de la navigation du
+     dialogue une fois la dernière étape atteinte (voir afficherExercices()
+     plus bas). Interface volontairement différente de la bulle de
+     dialogue : cartes distinctes, pas de bulle/flèches. But affiché comme
+     "on pratique", jamais "on évalue" (demande explicite de Raphaël). -->
+<section id="sectionExercices" style="display:none;">
+  <div class="exercices-transition">
+    <div class="exercices-transition-titre" id="txtExercicesTitre"></div>
+    <div class="exercices-transition-intro" id="txtExercicesIntro"></div>
+  </div>
+  <div id="conteneurExercices"></div>
+  <button type="button" class="bouton-nav suivant bouton-terminer-exercices" id="btnTerminerExercices">Terminer ›</button>
+</section>
+
 <script>
+
   // ================================================================
   // Contenu du dialogue — confirmé par Raphaël (session du 08-08-2026).
   // 'grammaire' est une clé optionnelle vers GRAMMAIRE ci-dessous ; toutes
@@ -1010,31 +1198,136 @@
   // Textes d'interface (boutons, titres de pile) dans la langue de
   // l'apprenant, dans les 19 langues du site.
   const INTERFACE = {
-    fr: { precedent: 'Précédent', continuer: 'Continuer', terminer: 'Terminer', ceQuiAEteDit: 'Ce qui a été dit', aRetenir: 'À retenir' , afficherTrad: 'Afficher la traduction', cacherTrad: 'Cacher la traduction' },
-    en: { precedent: 'Back', continuer: 'Continue', terminer: 'Finish', ceQuiAEteDit: 'What was said', aRetenir: 'Good to know' , afficherTrad: 'Show translation', cacherTrad: 'Hide translation' },
-    es: { precedent: 'Atrás', continuer: 'Continuar', terminer: 'Terminar', ceQuiAEteDit: 'Lo que se dijo', aRetenir: 'Para recordar' , afficherTrad: 'Mostrar traducción', cacherTrad: 'Ocultar traducción' },
-    it: { precedent: 'Indietro', continuer: 'Continua', terminer: 'Fine', ceQuiAEteDit: 'Cosa è stato detto', aRetenir: 'Da ricordare' , afficherTrad: 'Mostra traduzione', cacherTrad: 'Nascondi traduzione' },
-    pt: { precedent: 'Voltar', continuer: 'Continuar', terminer: 'Terminar', ceQuiAEteDit: 'O que foi dito', aRetenir: 'A reter' , afficherTrad: 'Mostrar tradução', cacherTrad: 'Ocultar tradução' },
-    ca: { precedent: 'Enrere', continuer: 'Continua', terminer: 'Acaba', ceQuiAEteDit: 'El que s\u2019ha dit', aRetenir: 'Per recordar' , afficherTrad: 'Mostra la traducció', cacherTrad: 'Amaga la traducció' },
-    eo: { precedent: 'Reen', continuer: 'Daŭrigi', terminer: 'Fini', ceQuiAEteDit: 'Kio estis dirita', aRetenir: 'Por memori' , afficherTrad: 'Montri tradukon', cacherTrad: 'Kaŝi tradukon' },
-    zh: { precedent: '返回', continuer: '继续', terminer: '完成', ceQuiAEteDit: '已说内容', aRetenir: '记住这个' , afficherTrad: '显示翻译', cacherTrad: '隐藏翻译' },
-    ja: { precedent: '戻る', continuer: '続ける', terminer: '終了', ceQuiAEteDit: '話されたこと', aRetenir: '覚えておこう' , afficherTrad: '翻訳を表示', cacherTrad: '翻訳を隠す' },
-    ko: { precedent: '뒤로', continuer: '계속', terminer: '완료', ceQuiAEteDit: '나눈 이야기', aRetenir: '기억해두기' , afficherTrad: '번역 보기', cacherTrad: '번역 숨기기' },
-    vi: { precedent: 'Quay lại', continuer: 'Tiếp tục', terminer: 'Hoàn thành', ceQuiAEteDit: 'Những gì đã nói', aRetenir: 'Ghi nhớ' , afficherTrad: 'Hiện bản dịch', cacherTrad: 'Ẩn bản dịch' },
-    ht: { precedent: 'Tounen', continuer: 'Kontinye', terminer: 'Fini', ceQuiAEteDit: 'Sa ki te di', aRetenir: 'Pou sonje' , afficherTrad: 'Montre tradiksyon', cacherTrad: 'Kache tradiksyon' },
-    tl: { precedent: 'Bumalik', continuer: 'Magpatuloy', terminer: 'Tapusin', ceQuiAEteDit: 'Ang nasabi na', aRetenir: 'Dapat tandaan' , afficherTrad: 'Ipakita ang salin', cacherTrad: 'Itago ang salin' },
-    id: { precedent: 'Kembali', continuer: 'Lanjut', terminer: 'Selesai', ceQuiAEteDit: 'Yang sudah dikatakan', aRetenir: 'Perlu diingat' , afficherTrad: 'Tampilkan terjemahan', cacherTrad: 'Sembunyikan terjemahan' },
-    nl: { precedent: 'Terug', continuer: 'Verder', terminer: 'Klaar', ceQuiAEteDit: 'Wat er gezegd is', aRetenir: 'Om te onthouden' , afficherTrad: 'Vertaling tonen', cacherTrad: 'Vertaling verbergen' },
-    de: { precedent: 'Zurück', continuer: 'Weiter', terminer: 'Fertig', ceQuiAEteDit: 'Was gesagt wurde', aRetenir: 'Zum Merken' , afficherTrad: 'Übersetzung anzeigen', cacherTrad: 'Übersetzung ausblenden' },
-    fa: { precedent: 'بازگشت', continuer: 'ادامه', terminer: 'پایان', ceQuiAEteDit: 'آنچه گفته شد', aRetenir: 'نکته\u200cی مهم' , afficherTrad: 'نمایش ترجمه', cacherTrad: 'پنهان کردن ترجمه' },
-    sv: { precedent: 'Tillbaka', continuer: 'Fortsätt', terminer: 'Klart', ceQuiAEteDit: 'Vad som sagts', aRetenir: 'Bra att veta' , afficherTrad: 'Visa översättning', cacherTrad: 'Dölj översättning' },
-    no: { precedent: 'Tilbake', continuer: 'Fortsett', terminer: 'Ferdig', ceQuiAEteDit: 'Det som ble sagt', aRetenir: 'Verdt å huske' , afficherTrad: 'Vis oversettelse', cacherTrad: 'Skjul oversettelse' },
-    ru: { precedent: 'Назад', continuer: 'Далее', terminer: 'Готово', ceQuiAEteDit: 'Что было сказано', aRetenir: 'Важно запомнить', afficherTrad: 'Показать перевод', cacherTrad: 'Скрыть перевод' }
+    fr: { precedent: 'Précédent', continuer: 'Continuer', terminer: 'Terminer', ceQuiAEteDit: 'Ce qui a été dit', aRetenir: 'À retenir' , afficherTrad: 'Afficher la traduction', cacherTrad: 'Cacher la traduction', exercicesTitre: 'On s\u2019entraîne\u00A0?', exercicesIntro: 'Pas d\u2019examen ici — juste deux petites mises en situation pour ancrer ce que tu viens de voir.', niveauFacile: 'Facile', niveauDifficile: 'Difficile', boutonVerifier: 'Vérifier', feedbackCorrect: 'C\u2019est ça\u00A0!', feedbackPresque: 'Presque\u00A0! Il manque un mot\u00A0:', reponseEtait: 'La réponse était\u00A0:', placeholderReponse: 'Écris ta réponse ici…', boutonRecommencer: 'Recommencer' },
+    en: { precedent: 'Back', continuer: 'Continue', terminer: 'Finish', ceQuiAEteDit: 'What was said', aRetenir: 'Good to know' , afficherTrad: 'Show translation', cacherTrad: 'Hide translation', exercicesTitre: 'Let\u2019s practice!', exercicesIntro: 'No test here — just two quick situations to help what you just saw sink in.', niveauFacile: 'Easy', niveauDifficile: 'Hard', boutonVerifier: 'Check', feedbackCorrect: 'That\u2019s it!', feedbackPresque: 'Almost! One word is missing:', reponseEtait: 'The answer was:', placeholderReponse: 'Type your answer here…', boutonRecommencer: 'Try again' },
+    es: { precedent: 'Atrás', continuer: 'Continuar', terminer: 'Terminar', ceQuiAEteDit: 'Lo que se dijo', aRetenir: 'Para recordar' , afficherTrad: 'Mostrar traducción', cacherTrad: 'Ocultar traducción', exercicesTitre: '¡A practicar!', exercicesIntro: 'Nada de examen — solo dos situaciones rápidas para que se te quede lo que acabas de ver.', niveauFacile: 'Fácil', niveauDifficile: 'Difícil', boutonVerifier: 'Comprobar', feedbackCorrect: '¡Eso es!', feedbackPresque: '¡Casi! Falta una palabra:', reponseEtait: 'La respuesta era:', placeholderReponse: 'Escribe tu respuesta aquí…', boutonRecommencer: 'Intentar de nuevo' },
+    it: { precedent: 'Indietro', continuer: 'Continua', terminer: 'Fine', ceQuiAEteDit: 'Cosa è stato detto', aRetenir: 'Da ricordare' , afficherTrad: 'Mostra traduzione', cacherTrad: 'Nascondi traduzione', exercicesTitre: 'Ci alleniamo?', exercicesIntro: 'Niente esame — solo due situazioni veloci per far restare quello che hai appena visto.', niveauFacile: 'Facile', niveauDifficile: 'Difficile', boutonVerifier: 'Verifica', feedbackCorrect: 'Esatto!', feedbackPresque: 'Quasi! Manca una parola:', reponseEtait: 'La risposta era:', placeholderReponse: 'Scrivi qui la tua risposta…', boutonRecommencer: 'Riprova' },
+    pt: { precedent: 'Voltar', continuer: 'Continuar', terminer: 'Terminar', ceQuiAEteDit: 'O que foi dito', aRetenir: 'A reter' , afficherTrad: 'Mostrar tradução', cacherTrad: 'Ocultar tradução', exercicesTitre: 'Vamos praticar?', exercicesIntro: 'Nada de exame — só duas situações rápidas para fixar o que acabaste de ver.', niveauFacile: 'Fácil', niveauDifficile: 'Difícil', boutonVerifier: 'Verificar', feedbackCorrect: 'É isso!', feedbackPresque: 'Quase! Falta uma palavra:', reponseEtait: 'A resposta era:', placeholderReponse: 'Escreve aqui a tua resposta…', boutonRecommencer: 'Tentar outra vez' },
+    ca: { precedent: 'Enrere', continuer: 'Continua', terminer: 'Acaba', ceQuiAEteDit: 'El que s\u2019ha dit', aRetenir: 'Per recordar' , afficherTrad: 'Mostra la traducció', cacherTrad: 'Amaga la traducció', exercicesTitre: 'Practiquem?', exercicesIntro: 'Res d\u2019examen — només dues situacions ràpides perquè se\u2019t quedi el que acabes de veure.', niveauFacile: 'Fàcil', niveauDifficile: 'Difícil', boutonVerifier: 'Comprova', feedbackCorrect: 'Això mateix!', feedbackPresque: 'Quasi! Falta una paraula:', reponseEtait: 'La resposta era:', placeholderReponse: 'Escriu la teva resposta aquí…', boutonRecommencer: 'Torna-ho a provar' },
+    eo: { precedent: 'Reen', continuer: 'Daŭrigi', terminer: 'Fini', ceQuiAEteDit: 'Kio estis dirita', aRetenir: 'Por memori' , afficherTrad: 'Montri tradukon', cacherTrad: 'Kaŝi tradukon', exercicesTitre: 'Ni ekzercu?', exercicesIntro: 'Neniu ekzameno ĉi tie — nur du rapidaj situacioj por ke tio, kion vi ĵus vidis, restu en la memoro.', niveauFacile: 'Facila', niveauDifficile: 'Malfacila', boutonVerifier: 'Kontroli', feedbackCorrect: 'Ĝuste!', feedbackPresque: 'Preskaŭ! Mankas unu vorto:', reponseEtait: 'La respondo estis:', placeholderReponse: 'Skribu vian respondon ĉi tie…', boutonRecommencer: 'Reprovi' },
+    zh: { precedent: '返回', continuer: '继续', terminer: '完成', ceQuiAEteDit: '已说内容', aRetenir: '记住这个' , afficherTrad: '显示翻译', cacherTrad: '隐藏翻译', exercicesTitre: '来练习一下？', exercicesIntro: '不是考试——只是两个小情境，帮你记住刚才学的内容。', niveauFacile: '简单', niveauDifficile: '困难', boutonVerifier: '检查', feedbackCorrect: '对啦！', feedbackPresque: '差一点！还差一个词：', reponseEtait: '正确答案是：', placeholderReponse: '在这里输入你的答案……', boutonRecommencer: '再试一次' },
+    ja: { precedent: '戻る', continuer: '続ける', terminer: '終了', ceQuiAEteDit: '話されたこと', aRetenir: '覚えておこう' , afficherTrad: '翻訳を表示', cacherTrad: '翻訳を隠す', exercicesTitre: 'ちょっと練習しよう！', exercicesIntro: 'テストじゃないよ——今学んだことを覚えるための、ちょっとした場面が2つあるだけ。', niveauFacile: 'かんたん', niveauDifficile: 'むずかしい', boutonVerifier: '確認する', feedbackCorrect: 'そのとおり！', feedbackPresque: 'おしい！あと1語たりない：', reponseEtait: '正解は：', placeholderReponse: 'ここに答えを書いてね…', boutonRecommencer: 'もう一度' },
+    ko: { precedent: '뒤로', continuer: '계속', terminer: '완료', ceQuiAEteDit: '나눈 이야기', aRetenir: '기억해두기' , afficherTrad: '번역 보기', cacherTrad: '번역 숨기기', exercicesTitre: '연습해 볼까?', exercicesIntro: '시험이 아니에요 — 방금 배운 걸 익히도록 짧은 상황 두 개만 준비했어요.', niveauFacile: '쉬움', niveauDifficile: '어려움', boutonVerifier: '확인', feedbackCorrect: '맞아요!', feedbackPresque: '거의 다 왔어요! 단어 하나가 빠졌어요:', reponseEtait: '정답은:', placeholderReponse: '여기에 답을 써 보세요…', boutonRecommencer: '다시 해보기' },
+    vi: { precedent: 'Quay lại', continuer: 'Tiếp tục', terminer: 'Hoàn thành', ceQuiAEteDit: 'Những gì đã nói', aRetenir: 'Ghi nhớ' , afficherTrad: 'Hiện bản dịch', cacherTrad: 'Ẩn bản dịch', exercicesTitre: 'Luyện tập một chút nhé?', exercicesIntro: 'Không phải bài kiểm tra đâu — chỉ là hai tình huống nhỏ để nhớ những gì bạn vừa học.', niveauFacile: 'Dễ', niveauDifficile: 'Khó', boutonVerifier: 'Kiểm tra', feedbackCorrect: 'Đúng rồi!', feedbackPresque: 'Gần đúng rồi! Còn thiếu một từ:', reponseEtait: 'Đáp án là:', placeholderReponse: 'Viết câu trả lời của bạn ở đây…', boutonRecommencer: 'Thử lại' },
+    ht: { precedent: 'Tounen', continuer: 'Kontinye', terminer: 'Fini', ceQuiAEteDit: 'Sa ki te di', aRetenir: 'Pou sonje' , afficherTrad: 'Montre tradiksyon', cacherTrad: 'Kache tradiksyon', exercicesTitre: 'Annou pratike?', exercicesIntro: 'Se pa yon egzamen — se sèlman de ti sitiyasyon rapid pou ede ou sonje sa ou fèk wè a.', niveauFacile: 'Fasil', niveauDifficile: 'Difisil', boutonVerifier: 'Verifye', feedbackCorrect: 'Se sa!', feedbackPresque: 'Prèske! Manke yon mo:', reponseEtait: 'Repons lan te:', placeholderReponse: 'Ekri repons ou isit la…', boutonRecommencer: 'Eseye ankò' },
+    tl: { precedent: 'Bumalik', continuer: 'Magpatuloy', terminer: 'Tapusin', ceQuiAEteDit: 'Ang nasabi na', aRetenir: 'Dapat tandaan' , afficherTrad: 'Ipakita ang salin', cacherTrad: 'Itago ang salin', exercicesTitre: 'Mag-ensayo tayo?', exercicesIntro: 'Walang pagsusulit dito — dalawang maiikling sitwasyon lang para maalala mo ang natutunan mo.', niveauFacile: 'Madali', niveauDifficile: 'Mahirap', boutonVerifier: 'Suriin', feedbackCorrect: 'Tama iyan!', feedbackPresque: 'Halos tama! Kulang ng isang salita:', reponseEtait: 'Ang sagot ay:', placeholderReponse: 'Isulat ang iyong sagot dito…', boutonRecommencer: 'Subukan ulit' },
+    id: { precedent: 'Kembali', continuer: 'Lanjut', terminer: 'Selesai', ceQuiAEteDit: 'Yang sudah dikatakan', aRetenir: 'Perlu diingat' , afficherTrad: 'Tampilkan terjemahan', cacherTrad: 'Sembunyikan terjemahan', exercicesTitre: 'Yuk, latihan!', exercicesIntro: 'Bukan ujian kok — cuma dua situasi singkat biar apa yang baru kamu lihat makin nempel.', niveauFacile: 'Mudah', niveauDifficile: 'Sulit', boutonVerifier: 'Periksa', feedbackCorrect: 'Betul!', feedbackPresque: 'Hampir! Masih kurang satu kata:', reponseEtait: 'Jawabannya adalah:', placeholderReponse: 'Tulis jawabanmu di sini…', boutonRecommencer: 'Coba lagi' },
+    nl: { precedent: 'Terug', continuer: 'Verder', terminer: 'Klaar', ceQuiAEteDit: 'Wat er gezegd is', aRetenir: 'Om te onthouden' , afficherTrad: 'Vertaling tonen', cacherTrad: 'Vertaling verbergen', exercicesTitre: 'Zullen we oefenen?', exercicesIntro: 'Geen examen hoor — gewoon twee korte situaties om vast te houden wat je net hebt gezien.', niveauFacile: 'Makkelijk', niveauDifficile: 'Moeilijk', boutonVerifier: 'Controleren', feedbackCorrect: 'Dat is \u2019m!', feedbackPresque: 'Bijna! Er ontbreekt nog één woord:', reponseEtait: 'Het antwoord was:', placeholderReponse: 'Typ hier je antwoord…', boutonRecommencer: 'Opnieuw proberen' },
+    de: { precedent: 'Zurück', continuer: 'Weiter', terminer: 'Fertig', ceQuiAEteDit: 'Was gesagt wurde', aRetenir: 'Zum Merken' , afficherTrad: 'Übersetzung anzeigen', cacherTrad: 'Übersetzung ausblenden', exercicesTitre: 'Lust zu üben?', exercicesIntro: 'Keine Prüfung — nur zwei kurze Situationen, damit das Gelernte hängen bleibt.', niveauFacile: 'Leicht', niveauDifficile: 'Schwer', boutonVerifier: 'Prüfen', feedbackCorrect: 'Genau!', feedbackPresque: 'Fast! Ein Wort fehlt noch:', reponseEtait: 'Die Antwort war:', placeholderReponse: 'Schreib hier deine Antwort…', boutonRecommencer: 'Nochmal versuchen' },
+    fa: { precedent: 'بازگشت', continuer: 'ادامه', terminer: 'پایان', ceQuiAEteDit: 'آنچه گفته شد', aRetenir: 'نکته\u200cی مهم' , afficherTrad: 'نمایش ترجمه', cacherTrad: 'پنهان کردن ترجمه', exercicesTitre: 'کمی تمرین کنیم؟', exercicesIntro: 'این امتحان نیست — فقط دو موقعیت کوتاه برای اینکه چیزی که الان دیدی بهتر یادت بماند.', niveauFacile: 'آسان', niveauDifficile: 'سخت', boutonVerifier: 'بررسی', feedbackCorrect: 'درسته!', feedbackPresque: 'تقریباً! یک کلمه کم داری:', reponseEtait: 'جواب این بود:', placeholderReponse: 'پاسخت را اینجا بنویس…', boutonRecommencer: 'دوباره امتحان کن' },
+    sv: { precedent: 'Tillbaka', continuer: 'Fortsätt', terminer: 'Klart', ceQuiAEteDit: 'Vad som sagts', aRetenir: 'Bra att veta' , afficherTrad: 'Visa översättning', cacherTrad: 'Dölj översättning', exercicesTitre: 'Ska vi öva?', exercicesIntro: 'Inget prov här — bara två snabba situationer så att det du just sett fastnar.', niveauFacile: 'Lätt', niveauDifficile: 'Svårt', boutonVerifier: 'Kontrollera', feedbackCorrect: 'Just det!', feedbackPresque: 'Nästan! Ett ord saknas:', reponseEtait: 'Svaret var:', placeholderReponse: 'Skriv ditt svar här…', boutonRecommencer: 'Försök igen' },
+    no: { precedent: 'Tilbake', continuer: 'Fortsett', terminer: 'Ferdig', ceQuiAEteDit: 'Det som ble sagt', aRetenir: 'Verdt å huske' , afficherTrad: 'Vis oversettelse', cacherTrad: 'Skjul oversettelse', exercicesTitre: 'Skal vi øve litt?', exercicesIntro: 'Ingen prøve her — bare to raske situasjoner for å feste det du nettopp så.', niveauFacile: 'Lett', niveauDifficile: 'Vanskelig', boutonVerifier: 'Sjekk', feedbackCorrect: 'Akkurat!', feedbackPresque: 'Nesten! Ett ord mangler:', reponseEtait: 'Svaret var:', placeholderReponse: 'Skriv svaret ditt her…', boutonRecommencer: 'Prøv igjen' },
+    ru: { precedent: 'Назад', continuer: 'Далее', terminer: 'Готово', ceQuiAEteDit: 'Что было сказано', aRetenir: 'Важно запомнить', afficherTrad: 'Показать перевод', cacherTrad: 'Скрыть перевод', exercicesTitre: 'Потренируемся?', exercicesIntro: 'Это не экзамен — всего две коротких ситуации, чтобы закрепить то, что ты только что увидел(а).', niveauFacile: 'Легко', niveauDifficile: 'Сложно', boutonVerifier: 'Проверить', feedbackCorrect: 'Верно!', feedbackPresque: 'Почти! Не хватает одного слова:', reponseEtait: 'Правильный ответ:', placeholderReponse: 'Напиши свой ответ здесь…', boutonRecommencer: 'Попробовать снова' }
   };
 
   function texteInterface(cle) {
     const dict = INTERFACE[langueActuelle()] || INTERFACE.en;
     return dict[cle] || INTERFACE.en[cle];
+  }
+
+  // 🆕 Section exercices — deux mises en situation confirmées par
+  // Raphaël (session du 12-08-2026). `reponse` : mots dans l'ordre
+  // attendu, en français, utilisés pour la correction progressive
+  // (voir evaluerReponseExercice) ET pour construire la banque de mots
+  // du mode facile. `instruction` : dans la langue de l'apprenant —
+  // pour l'exercice 1, contient volontairement le sens (« I'm hungry »)
+  // mais jamais le français, pour ne pas donner la réponse.
+  const EXERCICES = [
+    {
+      id: 'd1_e1',
+      image: '../../images/dialogues/d1/d1_e1_bek-a-faim_01.webp',
+      reponse: ["j'ai", 'faim'],
+      instruction: {
+        fr: 'Bek a faim. Comment dit-elle « J\u2019ai faim » ?',
+        en: 'Bek is hungry. How does she say "I\u2019m hungry"?',
+        es: 'Bek tiene hambre. ¿Cómo dice "tengo hambre"?',
+        it: 'Bek ha fame. Come dice "ho fame"?',
+        pt: 'A Bek tem fome. Como é que ela diz "tenho fome"?',
+        ca: 'La Bek té gana. Com diu "tinc gana"?',
+        eo: 'Bek malsatas. Kiel ŝi diras "mi malsatas"?',
+        zh: 'Bek 饿了。她怎么说"我饿了"？',
+        ja: 'ベックはお腹が空いています。「お腹が空いた」って何て言う？',
+        ko: '벡은 배가 고파요. "배고파"를 어떻게 말할까요?',
+        vi: 'Bek đói bụng. Cô ấy nói "tôi đói" thế nào?',
+        ht: 'Bek grangou. Kijan li di "mwen grangou"?',
+        tl: 'Gutom si Bek. Paano niya sasabihin ang "gutom ako"?',
+        id: 'Bek lapar. Bagaimana dia bilang "aku lapar"?',
+        nl: 'Bek heeft honger. Hoe zegt ze "ik heb honger"?',
+        de: 'Bek hat Hunger. Wie sagt sie "ich habe Hunger"?',
+        fa: 'بک گرسنه است. او چطور می\u200cگوید «گرسنه\u200cام»؟',
+        sv: 'Bek är hungrig. Hur säger hon "jag är hungrig"?',
+        no: 'Bek er sulten. Hvordan sier hun "jeg er sulten"?',
+        ru: 'Бек хочет есть. Как она скажет "я голоден/голодна"?'
+      }
+    },
+    {
+      id: 'd1_e2',
+      image: '../../images/dialogues/d1/d1_e2_bek-sandwich_01.webp',
+      reponse: ['merci'],
+      instruction: {
+        fr: 'Tu es Keb. Bek te donne un sandwich. Que dis-tu\u00A0?',
+        en: 'You\u2019re Keb. Bek hands you a sandwich. What do you say?',
+        es: 'Eres Keb. Bek te da un sándwich. ¿Qué dices?',
+        it: 'Sei Keb. Bek ti dà un panino. Cosa dici?',
+        pt: 'És o Keb. A Bek dá-te uma sandes. O que dizes?',
+        ca: 'Ets en Keb. La Bek et dona un entrepà. Què dius?',
+        eo: 'Vi estas Keb. Bek donas al vi sandviĉon. Kion vi diras?',
+        zh: '你是 Keb。Bek 给了你一个三明治。你会说什么？',
+        ja: 'あなたはケブです。ベックがサンドイッチをくれました。何て言う？',
+        ko: '당신은 케브예요. 벡이 샌드위치를 줘요. 뭐라고 말할까요?',
+        vi: 'Bạn là Keb. Bek đưa cho bạn một chiếc sandwich. Bạn nói gì?',
+        ht: 'Ou se Keb. Bek ba ou yon sandwich. Kisa ou di?',
+        tl: 'Ikaw si Keb. Binigyan ka ni Bek ng sandwich. Ano ang sasabihin mo?',
+        id: 'Kamu Keb. Bek memberimu sandwich. Apa yang kamu katakan?',
+        nl: 'Jij bent Keb. Bek geeft je een boterham. Wat zeg je?',
+        de: 'Du bist Keb. Bek gibt dir ein Sandwich. Was sagst du?',
+        fa: 'تو کب هستی. بک به تو یک ساندویچ می\u200cدهد. چه می\u200cگویی؟',
+        sv: 'Du är Keb. Bek ger dig en smörgås. Vad säger du?',
+        no: 'Du er Keb. Bek gir deg en smørbrød. Hva sier du?',
+        ru: 'Ты — Кеб. Бек даёт тебе сэндвич. Что ты скажешь?'
+      }
+    }
+  ];
+
+  function texteExercice(ex) {
+    return ex.instruction[langueActuelle()] || ex.instruction.en;
+  }
+
+  // ---------- Correction progressive (mode difficile) ----------
+  // Normalise pour comparaison : minuscules, apostrophes typographiques
+  // ramenées à l'apostrophe simple, ponctuation finale/de bord ignorée,
+  // espaces superflus réduits. Les accents restent significatifs — on
+  // apprend à écrire, pas à s'en passer.
+  function normaliserMotExercice(mot) {
+    return mot
+      .toLowerCase()
+      .replace(/[\u2019]/g, "'")
+      .replace(/^[.,!?…"«»\s]+|[.,!?…"«»\s]+$/g, '');
+  }
+
+  function normaliserPhraseExercice(texte) {
+    return texte
+      .replace(/[\u2019]/g, "'")
+      .trim()
+      .split(/\s+/)
+      .filter(Boolean);
+  }
+
+  // Compare la saisie à la réponse attendue mot à mot, dans l'ordre.
+  // Retourne jusqu'où la saisie est correcte (indexErreur) et si la
+  // phrase est entièrement juste.
+  function evaluerReponseExercice(reponseAttendue, saisie) {
+    const motsSaisis = normaliserPhraseExercice(saisie);
+    let i = 0;
+    while (
+      i < reponseAttendue.length &&
+      i < motsSaisis.length &&
+      normaliserMotExercice(motsSaisis[i]) === normaliserMotExercice(reponseAttendue[i])
+    ) {
+      i++;
+    }
+    const correct = i === reponseAttendue.length && motsSaisis.length === reponseAttendue.length;
+    return { correct: correct, indexErreur: i };
   }
 
   function traductionDeMot(mot) {
@@ -1372,7 +1665,7 @@
       etape++;
       rendreEtape();
     } else {
-      terminerLecon();
+      afficherExercices();
     }
   }
 
@@ -1404,7 +1697,305 @@
   // marquer_chapitre_complete côté Supabase) puis retour au parcours.
   // ⚠️ N'attribue PAS encore de P$/PB (voir note en tête de fichier) —
   // en attente d'un montant/une logique confirmés par Raphaël.
-  let leconTerminee = false;
+  // 🆕 Section exercices — affichée à la place de la navigation du
+  // dialogue une fois la dernière étape atteinte. Le dialogue complet
+  // (#pileDialogue, déjà rempli) reste visible juste au-dessus : pas de
+  // bascule séparée, l'élève peut déjà s'y référer sans rien déplier
+  // (demande de Raphaël, mais la pile le couvrait déjà nativement).
+  const elSectionExercices = document.getElementById('sectionExercices');
+  const elConteneurExercices = document.getElementById('conteneurExercices');
+  const btnTerminerExercices = document.getElementById('btnTerminerExercices');
+  const exercicesResolus = new Set(); // ids des exercices réussis ou révélés
+
+  function afficherExercices() {
+    document.querySelector('.zone-bulle').style.display = 'none';
+    document.getElementById('sceneDialogue').style.display = 'none';
+    document.querySelector('.nav-dialogue').style.display = 'none';
+    document.getElementById('compteur').style.display = 'none';
+    document.getElementById('txtExercicesTitre').textContent = texteInterface('exercicesTitre');
+    document.getElementById('txtExercicesIntro').textContent = texteInterface('exercicesIntro');
+    btnTerminerExercices.textContent = texteInterface('terminer') + ' \u203a';
+    elConteneurExercices.innerHTML = '';
+    EXERCICES.forEach(function (ex, index) { elConteneurExercices.appendChild(creerCarteExercice(ex, index)); });
+    elSectionExercices.style.display = 'flex';
+    elSectionExercices.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function creerCarteExercice(ex, index) {
+    const carte = document.createElement('div');
+    carte.className = 'exercice-carte';
+    carte.dataset.exerciceId = ex.id;
+
+    const cadreImage = document.createElement('div');
+    cadreImage.className = 'exercice-image-cadre';
+    const img = document.createElement('img');
+    img.src = ex.image;
+    img.alt = '';
+    img.onerror = function () {
+      const repli = document.createElement('div');
+      repli.className = 'repli-image-manquante';
+      repli.textContent = 'Image not ready yet';
+      img.replaceWith(repli);
+    };
+    cadreImage.appendChild(img);
+    carte.appendChild(cadreImage);
+
+    const instruction = document.createElement('div');
+    instruction.className = 'exercice-instruction';
+    instruction.textContent = texteExercice(ex);
+    carte.appendChild(instruction);
+
+    const toggleNiveau = document.createElement('div');
+    toggleNiveau.className = 'exercice-niveau-toggle';
+    const btnFacile = document.createElement('button');
+    btnFacile.type = 'button';
+    btnFacile.className = 'exercice-niveau-btn';
+    btnFacile.textContent = texteInterface('niveauFacile');
+    const btnDifficile = document.createElement('button');
+    btnDifficile.type = 'button';
+    btnDifficile.className = 'exercice-niveau-btn';
+    btnDifficile.textContent = texteInterface('niveauDifficile');
+    toggleNiveau.appendChild(btnFacile);
+    toggleNiveau.appendChild(btnDifficile);
+    carte.appendChild(toggleNiveau);
+
+    const zoneJeu = document.createElement('div');
+    carte.appendChild(zoneJeu);
+
+    function choisirNiveau(niveau) {
+      btnFacile.classList.toggle('actif', niveau === 'facile');
+      btnDifficile.classList.toggle('actif', niveau === 'difficile');
+      zoneJeu.innerHTML = '';
+      zoneJeu.appendChild(niveau === 'facile' ? creerZoneFacile(ex, carte) : creerZoneDifficile(ex, carte));
+    }
+    btnFacile.addEventListener('click', function () { choisirNiveau('facile'); });
+    btnDifficile.addEventListener('click', function () { choisirNiveau('difficile'); });
+
+    // Facile par défaut : reconnaître avant de produire, plus doux pour
+    // une toute première leçon.
+    choisirNiveau('facile');
+
+    return carte;
+  }
+
+  function marquerCarteResolue(carte, ex) {
+    carte.classList.add('resolue');
+    exercicesResolus.add(ex.id);
+    if (exercicesResolus.size === EXERCICES.length && window.KebBekProgression && window.KebBekProgression.marquerConditionComplete) {
+      window.KebBekProgression.marquerConditionComplete('d1_exercices_completes')
+        .catch(function (err) { console.warn('dialogue-d1.html : marquerConditionComplete (exercices) a échoué.', err); });
+    }
+  }
+
+  // ---------- Mode difficile : réponse libre, correction progressive ----------
+  function creerZoneDifficile(ex, carte) {
+    const wrapper = document.createElement('div');
+    wrapper.style.display = 'flex';
+    wrapper.style.flexDirection = 'column';
+    wrapper.style.gap = '10px';
+
+    const chips = document.createElement('div');
+    chips.className = 'exercice-chips';
+    chips.style.display = 'none';
+    wrapper.appendChild(chips);
+
+    const champ = document.createElement('input');
+    champ.type = 'text';
+    champ.className = 'exercice-champ';
+    champ.placeholder = texteInterface('placeholderReponse');
+    champ.autocomplete = 'off';
+    champ.autocapitalize = 'off';
+    champ.spellcheck = false;
+
+    const ligneAction = document.createElement('div');
+    ligneAction.className = 'exercice-ligne-action';
+    const btnVerifier = document.createElement('button');
+    btnVerifier.type = 'button';
+    btnVerifier.className = 'exercice-btn-verifier';
+    btnVerifier.textContent = texteInterface('boutonVerifier');
+    ligneAction.appendChild(champ);
+    ligneAction.appendChild(btnVerifier);
+    wrapper.appendChild(ligneAction);
+
+    const feedback = document.createElement('div');
+    feedback.className = 'exercice-feedback';
+    wrapper.appendChild(feedback);
+
+    let essais = 0;
+    let motsAcquis = []; // mots déjà confirmés lors d'un essai précédent
+
+    function verifier() {
+      const saisieComplete = motsAcquis.join(' ') + (motsAcquis.length ? ' ' : '') + champ.value;
+      const resultat = evaluerReponseExercice(ex.reponse, saisieComplete);
+      essais++;
+
+      if (resultat.correct) {
+        champ.value = ex.reponse.join(' ');
+        champ.classList.remove('fautive');
+        champ.classList.add('correcte');
+        champ.disabled = true;
+        btnVerifier.disabled = true;
+        feedback.className = 'exercice-feedback correct';
+        feedback.textContent = texteInterface('feedbackCorrect');
+        marquerCarteResolue(carte, ex);
+        return;
+      }
+
+      // Progrès partiel : on verrouille ce qui est déjà juste.
+      motsAcquis = ex.reponse.slice(0, resultat.indexErreur);
+      chips.innerHTML = '';
+      motsAcquis.forEach(function (mot) {
+        const chip = document.createElement('span');
+        chip.className = 'exercice-chip';
+        chip.textContent = mot;
+        chips.appendChild(chip);
+      });
+      chips.style.display = motsAcquis.length ? 'flex' : 'none';
+      champ.value = '';
+      champ.classList.add('fautive');
+
+      if (essais >= 2) {
+        champ.disabled = true;
+        btnVerifier.disabled = true;
+        feedback.className = 'exercice-feedback revele';
+        feedback.textContent = texteInterface('reponseEtait') + ' ' + ex.reponse.join(' ');
+        const chipsFinal = ex.reponse.slice(motsAcquis.length);
+        chipsFinal.forEach(function (mot) {
+          const chip = document.createElement('span');
+          chip.className = 'exercice-chip';
+          chip.textContent = mot;
+          chips.appendChild(chip);
+        });
+        chips.style.display = 'flex';
+        marquerCarteResolue(carte, ex);
+      } else {
+        feedback.className = 'exercice-feedback presque';
+        feedback.textContent = motsAcquis.length ? texteInterface('feedbackPresque') : '';
+        champ.focus();
+      }
+    }
+
+    btnVerifier.addEventListener('click', verifier);
+    champ.addEventListener('keydown', function (e) { if (e.key === 'Enter') verifier(); });
+
+    return wrapper;
+  }
+
+  // ---------- Mode facile : mots fournis, à remettre en ordre ----------
+  function creerZoneFacile(ex, carte) {
+    const wrapper = document.createElement('div');
+    wrapper.style.display = 'flex';
+    wrapper.style.flexDirection = 'column';
+    wrapper.style.gap = '10px';
+
+    const phraseConstruite = document.createElement('div');
+    phraseConstruite.className = 'exercice-phrase-construite';
+
+    const banque = document.createElement('div');
+    banque.className = 'exercice-banque-mots';
+
+    const feedback = document.createElement('div');
+    feedback.className = 'exercice-feedback';
+
+    const btnRecommencer = document.createElement('button');
+    btnRecommencer.type = 'button';
+    btnRecommencer.className = 'exercice-btn-recommencer';
+    btnRecommencer.textContent = texteInterface('boutonRecommencer');
+    btnRecommencer.style.display = 'none';
+    btnRecommencer.style.alignSelf = 'flex-start';
+
+    let essais = 0;
+    let reponseChoisie = [];
+    let motsMelanges = melangerMots(ex.reponse);
+
+    function rendreBanque() {
+      banque.innerHTML = '';
+      motsMelanges.forEach(function (mot, i) {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'exercice-mot-btn';
+        btn.textContent = mot;
+        btn.dataset.indexMot = i;
+        btn.addEventListener('click', function () {
+          if (btn.classList.contains('utilise')) return;
+          btn.classList.add('utilise');
+          reponseChoisie.push(mot);
+          rendrePhraseConstruite();
+          if (reponseChoisie.length === motsMelanges.length) verifierFacile();
+        });
+        banque.appendChild(btn);
+      });
+    }
+
+    function rendrePhraseConstruite() {
+      phraseConstruite.innerHTML = '';
+      reponseChoisie.forEach(function (mot) {
+        const chip = document.createElement('span');
+        chip.className = 'exercice-chip';
+        chip.textContent = mot;
+        phraseConstruite.appendChild(chip);
+      });
+    }
+
+    function reinitialiser() {
+      reponseChoisie = [];
+      motsMelanges = melangerMots(ex.reponse);
+      feedback.textContent = '';
+      feedback.className = 'exercice-feedback';
+      btnRecommencer.style.display = 'none';
+      rendreBanque();
+      rendrePhraseConstruite();
+    }
+
+    function verifierFacile() {
+      essais++;
+      const correct = reponseChoisie.join(' ').toLowerCase() === ex.reponse.join(' ').toLowerCase();
+      if (correct) {
+        feedback.className = 'exercice-feedback correct';
+        feedback.textContent = texteInterface('feedbackCorrect');
+        marquerCarteResolue(carte, ex);
+        return;
+      }
+      if (essais >= 2) {
+        feedback.className = 'exercice-feedback revele';
+        feedback.textContent = texteInterface('reponseEtait') + ' ' + ex.reponse.join(' ');
+        reponseChoisie = ex.reponse.slice();
+        rendrePhraseConstruite();
+        marquerCarteResolue(carte, ex);
+      } else {
+        feedback.className = 'exercice-feedback presque';
+        feedback.textContent = texteInterface('feedbackPresque');
+        btnRecommencer.style.display = 'inline-block';
+      }
+    }
+
+    btnRecommencer.addEventListener('click', reinitialiser);
+
+    rendreBanque();
+    wrapper.appendChild(phraseConstruite);
+    wrapper.appendChild(banque);
+    wrapper.appendChild(feedback);
+    wrapper.appendChild(btnRecommencer);
+    return wrapper;
+  }
+
+  function melangerMots(mots) {
+    const copie = mots.slice();
+    for (let i = copie.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      const tmp = copie[i]; copie[i] = copie[j]; copie[j] = tmp;
+    }
+    // Un ordre différent de l'ordre correct dès que possible, pour ne
+    // pas donner la réponse gratuitement quand elle tient en 2-3 mots.
+    if (copie.length > 1 && copie.join(' ') === mots.join(' ')) {
+      const tmp = copie[0]; copie[0] = copie[1]; copie[1] = tmp;
+    }
+    return copie;
+  }
+
+  btnTerminerExercices.addEventListener('click', terminerLecon);
+
+
   async function terminerLecon() {
     if (leconTerminee) return;
     leconTerminee = true;

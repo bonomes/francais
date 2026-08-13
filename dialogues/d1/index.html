@@ -2224,6 +2224,19 @@
   elScene.addEventListener('click', suivant);
 
   window.addEventListener('keydown', (e) => {
+    // 🐛 CORRIGÉ (retour Raphaël) : ce raccourci global captait aussi la
+    // barre espace tapée DANS un champ de réponse d'exercice (texte à
+    // trous, etc.), ce qui appelait suivant() à chaque espace et effaçait
+    // la réponse en cours en ramenant l'apprenant en haut de l'étape. On
+    // ignore désormais le raccourci si le focus est sur un champ de
+    // saisie (input / textarea / contenteditable).
+    const cible = e.target;
+    const dansChampSaisie = cible && (
+      cible.tagName === 'INPUT' ||
+      cible.tagName === 'TEXTAREA' ||
+      cible.isContentEditable
+    );
+    if (dansChampSaisie) return;
     if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); suivant(); }
     if (e.key === 'ArrowLeft') { e.preventDefault(); precedent(); }
   });

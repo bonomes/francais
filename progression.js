@@ -167,6 +167,48 @@
     return localStorage.getItem(CLE_DERNIER_PROFIL);
   }
 
+  // 🆕 CORRIGÉ (session du 13-08-2026, signalé par Raphaël) — factorise
+  // en un seul endroit la séquence "restaurer la session Supabase PUIS
+  // le profil actif" que chaque page réécrivait à sa façon (ou
+  // oubliait carrément — voir index.html/allerAuMenuPrincipal et
+  // dialogue-d1.html avant ce correctif, tous deux corrigés en dupliquant
+  // d'abord le code déjà présent dans parcours.html/initProgressionReelle).
+  // Un seul endroit à corriger désormais si cette logique doit changer,
+  // et toute NOUVELLE page (futures lecons/**/*.html) n'a plus qu'à
+  // l'appeler plutôt qu'à réinventer la même chose une fois de plus.
+  //
+  // À appeler UNE FOIS, tout en haut du script de chaque page, avant
+  // tout écouteur qui pourrait déclencher une écriture de progression
+  // (marquerChapitreComplete, marquerConditionComplete,
+  // attribuerRecompensePremiereFois) ou tout rendu qui dépend de
+  // l'identité réelle (menu-principal.js). Idempotente et sûre à
+  // ré-appeler (ex. un module qui veut s'assurer que c'est fait sans
+  // savoir si la page hôte l'a déjà fait — voir demarrerMenuPrincipal
+  // dans menu-principal.js) : si sessionActuelle/profilActifId sont déjà
+  // définis, un second appel ne fait rien de plus qu'un aller-retour
+  // réseau inutile vers getSession() (pas de risque de régression).
+  //
+  // Retourne la session (ou null) — jamais d'exception qui remonte, même
+  // philosophie que clientOuAutoCree()/deconnecter() : un échec réseau
+  // laisse simplement la page en mode invité plutôt que de la bloquer.
+  async function restaurerSessionEtProfil() {
+    try {
+      await initSession();
+      if (sessionActuelle) {
+        const dernier = dernierProfilConnu();
+        if (dernier) {
+          definirProfilActif(dernier);
+        } else {
+          const profils = await profilsDuCompte();
+          if (profils.length === 1) definirProfilActif(profils[0].id);
+        }
+      }
+    } catch (e) {
+      console.warn('progression.js : restaurerSessionEtProfil a échoué.', e);
+    }
+    return sessionActuelle;
+  }
+
   // 🆕 Déconnexion — nécessaire pour le nouveau menu principal ("Ma
   // fiche" → Se déconnecter). Symétrique de definirProfilActif() : vide
   // la session ET le profil actif, et oublie le dernier profil connu
@@ -508,6 +550,7 @@
     initSession,
     definirClient,
     definirSession,
+    restaurerSessionEtProfil,
     estInvite,
     profilsDuCompte,
     creerProfil,

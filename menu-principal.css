@@ -159,7 +159,12 @@
   border-radius: 16px;
 }
 #kbmFichePanneau.kbm-ouvert {
-  max-height: 200px;
+  /* 🆕 200px → 260px : le panneau invité affiche maintenant deux boutons
+     ("Créer un compte" + "Se reconnecter", voir menu-principal.js) au lieu
+     d'un seul — marge de sécurité pour ne jamais rogner le second bouton,
+     y compris quand le texte d'intro passe sur deux lignes sur un écran
+     étroit. */
+  max-height: 260px;
   opacity: 1;
   margin-top: -2px;
 }

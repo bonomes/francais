@@ -1476,17 +1476,33 @@
   // Compare la saisie à la réponse attendue mot à mot, dans l'ordre.
   // Retourne jusqu'où la saisie est correcte (indexErreur) et si la
   // phrase est entièrement juste.
+  //
+  // 🐛 CORRIGÉ (13-08-2026, retour Raphaël sur d1_e4 : reponse ['Mange',
+  // '!']) : un élément de reponseAttendue qui n'est QUE de la ponctuation
+  // isolée (ex. '!') exigeait jusqu'ici d'être tapé comme un second mot à
+  // part entière ("Mange" PUIS un espace PUIS "!"), ce que personne ne
+  // fait naturellement en tapant une réponse. Un tel élément est
+  // maintenant sauté automatiquement côté réponse attendue (jamais une
+  // étape obligatoire de la saisie), et tout token de ponctuation seule
+  // que l'élève aurait quand même tapé de son côté est ignoré aussi —
+  // dans les deux cas, sans jamais faire échouer la comparaison. indexErreur
+  // reste un index dans reponseAttendue (pas dans une copie filtrée), donc
+  // les appelants qui font ex.reponse.slice(0, indexErreur) restent corrects.
+  const MOT_PONCTUATION_SEULE_EXERCICE = /^[.,!?;:…"«»]+$/;
   function evaluerReponseExercice(reponseAttendue, saisie) {
-    const motsSaisis = normaliserPhraseExercice(saisie);
+    const motsSaisis = normaliserPhraseExercice(saisie).filter(function (mot) {
+      return !MOT_PONCTUATION_SEULE_EXERCICE.test(mot);
+    });
     let i = 0;
-    while (
-      i < reponseAttendue.length &&
-      i < motsSaisis.length &&
-      normaliserMotExercice(motsSaisis[i]) === normaliserMotExercice(reponseAttendue[i])
-    ) {
-      i++;
+    let j = 0;
+    while (i < reponseAttendue.length) {
+      if (MOT_PONCTUATION_SEULE_EXERCICE.test(reponseAttendue[i])) { i++; continue; }
+      if (j >= motsSaisis.length) break;
+      if (normaliserMotExercice(motsSaisis[j]) !== normaliserMotExercice(reponseAttendue[i])) break;
+      i++; j++;
     }
-    const correct = i === reponseAttendue.length && motsSaisis.length === reponseAttendue.length;
+    const correct = i === reponseAttendue.length && j === motsSaisis.length;
+
     return { correct: correct, indexErreur: i };
   }
 
@@ -1893,6 +1909,15 @@
   // censée être idempotente côté serveur — voir attribuer_recompense_-
   // premiere_fois — mais autant éviter les appels réseau redondants).
   const recompensesExercicesDonnees = { base: false, parfait: false, parfaitDifficile: false };
+
+  // 🐛 CORRIGÉ (13-08-2026) : jamais déclarée nulle part dans ce fichier —
+  // terminerLecon() (voir plus bas) la LISAIT (if (leconTerminee) return;)
+  // avant toute affectation, ce qui levait une ReferenceError à chaque
+  // clic sur « Terminer » : ni marquerChapitreComplete, ni la redirection
+  // vers parcours.html ne s'exécutaient jamais. C'est ce qui rendait le
+  // bouton totalement silencieux.
+  let leconTerminee = false;
+
 
   // 🆕 Niveau global — état de départ appliqué à toutes les cartes à la
   // construction (voir afficherExercices). N'empêche pas un réglage

@@ -1174,6 +1174,39 @@
   };
 
   // ==================================================================
+  // 🆕 (13-08-2026) Libellé du lien "Se reconnecter" sous Oui/Non — même
+  // principe et mêmes 19 langues que DICO_PREMIERE_FOIS juste au-dessus.
+  // Corrige la limite signalée par Raphaël : ce lien était resté du texte
+  // français codé en dur dans le HTML depuis son ajout, contrairement au
+  // reste de l'interface (y compris le bouton "Se reconnecter" équivalent
+  // ajouté depuis dans menu-principal.js, lui déjà traduit dès sa
+  // livraison).
+  // ==================================================================
+  const DICO_SE_RECONNECTER = {
+    fr: 'Se reconnecter',
+    en: 'Log in',
+    es: 'Iniciar sesión',
+    it: 'Accedi',
+    pt: 'Entrar',
+    ca: 'Inicia sessió',
+    eo: 'Ensaluti',
+    zh: '登录',
+    ja: 'ログイン',
+    ko: '로그인',
+    vi: 'Đăng nhập',
+    ht: 'Konekte',
+    tl: 'Mag-log in',
+    id: 'Masuk',
+    nl: 'Inloggen',
+    de: 'Anmelden',
+    fa: 'ورود',
+    sv: 'Logga in',
+    no: 'Logg inn',
+    ru: 'Войти'
+  };
+
+
+  // ==================================================================
   // 🆕 Mécanisme de traduction pour la séquence identité (identite-eleve.js)
   // — manquait ENTIÈREMENT jusqu'ici : demarrerSequenceIdentite() était
   // appelée avec des options vides ({}), donc identite-eleve.js retombait
@@ -1292,6 +1325,8 @@
   const zoneCaseSecrete = document.getElementById('zoneCaseSecrete');
   const premiereFois = document.getElementById('premiereFois');
   const pfQuestion = document.getElementById('pfQuestion');
+  // 🆕 (13-08-2026) — voir rafraichirSeReconnecter() plus bas.
+  const btnSeReconnecterIndex = document.getElementById('btnSeReconnecterIndex');
   const pfOui = document.getElementById('pfOui');
   const pfNon = document.getElementById('pfNon');
   const lienCoursPrives = document.getElementById('lienCoursPrives');
@@ -1335,6 +1370,13 @@
   }
   rafraichirPremiereFois();
 
+  // 🆕 (13-08-2026) Même principe que rafraichirPremiereFois() ci-dessus,
+  // pour le lien "Se reconnecter" (DICO_SE_RECONNECTER, voir plus haut).
+  function rafraichirSeReconnecter() {
+    btnSeReconnecterIndex.textContent = DICO_SE_RECONNECTER[langueActuelle] || DICO_SE_RECONNECTER.en;
+  }
+  rafraichirSeReconnecter();
+
 
   // Visite de retour avec une langue déjà choisie précédemment : le
   // choix est déjà fait, donc la radiance d'invitation n'a plus lieu
@@ -1363,7 +1405,15 @@
       onHistoires: function () { window.location.href = 'parcours.html'; },
       onPrives: function () { window.location.href = 'cours-prives/'; },
       onContact: function () { window.location.href = 'contact.html'; },
-      onCreerCompte: function () { demarrerIdentiteSiPremiereFois('menu'); }
+      onCreerCompte: function () { demarrerIdentiteSiPremiereFois('menu'); },
+      // 🆕 "Se reconnecter" depuis "Ma fiche" (menu-principal.js livré le
+      // 13-08-2026) — réutilise demarrerReconnexionDepuisIndex() (définie
+      // plus bas dans ce même <script>, hissée par le hoisting des
+      // function declarations). 'menu' précisé explicitement : on part du
+      // menu, donc annuler (onQuitter) doit redonner le menu, pas la scène
+      // d'accueil — même correctif d'`origine` que demarrerIdentiteSiPremiereFois()
+      // ci-dessus, appliqué ici pour la même raison.
+      onSeReconnecter: function () { demarrerReconnexionDepuisIndex('menu'); }
     });
   }
 
@@ -1497,7 +1547,13 @@
   // courriel+code (voir identite-eleve.js, demarrerSequenceIdentite).
   // onComplet() une fois reconnecté·e ramène au menu principal, comme le
   // "Oui" normal — la seule différence est l'écran de départ.
-  function demarrerReconnexionDepuisIndex() {
+  // 🐛 CORRIGÉ (13-08-2026) : `origine` ajouté, même principe que
+  // demarrerIdentiteSiPremiereFois() ci-dessus — sans ce paramètre,
+  // annuler une reconnexion lancée depuis "Ma fiche" (menu-principal.js)
+  // ramenait toujours vers sceneRangee (l'écran d'accueil Keb/Bek) au lieu
+  // du menu principal d'où l'élève venait réellement.
+  function demarrerReconnexionDepuisIndex(origine) {
+    origine = origine || 'accueil';
     if (modeSecretActif()) return;
     sceneRangee.style.display = 'none';
     lienCoursPrives.style.display = 'none';
@@ -1509,13 +1565,17 @@
       onComplet: function () { allerAuMenuPrincipal('oui'); },
       onQuitter: function () {
         sequenceIdentite.style.display = 'none';
-        sceneRangee.style.display = '';
-        lienCoursPrives.style.display = '';
-        afficherPremiereFois();
+        if (origine === 'menu') {
+          document.getElementById('menuPrincipal').style.display = '';
+        } else {
+          sceneRangee.style.display = '';
+          lienCoursPrives.style.display = '';
+          afficherPremiereFois();
+        }
       }
     });
   }
-  document.getElementById('btnSeReconnecterIndex').addEventListener('click', demarrerReconnexionDepuisIndex);
+  btnSeReconnecterIndex.addEventListener('click', function () { demarrerReconnexionDepuisIndex('accueil'); });
 
   // 🆕 Petite séquence animée au survol de "Non" : posture normale (01)
   // → bras levé façon salut (02) pendant un court instant → retour à la
@@ -1811,6 +1871,7 @@
     afficherPremiereFois();
     rafraichirLienCoursPrives();
     rafraichirPremiereFois();
+    rafraichirSeReconnecter();
     rafraichirEnteteSac();
     fermer();
   }

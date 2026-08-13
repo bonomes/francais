@@ -1516,6 +1516,15 @@
         } else {
           console.warn('KebBekProgression indisponible — identité non enregistrée.', identite);
         }
+        // 🆕 (13-08-2026) — le sac à dos (sac-a-dos.js) affiche le solde
+        // P$/PB via rafraichirSoldeSac(), mais seulement à l'ouverture du
+        // panneau ou au chargement de la page (voir toggleSacADos() et
+        // l'appel en bas de sac-a-dos.js) — jamais quand l'identité change
+        // en cours de page, comme ici si un vrai compte vient d'être créé
+        // (lancerCreationCompte, à l'intérieur de la séquence) plutôt que
+        // le mode invité. Sans cet appel, le sac resterait affiché à 0/0
+        // jusqu'à sa prochaine fermeture/ouverture manuelle.
+        if (typeof rafraichirSoldeSac === 'function') rafraichirSoldeSac();
         allerAuMenuPrincipal('oui');
       },
       // 🆕 Demande de Raphaël : filet de sécurité si "Oui" a été cliqué
@@ -1562,7 +1571,16 @@
     const optionsAvecDepart = optionsIdentitePourLangue(langueActuelle);
     optionsAvecDepart.etapeDepart = 'reconnexion';
     KebBekIdentite.demarrerSequenceIdentite('sequenceIdentite', optionsAvecDepart, {
-      onComplet: function () { allerAuMenuPrincipal('oui'); },
+      // 🆕 (13-08-2026) — même correctif que dans demarrerIdentiteSiPremiereFois()
+      // ci-dessus, encore plus important ici : une reconnexion ramène TOUJOURS
+      // un vrai compte avec un vrai solde (contrairement au mode invité qui
+      // reste possible côté création de compte) — sans rafraichirSoldeSac(),
+      // le sac afficherait le solde invité (0/0) jusqu'à sa prochaine
+      // fermeture/ouverture manuelle, malgré la reconnexion réussie.
+      onComplet: function () {
+        if (typeof rafraichirSoldeSac === 'function') rafraichirSoldeSac();
+        allerAuMenuPrincipal('oui');
+      },
       onQuitter: function () {
         sequenceIdentite.style.display = 'none';
         if (origine === 'menu') {

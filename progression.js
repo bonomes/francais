@@ -139,11 +139,23 @@
   // Retourne { profil, estNouveau } — estNouveau sert de signal exact pour
   // déclencher la migration invité→compte (voir règle de fusion, jamais
   // sur une reconnexion normale).
+  // 🐛 CORRIGÉ (session du 13-08-2026, signalé par Raphaël) : retournait
+  // directement `data` (la ligne brute renvoyée par la fonction SQL
+  // creer_profil, {id, compte_id, prenom, ...}) au lieu de la forme
+  // { profil, estNouveau } documentée ci-dessus. identite-eleve.js
+  // vérifiait `resultat.profil.id`, toujours undefined avec l'ancienne
+  // forme → la condition échouait SYSTÉMATIQUEMENT, silencieusement (un
+  // simple console.warn), et le profil actif n'était jamais défini,
+  // même à la création d'un compte flambant neuf. creer_profil() insère
+  // TOUJOURS une nouvelle ligne (c'est son unique rôle — voir SQL), donc
+  // estNouveau est toujours true ici ; c'est à l'APPELANT (voir
+  // apresAuthentification() dans identite-eleve.js) de décider s'il faut
+  // seulement appeler cette fonction, via profilsDuCompte() en amont.
   async function creerProfil(prenom) {
     if (!clientSupabase) return null;
     const { data, error } = await clientSupabase.rpc('creer_profil', { p_prenom: prenom });
     if (error) { console.warn('progression.js : creerProfil a échoué.', error); return null; }
-    return data;
+    return { profil: data, estNouveau: true };
   }
 
   function definirProfilActif(id) {

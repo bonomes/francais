@@ -409,6 +409,20 @@ async function demarrerMenuPrincipal(idConteneur, callbacks) {
   if (!conteneur) { console.warn('menu-principal.js : conteneur introuvable.', idConteneur); return; }
 
   const progression = window.KebBekProgression || null;
+  // 🆕 CORRIGÉ (session du 13-08-2026, signalé par Raphaël) — filet de
+  // sécurité : ce module lisait l'identité (lireIdentite juste plus bas)
+  // SANS jamais s'assurer que la session Supabase/le profil actif
+  // avaient été restaurés sur CETTE page, ce qui retombait sur
+  // l'identité invité (localStorage) pour un élève connecté si la page
+  // hôte oubliait l'appel — exactement le bug vécu sur index.html.
+  // restaurerSessionEtProfil() (progression.js) est idempotente : sans
+  // effet si la page hôte l'a déjà appelée elle-même, donc aucun risque
+  // à l'appeler systématiquement ici aussi — même principe de "double
+  // vérification" que le mode dégradé déjà en place juste en dessous
+  // pour un site sans progression.js du tout.
+  if (progression && progression.restaurerSessionEtProfil) {
+    await progression.restaurerSessionEtProfil();
+  }
   const invite = !progression || progression.estInvite() || !progression.session;
   const identite = progression ? await progression.lireIdentite() : { prenom: null, genre: null };
 

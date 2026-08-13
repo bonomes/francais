@@ -59,19 +59,24 @@
      la mécanique fonctionne dès maintenant, les vraies images pourront
      être déposées aux chemins prévus sans toucher au code.
 
-     RÉCOMPENSES : confirmé par Raphaël (session du 09-08-2026) — la
-     première complétion de d1 donne 5 P$, pas de PB (réservés aux objets
-     spéciaux/coûteux, attribués avec bien plus de parcimonie — voir même
-     échange). Câblé ci-dessous via KebBekProgression.attribuerRecompense-
-     PremiereFois('d1', 5, 0), séparée de marquerChapitreComplete() pour ne
-     courir aucun risque sur cette dernière (déjà fonctionnelle). Fonction
-     SQL attribuer_recompense_premiere_fois DÉPLOYÉE sur Supabase (projet
-     Bravo, session du 09-08-2026, via le connecteur Supabase — schéma
-     réellement introspecté avant écriture, pas deviné : eleves.id/uuid,
-     eleves.compte_id confirmés, même garde de propriété v_compte_id =
-     auth.uid() que marquer_chapitre_complete). Reste à valider en
-     conditions réelles (compléter la leçon avec un compte connecté et
-     vérifier le solde P$ dans le sac).
+     RÉCOMPENSES : confirmé par Raphaël (session du 13-08-2026, remplace
+     la version à plat du 09-08-2026) — trois paliers indépendants liés
+     à la section EXERCICES (pas au simple clic sur « Terminer ») :
+       1. Les 4 exercices résolus, peu importe le niveau ou le nombre
+          d'essais            → 5 P$ (une seule fois)
+       2. Les 4 résolus SANS AUCUNE erreur (1er essai correct chacun),
+          peu importe le niveau → +5 P$ (une seule fois)
+       3. Les 4 résolus sans erreur ET en mode difficile spécifiquement
+          → +1 PB (une seule fois)
+     Total maximal : 10 P$ + 1 PB. Voir verifierRecompensesExercices()
+     et attribuerRecompenseExercice() plus bas — appelées depuis
+     marquerCarteResolue() à chaque exercice résolu, best-effort via
+     KebBekProgression.attribuerRecompensePremiereFois(cle, piasses,
+     pointsBonis), une clé distincte par palier (d1_exercices_base /
+     d1_exercices_parfait / d1_exercices_parfait_difficile). Suppose
+     cette fonction générique et idempotente PAR clé (déjà observé avec
+     la clé 'd1' de l'ancien système) — jamais vérifié directement dans
+     progression.js (fichier non fourni à ce jour). À confirmer.
      ================================================================== */
 
   :root {
@@ -1870,6 +1875,20 @@
   const elRemarqueDifficile = document.getElementById('remarqueQuatreDifficile');
   const exercicesResolus = new Set(); // ids des exercices réussis ou révélés, tout niveau confondu (usage visuel)
   const exercicesResolusDifficile = new Set(); // ids résolus spécifiquement en mode difficile — condition carte
+  // 🆕 (retour Raphaël, session du 13-08-2026) — suivi séparé pour les
+  // récompenses P$/PB : "sans erreur" = réussi du premier coup (essais
+  // === 1 au moment de la réussite), distinct de exercicesResolus qui
+  // inclut aussi les révélations après 2 essais ratés. Un exercice peut
+  // entrer dans ces sets via le mode facile OU difficile, indifféremment
+  // — seul exercicesResolusSansErreurDifficile exige spécifiquement le
+  // mode difficile (condition du 1 PB).
+  const exercicesResolusSansErreur = new Set();
+  const exercicesResolusSansErreurDifficile = new Set();
+  // Empêche de rappeler la RPC de récompense à chaque nouvel exercice
+  // résolu une fois un palier déjà atteint (elle est de toute façon
+  // censée être idempotente côté serveur — voir attribuer_recompense_-
+  // premiere_fois — mais autant éviter les appels réseau redondants).
+  const recompensesExercicesDonnees = { base: false, parfait: false, parfaitDifficile: false };
 
   // 🆕 Niveau global — état de départ appliqué à toutes les cartes à la
   // construction (voir afficherExercices). N'empêche pas un réglage
@@ -2002,11 +2021,13 @@
     return carte;
   }
 
-  function marquerCarteResolue(carte, ex, niveau) {
+  function marquerCarteResolue(carte, ex, niveau, sansErreur) {
     carte.classList.add('resolue');
     exercicesResolus.add(ex.id);
+    if (sansErreur) exercicesResolusSansErreur.add(ex.id);
     if (niveau === 'difficile') {
       exercicesResolusDifficile.add(ex.id);
+      if (sansErreur) exercicesResolusSansErreurDifficile.add(ex.id);
       // 🆕 Condition « quatre exercices en mode difficile » — demandé
       // par Raphaël (session du 13-08-2026) comme deuxième condition
       // de déblocage de « Le sandwich de Ginette » (voir
@@ -2021,6 +2042,49 @@
         }
       }
     }
+    verifierRecompensesExercices();
+  }
+
+  // 🆕 Récompenses P$/PB pour la section exercices (confirmé par
+  // Raphaël, session du 13-08-2026) — TROIS paliers indépendants,
+  // chacun attribué au plus une fois par élève (idempotence côté
+  // serveur via attribuer_recompense_premiere_fois, une clé distincte
+  // par palier) :
+  //   1. d1_exercices_base            : les 4 exercices résolus, peu
+  //      importe le niveau ou le nombre d'essais → 5 P$
+  //   2. d1_exercices_parfait         : les 4 résolus SANS AUCUNE
+  //      erreur (premier essai correct), peu importe le niveau → +5 P$
+  //   3. d1_exercices_parfait_difficile : les 4 résolus sans erreur ET
+  //      spécifiquement en mode difficile → +1 PB
+  // Total maximal : 10 P$ + 1 PB. Remplace l'ancien câblage qui donnait
+  // 5 P$ (clé 'd1') au simple clic sur « Terminer », sans vérifier que
+  // les exercices avaient été faits — voir terminerLecon(), qui ne gère
+  // plus que marquerChapitreComplete (déblocage du parcours), une
+  // notion distincte de la monnaie.
+  // ⚠️ Suppose que attribuerRecompensePremiereFois(cle, piasses, pointsBonis)
+  // accepte une clé arbitraire et est idempotente PAR clé — comportement
+  // déjà observé avec la clé 'd1' existante, mais jamais vérifié
+  // directement dans progression.js (fichier non fourni). À confirmer
+  // avant mise en prod si possible.
+  function verifierRecompensesExercices() {
+    if (!recompensesExercicesDonnees.base && exercicesResolus.size === EXERCICES.length) {
+      recompensesExercicesDonnees.base = true;
+      attribuerRecompenseExercice('d1_exercices_base', 5, 0);
+    }
+    if (!recompensesExercicesDonnees.parfait && exercicesResolusSansErreur.size === EXERCICES.length) {
+      recompensesExercicesDonnees.parfait = true;
+      attribuerRecompenseExercice('d1_exercices_parfait', 5, 0);
+    }
+    if (!recompensesExercicesDonnees.parfaitDifficile && exercicesResolusSansErreurDifficile.size === EXERCICES.length) {
+      recompensesExercicesDonnees.parfaitDifficile = true;
+      attribuerRecompenseExercice('d1_exercices_parfait_difficile', 0, 1);
+    }
+  }
+
+  function attribuerRecompenseExercice(cle, piasses, pointsBonis) {
+    if (!window.KebBekProgression || !window.KebBekProgression.attribuerRecompensePremiereFois) return;
+    window.KebBekProgression.attribuerRecompensePremiereFois(cle, piasses, pointsBonis)
+      .catch(function (err) { console.warn('dialogue-d1.html : attribuerRecompensePremiereFois(' + cle + ') a échoué.', err); });
   }
 
   function afficherRemarqueDifficile() {
@@ -2093,7 +2157,7 @@
         btnVerifier.disabled = true;
         feedback.className = 'exercice-feedback correct';
         feedback.textContent = texteInterface('feedbackCorrect');
-        marquerCarteResolue(carte, ex, 'difficile');
+        marquerCarteResolue(carte, ex, 'difficile', essais === 1);
         return;
       }
 
@@ -2129,7 +2193,7 @@
           chips.appendChild(chip);
         });
         chips.style.display = 'flex';
-        marquerCarteResolue(carte, ex, 'difficile');
+        marquerCarteResolue(carte, ex, 'difficile', false);
       } else {
         feedback.className = 'exercice-feedback presque';
         feedback.textContent = motsAcquis.length ? texteInterface('feedbackPresque') : '';
@@ -2236,11 +2300,19 @@
 
     function verifierFacile() {
       essais++;
-      const correct = reponseChoisie.map(function (item) { return item.mot; }).join(' ').toLowerCase() === ex.reponse.join(' ').toLowerCase();
+      const texteChoisi = reponseChoisie.map(function (item) { return item.mot; }).join(' ').toLowerCase();
+      // 🆕 Accepte la réponse principale OU toute alternative déclarée
+      // dans ex.reponsesAlternatives (voir reponsesAcceptees, même liste
+      // que le mode difficile) — ex. "le sandwich" en plus de "un
+      // sandwich" pour d1_e2. Chaque alternative doit avoir la même
+      // longueur que ex.reponse (nbAChoisir s'appuie sur cette longueur).
+      const correct = reponsesAcceptees(ex).some(function (reponseCandidate) {
+        return texteChoisi === reponseCandidate.join(' ').toLowerCase();
+      });
       if (correct) {
         feedback.className = 'exercice-feedback correct';
         feedback.textContent = texteInterface('feedbackCorrect');
-        marquerCarteResolue(carte, ex, 'facile');
+        marquerCarteResolue(carte, ex, 'facile', essais === 1);
         return;
       }
       if (essais >= 2) {
@@ -2248,7 +2320,7 @@
         feedback.textContent = texteInterface('reponseEtait') + ' ' + ex.reponse.join(' ');
         reponseChoisie = ex.reponse.map(function (mot) { return { mot: mot, index: -1 }; });
         rendrePhraseConstruite();
-        marquerCarteResolue(carte, ex, 'facile');
+        marquerCarteResolue(carte, ex, 'facile', false);
       } else {
         feedback.className = 'exercice-feedback presque';
         feedback.textContent = texteInterface('feedbackPresque');
@@ -2293,14 +2365,14 @@
     } catch (e) {
       console.warn('dialogue-d1.html : impossible d\u2019enregistrer la fin du dialogue.', e);
     }
-    // Récompense (5 P$, une seule fois) — appel séparé et best-effort,
-    // voir note en tête de fichier : n'affecte jamais l'enregistrement de
-    // la progression elle-même si la RPC n'existe pas encore côté Supabase.
-    try {
-      await KebBekProgression.attribuerRecompensePremiereFois('d1', 5, 0);
-    } catch (e) {
-      console.warn('dialogue-d1.html : impossible d\u2019attribuer la récompense (RPC pas encore créée ?).', e);
-    }
+    // 🐛 CORRIGÉ (retour Raphaël, session du 13-08-2026) : la récompense
+    // 5 P$ était donnée ici, au simple clic sur « Terminer », SANS
+    // vérifier que les exercices avaient été faits. Le nouveau système
+    // à trois paliers (voir verifierRecompensesExercices, déclenché
+    // depuis marquerCarteResolue à chaque exercice résolu) exige belle
+    // et bien la complétion réelle des 4 exercices — ce bouton ne gère
+    // donc plus que marquerChapitreComplete (déblocage du parcours),
+    // une notion distincte de la monnaie P$/PB.
     // 🐛 CORRIGÉ (retour Raphaël, capture 404) : cette ligne écrivait
     // 'parcours.html' — un chemin RELATIF au dossier courant
     // (francais/dialogues/d1/), donc résolu vers .../d1/parcours.html,

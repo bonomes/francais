@@ -47,6 +47,7 @@ const DICO_MENU = {
     menuBravo: 'Bravo et récompenses',
     badgeBientot: 'Bientôt',
     menuMaFiche: 'Ma fiche',
+    menuProfesseur: 'Mode professeur',
     menuPrives: 'Cours privés',
     menuContact: 'Contact',
     ficheInvite: 'Tu explores en mode invité pour l\u2019instant.',
@@ -63,6 +64,7 @@ const DICO_MENU = {
     menuBravo: 'Bravo & rewards',
     badgeBientot: 'Soon',
     menuMaFiche: 'My profile',
+    menuProfesseur: 'Teacher mode',
     menuPrives: 'Private lessons',
     menuContact: 'Contact',
     ficheInvite: 'You\u2019re exploring as a guest for now.',
@@ -384,7 +386,11 @@ const ICONES_MENU = {
   bravo: '<path d="M6 6h15l-1.5 9h-12Z"/><path d="M6 6 5 3H2"/><circle cx="9.5" cy="19" r="1.4"/><circle cx="17.5" cy="19" r="1.4"/>',
   fiche: '<circle cx="12" cy="8" r="3.5"/><path d="M4.5 20a7.5 7.5 0 0 1 15 0"/>',
   prives: '<rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8M12 17v4"/>',
-  contact: '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/>'
+  contact: '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/>',
+  // 🆕 Mode professeur — un porte-bloc/écritoire, pour rester distinct
+  // de "fiche" (silhouette élève) sans introduire un style d'icône
+  // différent des autres (même trait, mêmes proportions viewBox 24).
+  professeur: '<rect x="3" y="4" width="18" height="14" rx="2"/><path d="M7 9h10M7 13h6"/><path d="M9 21h6"/>'
 };
 
 function svgIconeMenu(id) {
@@ -396,12 +402,16 @@ function svgIconeMenu(id) {
  *
  * @param {string} idConteneur - id de l'élément hôte (vidé puis rempli).
  * @param {object} callbacks - { onHistoires, onPrives, onContact,
- *   onCreerCompte, onSeReconnecter } — chacun optionnel ; non fourni =
- *   bouton inactif plutôt qu'une erreur. onCreerCompte et onSeReconnecter
- *   sont tous deux appelés depuis "Ma fiche" en mode invité (destination —
- *   probablement relancer la séquence identité, à l'étape compte ou
- *   directement en mode reconnexion — décidée par la page hôte, ce module
- *   ne le sait pas).
+ *   onCreerCompte, onSeReconnecter, onModeProfesseur } — chacun
+ *   optionnel ; non fourni = bouton inactif plutôt qu'une erreur.
+ *   onCreerCompte et onSeReconnecter sont tous deux appelés depuis
+ *   "Ma fiche" en mode invité (destination — probablement relancer la
+ *   séquence identité, à l'étape compte ou directement en mode
+ *   reconnexion — décidée par la page hôte, ce module ne le sait pas).
+ *   onModeProfesseur n'est jamais appelé sans que le bouton "Mode
+ *   professeur" ait d'abord été affiché — ce module vérifie lui-même
+ *   (via progression.essayerModeProfesseur) que le compte connecté est
+ *   un compte enseignant reconnu avant de rendre ce bouton.
  */
 async function demarrerMenuPrincipal(idConteneur, callbacks) {
   callbacks = callbacks || {};
@@ -425,6 +435,16 @@ async function demarrerMenuPrincipal(idConteneur, callbacks) {
   }
   const invite = !progression || progression.estInvite() || !progression.session;
   const identite = progression ? await progression.lireIdentite() : { prenom: null, genre: null };
+  // 🆕 Mode professeur — n'a de sens que pour un compte réellement
+  // connecté (pas invité). essayerModeProfesseur() (progression.js)
+  // appelle le RPC creer_profil_enseignant() : succès seulement si le
+  // courriel du compte figure dans la liste blanche côté Supabase —
+  // aucune vérification client, la liste elle-même n'est pas lisible
+  // par le navigateur. Échec = pas un compte prof, on n'affiche
+  // simplement rien (jamais une erreur visible pour un élève).
+  const estProfesseur = !invite && progression && progression.essayerModeProfesseur
+    ? await progression.essayerModeProfesseur().then(() => true).catch(() => false)
+    : false;
 
   conteneur.innerHTML =
     // 🆕 Titre au-dessus du menu, demande de Raphaël — réutilise
@@ -459,6 +479,13 @@ async function demarrerMenuPrincipal(idConteneur, callbacks) {
         '</button>' +
         '<div class="kbm-fiche-panneau" id="kbmFichePanneau"></div>' +
 
+        (estProfesseur ?
+          '<button type="button" class="kbm-bouton kbm-entree-cachee" data-menu="professeur">' +
+            svgIconeMenu('professeur') +
+            '<span>' + tMenuOuDefaut('menuProfesseur', 'Teacher mode') + '</span>' +
+          '</button>'
+        : '') +
+
         '<button type="button" class="kbm-bouton kbm-entree-cachee" data-menu="prives">' +
           svgIconeMenu('prives') +
           '<span>' + tMenuOuDefaut('menuPrives', 'Private lessons') + '</span>' +
@@ -487,6 +514,7 @@ async function demarrerMenuPrincipal(idConteneur, callbacks) {
     if (el && typeof cb === 'function') el.addEventListener('click', cb);
   };
   brancher('[data-menu="histoires"]', callbacks.onHistoires);
+  brancher('[data-menu="professeur"]', callbacks.onModeProfesseur);
   brancher('[data-menu="prives"]', callbacks.onPrives);
   brancher('[data-menu="contact"]', callbacks.onContact);
 

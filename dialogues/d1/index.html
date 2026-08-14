@@ -2928,6 +2928,18 @@
 
   let syncControleBloque = false; // true seulement côté élève, tant que controle === 'professeur'
 
+  // 🆕 (correctif du 14-08-2026, "élève catapulté") : signale au widget
+  // flottant (widget-session-prof.js, chargé sur TOUTES les pages) que
+  // CETTE page gère elle-même son propre "etat.page" (voir
+  // synchroniserEtatSession juste en dessous) — le widget ne doit donc
+  // JAMAIS le remettre à null ici, contrairement à parcours.html/
+  // index.html où son absence signale au widget qu'il doit le faire lui-
+  // même. Posé de façon inconditionnelle (avant même de savoir si CE
+  // navigateur est prof ou élève) : c'est un identifiant de PAGE, pas un
+  // état de session — le widget ne s'en sert de toute façon que sur le
+  // navigateur du prof.
+  window.KebBekPageEnDirect = 'dialogues/d1/';
+
   function synchroniserEtatSession(etatAPousser) {
     const sessionClasse = window.KebBekSessionClasse || null;
     if (!sessionClasse) return;
@@ -2998,7 +3010,7 @@
     // pas encore utile tant qu'une seule leçon existe, mais correct dès
     // qu'une deuxième apparaîtra plutôt que de laisser un élève bloqué
     // sur d1 pendant que le prof anime d2 ailleurs.
-    const CHEMIN_CETTE_PAGE = 'dialogues/d1/';
+    const CHEMIN_CETTE_PAGE = window.KebBekPageEnDirect; // même valeur que 'dialogues/d1/' déclarée juste plus haut — une seule source
 
     function appliquerEtat(session) {
       // Le prof a poussé un état pour une AUTRE page — suit-le plutôt

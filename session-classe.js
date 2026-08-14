@@ -50,6 +50,41 @@
     return progression ? progression.client : null;
   }
 
+  // ---------- Persistance locale (prof) ----------
+  // 🆕 (14-08-2026) : permet à une AUTRE page (ex. dialogue-d1.html) de
+  // savoir, sans plomberie supplémentaire, si CE navigateur fait tourner
+  // une session en tant que prof — utile pour qu'une page de leçon
+  // pousse automatiquement son état de navigation quand le prof y
+  // navigue lui-même. localStorage (pas sessionStorage) volontairement :
+  // le prof peut ouvrir la leçon dans un nouvel onglet plutôt que dans
+  // celui du panneau Mode professeur. Aucune donnée sensible ici (juste
+  // id/code/controle, déjà publics via le code partagé) — la vraie
+  // protection reste côté RPC (SECURITY DEFINER, vérifie l'auth.uid()
+  // propriétaire), ceci n'est qu'un confort d'UI, jamais une frontière
+  // de sécurité.
+  const CLE_SESSION_PROF = 'kbb_session_prof_active';
+
+  function memoriserSessionProf(session) {
+    try {
+      if (session && session.active) {
+        localStorage.setItem(CLE_SESSION_PROF, JSON.stringify(session));
+      } else {
+        localStorage.removeItem(CLE_SESSION_PROF);
+      }
+    } catch (e) { /* stockage indisponible — dégradation silencieuse */ }
+  }
+
+  // Lit la session prof active mémorisée dans CE navigateur, ou null.
+  // Lecture pure (ne vérifie rien côté serveur) — une page qui s'en sert
+  // pour pousser un état doit rester tolérante à un échec RPC (session
+  // entre-temps fermée depuis un autre onglet, par ex.).
+  function sessionProfActive() {
+    try {
+      const brut = localStorage.getItem(CLE_SESSION_PROF);
+      return brut ? JSON.parse(brut) : null;
+    } catch (e) { return null; }
+  }
+
   // ---------- Côté professeur ----------
 
   // Crée une nouvelle session (le compte doit être un enseignant
@@ -63,6 +98,7 @@
     try {
       const { data, error } = await c.rpc('creer_session_classe', { p_mode: mode || 'distance' });
       if (error) { console.warn('session-classe.js : demarrerSession a échoué.', error); return null; }
+      memoriserSessionProf(data);
       return data || null;
     } catch (e) {
       console.warn('session-classe.js : demarrerSession a échoué (réseau).', e);
@@ -84,6 +120,7 @@
         p_etat: etat || null
       });
       if (error) { console.warn('session-classe.js : mettreAJour a échoué.', error); return null; }
+      memoriserSessionProf(data);
       return data || null;
     } catch (e) {
       console.warn('session-classe.js : mettreAJour a échoué (réseau).', e);
@@ -102,6 +139,7 @@
     try {
       const { data, error } = await c.rpc('fermer_session_classe', { p_session_id: sessionId });
       if (error) { console.warn('session-classe.js : fermerSession a échoué.', error); return false; }
+      if (data) memoriserSessionProf(null);
       return !!data;
     } catch (e) {
       console.warn('session-classe.js : fermerSession a échoué (réseau).', e);
@@ -190,6 +228,7 @@
     changerControle,
     pousserEtat,
     fermerSession,
+    sessionProfActive,
     rejoindreSession,
     quitterSession
   };

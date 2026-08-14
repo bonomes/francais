@@ -85,6 +85,59 @@
     } catch (e) { return null; }
   }
 
+  // ---------- Persistance locale (élève) ----------
+  // 🆕 (14-08-2026, deuxième vague) : symétrique de CLE_SESSION_PROF,
+  // mais pour l'élève. Corrige un vrai bug d'expérience relevé par
+  // Raphaël : le site est multi-pages (pas une SPA) — quitter la page
+  // de leçon détruit TOUT le contexte JS en mémoire, donc l'abonnement
+  // Realtime (abonnementActif ci-dessous) est perdu à chaque navigation
+  // réelle, même vers une autre page qui participe aussi à la session
+  // (ex. retour à parcours.html). Sans mémorisation, l'élève devrait
+  // retaper le code à chaque page — ce n'est plus vraiment "en direct".
+  // Seul le CODE est mémorisé (pas toute la ligne comme côté prof) :
+  // rejoindre_session_classe() fait de toute façon une lecture fraîche
+  // à chaque appel, la ligne mémorisée deviendrait vite périmée pour
+  // rien. Se réabonner sur une nouvelle page est donc une VRAIE
+  // rejonction (nouvel appel RPC, nouveau canal), pas une reprise de
+  // canal — la reconnexion Realtime ne survivrait de toute façon pas à
+  // un rechargement complet de page.
+  const CLE_SESSION_ELEVE = 'kbb_session_eleve_active';
+
+  function memoriserSessionEleve(code) {
+    try {
+      if (code) {
+        localStorage.setItem(CLE_SESSION_ELEVE, code);
+      } else {
+        localStorage.removeItem(CLE_SESSION_ELEVE);
+      }
+    } catch (e) { /* stockage indisponible — dégradation silencieuse */ }
+  }
+
+  // Code de session élève mémorisé dans CE navigateur, ou null. Lecture
+  // pure — ne garantit pas que la session est toujours active (voir
+  // reprendreSessionEleve() pour une vraie tentative de rejonction).
+  function sessionEleveActive() {
+    try {
+      return localStorage.getItem(CLE_SESSION_ELEVE) || null;
+    } catch (e) { return null; }
+  }
+
+  // Tente de rejoindre automatiquement la session mémorisée, s'il y en
+  // a une — à appeler par chaque page qui participe (parcours.html,
+  // pages de leçon) juste après sa propre restauration de session/
+  // profil, PLUTÔT que de réimplémenter la lecture localStorage dans
+  // chaque page. Retourne true si une rejonction a réussi, false s'il
+  // n'y avait rien à reprendre OU si la session mémorisée n'est plus
+  // valide (fermée entre-temps depuis une autre page/onglet — dans ce
+  // cas le code périmé est aussi nettoyé automatiquement).
+  async function reprendreSessionEleve(callbacks) {
+    const code = sessionEleveActive();
+    if (!code) return false;
+    const reussi = await rejoindreSession(code, callbacks);
+    if (!reussi) memoriserSessionEleve(null); // code périmé — évite de retenter indéfiniment
+    return reussi;
+  }
+
   // ---------- Côté professeur ----------
 
   // Crée une nouvelle session (le compte doit être un enseignant
@@ -233,6 +286,7 @@
       .subscribe();
 
     abonnementActif = { canal: canal, sessionId: session.id };
+    memoriserSessionEleve(session.code);
 
     // État déjà en cours au moment de rejoindre — l'élève ne doit pas
     // attendre le PROCHAIN changement pour voir où en est la classe.
@@ -243,12 +297,15 @@
 
   // Se désabonne proprement — à appeler quand l'élève quitte la page
   // de leçon, ou automatiquement si le prof ferme la session (voir
-  // onFermee ci-dessus).
+  // onFermee ci-dessus). Efface aussi le code mémorisé : un "quitter"
+  // explicite ne doit jamais se retrouver rejoint automatiquement à la
+  // prochaine page (voir reprendreSessionEleve).
   function quitterSession() {
     if (!abonnementActif) return;
     const c = client();
     if (c) c.removeChannel(abonnementActif.canal);
     abonnementActif = null;
+    memoriserSessionEleve(null);
   }
 
   window.KebBekSessionClasse = {
@@ -258,6 +315,8 @@
     fermerSession,
     sessionProfActive,
     rejoindreSession,
+    reprendreSessionEleve,
+    sessionEleveActive,
     quitterSession
   };
 })();

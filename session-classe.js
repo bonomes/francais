@@ -173,6 +173,24 @@
       console.warn('session-classe.js : déjà abonné à une session — appelle quitterSession() avant d\u2019en rejoindre une autre.');
       return false;
     }
+
+    // 🐛 CORRIGÉ (14-08-2026, deuxième passe — diagnostiqué en test réel) :
+    // déplacé ICI (avant même l'appel RPC) plutôt que juste avant
+    // .subscribe(). setAuth() déclenche une reconnexion de la websocket
+    // Realtime — appelé juste avant .subscribe(), il entre en course avec
+    // l'abonnement du canal lui-même (CHANNEL_ERROR "socket closed: 1001"
+    // observé en test, avant stabilisation tardive). Le temps de l'aller-
+    // retour RPC qui suit sert ici de délai naturel pour que la
+    // reconnexion se stabilise AVANT la création du canal.
+    try {
+      const { data: sessionAuth } = await c.auth.getSession();
+      if (sessionAuth && sessionAuth.session) {
+        await c.realtime.setAuth(sessionAuth.session.access_token);
+      }
+    } catch (e) {
+      console.warn('session-classe.js : setAuth Realtime a échoué — abonnement tenté quand même.', e);
+    }
+
     let session;
     try {
       const { data, error } = await c.rpc('rejoindre_session_classe', { p_code: code });
@@ -185,22 +203,6 @@
       console.warn('session-classe.js : rejoindreSession a échoué (réseau).', e);
       if (typeof callbacks.onErreur === 'function') callbacks.onErreur();
       return false;
-    }
-
-    // 🐛 CORRIGÉ (14-08-2026, diagnostiqué en test réel avec Raphaël) :
-    // le canal Realtime (postgres_changes, protégé par RLS) doit recevoir
-    // explicitement le jeton d'accès AVANT l'abonnement — sans cet appel,
-    // la ligne est bien détectée comme modifiée, mais son contenu revient
-    // vide avec une erreur "401 Unauthorized" (RLS évaluée avec
-    // auth.uid() = null côté Realtime, même si le client Auth a bien une
-    // session valide). Voir la doc Supabase sur l'autorisation Realtime.
-    try {
-      const { data: sessionAuth } = await c.auth.getSession();
-      if (sessionAuth && sessionAuth.session) {
-        await c.realtime.setAuth(sessionAuth.session.access_token);
-      }
-    } catch (e) {
-      console.warn('session-classe.js : setAuth Realtime a échoué — abonnement tenté quand même.', e);
     }
 
     const canal = c

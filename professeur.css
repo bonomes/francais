@@ -132,12 +132,9 @@
 
 .kbp-choix-item {
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 2px;
+  align-items: center;
+  gap: 10px;
   width: 100%;
-  font-family: inherit;
-  text-align: left;
   border: 1.5px solid var(--peche);
   border-radius: 14px;
   padding: 9px 13px;
@@ -146,6 +143,20 @@
   transition: background 0.15s ease;
 }
 .kbp-choix-item:hover { background: var(--peche-pale, rgba(240, 169, 139, 0.16)); }
+
+.kbp-choix-case {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  accent-color: var(--peche-fonce);
+  cursor: pointer;
+}
+
+.kbp-choix-texte {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
 
 .kbp-choix-nom {
   font-weight: 700;
@@ -156,6 +167,12 @@
 .kbp-choix-detail {
   font-size: 0.75rem;
   color: var(--brun-clair, #8A7364);
+}
+
+.kbp-fiches-eleves {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .kbp-fiche-eleve {

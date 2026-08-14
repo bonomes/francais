@@ -173,6 +173,18 @@
 
       let session = null; // ligne sessions_classe courante, ou null si aucune session active
 
+      // 🆕 (14-08-2026) : restaure l'affichage si une session tourne déjà
+      // dans ce navigateur (ex. prof revenu sur cet écran après être allé
+      // naviguer une leçon dans un autre onglet) — session-classe.js la
+      // mémorise en localStorage depuis demarrerSession/mettreAJour, ce
+      // panneau n'a qu'à la relire au chargement plutôt que de repartir
+      // silencieusement à zéro alors que la session existe toujours.
+      const sessionRestauree = sessionClasse.sessionProfActive();
+      if (sessionRestauree) {
+        session = sessionRestauree;
+        afficherSessionActive();
+      }
+
       function rafraichirBoutonsControle() {
         if (!session) return;
         btnControleProf.classList.toggle('kbp-bouton-controle-actif', session.controle === 'professeur');

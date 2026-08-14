@@ -124,6 +124,40 @@
 
 .kbp-bouton-attribuer { width: 100%; margin-top: 4px; }
 
+.kbp-liste-choix {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.kbp-choix-item {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  width: 100%;
+  font-family: inherit;
+  text-align: left;
+  border: 1.5px solid var(--peche);
+  border-radius: 14px;
+  padding: 9px 13px;
+  background: var(--fond);
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+.kbp-choix-item:hover { background: var(--peche-pale, rgba(240, 169, 139, 0.16)); }
+
+.kbp-choix-nom {
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: var(--brun-fonce, var(--brun));
+}
+
+.kbp-choix-detail {
+  font-size: 0.75rem;
+  color: var(--brun-clair, #8A7364);
+}
+
 .kbp-fiche-eleve {
   background: var(--peche-pale, rgba(240, 169, 139, 0.16));
   border-radius: 14px;

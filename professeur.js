@@ -88,22 +88,6 @@
           '<button type="button" class="kbp-bouton-retour" id="kbpBtnRetour">&larr; Retour</button>' +
         '</div>' +
 
-        '<div class="kbp-section" id="kbpSectionSession">' +
-          '<p class="kbp-etiquette">Session de classe (navigation partag\u00e9e)</p>' +
-          '<div id="kbpSessionInactive">' +
-            '<button type="button" class="kbp-bouton-action" id="kbpBtnDemarrerSession">D\u00e9marrer une session</button>' +
-          '</div>' +
-          '<div class="kbp-section-cachee" id="kbpSessionActive">' +
-            '<p class="kbp-code-session">Code \u00e0 partager : <strong id="kbpCodeSession"></strong></p>' +
-            '<div class="kbp-ligne-valeurs kbp-ligne-controle">' +
-              '<button type="button" class="kbp-bouton-controle" id="kbpBtnControleProf" data-controle="professeur">Professeur contr\u00f4le</button>' +
-              '<button type="button" class="kbp-bouton-controle" id="kbpBtnControleEleves" data-controle="eleves">\u00c9l\u00e8ves contr\u00f4lent</button>' +
-            '</div>' +
-            '<button type="button" class="kbp-bouton-retour" id="kbpBtnFermerSession">Fermer la session</button>' +
-          '</div>' +
-          '<p class="kbp-message" id="kbpMessageSession"></p>' +
-        '</div>' +
-
         '<div class="kbp-section">' +
           '<label class="kbp-etiquette" for="kbpCourriel">Courriel du compte \u00e9l\u00e8ve</label>' +
           '<div class="kbp-ligne-recherche">' +
@@ -147,113 +131,13 @@
     }
     brancherRetour();
 
-    // ---------- Session de classe (navigation partag\u00e9e) ----------
-    // D\u00e9l\u00e9gu\u00e9 \u00e0 session-classe.js (module s\u00e9par\u00e9, voir sa propre
-    // note de t\u00eate) \u2014 ce bloc ne fait que brancher l'UI dessus. Si le
-    // module n'est pas charg\u00e9 (page hôte qui n'a pas encore ajout\u00e9
-    // session-classe.js), la section reste pr\u00e9sente mais son bouton
-    // "D\u00e9marrer" est d\u00e9sactiv\u00e9 \u2014 m\u00eame philosophie de d\u00e9gradation
-    // douce que le reste de cet \u00e9cran, jamais un \u00e9cran cass\u00e9.
-    (function initSessionClasse() {
-      const sessionClasse = window.KebBekSessionClasse || null;
-      const btnDemarrer = document.getElementById('kbpBtnDemarrerSession');
-      const blocInactif = document.getElementById('kbpSessionInactive');
-      const blocActif = document.getElementById('kbpSessionActive');
-      const codeSpan = document.getElementById('kbpCodeSession');
-      const btnControleProf = document.getElementById('kbpBtnControleProf');
-      const btnControleEleves = document.getElementById('kbpBtnControleEleves');
-      const btnFermer = document.getElementById('kbpBtnFermerSession');
-      const messageSession = document.getElementById('kbpMessageSession');
-
-      if (!sessionClasse) {
-        btnDemarrer.disabled = true;
-        messageSession.textContent = 'Navigation partag\u00e9e non disponible sur cette page.';
-        return;
-      }
-
-      let session = null; // ligne sessions_classe courante, ou null si aucune session active
-
-      // 🆕 (14-08-2026) : restaure l'affichage si une session tourne déjà
-      // dans ce navigateur (ex. prof revenu sur cet écran après être allé
-      // naviguer une leçon dans un autre onglet) — session-classe.js la
-      // mémorise en localStorage depuis demarrerSession/mettreAJour, ce
-      // panneau n'a qu'à la relire au chargement plutôt que de repartir
-      // silencieusement à zéro alors que la session existe toujours.
-      const sessionRestauree = sessionClasse.sessionProfActive();
-      if (sessionRestauree) {
-        session = sessionRestauree;
-        afficherSessionActive();
-      }
-
-      function rafraichirBoutonsControle() {
-        if (!session) return;
-        btnControleProf.classList.toggle('kbp-bouton-controle-actif', session.controle === 'professeur');
-        btnControleEleves.classList.toggle('kbp-bouton-controle-actif', session.controle === 'eleves');
-      }
-
-      function afficherSessionActive() {
-        blocInactif.classList.add('kbp-section-cachee');
-        blocActif.classList.remove('kbp-section-cachee');
-        codeSpan.textContent = session.code;
-        rafraichirBoutonsControle();
-      }
-
-      function afficherAucuneSession() {
-        session = null;
-        blocActif.classList.add('kbp-section-cachee');
-        blocInactif.classList.remove('kbp-section-cachee');
-      }
-
-      btnDemarrer.addEventListener('click', async function () {
-        btnDemarrer.disabled = true;
-        btnDemarrer.textContent = 'D\u00e9marrage\u2026';
-        messageSession.textContent = '';
-        messageSession.className = 'kbp-message';
-        // Mode fig\u00e9 \u00e0 'distance' pour l'instant \u2014 tous les \u00e9l\u00e8ves de
-        // Raphaël sont \u00e0 distance en pratique (14-08-2026), le
-        // pr\u00e9sentiel reste possible c\u00f4t\u00e9 sch\u00e9ma mais n'a aucun usage
-        // r\u00e9el actuellement, pas de s\u00e9lecteur pour \u00e9viter un choix
-        // qui ne changerait encore rien.
-        const nouvelleSession = await sessionClasse.demarrerSession('distance');
-        btnDemarrer.disabled = false;
-        btnDemarrer.textContent = 'D\u00e9marrer une session';
-        if (!nouvelleSession) {
-          messageSession.textContent = 'Impossible de d\u00e9marrer la session \u2014 r\u00e9essaie.';
-          messageSession.classList.add('kbp-message-erreur');
-          return;
-        }
-        session = nouvelleSession;
-        afficherSessionActive();
-      });
-
-      [btnControleProf, btnControleEleves].forEach(function (btn) {
-        btn.addEventListener('click', async function () {
-          if (!session) return;
-          const controle = btn.dataset.controle;
-          if (session.controle === controle) return; // d\u00e9j\u00e0 dans cet \u00e9tat
-          const maj = await sessionClasse.changerControle(session.id, controle);
-          if (!maj) {
-            messageSession.textContent = 'Erreur \u2014 r\u00e9essaie.';
-            messageSession.classList.add('kbp-message-erreur');
-            return;
-          }
-          session = maj;
-          messageSession.textContent = '';
-          rafraichirBoutonsControle();
-        });
-      });
-
-      btnFermer.addEventListener('click', async function () {
-        if (!session) return;
-        const reussi = await sessionClasse.fermerSession(session.id);
-        if (!reussi) {
-          messageSession.textContent = 'Erreur \u2014 r\u00e9essaie.';
-          messageSession.classList.add('kbp-message-erreur');
-          return;
-        }
-        afficherAucuneSession();
-      });
-    })();
+    // ---------- Session de classe (navigation partagée) ----------
+    // 🆕 (14-08-2026, suite) : RETIRÉE d'ici — cette section faisait
+    // doublon avec le widget flottant "Cours en direct"
+    // (widget-session-prof.js), désormais présent sur toutes les pages,
+    // y compris celle-ci. Un seul endroit gère la session de classe
+    // maintenant ; cet écran se concentre sur la recherche/attribution
+    // de succès (voir sa propre note de tête, point 1-4).
 
     // ---------- Liste des succès ----------
     const selectSucces = document.getElementById('kbpSucces');

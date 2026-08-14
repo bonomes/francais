@@ -1007,6 +1007,13 @@
 <script src="progression.js"></script>
 <script src="identite-eleve.js"></script>
 <script src="menu-principal.js"></script>
+<!-- 🆕 session-classe.js (14-08-2026) — module de navigation partagée
+     prof→élèves, chargé AVANT professeur.js car ce dernier branche son
+     panneau "Session de classe" dessus (window.KebBekSessionClasse).
+     Réutilise progression.client comme les autres modules — voir sa
+     propre note de tête pour l'architecture (Realtime postgres_changes
+     sur la ligne sessions_classe, pas de canal broadcast manuel). -->
+<script src="session-classe.js"></script>
 <script src="professeur.js"></script>
 
 <script>

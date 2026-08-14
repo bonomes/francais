@@ -1,0 +1,168 @@
+/* ==================================================================
+   widget-session-prof.css — habillage du widget flottant "Cours en
+   direct" (widget-session-prof.js). Réutilise les mêmes variables CSS
+   que professeur.css (--peche, --peche-fonce, --brun-fonce, --fond,
+   --ombre) — chaque page du site les définit déjà elle-même dans son
+   propre :root, même palette partout, voir menu-principal.css comme
+   référence d'origine.
+
+   Placement : coin supérieur droit, fixe, volontairement PAS en bas —
+   plusieurs pages (ex. parcours.html) ont déjà un panneau fixe en bas
+   d'écran (indicateur de niveau) ; superposer le widget là aurait pu
+   créer une collision visuelle selon la page. Le widget lui-même
+   n'occupe qu'un espace minimal une fois refermé (juste la pastille).
+   ================================================================== */
+
+#kbwWidget {
+  position: fixed;
+  top: max(12px, env(safe-area-inset-top, 0px));
+  right: max(12px, env(safe-area-inset-right, 0px));
+  z-index: 9999;
+  font-family: 'Baloo 2', sans-serif;
+}
+
+.kbw-pastille {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  border: none;
+  border-radius: 999px;
+  padding: 9px 14px 9px 11px;
+  background: #FFFFFF;
+  border: 1.5px solid var(--peche);
+  box-shadow: 4px 4px 16px var(--ombre, rgba(102, 80, 69, 0.16));
+  color: var(--brun-fonce, var(--brun));
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 0.82rem;
+  cursor: pointer;
+  transition: box-shadow 0.15s ease;
+}
+.kbw-pastille:hover { box-shadow: 5px 5px 18px var(--ombre, rgba(102, 80, 69, 0.22)); }
+
+.kbw-point {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--gris-verrou, #CFC7BB);
+  flex-shrink: 0;
+}
+.kbw-point-actif {
+  background: var(--peche-fonce);
+  box-shadow: 0 0 0 3px rgba(224, 136, 103, 0.22);
+}
+
+.kbw-panneau {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: min(86vw, 300px);
+  background: #FFFFFF;
+  border-radius: 22px;
+  border: 2px solid var(--peche);
+  box-shadow: 8px 8px 26px var(--ombre, rgba(102, 80, 69, 0.2));
+  padding: 16px 16px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.kbw-panneau-cachee { display: none; }
+
+.kbw-entete {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.kbw-titre {
+  margin: 0;
+  font-size: 0.98rem;
+  font-weight: 700;
+  color: var(--brun-fonce, var(--brun));
+}
+.kbw-fermer-panneau {
+  border: none;
+  background: transparent;
+  color: var(--brun-clair, #8A7364);
+  font-size: 1.15rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 2px 4px;
+}
+
+.kbw-bouton-action {
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 0.85rem;
+  border: none;
+  border-radius: 999px;
+  padding: 10px 14px;
+  background: var(--peche-fonce);
+  color: #FFFFFF;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+}
+.kbw-bouton-action:hover:not(:disabled) { opacity: 0.88; }
+.kbw-bouton-action:disabled { opacity: 0.55; cursor: default; }
+
+.kbw-code {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--brun-fonce, var(--brun));
+}
+.kbw-code strong {
+  font-family: 'Baloo 2', sans-serif;
+  font-size: 1.2rem;
+  letter-spacing: 0.08em;
+  color: var(--peche-fonce);
+}
+
+.kbw-ligne-controle {
+  display: flex;
+  gap: 8px;
+}
+
+.kbw-bouton-controle {
+  flex: 1;
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 0.76rem;
+  border: 1.5px solid var(--peche);
+  border-radius: 999px;
+  padding: 8px 8px;
+  background: var(--fond);
+  color: var(--brun-fonce, var(--brun));
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.kbw-bouton-controle:hover { background: var(--peche-pale, rgba(240, 169, 139, 0.16)); }
+.kbw-bouton-controle-actif {
+  background: var(--peche-fonce);
+  border-color: var(--peche-fonce);
+  color: #FFFFFF;
+}
+.kbw-bouton-controle-actif:hover { background: var(--peche-fonce); opacity: 0.92; }
+
+.kbw-bouton-fermer-session {
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 0.8rem;
+  border: 1.5px solid var(--peche);
+  border-radius: 999px;
+  padding: 8px 12px;
+  background: var(--fond);
+  color: var(--brun-fonce, var(--brun));
+  cursor: pointer;
+}
+.kbw-bouton-fermer-session:hover { background: var(--peche-pale, rgba(240, 169, 139, 0.16)); }
+
+.kbw-message {
+  margin: 0;
+  font-size: 0.78rem;
+  min-height: 1.1em;
+}
+.kbw-message-erreur { color: #b0402c; }
+
+@media (max-width: 460px) {
+  .kbw-panneau { width: min(90vw, 280px); }
+}

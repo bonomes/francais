@@ -157,6 +157,29 @@
     if (sessionRestauree) {
       session = sessionRestauree;
       afficherSessionActive();
+      nettoyerPageSiPerimee();
+    }
+
+    // 🐛 CORRIGÉ (14-08-2026, "élève catapulté dans une leçon périmée") :
+    // etat.page (poussé par une page de leçon comme dialogue-d1.html) ne
+    // s'efface JAMAIS tout seul quand le prof quitte cette leçon pour une
+    // page normale (parcours.html, menu…) — il n'y a pas d'événement
+    // "je pars" fiable côté navigateur. Un élève qui rejoint APRÈS ce
+    // moment-là, ou qui reçoit une mise à jour de contrôle, se faisait
+    // donc rediriger vers une leçon que le prof a pourtant quittée depuis
+    // longtemps (l'ancien etat.page, jamais nettoyé). Correctif : dès que
+    // ce widget se charge sur une page qui n'est PAS elle-même une leçon
+    // (voir window.KebBekPageEnDirect — absent ici, posé uniquement par
+    // les pages de leçon comme dialogue-d1.html), et qu'une session tourne
+    // avec un etat.page encore renseigné, on l'efface tout de suite. Ce
+    // widget étant chargé sur TOUTES les pages, ce nettoyage se déclenche
+    // automatiquement à la prochaine page visitée par le prof — pas besoin
+    // d'un événement au moment précis où il quitte la leçon.
+    async function nettoyerPageSiPerimee() {
+      if (window.KebBekPageEnDirect) return; // cette page gère elle-même son etat.page — ne jamais y toucher ici
+      if (!session || !session.etat || !session.etat.page) return; // déjà propre, rien à faire
+      const maj = await sessionClasse.pousserEtat(session.id, Object.assign({}, session.etat, { page: null }));
+      if (maj) { session = maj; rafraichirBoutonsControle(); }
     }
 
     // ---------- Démarrer ----------

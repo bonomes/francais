@@ -207,6 +207,27 @@
   // rejoint ou après quitterSession()/onFermee().
   let abonnementActif = null;
 
+  // 🆕 (14-08-2026, troisième vague) : identité annoncée en Presence sur
+  // le canal — {id, prenom}. Lue une seule fois à la jonction (via
+  // progression.js), pas à chaque annonce : un élève ne change pas de
+  // prénom en cours de session. `id` sert de clé Presence (permet, en
+  // théorie, de distinguer deux onglets du même élève — non exploité
+  // pour l'instant, mais évite d'avoir à revoir la forme des données
+  // plus tard si Raphaël le demande).
+  async function infoEleveCourant() {
+    const progression = window.KebBekProgression || null;
+    if (!progression) return { id: null, prenom: 'Élève' };
+    try {
+      const identite = await progression.lireIdentite();
+      return {
+        id: progression.profilActifId || null,
+        prenom: (identite && identite.prenom) || 'Élève'
+      };
+    } catch (e) {
+      return { id: progression.profilActifId || null, prenom: 'Élève' };
+    }
+  }
+
   // Rejoint une session par son code, s'abonne aux mises à jour en
   // temps réel de sa ligne, puis appelle callbacks.onEtat(session) une
   // première fois immédiatement (pour l'état déjà en cours au moment
@@ -258,6 +279,12 @@
       return false;
     }
 
+    // 🆕 (14-08-2026, troisième vague) : identité Presence lue AVANT la
+    // création du canal — le .track() du statut SUBSCRIBED plus bas en a
+    // besoin immédiatement, pas question d'attendre un aller-retour DB à
+    // ce moment-là (course possible avec la fermeture rapide de la page).
+    const infoEleve = await infoEleveCourant();
+
     // 🐛 CORRIGÉ (14-08-2026, troisième passe — diagnostiqué en test réel) :
     // remplacé postgres_changes par Broadcast depuis la base. postgres_changes
     // livrait systématiquement "errors: 401 Unauthorized" (new/old vides)
@@ -266,8 +293,16 @@
     // Voir mettre_a_jour_session_classe / fermer_session_classe (SQL) pour
     // le realtime.send() correspondant, et la policy RLS sur
     // realtime.messages qui autorise sa réception.
+    //
+    // 🆕 (14-08-2026, troisième vague) : presence: { key } ajouté au même
+    // canal plutôt qu'un canal séparé — Presence et Broadcast cohabitent
+    // sans conflit sur un même topic (confirmé par la doc Supabase), et un
+    // seul abonnement WebSocket reste plus simple à faire vivre/mourir avec
+    // la page qu'une paire. Permet au widget flottant du prof (canal
+    // d'écoute séparé, voir ecouterActiviteEleves) de savoir qui est
+    // connecté ET ce que chacun fait, sans table ni écriture DB.
     const canal = c
-      .channel('session_classe:' + session.id, { config: { private: true } })
+      .channel('session_classe:' + session.id, { config: { private: true, presence: { key: infoEleve.id || undefined } } })
       .on('broadcast', { event: 'maj' }, function (message) {
         const maj = message.payload || {};
         if (maj.active === false) {
@@ -283,9 +318,16 @@
         session = Object.assign({}, session, maj);
         if (typeof callbacks.onEtat === 'function') callbacks.onEtat(session);
       })
-      .subscribe();
+      .subscribe(function (statut) {
+        // best-effort, silencieux — un élève dont la toute première annonce
+        // échoue reste simplement invisible du widget prof jusqu'à la
+        // prochaine annoncerActivite() réussie, jamais une erreur bloquante.
+        if (statut === 'SUBSCRIBED') {
+          canal.track({ prenom: infoEleve.prenom, etat: null }).catch(function () {});
+        }
+      });
 
-    abonnementActif = { canal: canal, sessionId: session.id };
+    abonnementActif = { canal: canal, sessionId: session.id, infoEleve: infoEleve };
     memoriserSessionEleve(session.code);
 
     // État déjà en cours au moment de rejoindre — l'élève ne doit pas
@@ -308,6 +350,90 @@
     memoriserSessionEleve(null);
   }
 
+  // 🆕 (14-08-2026, troisième vague) : "ce que fait l'élève en direct" —
+  // à appeler par la page de leçon elle-même (ex. dialogue-d1.html, dans
+  // synchroniserEtatSession) à chaque changement d'étape LOCAL, que ce
+  // navigateur soit prof ou élève, avec ou sans session active. Aucun
+  // effet si l'élève n'a rejoint aucune session (abonnementActif null) —
+  // même philosophie "best-effort, silencieux" que pousserEtat. `etat`
+  // suit exactement la même forme libre que l'état poussé par le prof
+  // ({page, section, etape, ...}) — chaque page de leçon décide de son
+  // contenu, ce module ne l'interprète jamais.
+  function annoncerActivite(etat) {
+    if (!abonnementActif) return;
+    abonnementActif.canal
+      .track({ prenom: abonnementActif.infoEleve.prenom, etat: etat || null })
+      .catch(function () {});
+  }
+
+  // ---------- Côté professeur : voir l'activité des élèves ----------
+  // 🆕 (14-08-2026, troisième vague) : canal d'ÉCOUTE séparé de celui
+  // qu'utilise rejoindreSession() côté élève — un même navigateur ne joue
+  // jamais les deux rôles à la fois sur la même session (voir garde
+  // sessionClasse.sessionProfActive() déjà en place côté pages élève), mais
+  // structurellement ce sont deux abonnements indépendants au même topic
+  // ('session_classe:<id>'), Presence et Broadcast étant répliqués à tout
+  // abonné du topic, peu importe qui l'a créé.
+  let ecouteActive = null; // { canal, sessionId } | null
+
+  // Transforme le presenceState() brut du SDK ({ clé: [ {...dernier track},
+  // ... ] }) en une liste plate [{ id, prenom, etat }], un élément par
+  // élève actuellement connecté (onglet fermé/perdu = disparaît tout seul,
+  // géré par le serveur Realtime — rien à nettoyer manuellement ici).
+  function analyserPresence(canal) {
+    const brut = canal.presenceState();
+    const liste = [];
+    Object.keys(brut).forEach(function (cle) {
+      const entrees = brut[cle];
+      if (!entrees || !entrees.length) return;
+      const derniere = entrees[entrees.length - 1];
+      liste.push({ id: cle, prenom: derniere.prenom || 'Élève', etat: derniere.etat || null });
+    });
+    return liste;
+  }
+
+  // S'abonne à l'activité en direct des élèves d'UNE session (celle que ce
+  // navigateur anime). callbacks.onListe(liste) est appelé une première
+  // fois dès la synchronisation initiale, puis à chaque connexion/
+  // déconnexion/annonce d'un élève. Un seul abonnement d'écoute à la fois
+  // (nouvel appel = remplace le précédent, voir arreterEcouteActivite).
+  async function ecouterActiviteEleves(sessionId, callbacks) {
+    callbacks = callbacks || {};
+    const c = client();
+    if (!c || !sessionId) return false;
+    arreterEcouteActivite();
+
+    // Même précaution que côté rejoindreSession() (voir sa note) — setAuth
+    // avant .subscribe(), pas juste avant, pour laisser la reconnexion
+    // Realtime se stabiliser.
+    try {
+      const { data: sessionAuth } = await c.auth.getSession();
+      if (sessionAuth && sessionAuth.session) {
+        await c.realtime.setAuth(sessionAuth.session.access_token);
+      }
+    } catch (e) { /* best-effort, abonnement tenté quand même */ }
+
+    // Pas de presence.key ici : ce navigateur ne s'annonce pas lui-même
+    // (le prof n'est pas "un élève" dans la liste), il ne fait qu'écouter
+    // — la clé Presence n'a de sens que pour qui appelle .track().
+    const canal = c
+      .channel('session_classe:' + sessionId, { config: { private: true } })
+      .on('presence', { event: 'sync' }, function () {
+        if (typeof callbacks.onListe === 'function') callbacks.onListe(analyserPresence(canal));
+      })
+      .subscribe();
+
+    ecouteActive = { canal: canal, sessionId: sessionId };
+    return true;
+  }
+
+  function arreterEcouteActivite() {
+    if (!ecouteActive) return;
+    const c = client();
+    if (c) c.removeChannel(ecouteActive.canal);
+    ecouteActive = null;
+  }
+
   window.KebBekSessionClasse = {
     demarrerSession,
     changerControle,
@@ -317,6 +443,9 @@
     rejoindreSession,
     reprendreSessionEleve,
     sessionEleveActive,
-    quitterSession
+    quitterSession,
+    annoncerActivite,
+    ecouterActiviteEleves,
+    arreterEcouteActivite
   };
 })();

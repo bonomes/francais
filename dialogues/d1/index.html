@@ -2497,6 +2497,11 @@
     champ.autocapitalize = 'off';
     champ.spellcheck = false;
 
+    // 🆕 (14-08-2026, quatrième vague) : voir annoncerReponseEnCours plus
+    // bas — permet au prof d'accompagner l'élève en direct sur cet
+    // exercice précis (mode difficile = production écrite libre).
+    champ.addEventListener('input', function () { annoncerReponseEnCours(ex.id, champ.value); });
+
     const ligneAction = document.createElement('div');
     ligneAction.className = 'exercice-ligne-action';
     const btnVerifier = document.createElement('button');
@@ -2630,6 +2635,13 @@
     champ.autocomplete = 'off';
     champ.autocapitalize = 'off';
     champ.spellcheck = false;
+
+    // 🆕 (14-08-2026, quatrième vague) : même branchement que la zone
+    // difficile — voir annoncerReponseEnCours. Ce champ n'est visible que
+    // si l'élève a basculé vers la saisie manuelle (modeSaisie === 'texte'),
+    // mais l'écouteur peut rester posé inconditionnellement : aucun 'input'
+    // ne peut se déclencher tant que le champ est caché/non focusé.
+    champ.addEventListener('input', function () { annoncerReponseEnCours(ex.id, champ.value); });
 
     const btnVerifierTexte = document.createElement('button');
     btnVerifierTexte.type = 'button';
@@ -2928,6 +2940,15 @@
 
   let syncControleBloque = false; // true seulement côté élève, tant que controle === 'professeur'
 
+  // 🆕 (14-08-2026, quatrième vague — "voir ce que l'élève écrit") : dernier
+  // etat de NAVIGATION poussé par synchroniserEtatSession ({page, section,
+  // etape}) — mémorisé pour que annoncerReponseEnCours() puisse s'y greffer
+  // sans l'écraser (chaque appel à annoncerActivite REMPLACE tout l'etat
+  // Presence, voir sa note dans session-classe.js — jamais une fusion
+  // automatique côté serveur).
+  let dernierEtatSession = null;
+  let minuteurReponseEnCours = null;
+
   // 🆕 (correctif du 14-08-2026, "élève catapulté") : signale au widget
   // flottant (widget-session-prof.js, chargé sur TOUTES les pages) que
   // CETTE page gère elle-même son propre "etat.page" (voir
@@ -2943,6 +2964,7 @@
   function synchroniserEtatSession(etatAPousser) {
     const sessionClasse = window.KebBekSessionClasse || null;
     if (!sessionClasse) return;
+    dernierEtatSession = etatAPousser;
     // 🆕 (14-08-2026, troisième vague) : annonce l'activité LOCALE à ce
     // même point d'appel, que ce navigateur soit prof ou élève — sans
     // effet si aucune session n'a été rejointe (voir sa propre note dans
@@ -2952,6 +2974,27 @@
     const sessionProf = sessionClasse.sessionProfActive();
     if (!sessionProf) return; // ce navigateur n'est pas en train d'animer une session — rien à faire
     sessionClasse.pousserEtat(sessionProf.id, etatAPousser); // best-effort, résultat ignoré volontairement
+  }
+
+  // 🆕 (14-08-2026, quatrième vague) : "accompagner dans les exercices
+  // écrits" — annonce la saisie EN COURS d'un élève dans un champ texte
+  // libre (mode difficile, ou mode facile basculé en saisie manuelle),
+  // pour que le prof puisse la voir dans son widget et intervenir avant
+  // même que l'élève clique "Vérifier". Débit volontairement limité
+  // (300 ms après la dernière frappe, pas à chaque touche) — Presence
+  // reste léger, et un prof n'a pas besoin de voir chaque lettre tapée
+  // pour aider. Se greffe sur dernierEtatSession (page/section/etape déjà
+  // connus) plutôt que de le remplacer — voir sa note.
+  function annoncerReponseEnCours(exerciceId, texte) {
+    const sessionClasse = window.KebBekSessionClasse || null;
+    if (!sessionClasse) return;
+    clearTimeout(minuteurReponseEnCours);
+    minuteurReponseEnCours = setTimeout(function () {
+      sessionClasse.annoncerActivite(Object.assign({}, dernierEtatSession, {
+        exercice_id: exerciceId,
+        reponse_en_cours: texte
+      }));
+    }, 300);
   }
 
   // Amène l'élève directement à l'étape indexCible du dialogue, en

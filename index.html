@@ -19,6 +19,7 @@
      #sequenceIdentite plus bas dans le body pour le conteneur. -->
 <link rel="stylesheet" href="identite-eleve.css?v=2">
 <link rel="stylesheet" href="menu-principal.css">
+<link rel="stylesheet" href="professeur.css">
 <style>
   /* ==================================================================
      index.html — page d'accueil officielle du site (voir BONOMES_v61,
@@ -909,6 +910,18 @@
        masqué par défaut, rempli/vidé par demarrerMenuPrincipal(). -->
   <div id="menuPrincipal" style="display:none;"></div>
 
+  <!-- 🆕 Écran "Mode professeur" (professeur.js) — se substitue au menu
+       principal quand un compte enseignant reconnu clique sur "Mode
+       professeur" (voir onModeProfesseur, plus bas). Même patron que
+       #menuPrincipal juste au-dessus : masqué par défaut, rempli/vidé
+       par demarrerEcranProfesseur(). N'est jamais rendu accessible tant
+       que menu-principal.js n'a pas lui-même confirmé (via
+       progression.essayerModeProfesseur) que le compte connecté est un
+       enseignant reconnu — ce conteneur ne fait aucune vérification
+       supplémentaire de son côté, il fait confiance à l'appelant, comme
+       professeur.js le documente lui-même. -->
+  <div id="ecranProfesseur" style="display:none;"></div>
+
   <!-- Lien vers les cours privés — pensé pour un parent qui atterrit
        ici en quête d'info, pas pour l'enfant en immersion : volontairement
        discret (petit lien, pas un bouton en évidence) pour ne pas
@@ -994,6 +1007,7 @@
 <script src="progression.js"></script>
 <script src="identite-eleve.js"></script>
 <script src="menu-principal.js"></script>
+<script src="professeur.js"></script>
 
 <script>
   // ================================================================
@@ -1436,7 +1450,29 @@
       // menu, donc annuler (onQuitter) doit redonner le menu, pas la scène
       // d'accueil — même correctif d'`origine` que demarrerIdentiteSiPremiereFois()
       // ci-dessus, appliqué ici pour la même raison.
-      onSeReconnecter: function () { demarrerReconnexionDepuisIndex('menu'); }
+      onSeReconnecter: function () { demarrerReconnexionDepuisIndex('menu'); },
+      // 🆕 "Mode professeur" (professeur.js livré le 13-08-2026) — n'est
+      // affiché par menu-principal.js que si le compte connecté est déjà
+      // confirmé comme enseignant reconnu (essayerModeProfesseur), donc
+      // ce callback n'a rien à revérifier lui-même : simple bascule
+      // d'écran, même patron que le menu principal lui-même
+      // (masquer/afficher deux conteneurs frères dans .scene). onRetour
+      // fait le chemin inverse — pas besoin de re-router par
+      // allerAuMenuPrincipal() au complet (pas de restauration de session
+      // à refaire, on ne quitte jamais réellement le menu, juste son
+      // affichage).
+      onModeProfesseur: function () { allerAuModeProfesseur(); }
+    });
+  }
+
+  function allerAuModeProfesseur() {
+    document.getElementById('menuPrincipal').style.display = 'none';
+    document.getElementById('ecranProfesseur').style.display = '';
+    KebBekProfesseur.demarrerEcranProfesseur('ecranProfesseur', {
+      onRetour: function () {
+        document.getElementById('ecranProfesseur').style.display = 'none';
+        document.getElementById('menuPrincipal').style.display = '';
+      }
     });
   }
 

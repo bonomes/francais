@@ -2953,12 +2953,18 @@
     function afficherActif(session) {
       // Le prof a poussé un état de leçon (ex. il vient d'ouvrir d1 depuis
       // Mode professeur) — cette page n'est jamais elle-même une leçon,
-      // donc on suit systématiquement plutôt que d'afficher un statut
-      // "en direct" qui laisserait l'élève ici pendant que la classe est
-      // déjà ailleurs. window.location.href déclenche une vraie navigation
-      // de page (site multi-pages) ; la session reprend automatiquement de
-      // l'autre côté grâce à reprendreSessionEleve() dans dialogue-d1.html.
-      if (session.etat && session.etat.page) {
+      // donc on suit vers cette page QUAND LE PROF A LA MAIN. Mais si
+      // controle === 'eleves', etat.page garde quand même la valeur de
+      // la dernière page poussée par le prof (elle ne se remet pas à
+      // rien quand il rend la main, voir session-classe.js) — sans ce
+      // garde-fou, un élève qui vient JUSTEMENT de quitter la leçon en
+      // mode "élèves" se ferait immédiatement ramener ici de force,
+      // exactement le bug signalé par Rapha\u00ebl (élève pris au piège
+      // dans la leçon). window.location.href déclenche une vraie
+      // navigation de page (site multi-pages) ; la session reprend
+      // automatiquement de l'autre côté grâce à reprendreSessionEleve()
+      // dans dialogue-d1.html.
+      if (session.controle === 'professeur' && session.etat && session.etat.page) {
         window.location.href = session.etat.page;
         return;
       }

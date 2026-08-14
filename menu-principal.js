@@ -442,9 +442,18 @@ async function demarrerMenuPrincipal(idConteneur, callbacks) {
   // aucune vérification client, la liste elle-même n'est pas lisible
   // par le navigateur. Échec = pas un compte prof, on n'affiche
   // simplement rien (jamais une erreur visible pour un élève).
-  const estProfesseur = !invite && progression && progression.essayerModeProfesseur
-    ? await progression.essayerModeProfesseur().then(() => true).catch(() => false)
-    : false;
+  // 🐛 CORRIGÉ (session du 13-08-2026) : essayerModeProfesseur() ne lance
+  // JAMAIS d'exception (voir progression.js) — elle retourne `null` en
+  // cas d'échec, jamais un rejet de promesse. L'ancien `.then(() =>
+  // true).catch(() => false)` ignorait donc la valeur résolue et
+  // affichait TOUJOURS `true` pour n'importe quel compte connecté, prof
+  // ou pas — bug silencieux, jamais déclenché en test parce que le seul
+  // compte de test (raphael.s.b@live.ca) est justement dans la liste
+  // blanche. Corrigé : on vérifie maintenant la valeur elle-même.
+  const profilProfesseur = !invite && progression && progression.essayerModeProfesseur
+    ? await progression.essayerModeProfesseur()
+    : null;
+  const estProfesseur = !!profilProfesseur;
 
   conteneur.innerHTML =
     // 🆕 Titre au-dessus du menu, demande de Raphaël — réutilise

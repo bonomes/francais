@@ -2010,7 +2010,13 @@
 
     // 🆕 (14-08-2026, session-classe.js) : best-effort, ne fait rien si ce
     // navigateur ne fait pas tourner de session prof — voir plus bas.
-    synchroniserEtatSession({ section: 'dialogue', etape: etape });
+    // 🆕 (deuxième vague, même jour) : champ "page" ajouté — permet à une
+    // AUTRE page (ex. parcours.html) de savoir vers où naviguer quand le
+    // prof pousse un état depuis ICI. Chemin canonique confirmé dans
+    // parcours.html (NIVEAUX → chapitre d1 → page: 'dialogues/d1/'),
+    // repris tel quel plutôt que redéfini ici pour rester la seule source
+    // de vérité de ce chemin.
+    synchroniserEtatSession({ page: 'dialogues/d1/', section: 'dialogue', etape: etape });
   }
 
   // ---------- Séquence automatique (b→c→d) — exception ponctuelle pour
@@ -2183,8 +2189,9 @@
   function afficherExercices() {
     // 🆕 (14-08-2026, session-classe.js) : voir synchroniserEtatSession
     // plus bas — best-effort, ne fait rien si ce navigateur ne fait pas
-    // tourner de session prof.
-    synchroniserEtatSession({ section: 'exercices' });
+    // tourner de session prof. "page" ajouté même raison que l'appel
+    // dialogue ci-dessus (voir sa note).
+    synchroniserEtatSession({ page: 'dialogues/d1/', section: 'exercices' });
     document.querySelector('.zone-bulle').style.display = 'none';
     document.getElementById('sceneDialogue').style.display = 'none';
     document.querySelector('.nav-dialogue').style.display = 'none';
@@ -2969,7 +2976,23 @@
       return;
     }
 
+    // 🆕 Chemin canonique de CETTE page — même valeur que "page" poussé
+    // par synchroniserEtatSession() plus haut, et que parcours.html
+    // (NIVEAUX → d1 → page). Sert seulement à détecter un DÉCALAGE (le
+    // prof a changé de leçon pendant que l'élève était encore ici) —
+    // pas encore utile tant qu'une seule leçon existe, mais correct dès
+    // qu'une deuxième apparaîtra plutôt que de laisser un élève bloqué
+    // sur d1 pendant que le prof anime d2 ailleurs.
+    const CHEMIN_CETTE_PAGE = 'dialogues/d1/';
+
     function appliquerEtat(session) {
+      // Le prof a poussé un état pour une AUTRE page — suit-le plutôt
+      // que d'essayer d'appliquer un état de dialogue qui ne concerne
+      // pas cette leçon.
+      if (session.etat && session.etat.page && session.etat.page !== CHEMIN_CETTE_PAGE) {
+        window.location.href = session.etat.page;
+        return;
+      }
       statutTexte.textContent = (session.controle === 'professeur')
         ? '\u25CF En direct \u2014 tu suis le prof'
         : '\u25CF En direct \u2014 \u00e0 toi de jouer !';
@@ -2980,6 +3003,31 @@
         allerAEtapeDistante(session.etat.etape);
       }
     }
+
+    // 🆕 Reprise automatique (14-08-2026, deuxième vague) — si l'élève
+    // avait déjà rejoint une session ailleurs (ex. bandeau de
+    // parcours.html) et navigue ici (soit par un clic normal, soit
+    // amené automatiquement par le "page" ci-dessus depuis une AUTRE
+    // page), la session reprend sans redemander le code. Résout aussi
+    // la question de Raphaël "est-ce que quitter la leçon fait perdre
+    // le contrôle ?" pour CETTE page — voir session-classe.js pour le
+    // mécanisme (localStorage, symétrique du côté prof).
+    sessionClasse.reprendreSessionEleve({
+      onEtat: appliquerEtat,
+      onFermee: function () {
+        syncControleBloque = false;
+        elActif.classList.add('kbb-session-cachee');
+        elInvite.classList.remove('kbb-session-cachee');
+        message.textContent = 'Session termin\u00e9e \u2014 tu peux continuer par toi-m\u00eame.';
+        message.style.color = 'var(--brun)';
+      },
+      onErreur: function () { /* rien à afficher — reprise silencieuse, aucun code n'a été tapé ici */ }
+    }).then(function (reussi) {
+      if (reussi) {
+        elInvite.classList.add('kbb-session-cachee');
+        elActif.classList.remove('kbb-session-cachee');
+      }
+    });
 
     btnRejoindre.addEventListener('click', async function () {
       const code = champCode.value.trim();

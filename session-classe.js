@@ -187,6 +187,22 @@
       return false;
     }
 
+    // 🐛 CORRIGÉ (14-08-2026, diagnostiqué en test réel avec Raphaël) :
+    // le canal Realtime (postgres_changes, protégé par RLS) doit recevoir
+    // explicitement le jeton d'accès AVANT l'abonnement — sans cet appel,
+    // la ligne est bien détectée comme modifiée, mais son contenu revient
+    // vide avec une erreur "401 Unauthorized" (RLS évaluée avec
+    // auth.uid() = null côté Realtime, même si le client Auth a bien une
+    // session valide). Voir la doc Supabase sur l'autorisation Realtime.
+    try {
+      const { data: sessionAuth } = await c.auth.getSession();
+      if (sessionAuth && sessionAuth.session) {
+        await c.realtime.setAuth(sessionAuth.session.access_token);
+      }
+    } catch (e) {
+      console.warn('session-classe.js : setAuth Realtime a échoué — abonnement tenté quand même.', e);
+    }
+
     const canal = c
       .channel('session_classe_' + session.id)
       .on(

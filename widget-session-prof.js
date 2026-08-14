@@ -86,10 +86,22 @@
             '<button type="button" class="kbw-bouton-controle" id="kbwBtnControleEleves" data-controle="eleves">\u00c9l\u00e8ves contr\u00f4lent</button>' +
           '</div>' +
 
+          // 🆕 (14-08-2026, sixième vague — "discussion de groupe", demande
+          // de Raphaël) : grille montrant TOUS les élèves connectés en même
+          // temps, sans avoir à cliquer un par un. Remplace l'ancienne
+          // simple liste de pastilles (voir kbw-eleves-liste, conservée mais
+          // masquée dans le HTML — cachée dès qu'au moins un élève est
+          // connecté, voir rafraichirListeEleves()). Chaque tuile montre un
+          // aperçu de ce que l'élève écrit EN CE MOMENT ; un clic ouvre le
+          // détail complet (question posée, réponse en cours, et l'historique
+          // des erreurs pour cet élève cette session-ci — voir kbw-erreurs).
           '<div class="kbw-eleves">' +
-            '<p class="kbw-eleves-titre">\u00c9l\u00e8ves connect\u00e9s</p>' +
+            '<div class="kbw-eleves-entete">' +
+              '<p class="kbw-eleves-titre">\u00c9l\u00e8ves connect\u00e9s</p>' +
+              '<span class="kbw-badge-erreurs kbw-badge-cachee" id="kbwBadgeErreursTotal"></span>' +
+            '</div>' +
             '<p class="kbw-eleves-vide" id="kbwElevesVide">Personne pour l\u2019instant.</p>' +
-            '<ul class="kbw-eleves-liste" id="kbwElevesListe"></ul>' +
+            '<div class="kbw-grille-eleves" id="kbwGrilleEleves"></div>' +
           '</div>' +
 
           '<div class="kbw-activite kbw-activite-cachee" id="kbwActivite">' +
@@ -97,7 +109,9 @@
               '<p class="kbw-activite-nom" id="kbwActiviteNom"></p>' +
               '<button type="button" class="kbw-fermer-panneau" id="kbwBtnFermerActivite" aria-label="Fermer">&times;</button>' +
             '</div>' +
+            '<p class="kbw-activite-question" id="kbwActiviteQuestion"></p>' +
             '<p class="kbw-activite-detail" id="kbwActiviteDetail"></p>' +
+            '<div class="kbw-erreurs" id="kbwErreurs"></div>' +
           '</div>' +
 
           '<button type="button" class="kbw-bouton-fermer-session" id="kbwBtnFermerSession">Fermer la session</button>' +
@@ -120,10 +134,13 @@
     const btnFermerSession = document.getElementById('kbwBtnFermerSession');
     const message = document.getElementById('kbwMessage');
     const elevesVide = document.getElementById('kbwElevesVide');
-    const elevesListe = document.getElementById('kbwElevesListe');
+    const grilleEleves = document.getElementById('kbwGrilleEleves');
+    const badgeErreursTotal = document.getElementById('kbwBadgeErreursTotal');
     const blocActivite = document.getElementById('kbwActivite');
     const activiteNom = document.getElementById('kbwActiviteNom');
+    const activiteQuestion = document.getElementById('kbwActiviteQuestion');
     const activiteDetail = document.getElementById('kbwActiviteDetail');
+    const blocErreurs = document.getElementById('kbwErreurs');
     const btnFermerActivite = document.getElementById('kbwBtnFermerActivite');
 
     let session = null; // ligne sessions_classe courante, ou null
@@ -172,34 +189,53 @@
       sessionClasse.arreterEcouteActivite();
       elevesConnus = [];
       eleveVisualiseId = null;
-      rafraichirListeEleves();
+      erreursParEleve = {}; // 🆕 fin de session — l'historique d'erreurs n'a plus de sens à garder
+      rafraichirGrilleEleves();
+      rafraichirBadgeTotal();
       cacherActivite();
     }
 
-    // ---------- Élèves connectés (Presence) — "voir ce que fait un élève" ----------
-    // 🆕 (14-08-2026, troisième vague) : demande de Raphaël. Aucune écriture
-    // en base — s'appuie entièrement sur Presence (voir ecouterActiviteEleves
-    // dans session-classe.js). La liste et le panneau se referment tout
-    // seuls si l'élève visualisé se déconnecte (onglet fermé, page quittée
-    // sans session, etc.) — pas d'état "fantôme" possible.
+    // ---------- Élèves connectés (Presence) — "discussion de groupe" ----------
+    // 🆕 (14-08-2026, troisième vague, puis sixième vague — demande de
+    // Raphaël) : une GRILLE affiche TOUS les élèves connectés en même
+    // temps (aperçu de ce qu'ils écrivent), plus besoin de cliquer un par
+    // un pour suivre l'ensemble de la classe. Un clic sur une tuile ouvre
+    // le détail complet (question posée + historique des erreurs de cet
+    // élève cette session-ci). Aucune écriture en base — tout repose sur
+    // Presence (voir ecouterActiviteEleves dans session-classe.js) SAUF
+    // l'historique des erreurs, qui est reconstitué et gardé en mémoire
+    // ICI, côté widget (voir erreursParEleve plus bas) — Presence étant un
+    // état instantané (remplacé à chaque annonce, jamais cumulé côté
+    // serveur), une erreur disparaîtrait sinon dès que l'élève reprend un
+    // exercice suivant. Portée volontairement limitée à la session en
+    // cours (perdu si le prof recharge la page) : Raphaël veut pouvoir
+    // consulter l'erreur PENDANT que le cours tourne, pas un historique
+    // permanent — ça resterait à faire séparément (table en base) si
+    // besoin plus tard.
     let elevesConnus = []; // [{id, prenom, etat}]
     let eleveVisualiseId = null;
+    let erreursParEleve = {}; // { [id]: [{question, reponse_donnee, reponse_correcte, ts, vue}] }
+
+    // Aperçu COURT pour une tuile de la grille — une ligne, sans détail.
+    function apercuCourt(etat) {
+      if (!etat) return 'Navigation libre\u2026';
+      if (etat.reponse_en_cours) return '\u00ab\u00a0' + etat.reponse_en_cours + '\u00a0\u00bb';
+      if (etat.reponse_en_cours === '') return '\u2026';
+      if (etat.section === 'exercices') return 'Exercices';
+      if (etat.section === 'dialogue' && typeof etat.etape === 'number') return '\u00c9tape ' + (etat.etape + 1);
+      return 'En le\u00e7on';
+    }
 
     // Traduit l'`etat` libre annoncé par une page de leçon (ex.
     // {page:'dialogues/d1/', section:'dialogue', etape:2} ou
-    // {page:'dialogues/d1/', section:'exercices'}) en une phrase lisible.
-    // null = l'élève navigue librement (menu, parcours), pas dans une leçon.
-    // Ce widget ne connaît toujours rien du contenu pédagogique — mêmes
-    // champs libres que partout ailleurs dans ce module, juste mis en mots.
+    // {page:'dialogues/d1/', section:'exercices'}) en une phrase lisible,
+    // pour le panneau de détail (pas la tuile — voir apercuCourt).
     function formaterActivite(etat) {
       if (!etat) return 'Navigation libre (menu, parcours\u2026)';
       let nomLecon = etat.page || null;
       const correspondance = nomLecon && nomLecon.match(/dialogues\/d(\d+)\//);
       if (correspondance) nomLecon = 'Dialogue ' + correspondance[1];
-      // 🆕 (14-08-2026, quatrième vague) : réponse en cours de saisie dans
-      // un exercice écrit — priorité d'affichage sur le simple "exercices"
-      // générique, c'est le détail que le prof est venu chercher ici.
-      if (etat.reponse_en_cours !== undefined) {
+      if (etat.reponse_en_cours !== undefined && etat.reponse_en_cours !== null) {
         return (nomLecon || 'Le\u00e7on') + ' \u2014 en train d\u2019\u00e9crire : \u00ab\u00a0' +
           (etat.reponse_en_cours || '\u2026') + '\u00a0\u00bb';
       }
@@ -210,6 +246,21 @@
       return nomLecon || 'En le\u00e7on';
     }
 
+    // Nombre d'erreurs PAS ENCORE consultées pour un élève (ou au total,
+    // sans argument) — alimente les badges (pastille de tuile + en-tête).
+    function nbErreursNonVues(id) {
+      const source = id
+        ? (erreursParEleve[id] || [])
+        : Object.keys(erreursParEleve).reduce(function (acc, k) { return acc.concat(erreursParEleve[k]); }, []);
+      return source.filter(function (e) { return !e.vue; }).length;
+    }
+
+    function rafraichirBadgeTotal() {
+      const total = nbErreursNonVues();
+      badgeErreursTotal.textContent = total ? String(total) : '';
+      badgeErreursTotal.classList.toggle('kbw-badge-cachee', total === 0);
+    }
+
     function cacherActivite() {
       blocActivite.classList.add('kbw-activite-cachee');
       eleveVisualiseId = null;
@@ -218,23 +269,70 @@
     function afficherActivite(eleve) {
       eleveVisualiseId = eleve.id;
       activiteNom.textContent = eleve.prenom;
+      const question = eleve.etat && eleve.etat.question;
+      activiteQuestion.textContent = question ? 'Question : ' + question : '';
+      activiteQuestion.style.display = question ? '' : 'none';
       activiteDetail.textContent = formaterActivite(eleve.etat);
+
+      // Historique des erreurs de CET élève — les marque vues en les
+      // ouvrant (fait disparaître les badges, mais garde la liste visible
+      // ici : consulter une erreur ne doit pas la faire disparaître du
+      // panneau, seulement du compteur "non lu").
+      const erreurs = erreursParEleve[eleve.id] || [];
+      blocErreurs.innerHTML = '';
+      erreurs.slice().reverse().forEach(function (err) { // plus récente en premier
+        err.vue = true;
+        const carte = document.createElement('div');
+        carte.className = 'kbw-erreur-carte';
+        const q = document.createElement('p');
+        q.className = 'kbw-erreur-question';
+        q.textContent = err.question || 'Question';
+        const rep = document.createElement('p');
+        rep.className = 'kbw-erreur-reponses';
+        rep.innerHTML = '<span class="kbw-erreur-fautive">' + escHtml(err.reponse_donnee || '\u2014') +
+          '</span> \u2192 <span class="kbw-erreur-correcte">' + escHtml(err.reponse_correcte || '') + '</span>';
+        carte.appendChild(q);
+        carte.appendChild(rep);
+        blocErreurs.appendChild(carte);
+      });
+      rafraichirGrilleEleves(); // enlève les badges désormais consultés
+      rafraichirBadgeTotal();
       blocActivite.classList.remove('kbw-activite-cachee');
     }
 
-    function rafraichirListeEleves() {
-      elevesListe.innerHTML = '';
+    function escHtml(s) {
+      return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    function rafraichirGrilleEleves() {
+      grilleEleves.innerHTML = '';
       elevesVide.style.display = elevesConnus.length ? 'none' : '';
       elevesConnus.forEach(function (eleve) {
-        const li = document.createElement('li');
-        const bouton = document.createElement('button');
-        bouton.type = 'button';
-        bouton.className = 'kbw-eleve-item';
-        bouton.classList.toggle('kbw-eleve-item-actif', eleve.id === eleveVisualiseId);
-        bouton.textContent = eleve.prenom;
-        bouton.addEventListener('click', function () { afficherActivite(eleve); });
-        li.appendChild(bouton);
-        elevesListe.appendChild(li);
+        const tuile = document.createElement('button');
+        tuile.type = 'button';
+        tuile.className = 'kbw-tuile-eleve';
+        tuile.classList.toggle('kbw-tuile-eleve-actif', eleve.id === eleveVisualiseId);
+
+        const nom = document.createElement('span');
+        nom.className = 'kbw-tuile-nom';
+        nom.textContent = eleve.prenom;
+        tuile.appendChild(nom);
+
+        const apercu = document.createElement('span');
+        apercu.className = 'kbw-tuile-apercu';
+        apercu.textContent = apercuCourt(eleve.etat);
+        tuile.appendChild(apercu);
+
+        const nbNonVues = nbErreursNonVues(eleve.id);
+        if (nbNonVues) {
+          const badge = document.createElement('span');
+          badge.className = 'kbw-badge-erreurs kbw-badge-tuile';
+          badge.textContent = String(nbNonVues);
+          tuile.appendChild(badge);
+        }
+
+        tuile.addEventListener('click', function () { afficherActivite(eleve); });
+        grilleEleves.appendChild(tuile);
       });
       // L'élève visualisé s'est déconnecté entre-temps — referme le panneau
       // plutôt que de laisser un dernier état affiché qui ne bougera plus.
@@ -244,13 +342,36 @@
         // Toujours connecté — rafraîchit le détail au cas où son activité
         // aurait changé depuis le dernier clic (le panneau reste ouvert).
         const courant = elevesConnus.filter(function (e) { return e.id === eleveVisualiseId; })[0];
-        if (courant) activiteDetail.textContent = formaterActivite(courant.etat);
+        if (courant) {
+          activiteDetail.textContent = formaterActivite(courant.etat);
+          const question = courant.etat && courant.etat.question;
+          activiteQuestion.textContent = question ? 'Question : ' + question : '';
+          activiteQuestion.style.display = question ? '' : 'none';
+        }
       }
     }
 
     function majListeEleves(liste) {
       elevesConnus = liste || [];
-      rafraichirListeEleves();
+      // 🆕 Détecte les erreurs NEUVES (ts jamais vu pour cet élève) et les
+      // accumule — voir la note en tête de section. `ts` distingue deux
+      // erreurs sur le même exercice (ex. l'élève revient dessus plus tard).
+      elevesConnus.forEach(function (eleve) {
+        const err = eleve.etat && eleve.etat.erreur;
+        if (!err || !err.ts) return;
+        const liste = erreursParEleve[eleve.id] || (erreursParEleve[eleve.id] = []);
+        const dejaConnue = liste.some(function (e) { return e.ts === err.ts; });
+        if (dejaConnue) return;
+        liste.push({
+          question: eleve.etat.question || null,
+          reponse_donnee: err.reponse_donnee,
+          reponse_correcte: err.reponse_correcte,
+          ts: err.ts,
+          vue: eleve.id === eleveVisualiseId // déjà ouvert = considérée vue tout de suite
+        });
+      });
+      rafraichirGrilleEleves();
+      rafraichirBadgeTotal();
     }
 
     btnFermerActivite.addEventListener('click', cacherActivite);

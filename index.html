@@ -1519,15 +1519,14 @@
   function allerAuModeProfesseur() {
     document.getElementById('menuPrincipal').style.display = 'none';
     document.getElementById('ecranProfesseur').style.display = '';
-    // 🆕 (14-08-2026) : l'écran Mode professeur a déjà sa propre section
-    // "Session de classe" — le widget flottant ferait doublon pendant
-    // qu'il est affiché, on le masque simplement le temps de l'écran.
-    if (window.KebBekWidgetSessionProf) window.KebBekWidgetSessionProf.masquer();
+    // 🆕 (14-08-2026, suite) : l'écran Mode professeur n'a plus sa propre
+    // section "Session de classe" (retirée — doublon avec le widget
+    // flottant) — plus besoin de masquer/réafficher le widget autour de
+    // cet écran, il reste visible ici comme sur toutes les autres pages.
     KebBekProfesseur.demarrerEcranProfesseur('ecranProfesseur', {
       onRetour: function () {
         document.getElementById('ecranProfesseur').style.display = 'none';
         document.getElementById('menuPrincipal').style.display = '';
-        if (window.KebBekWidgetSessionProf) window.KebBekWidgetSessionProf.afficher();
       }
     });
   }

@@ -57,6 +57,16 @@
   top: calc(100% + 8px);
   right: 0;
   width: min(86vw, 300px);
+  /* 🐛 CORRIGÉ (Raphaël, "l'espace n'est pas assez grand et ne
+     s'agrandit pas") : rien ici n'empêchait vraiment le panneau de
+     grandir en hauteur — la cause principale du texte manquant était
+     ailleurs (voir la note dans annoncerReponseEnCours, dialogue-d1.html :
+     dépassement de débit Presence qui gelait les mises à jour). Mais
+     un filet de sécurité reste utile : sans max-height, un panneau très
+     rempli (long message de l'élève + liste d'élèves) pourrait dépasser
+     le bas de l'écran plutôt que de simplement s'y adapter.  */
+  max-height: min(80vh, 640px);
+  overflow-y: auto;
   background: #FFFFFF;
   border-radius: 22px;
   border: 2px solid var(--peche);
@@ -213,6 +223,8 @@
   margin: 0;
   font-size: 0.8rem;
   color: var(--brun-fonce, var(--brun));
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
 }
 
 .kbw-bouton-fermer-session {

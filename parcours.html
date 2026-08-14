@@ -13,6 +13,11 @@
      progression.js, clientOuAutoCree). -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script src="progression.js"></script>
+<!-- 🆕 session-classe.js (14-08-2026) — permet de rejoindre/suivre une
+     session de classe directement depuis cette page (voir bandeau
+     #bandeauSessionEleve plus bas), pas seulement depuis une leçon.
+     Réutilise progression.client comme les autres modules. -->
+<script src="session-classe.js"></script>
 <style>
   /* ==================================================================
      Version « officielle » du prototype demo_parcours_v2.html.
@@ -870,6 +875,118 @@
     margin-top: 14px;
   }
 
+  /* ---------- Bandeau "session de classe" (élève, 14-08-2026) ---------- */
+  /* Voir session-classe.js pour la logique (rejoindreSession,
+     reprendreSessionEleve). Même langage visuel que le reste du site
+     (pêche/brun, Baloo 2, pilules) — cohérent avec professeur.css côté
+     enseignant, sans réutiliser ses classes kbp- (rôles différents). */
+  .bandeau-session-eleve {
+    width: min(92vw, 420px);
+    margin: 0 auto 4px;
+    display: flex;
+    justify-content: center;
+  }
+
+  .bse-bloc {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .bse-declencheur {
+    font-family: inherit;
+    font-weight: 700;
+    font-size: 0.78rem;
+    border: 1.5px dashed var(--peche);
+    border-radius: 999px;
+    padding: 7px 16px;
+    background: none;
+    color: var(--brun-clair, #8A7364);
+    cursor: pointer;
+  }
+  .bse-declencheur:hover { background: var(--peche-pale, rgba(240, 169, 139, 0.16)); }
+
+  .bse-formulaire {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .bse-champ-code {
+    font-family: inherit;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    width: 90px;
+    border: 1.5px solid var(--peche);
+    border-radius: 10px;
+    padding: 7px 9px;
+    background: var(--fond);
+    color: var(--brun-fonce);
+    text-align: center;
+  }
+  .bse-champ-code:focus { outline: 2px solid var(--peche-fonce); outline-offset: 1px; }
+
+  .bse-bouton-suivre {
+    font-family: inherit;
+    font-weight: 700;
+    font-size: 0.78rem;
+    border: none;
+    border-radius: 999px;
+    padding: 8px 16px;
+    background: var(--peche-fonce);
+    color: #FFFFFF;
+    cursor: pointer;
+  }
+  .bse-bouton-suivre:hover:not(:disabled) { opacity: 0.88; }
+  .bse-bouton-suivre:disabled { opacity: 0.55; cursor: default; }
+
+  .bse-message {
+    width: 100%;
+    text-align: center;
+    margin: 2px 0 0;
+    font-size: 0.72rem;
+    color: #b0402c;
+    min-height: 1em;
+  }
+
+  /* État "en direct" — pastille qui pulse doucement, même intention
+     qu'un témoin "live" plutôt qu'un simple texte statique. */
+  .bse-statut-point {
+    width: 8px;
+    height: 8px;
+    border-radius: 999px;
+    background: #b0402c;
+    flex-shrink: 0;
+    animation: bsePulse 1.6s ease-in-out infinite;
+  }
+  @keyframes bsePulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.35; }
+  }
+
+  .bse-statut-texte {
+    font-weight: 700;
+    font-size: 0.8rem;
+    color: var(--brun-fonce);
+  }
+
+  .bse-bouton-quitter {
+    font-family: inherit;
+    font-weight: 700;
+    font-size: 0.72rem;
+    border: 1.5px solid var(--brun-clair, #8A7364);
+    border-radius: 999px;
+    padding: 5px 13px;
+    background: none;
+    color: var(--brun-clair, #8A7364);
+    cursor: pointer;
+  }
+  .bse-bouton-quitter:hover { background: rgba(176, 64, 44, 0.1); color: #b0402c; border-color: #b0402c; }
+
   /* ---------- Rangée de chapitres (dépliée) ---------- */
 
   /* ---------- Cadre d'ouverture/fermeture des chapitres ---------- */
@@ -1425,6 +1542,30 @@
        avant le script principal pour que rafraichirAffichageSac() existe
        déjà quand appliquerTraductions() l'appelle plus bas. -->
   <script src="sac-a-dos.js"></script>
+
+  <!-- 🆕 Bandeau "session de classe" (élève, 14-08-2026) — voir
+       session-classe.js pour la logique. Masqué par défaut : le script
+       plus bas décide s'il faut l'ouvrir directement en mode "en
+       direct" (reprise automatique d'une session déjà rejointe sur une
+       autre page, ex. dialogue-d1.html) ou le laisser fermé (rien à
+       reprendre — dans ce cas seul le déclencheur discret "Cours en
+       direct ?" apparaît, jamais un champ de code imposé à tout le
+       monde qui n'utilise jamais cette fonction). -->
+  <div id="bandeauSessionEleve" class="bandeau-session-eleve" style="display:none;">
+    <div id="bseRejoindre" class="bse-bloc">
+      <button type="button" id="bseDeclencheur" class="bse-declencheur">Cours en direct ?</button>
+      <div id="bseFormulaire" class="bse-formulaire" style="display:none;">
+        <input type="text" id="bseCode" class="bse-champ-code" placeholder="Code" maxlength="6" autocomplete="off" autocapitalize="characters">
+        <button type="button" id="bseBtnSuivre" class="bse-bouton-suivre">Suivre</button>
+      </div>
+      <p id="bseMessage" class="bse-message"></p>
+    </div>
+    <div id="bseActif" class="bse-bloc" style="display:none;">
+      <span class="bse-statut-point" aria-hidden="true"></span>
+      <span id="bseStatutTexte" class="bse-statut-texte">En direct \u2014 tu suis le prof</span>
+      <button type="button" id="bseBtnQuitter" class="bse-bouton-quitter">Quitter</button>
+    </div>
+  </div>
 
   <div class="entete-parcours">
     <h1 id="titrePage">
@@ -2734,6 +2875,103 @@
     rafraichir(); // reflète l'état réel (d1 complété, h1 débloqué, etc.) dès le chargement
   }
   initProgressionReelle();
+
+  // ==================================================================
+  // 🆕 Bandeau "session de classe" (élève, 14-08-2026) — demande de
+  // Raphaël : pouvoir rejoindre depuis parcours.html, pas seulement
+  // depuis une page de leçon. Voir session-classe.js pour l'API
+  // (rejoindreSession/reprendreSessionEleve/quitterSession).
+  //
+  // reprendreSessionEleve() est appelée au boot pour reprendre
+  // AUTOMATIQUEMENT une session déjà rejointe ailleurs (ex. l'élève
+  // était sur dialogue-d1.html, a cliqué un lien qui l'a ramené ici) —
+  // répond directement à la question de Raphaël "est-ce que quitter la
+  // leçon fait perdre le contrôle ?" : avant cette session-ci, OUI
+  // (site multi-pages, tout le contexte JS en mémoire — donc
+  // l'abonnement Realtime — est perdu à chaque navigation réelle) ;
+  // maintenant NON, grâce au code mémorisé en localStorage côté élève
+  // (voir memoriserSessionEleve/CLE_SESSION_ELEVE dans session-classe.js).
+  //
+  // ⚠️ PAS ENCORE FAIT ICI, volontairement — nécessite dialogue-d1.html :
+  // la navigation AUTOMATIQUE vers la leçon quand le prof y pousse un
+  // état depuis cette page (session.etat.page ou équivalent) n'est pas
+  // câblée — je ne connais pas encore la forme exacte de "etat" que
+  // dialogue-d1.html utilise pour ses propres pousserEtat(), et deviner
+  // risquerait un mauvais rapprochement de chaîne (silencieux, donc pire
+  // qu'une absence de fonctionnalité). Pour l'instant, cette page
+  // affiche seulement le statut ("en direct" / "à toi de naviguer") —
+  // rejoindre ici garantit surtout que la session SURVIT à la
+  // navigation, pas encore qu'elle DÉCLENCHE une navigation.
+  (function initBandeauSessionEleve() {
+    const bandeau = document.getElementById('bandeauSessionEleve');
+    const blocRejoindre = document.getElementById('bseRejoindre');
+    const declencheur = document.getElementById('bseDeclencheur');
+    const formulaire = document.getElementById('bseFormulaire');
+    const champCode = document.getElementById('bseCode');
+    const btnSuivre = document.getElementById('bseBtnSuivre');
+    const message = document.getElementById('bseMessage');
+    const blocActif = document.getElementById('bseActif');
+    const statutTexte = document.getElementById('bseStatutTexte');
+    const btnQuitter = document.getElementById('bseBtnQuitter');
+
+    const sessionClasse = window.KebBekSessionClasse || null;
+    if (!bandeau || !sessionClasse) return; // page hôte incomplète ou module absent — dégradation silencieuse
+
+    bandeau.style.display = '';
+
+    function afficherActif(session) {
+      blocRejoindre.style.display = 'none';
+      blocActif.style.display = '';
+      statutTexte.textContent = session.controle === 'eleves'
+        ? 'En direct \u2014 \u00e0 toi de naviguer'
+        : 'En direct \u2014 tu suis le prof';
+    }
+
+    function afficherRejoindre() {
+      blocActif.style.display = 'none';
+      blocRejoindre.style.display = '';
+      formulaire.style.display = 'none';
+    }
+
+    const callbacks = {
+      onEtat: afficherActif,
+      onFermee: function () {
+        afficherRejoindre();
+        message.textContent = 'La session est termin\u00e9e.';
+      },
+      onErreur: function () {
+        message.textContent = 'Code introuvable ou expir\u00e9.';
+      }
+    };
+
+    declencheur.addEventListener('click', function () {
+      formulaire.style.display = formulaire.style.display === 'none' ? 'flex' : 'none';
+      if (formulaire.style.display !== 'none') champCode.focus();
+    });
+
+    btnSuivre.addEventListener('click', async function () {
+      const code = champCode.value.trim();
+      if (!code) return;
+      message.textContent = '';
+      btnSuivre.disabled = true;
+      const reussi = await sessionClasse.rejoindreSession(code, callbacks);
+      btnSuivre.disabled = false;
+      if (!reussi && !message.textContent) {
+        message.textContent = 'Code introuvable ou expir\u00e9.';
+      }
+      if (reussi) champCode.value = '';
+    });
+
+    btnQuitter.addEventListener('click', function () {
+      sessionClasse.quitterSession();
+      afficherRejoindre();
+    });
+
+    // Reprise automatique — voir note de tête. Placé après le câblage
+    // des écouteurs ci-dessus pour que afficherActif()/afficherRejoindre()
+    // existent déjà si reprendreSessionEleve() résout tout de suite.
+    sessionClasse.reprendreSessionEleve(callbacks);
+  })();
 
 </script>
 

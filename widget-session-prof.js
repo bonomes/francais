@@ -85,6 +85,21 @@
             '<button type="button" class="kbw-bouton-controle" id="kbwBtnControleProf" data-controle="professeur">Prof contr\u00f4le</button>' +
             '<button type="button" class="kbw-bouton-controle" id="kbwBtnControleEleves" data-controle="eleves">\u00c9l\u00e8ves contr\u00f4lent</button>' +
           '</div>' +
+
+          '<div class="kbw-eleves">' +
+            '<p class="kbw-eleves-titre">\u00c9l\u00e8ves connect\u00e9s</p>' +
+            '<p class="kbw-eleves-vide" id="kbwElevesVide">Personne pour l\u2019instant.</p>' +
+            '<ul class="kbw-eleves-liste" id="kbwElevesListe"></ul>' +
+          '</div>' +
+
+          '<div class="kbw-activite kbw-activite-cachee" id="kbwActivite">' +
+            '<div class="kbw-activite-entete">' +
+              '<p class="kbw-activite-nom" id="kbwActiviteNom"></p>' +
+              '<button type="button" class="kbw-fermer-panneau" id="kbwBtnFermerActivite" aria-label="Fermer">&times;</button>' +
+            '</div>' +
+            '<p class="kbw-activite-detail" id="kbwActiviteDetail"></p>' +
+          '</div>' +
+
           '<button type="button" class="kbw-bouton-fermer-session" id="kbwBtnFermerSession">Fermer la session</button>' +
         '</div>' +
 
@@ -104,6 +119,12 @@
     const btnControleEleves = document.getElementById('kbwBtnControleEleves');
     const btnFermerSession = document.getElementById('kbwBtnFermerSession');
     const message = document.getElementById('kbwMessage');
+    const elevesVide = document.getElementById('kbwElevesVide');
+    const elevesListe = document.getElementById('kbwElevesListe');
+    const blocActivite = document.getElementById('kbwActivite');
+    const activiteNom = document.getElementById('kbwActiviteNom');
+    const activiteDetail = document.getElementById('kbwActiviteDetail');
+    const btnFermerActivite = document.getElementById('kbwBtnFermerActivite');
 
     let session = null; // ligne sessions_classe courante, ou null
 
@@ -140,6 +161,7 @@
       codeSpan.textContent = session.code;
       point.classList.add('kbw-point-actif');
       rafraichirBoutonsControle();
+      sessionClasse.ecouterActiviteEleves(session.id, { onListe: majListeEleves });
     }
 
     function afficherAucuneSession() {
@@ -147,7 +169,84 @@
       blocActif.style.display = 'none';
       blocInactif.style.display = '';
       point.classList.remove('kbw-point-actif');
+      sessionClasse.arreterEcouteActivite();
+      elevesConnus = [];
+      eleveVisualiseId = null;
+      rafraichirListeEleves();
+      cacherActivite();
     }
+
+    // ---------- Élèves connectés (Presence) — "voir ce que fait un élève" ----------
+    // 🆕 (14-08-2026, troisième vague) : demande de Raphaël. Aucune écriture
+    // en base — s'appuie entièrement sur Presence (voir ecouterActiviteEleves
+    // dans session-classe.js). La liste et le panneau se referment tout
+    // seuls si l'élève visualisé se déconnecte (onglet fermé, page quittée
+    // sans session, etc.) — pas d'état "fantôme" possible.
+    let elevesConnus = []; // [{id, prenom, etat}]
+    let eleveVisualiseId = null;
+
+    // Traduit l'`etat` libre annoncé par une page de leçon (ex.
+    // {page:'dialogues/d1/', section:'dialogue', etape:2} ou
+    // {page:'dialogues/d1/', section:'exercices'}) en une phrase lisible.
+    // null = l'élève navigue librement (menu, parcours), pas dans une leçon.
+    // Ce widget ne connaît toujours rien du contenu pédagogique — mêmes
+    // champs libres que partout ailleurs dans ce module, juste mis en mots.
+    function formaterActivite(etat) {
+      if (!etat) return 'Navigation libre (menu, parcours\u2026)';
+      let nomLecon = etat.page || null;
+      const correspondance = nomLecon && nomLecon.match(/dialogues\/d(\d+)\//);
+      if (correspondance) nomLecon = 'Dialogue ' + correspondance[1];
+      if (etat.section === 'exercices') return (nomLecon || 'Le\u00e7on') + ' \u2014 exercices';
+      if (etat.section === 'dialogue' && typeof etat.etape === 'number') {
+        return (nomLecon || 'Le\u00e7on') + ' \u2014 \u00e9tape ' + (etat.etape + 1);
+      }
+      return nomLecon || 'En le\u00e7on';
+    }
+
+    function cacherActivite() {
+      blocActivite.classList.add('kbw-activite-cachee');
+      eleveVisualiseId = null;
+    }
+
+    function afficherActivite(eleve) {
+      eleveVisualiseId = eleve.id;
+      activiteNom.textContent = eleve.prenom;
+      activiteDetail.textContent = formaterActivite(eleve.etat);
+      blocActivite.classList.remove('kbw-activite-cachee');
+    }
+
+    function rafraichirListeEleves() {
+      elevesListe.innerHTML = '';
+      elevesVide.style.display = elevesConnus.length ? 'none' : '';
+      elevesConnus.forEach(function (eleve) {
+        const li = document.createElement('li');
+        const bouton = document.createElement('button');
+        bouton.type = 'button';
+        bouton.className = 'kbw-eleve-item';
+        bouton.classList.toggle('kbw-eleve-item-actif', eleve.id === eleveVisualiseId);
+        bouton.textContent = eleve.prenom;
+        bouton.addEventListener('click', function () { afficherActivite(eleve); });
+        li.appendChild(bouton);
+        elevesListe.appendChild(li);
+      });
+      // L'élève visualisé s'est déconnecté entre-temps — referme le panneau
+      // plutôt que de laisser un dernier état affiché qui ne bougera plus.
+      if (eleveVisualiseId && !elevesConnus.some(function (e) { return e.id === eleveVisualiseId; })) {
+        cacherActivite();
+      } else if (eleveVisualiseId) {
+        // Toujours connecté — rafraîchit le détail au cas où son activité
+        // aurait changé depuis le dernier clic (le panneau reste ouvert).
+        const courant = elevesConnus.filter(function (e) { return e.id === eleveVisualiseId; })[0];
+        if (courant) activiteDetail.textContent = formaterActivite(courant.etat);
+      }
+    }
+
+    function majListeEleves(liste) {
+      elevesConnus = liste || [];
+      rafraichirListeEleves();
+    }
+
+    btnFermerActivite.addEventListener('click', cacherActivite);
 
     // Restaure l'affichage si une session tourne déjà dans ce navigateur
     // (ex. démarrée depuis l'écran Mode professeur, ou depuis ce widget

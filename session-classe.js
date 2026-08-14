@@ -325,6 +325,22 @@
         if (statut === 'SUBSCRIBED') {
           canal.track({ prenom: infoEleve.prenom, etat: null }).catch(function () {});
         }
+        // 🆕 CORRIGÉ (Raphaël, "l'élève disparaît de la liste après
+        // quelques secondes") : un dépassement de débit Presence (voir
+        // ClientPresenceRateLimitReached dans les logs Supabase — cause
+        // corrigée à la source dans dialogue-d1.html, annoncerReponseEnCours)
+        // peut faire tomber le canal (CHANNEL_ERROR/TIMED_OUT). Le SDK
+        // Supabase retente une reconnexion tout seul, mais ce navigateur
+        // doit alors s'annoncer À NOUVEAU (track() n'est jamais mémorisé
+        // côté serveur entre deux connexions) — sinon l'élève resterait
+        // invisible côté prof même une fois la websocket rétablie.
+        else if (statut === 'CHANNEL_ERROR' || statut === 'TIMED_OUT') {
+          setTimeout(function () {
+            if (abonnementActif && abonnementActif.canal === canal) {
+              canal.track({ prenom: infoEleve.prenom, etat: null }).catch(function () {});
+            }
+          }, 1500);
+        }
       });
 
     abonnementActif = { canal: canal, sessionId: session.id, infoEleve: infoEleve };

@@ -13,6 +13,10 @@
      au premier appel qui en a besoin. -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script src="../../progression.js"></script>
+<!-- 🆕 (14-08-2026) session-classe.js : navigation partagée prof→élèves,
+     voir sa propre note de tête. Chargé ici comme progression.js (même
+     patron) — page à part entière, aucun état JS partagé avec index.html. -->
+<script src="../../session-classe.js"></script>
 <style>
   /* ==================================================================
      dialogue-d1.html — PREMIÈRE vraie leçon de dialogue du site (id
@@ -169,6 +173,78 @@
     min-height: 60px;
     align-items: flex-end;
     padding: 0 5%;
+  }
+
+  /* ---------- Session en direct (session-classe.js, 14-08-2026) ---------- */
+  .kbb-session {
+    width: min(92vw, 400px);
+    margin-bottom: 10px;
+    font-family: 'Baloo 2', sans-serif;
+  }
+  .kbb-session-cachee { display: none !important; }
+
+  .kbb-session-invite {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .kbb-session-etiquette {
+    font-weight: 700;
+    font-size: 0.78rem;
+    color: var(--brun);
+    opacity: 0.75;
+  }
+  .kbb-session-ligne { display: flex; gap: 6px; flex: 1; min-width: 160px; }
+  .kbb-session-champ {
+    font-family: inherit;
+    font-size: 0.82rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    border: 1.5px solid var(--peche);
+    border-radius: 10px;
+    padding: 6px 9px;
+    background: #FFFFFF;
+    color: var(--brun-fonce);
+    width: 90px;
+  }
+  .kbb-session-champ:focus { outline: 2px solid var(--peche-fonce); outline-offset: 1px; }
+  .kbb-session-bouton, .kbb-session-bouton-quitter {
+    font-family: inherit;
+    font-weight: 700;
+    font-size: 0.78rem;
+    border: none;
+    border-radius: 999px;
+    padding: 7px 14px;
+    cursor: pointer;
+  }
+  .kbb-session-bouton { background: var(--peche-fonce); color: #FFFFFF; }
+  .kbb-session-bouton:hover:not(:disabled) { opacity: 0.88; }
+  .kbb-session-bouton:disabled { opacity: 0.55; cursor: default; }
+  .kbb-session-bouton-quitter {
+    background: transparent;
+    border: 1.5px solid var(--peche);
+    color: var(--brun);
+  }
+  .kbb-session-bouton-quitter:hover { background: var(--peche-pale, rgba(240, 169, 139, 0.16)); }
+
+  .kbb-session-actif {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    background: var(--peche-pale, rgba(240, 169, 139, 0.16));
+    border-radius: 12px;
+    padding: 8px 12px;
+  }
+  .kbb-session-statut { font-weight: 700; font-size: 0.82rem; color: var(--brun-fonce); }
+
+  .kbb-session-message {
+    margin: 4px 0 0;
+    font-size: 0.75rem;
+    color: #b0402c;
+    min-height: 1em;
   }
 
   .bulle-dialogue {
@@ -823,6 +899,27 @@
      avant le script de la leçon plus bas, pour que window.ajouterAuSac
      et toggleSacADos existent déjà quand un mot est touché. -->
 <script src="../../sac-a-dos.js"></script>
+
+<!-- 🆕 (14-08-2026) session-classe.js : bandeau pour un élève qui rejoint
+     un cours en direct (code donné oralement par le prof). Absent de tout
+     mécanisme de points/progression — purement une aide de navigation,
+     voir session-classe.js. Reste discret : pas de bulle/flèches, même
+     langage visuel simplifié que .kbp-carte (professeur.css) plutôt
+     qu'une esthétique parallèle. -->
+<div class="kbb-session" id="kbbSession">
+  <div class="kbb-session-invite" id="kbbSessionInvite">
+    <label class="kbb-session-etiquette" for="kbbSessionCode">Cours en direct&nbsp;?</label>
+    <div class="kbb-session-ligne">
+      <input type="text" id="kbbSessionCode" class="kbb-session-champ" placeholder="Code" maxlength="8" autocomplete="off" autocapitalize="characters">
+      <button type="button" id="kbbSessionBtnRejoindre" class="kbb-session-bouton">Suivre</button>
+    </div>
+  </div>
+  <div class="kbb-session-actif kbb-session-cachee" id="kbbSessionActif">
+    <span class="kbb-session-statut" id="kbbSessionStatutTexte"></span>
+    <button type="button" id="kbbSessionBtnQuitter" class="kbb-session-bouton-quitter">Quitter</button>
+  </div>
+  <p class="kbb-session-message" id="kbbSessionMessage"></p>
+</div>
 
 <div class="compteur" id="compteur">1 / 5</div>
 
@@ -1910,6 +2007,10 @@
     btnSuivant.textContent = (etape === ETAPES.length - 1)
       ? texteInterface('terminer') + ' \u203a'
       : texteInterface('continuer') + ' \u203a';
+
+    // 🆕 (14-08-2026, session-classe.js) : best-effort, ne fait rien si ce
+    // navigateur ne fait pas tourner de session prof — voir plus bas.
+    synchroniserEtatSession({ section: 'dialogue', etape: etape });
   }
 
   // ---------- Séquence automatique (b→c→d) — exception ponctuelle pour
@@ -1940,6 +2041,7 @@
   }
 
   function suivant() {
+    if (syncControleBloque) return; // navigation suspendue — voir session-classe.js plus bas
     if (animationEnCours) return;
     if (etape < ETAPES.length - 1) {
       const def = ETAPES[etape];
@@ -1967,6 +2069,7 @@
   }
 
   function precedent() {
+    if (syncControleBloque) return; // navigation suspendue — voir session-classe.js plus bas
     if (animationEnCours) return;
     if (etape === 0) return;
     etape--;
@@ -2056,6 +2159,7 @@
   // même s'il a sauté directement.
   const btnRaccourciExercices = document.getElementById('btnRaccourciExercices');
   function allerAuxExercices() {
+    if (syncControleBloque) return; // navigation suspendue — voir session-classe.js plus bas
     if (animationEnCours) return;
     if (etape < ETAPES.length - 1) {
       etape = ETAPES.length - 1;
@@ -2077,6 +2181,10 @@
   btnRaccourciExercices.textContent = texteInterface('raccourciExercices');
 
   function afficherExercices() {
+    // 🆕 (14-08-2026, session-classe.js) : voir synchroniserEtatSession
+    // plus bas — best-effort, ne fait rien si ce navigateur ne fait pas
+    // tourner de session prof.
+    synchroniserEtatSession({ section: 'exercices' });
     document.querySelector('.zone-bulle').style.display = 'none';
     document.getElementById('sceneDialogue').style.display = 'none';
     document.querySelector('.nav-dialogue').style.display = 'none';
@@ -2779,6 +2887,138 @@
     metAJourBoutonToggleTraductions();
   });
   metAJourBoutonToggleTraductions();
+
+  // ================================================================
+  // Session en direct (session-classe.js, 14-08-2026) — voir sa propre
+  // note de tête pour le modèle général. Deux rôles possibles sur CETTE
+  // page, jamais mélangés :
+  //   - Prof : ce navigateur fait déjà tourner une session (créée depuis
+  //     le panneau Mode professeur, voir professeur.js) — synchroniserEtatSession()
+  //     pousse alors l'état à chaque rendreEtape()/afficherExercices(),
+  //     en plus de tout ce que ces fonctions faisaient déjà. Totalement
+  //     silencieux si ce n'est pas le cas (sessionProfActive() → null).
+  //   - Élève : rejoint une session par code via le petit bandeau plus
+  //     haut dans le HTML — sa propre navigation est alors désactivée
+  //     tant que controle === 'professeur' (voir syncControleBloque, lu
+  //     par suivant()/precedent()/allerAuxExercices() plus haut), et
+  //     suit les états poussés par le prof via allerAEtapeDistante().
+  // ================================================================
+
+  let syncControleBloque = false; // true seulement côté élève, tant que controle === 'professeur'
+
+  function synchroniserEtatSession(etatAPousser) {
+    const sessionClasse = window.KebBekSessionClasse || null;
+    if (!sessionClasse) return;
+    const sessionProf = sessionClasse.sessionProfActive();
+    if (!sessionProf) return; // ce navigateur n'est pas en train d'animer une session — rien à faire
+    sessionClasse.pousserEtat(sessionProf.id, etatAPousser); // best-effort, résultat ignoré volontairement
+  }
+
+  // Amène l'élève directement à l'étape indexCible du dialogue, en
+  // reconstruisant les piles depuis le début — même stratégie que
+  // precedent() (voir sa note), généralisée à un index arbitraire plutôt
+  // qu'un simple décrément. Si les exercices étaient déjà affichés (rare
+  // — seulement si le prof recule après coup), on revient d'abord à
+  // l'écran de dialogue.
+  function allerAEtapeDistante(indexCible) {
+    if (typeof indexCible !== 'number' || indexCible < 0 || indexCible >= ETAPES.length) return;
+    if (animationEnCours) return;
+    if (elSectionExercices.style.display === 'flex') {
+      elSectionExercices.style.display = 'none';
+      document.querySelector('.zone-bulle').style.display = '';
+      document.getElementById('sceneDialogue').style.display = '';
+      document.querySelector('.nav-dialogue').style.display = '';
+      document.getElementById('btnRaccourciExercices').style.display = '';
+      document.getElementById('compteur').style.display = '';
+    } else if (indexCible === etape) {
+      return; // déjà à la bonne étape, rien à refaire
+    }
+    etape = indexCible;
+    elPileDialogue.innerHTML = '';
+    elPileGrammaire.innerHTML = '';
+    blocGrammaire.style.display = 'none';
+    reconstructionEnCours = true;
+    for (let i = 0; i <= etape; i++) {
+      ajouterLigneDialogue(ETAPES[i]);
+      ajouterNoteGrammaire(ETAPES[i]);
+    }
+    elPileDialogue.querySelectorAll('.pile-item').forEach(el => el.classList.add('in'));
+    elPileGrammaire.querySelectorAll('.grammaire-item').forEach(el => el.classList.add('in'));
+    rendreEtape();
+    reconstructionEnCours = false;
+  }
+
+  (function initSessionEleve() {
+    const sessionClasse = window.KebBekSessionClasse || null;
+    const elInvite = document.getElementById('kbbSessionInvite');
+    const elActif = document.getElementById('kbbSessionActif');
+    const champCode = document.getElementById('kbbSessionCode');
+    const btnRejoindre = document.getElementById('kbbSessionBtnRejoindre');
+    const btnQuitter = document.getElementById('kbbSessionBtnQuitter');
+    const statutTexte = document.getElementById('kbbSessionStatutTexte');
+    const message = document.getElementById('kbbSessionMessage');
+
+    if (!sessionClasse) { document.getElementById('kbbSession').style.display = 'none'; return; }
+
+    // Si CE navigateur anime déjà une session comme prof, le bandeau
+    // "rejoindre" n'a pas sa place ici (le prof navigue directement dans
+    // la leçon, il ne suit pas son propre direct) — voir synchroniserEtatSession
+    // plus haut, qui gère déjà son cas séparément.
+    if (sessionClasse.sessionProfActive()) {
+      document.getElementById('kbbSession').style.display = 'none';
+      return;
+    }
+
+    function appliquerEtat(session) {
+      statutTexte.textContent = (session.controle === 'professeur')
+        ? '\u25CF En direct \u2014 tu suis le prof'
+        : '\u25CF En direct \u2014 \u00e0 toi de jouer !';
+      syncControleBloque = (session.controle === 'professeur');
+      if (session.etat && session.etat.section === 'exercices') {
+        if (elSectionExercices.style.display !== 'flex') afficherExercices();
+      } else if (session.etat && session.etat.section === 'dialogue' && typeof session.etat.etape === 'number') {
+        allerAEtapeDistante(session.etat.etape);
+      }
+    }
+
+    btnRejoindre.addEventListener('click', async function () {
+      const code = champCode.value.trim();
+      if (!code) return;
+      btnRejoindre.disabled = true;
+      message.textContent = '';
+      const reussi = await sessionClasse.rejoindreSession(code, {
+        onEtat: appliquerEtat,
+        onFermee: function () {
+          syncControleBloque = false;
+          elActif.classList.add('kbb-session-cachee');
+          elInvite.classList.remove('kbb-session-cachee');
+          message.textContent = 'Session termin\u00e9e \u2014 tu peux continuer par toi-m\u00eame.';
+          message.style.color = 'var(--brun)';
+        },
+        onErreur: function () {
+          message.textContent = 'Code invalide ou session ferm\u00e9e \u2014 v\u00e9rifie avec ton prof.';
+          message.style.color = '#b0402c';
+        }
+      });
+      btnRejoindre.disabled = false;
+      if (reussi) {
+        elInvite.classList.add('kbb-session-cachee');
+        elActif.classList.remove('kbb-session-cachee');
+        message.textContent = '';
+      }
+    });
+
+    champCode.addEventListener('keydown', function (e) { if (e.key === 'Enter') btnRejoindre.click(); });
+
+    btnQuitter.addEventListener('click', function () {
+      sessionClasse.quitterSession();
+      syncControleBloque = false;
+      elActif.classList.add('kbb-session-cachee');
+      elInvite.classList.remove('kbb-session-cachee');
+      message.textContent = '';
+      champCode.value = '';
+    });
+  })();
 
   rendreEtape();
 </script>

@@ -3003,8 +3003,17 @@
     function appliquerEtat(session) {
       // Le prof a poussé un état pour une AUTRE page — suit-le plutôt
       // que d'essayer d'appliquer un état de dialogue qui ne concerne
-      // pas cette leçon.
-      if (session.etat && session.etat.page && session.etat.page !== CHEMIN_CETTE_PAGE) {
+      // pas cette leçon. MAIS seulement quand controle === 'professeur' :
+      // sinon, un élève qui a la main (controle === 'eleves') et qui
+      // clique "‹" pour sortir vers parcours.html se ferait ramener ici
+      // de force à sa prochaine mise à jour d'état — alors qu'il a
+      // justement le droit de naviguer librement dans ce mode. Le champ
+      // etat.page ne change pas automatiquement quand le contrôle
+      // bascule (voir session-classe.js) : il reste égal à la dernière
+      // page poussée par le prof, même après qu'il ait rendu la main —
+      // donc sans ce garde-fou, "eleves" + ancien etat.page = élève
+      // piégé, quelle que soit la page qu'il essaie de rejoindre.
+      if (session.controle === 'professeur' && session.etat && session.etat.page && session.etat.page !== CHEMIN_CETTE_PAGE) {
         window.location.href = session.etat.page;
         return;
       }
@@ -3012,6 +3021,7 @@
         ? '\u25CF En direct \u2014 tu suis le prof'
         : '\u25CF En direct \u2014 \u00e0 toi de jouer !';
       syncControleBloque = (session.controle === 'professeur');
+      if (session.controle !== 'professeur') return; // en mode "élèves", ne jamais forcer d'étape/section non plus — il navigue lui-même
       if (session.etat && session.etat.section === 'exercices') {
         if (elSectionExercices.style.display !== 'flex') afficherExercices();
       } else if (session.etat && session.etat.section === 'dialogue' && typeof session.etat.etape === 'number') {

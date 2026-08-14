@@ -180,11 +180,34 @@
   border-radius: 14px;
   padding: 10px 14px;
 }
+.kbp-fiche-entete {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
 .kbp-fiche-nom {
   margin: 0 0 2px;
   font-weight: 700;
   font-size: 0.98rem;
   color: var(--brun-fonce, var(--brun));
+}
+.kbp-fiche-retirer {
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  line-height: 1;
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--brun-clair, #8A7364);
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.kbp-fiche-retirer:hover {
+  background: rgba(176, 64, 44, 0.14);
+  color: #b0402c;
 }
 .kbp-fiche-detail {
   margin: 0;
@@ -206,6 +229,50 @@
   color: var(--brun-fonce, var(--brun));
   line-height: 1.4;
 }
+
+/* ---------- Session de classe (navigation partagée) ---------- */
+
+#kbpSectionSession {
+  border-bottom: 1.5px dashed var(--peche);
+  padding-bottom: 14px;
+}
+
+.kbp-code-session {
+  margin: 0;
+  font-size: 0.95rem;
+  color: var(--brun-fonce, var(--brun));
+}
+.kbp-code-session strong {
+  font-family: 'Baloo 2', sans-serif;
+  font-size: 1.15rem;
+  letter-spacing: 0.08em;
+  color: var(--peche-fonce);
+}
+
+.kbp-ligne-controle {
+  gap: 8px;
+}
+
+.kbp-bouton-controle {
+  flex: 1;
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 0.78rem;
+  border: 1.5px solid var(--peche);
+  border-radius: 999px;
+  padding: 8px 10px;
+  background: var(--fond);
+  color: var(--brun-fonce, var(--brun));
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.kbp-bouton-controle:hover { background: var(--peche-pale, rgba(240, 169, 139, 0.16)); }
+.kbp-bouton-controle-actif {
+  background: var(--peche-fonce);
+  border-color: var(--peche-fonce);
+  color: #FFFFFF;
+}
+.kbp-bouton-controle-actif:hover { background: var(--peche-fonce); opacity: 0.92; }
 
 @media (max-width: 460px) {
   .kbp-carte { padding: 16px 14px 14px; border-radius: 22px; }

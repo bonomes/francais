@@ -230,50 +230,6 @@
   line-height: 1.4;
 }
 
-/* ---------- Session de classe (navigation partagée) ---------- */
-
-#kbpSectionSession {
-  border-bottom: 1.5px dashed var(--peche);
-  padding-bottom: 14px;
-}
-
-.kbp-code-session {
-  margin: 0;
-  font-size: 0.95rem;
-  color: var(--brun-fonce, var(--brun));
-}
-.kbp-code-session strong {
-  font-family: 'Baloo 2', sans-serif;
-  font-size: 1.15rem;
-  letter-spacing: 0.08em;
-  color: var(--peche-fonce);
-}
-
-.kbp-ligne-controle {
-  gap: 8px;
-}
-
-.kbp-bouton-controle {
-  flex: 1;
-  font-family: inherit;
-  font-weight: 700;
-  font-size: 0.78rem;
-  border: 1.5px solid var(--peche);
-  border-radius: 999px;
-  padding: 8px 10px;
-  background: var(--fond);
-  color: var(--brun-fonce, var(--brun));
-  cursor: pointer;
-  transition: background 0.15s ease, color 0.15s ease;
-}
-.kbp-bouton-controle:hover { background: var(--peche-pale, rgba(240, 169, 139, 0.16)); }
-.kbp-bouton-controle-actif {
-  background: var(--peche-fonce);
-  border-color: var(--peche-fonce);
-  color: #FFFFFF;
-}
-.kbp-bouton-controle-actif:hover { background: var(--peche-fonce); opacity: 0.92; }
-
 @media (max-width: 460px) {
   .kbp-carte { padding: 16px 14px 14px; border-radius: 22px; }
   .kbp-titre { font-size: 1rem; }

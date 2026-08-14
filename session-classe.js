@@ -213,29 +213,6 @@
     // Voir mettre_a_jour_session_classe / fermer_session_classe (SQL) pour
     // le realtime.send() correspondant, et la policy RLS sur
     // realtime.messages qui autorise sa réception.
-    try {
-      const { data: sessionAuth } = await c.auth.getSession();
-      if (sessionAuth && sessionAuth.session) {
-        await c.realtime.setAuth(sessionAuth.session.access_token);
-      }
-    } catch (e) {
-      console.warn('session-classe.js : setAuth Realtime a échoué — abonnement tenté quand même.', e);
-    }
-
-    let session;
-    try {
-      const { data, error } = await c.rpc('rejoindre_session_classe', { p_code: code });
-      if (error || !data) {
-        if (typeof callbacks.onErreur === 'function') callbacks.onErreur();
-        return false;
-      }
-      session = data;
-    } catch (e) {
-      console.warn('session-classe.js : rejoindreSession a échoué (réseau).', e);
-      if (typeof callbacks.onErreur === 'function') callbacks.onErreur();
-      return false;
-    }
-
     const canal = c
       .channel('session_classe:' + session.id, { config: { private: true } })
       .on('broadcast', { event: 'maj' }, function (message) {

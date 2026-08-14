@@ -1062,6 +1062,35 @@
     });
   })();
 
+  // 🐛 CORRIGÉ (14-08-2026, signalé par Raphaël) : un élève déjà connecté
+  // à un vrai compte (pas invité) qui revient sur index.html — nouvel
+  // onglet, navigateur relancé, etc. — se voyait quand même reposer la
+  // question "First time?" et devait cliquer "Non" manuellement à
+  // chaque fois, comme un nouvel invité. La session Supabase elle-même
+  // n'était jamais perdue (persistée par la librairie Supabase, pas par
+  // ce site) — rien ici ne la consultait avant d'afficher "First time?".
+  // Vérification faite tôt, en parallèle du reste du boot (async, ne
+  // bloque rien) : si restaurerSessionEtProfil() (progression.js)
+  // confirme une vraie session de compte, on saute direct au menu
+  // principal — même chemin que le raccourci #menu-principal en bas de
+  // ce script, réutilisé ici pour une reconnexion "silencieuse" plutôt
+  // que seulement au retour explicite depuis parcours.html.
+  // allerAuMenuPrincipal est une function declaration plus bas dans ce
+  // même script — hissée par le hoisting, donc utilisable ici sans
+  // problème (même principe déjà en place ailleurs dans ce fichier,
+  // voir demarrerReconnexionDepuisIndex()). N'affecte jamais un invité
+  // (sessionActuelle reste alors null, restaurerSessionEtProfil() ne
+  // change rien à l'affichage) — l'écran-titre continue de jouer tel
+  // quel dans tous les cas, non touché ici (choix délibéré de Raphaël,
+  // voir note plus haut).
+  (async function verifierReconnexionAutomatique() {
+    if (!window.KebBekProgression) return;
+    const session = await KebBekProgression.restaurerSessionEtProfil();
+    if (session) {
+      allerAuMenuPrincipal('retour');
+    }
+  })();
+
   // ================================================================
   // 19 langues : nom natif (affiché en priorité) + libellé français
   // (affiché en plus petit, sert aussi à la recherche). Le code est

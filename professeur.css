@@ -1,0 +1,162 @@
+/* ==================================================================
+   professeur.css — habillage du module professeur.js.
+
+   Réutilise le même langage visuel que menu-principal.css (palette
+   pêche/brun/beige, Baloo 2, ombres douces var(--ombre), boutons-pilules)
+   plutôt que d'introduire une esthétique parallèle pour cet outil, même
+   s'il n'est vu que par des comptes enseignant.
+   ================================================================== */
+
+.kbp-carte {
+  width: min(90vw, 380px);
+  background: #FFFFFF;
+  border-radius: 26px;
+  border: 2px solid var(--peche);
+  padding: 20px 18px 18px;
+  box-shadow: 8px 8px 26px var(--ombre, rgba(102, 80, 69, 0.16));
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  font-family: 'Baloo 2', sans-serif;
+}
+
+.kbp-entete {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.kbp-titre {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--brun-fonce, var(--brun));
+}
+
+.kbp-bouton-retour {
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 0.82rem;
+  border: 1.5px solid var(--peche);
+  border-radius: 999px;
+  padding: 7px 13px;
+  background: var(--fond);
+  color: var(--brun-fonce, var(--brun));
+  cursor: pointer;
+}
+.kbp-bouton-retour:hover { background: var(--peche-pale, rgba(240, 169, 139, 0.16)); }
+
+.kbp-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.kbp-section-cachee { display: none; }
+
+.kbp-etiquette {
+  font-weight: 700;
+  font-size: 0.8rem;
+  color: var(--brun-fonce, var(--brun));
+}
+
+.kbp-etiquette-inline {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 700;
+  font-size: 0.8rem;
+  color: var(--brun-fonce, var(--brun));
+}
+
+.kbp-champ {
+  font-family: inherit;
+  font-size: 0.88rem;
+  border: 1.5px solid var(--peche);
+  border-radius: 12px;
+  padding: 9px 12px;
+  background: var(--fond);
+  color: var(--brun-fonce, var(--brun));
+  width: 100%;
+  box-sizing: border-box;
+}
+.kbp-champ:focus { outline: 2px solid var(--peche-fonce); outline-offset: 1px; }
+
+.kbp-champ-note { resize: vertical; }
+
+.kbp-champ-court {
+  font-family: inherit;
+  font-size: 0.88rem;
+  border: 1.5px solid var(--peche);
+  border-radius: 10px;
+  padding: 7px 9px;
+  background: var(--fond);
+  color: var(--brun-fonce, var(--brun));
+  width: 68px;
+}
+
+.kbp-ligne-recherche {
+  display: flex;
+  gap: 8px;
+}
+.kbp-ligne-recherche .kbp-champ { flex: 1; }
+
+.kbp-ligne-valeurs {
+  display: flex;
+  gap: 18px;
+}
+
+.kbp-bouton-action {
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 0.85rem;
+  border: none;
+  border-radius: 999px;
+  padding: 10px 16px;
+  background: var(--peche-fonce);
+  color: #FFFFFF;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+}
+.kbp-bouton-action:hover:not(:disabled) { opacity: 0.88; }
+.kbp-bouton-action:disabled { opacity: 0.55; cursor: default; }
+
+.kbp-bouton-attribuer { width: 100%; margin-top: 4px; }
+
+.kbp-fiche-eleve {
+  background: var(--peche-pale, rgba(240, 169, 139, 0.16));
+  border-radius: 14px;
+  padding: 10px 14px;
+}
+.kbp-fiche-nom {
+  margin: 0 0 2px;
+  font-weight: 700;
+  font-size: 0.98rem;
+  color: var(--brun-fonce, var(--brun));
+}
+.kbp-fiche-detail {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--brun-clair, #8A7364);
+}
+
+.kbp-message {
+  margin: 0;
+  font-size: 0.8rem;
+  min-height: 1.1em;
+}
+.kbp-message-erreur { color: #b0402c; }
+.kbp-message-succes { color: #3d5c2c; font-weight: 700; }
+
+.kbp-erreur {
+  margin: 0;
+  font-size: 0.88rem;
+  color: var(--brun-fonce, var(--brun));
+  line-height: 1.4;
+}
+
+@media (max-width: 460px) {
+  .kbp-carte { padding: 16px 14px 14px; border-radius: 22px; }
+  .kbp-titre { font-size: 1rem; }
+}

@@ -98,6 +98,11 @@
           '<p class="kbp-message" id="kbpMessageRecherche"></p>' +
         '</div>' +
 
+        '<div class="kbp-section kbp-section-cachee" id="kbpSectionChoix">' +
+          '<p class="kbp-etiquette">Plusieurs \u00e9l\u00e8ves trouv\u00e9s pour ce courriel \u2014 choisis le bon :</p>' +
+          '<div class="kbp-liste-choix" id="kbpListeChoix"></div>' +
+        '</div>' +
+
         '<div class="kbp-section kbp-section-cachee" id="kbpSectionEleve">' +
           '<div class="kbp-fiche-eleve" id="kbpFicheEleve"></div>' +
 
@@ -149,13 +154,27 @@
     const champCourriel = document.getElementById('kbpCourriel');
     const messageRecherche = document.getElementById('kbpMessageRecherche');
     const sectionEleve = document.getElementById('kbpSectionEleve');
+    const sectionChoix = document.getElementById('kbpSectionChoix');
+    const listeChoix = document.getElementById('kbpListeChoix');
     const ficheEleve = document.getElementById('kbpFicheEleve');
     const btnChercher = document.getElementById('kbpBtnChercher');
 
+    // 🆕 lier_eleve_par_courriel retourne maintenant TOUS les profils
+    // d'un compte (SETOF eleves, voir migration du 13-08-2026) — un
+    // compte-parent avec plusieurs enfants n'a plus un profil choisi au
+    // hasard côté serveur. Trois cas à gérer ici : aucun résultat, un
+    // seul (comportement inchangé, sélection directe), ou plusieurs
+    // (nouvelle liste de choix — nécessaire aussi parce que deux profils
+    // peuvent partager le même prénom, voir échange avec Raphaël,
+    // session du 13-08-2026 : le prénom seul ne suffit pas à distinguer,
+    // d'où l'affichage de la date de création en plus dans la liste).
     async function chercherEleve() {
       const courriel = champCourriel.value.trim();
       messageRecherche.textContent = '';
       messageRecherche.className = 'kbp-message';
+      sectionChoix.classList.add('kbp-section-cachee');
+      sectionEleve.classList.add('kbp-section-cachee');
+      eleveTrouve = null;
       if (!courriel) {
         messageRecherche.textContent = 'Entre un courriel d\u2019abord.';
         messageRecherche.classList.add('kbp-message-erreur');
@@ -165,17 +184,23 @@
       btnChercher.textContent = 'Recherche\u2026';
       try {
         const { data, error } = await client.rpc('lier_eleve_par_courriel', { p_courriel_eleve: courriel });
-        if (error || !data) {
-          eleveTrouve = null;
-          sectionEleve.classList.add('kbp-section-cachee');
-          messageRecherche.textContent = '\u00c9l\u00e8ve introuvable pour ce courriel.';
+        if (error) {
+          messageRecherche.textContent = 'Erreur de recherche \u2014 r\u00e9essaie.';
           messageRecherche.classList.add('kbp-message-erreur');
           return;
         }
-        eleveTrouve = data;
-        rendreFicheEleve();
-        sectionEleve.classList.remove('kbp-section-cachee');
-        messageRecherche.textContent = '';
+        const profils = data || [];
+        if (profils.length === 0) {
+          messageRecherche.textContent = '\u00c9l\u00e8ve introuvable pour ce courriel.';
+          messageRecherche.classList.add('kbp-message-erreur');
+        } else if (profils.length === 1) {
+          eleveTrouve = profils[0];
+          rendreFicheEleve();
+          sectionEleve.classList.remove('kbp-section-cachee');
+        } else {
+          rendreListeChoix(profils);
+          sectionChoix.classList.remove('kbp-section-cachee');
+        }
       } catch (e) {
         console.warn('professeur.js : chercherEleve a \u00e9chou\u00e9.', e);
         messageRecherche.textContent = 'Erreur de recherche \u2014 r\u00e9essaie.';
@@ -189,6 +214,35 @@
     champCourriel.addEventListener('keydown', function (e) {
       if (e.key === 'Enter') chercherEleve();
     });
+
+    // Formatte une date ISO en jj/mm/aaaa, sobrement — assez pour
+    // distinguer deux profils du même prénom (« créé le 12/03/2026 »),
+    // pas une horloge précise dont personne n'a besoin ici.
+    function formaterDate(iso) {
+      if (!iso) return '';
+      const d = new Date(iso);
+      if (isNaN(d)) return '';
+      return String(d.getDate()).padStart(2, '0') + '/' + String(d.getMonth() + 1).padStart(2, '0') + '/' + d.getFullYear();
+    }
+
+    function rendreListeChoix(profils) {
+      listeChoix.innerHTML = '';
+      profils.forEach(function (p) {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'kbp-choix-item';
+        btn.innerHTML =
+          '<span class="kbp-choix-nom">' + (p.prenom || 'Sans pr\u00e9nom') + '</span>' +
+          '<span class="kbp-choix-detail">cr\u00e9\u00e9 le ' + formaterDate(p.cree_le) + ' \u00b7 niveau ' + (p.niveau != null ? p.niveau : '\u2014') + '</span>';
+        btn.addEventListener('click', function () {
+          eleveTrouve = p;
+          rendreFicheEleve();
+          sectionChoix.classList.add('kbp-section-cachee');
+          sectionEleve.classList.remove('kbp-section-cachee');
+        });
+        listeChoix.appendChild(btn);
+      });
+    }
 
     function rendreFicheEleve() {
       if (!eleveTrouve) return;

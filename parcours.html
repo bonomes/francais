@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="sac-a-dos.css">
+<link rel="stylesheet" href="widget-session-prof.css">
 <!-- Page à part entière (voir COMPTES_ELEVES_v10) : aucun état JS partagé
      avec index.html, donc son propre client Supabase — progression.js en
      crée un lui-même au premier appel qui en a besoin (voir
@@ -18,6 +19,11 @@
      #bandeauSessionEleve plus bas), pas seulement depuis une leçon.
      Réutilise progression.client comme les autres modules. -->
 <script src="session-classe.js"></script>
+<!-- 🆕 widget-session-prof.js (14-08-2026) — widget flottant "Cours en
+     direct" pour le prof, indépendant du bandeau élève ci-dessus (qui
+     lui reste masqué pour un compte prof, voir initBandeauSessionEleve).
+     Voir initProgressionReelle() plus bas pour son initialisation. -->
+<script src="widget-session-prof.js"></script>
 <style>
   /* ==================================================================
      Version « officielle » du prototype demo_parcours_v2.html.
@@ -2865,6 +2871,14 @@
   async function initProgressionReelle() {
     if (window.KebBekProgression) {
       await KebBekProgression.restaurerSessionEtProfil();
+    }
+
+    // 🆕 (14-08-2026) : widget flottant "Cours en direct" — ne s'affiche
+    // que pour un compte prof reconnu (garde interne, essayerModeProfesseur),
+    // aucun effet sinon. Pas de await, ne doit jamais retarder l'affichage
+    // du parcours pour l'écrasante majorité des comptes (élèves).
+    if (window.KebBekWidgetSessionProf) {
+      window.KebBekWidgetSessionProf.initialiser();
     }
 
     const [progression, recompenses] = await Promise.all([

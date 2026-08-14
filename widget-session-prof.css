@@ -143,6 +143,78 @@
 }
 .kbw-bouton-controle-actif:hover { background: var(--peche-fonce); opacity: 0.92; }
 
+.kbw-eleves {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.kbw-eleves-titre {
+  margin: 0;
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: var(--brun-clair, #8A7364);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+.kbw-eleves-vide {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--brun-clair, #8A7364);
+}
+.kbw-eleves-liste {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.kbw-eleve-item {
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 0.78rem;
+  border: 1.5px solid var(--peche);
+  border-radius: 999px;
+  padding: 6px 12px;
+  background: var(--fond);
+  color: var(--brun-fonce, var(--brun));
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.kbw-eleve-item:hover { background: var(--peche-pale, rgba(240, 169, 139, 0.16)); }
+.kbw-eleve-item-actif {
+  background: var(--peche-fonce);
+  border-color: var(--peche-fonce);
+  color: #FFFFFF;
+}
+
+.kbw-activite {
+  background: var(--peche-pale, rgba(240, 169, 139, 0.16));
+  border-radius: 14px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.kbw-activite-cachee { display: none; }
+.kbw-activite-entete {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.kbw-activite-nom {
+  margin: 0;
+  font-weight: 700;
+  font-size: 0.88rem;
+  color: var(--brun-fonce, var(--brun));
+}
+.kbw-activite-detail {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--brun-fonce, var(--brun));
+}
+
 .kbw-bouton-fermer-session {
   font-family: inherit;
   font-weight: 700;

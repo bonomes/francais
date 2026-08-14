@@ -2589,6 +2589,7 @@
         });
         chips.style.display = 'flex';
         marquerCarteResolue(carte, ex, 'difficile', false);
+        annoncerErreur(ex, saisieComplete); // 🆕 notification prof — voir sa note
       } else {
         feedback.className = 'exercice-feedback presque';
         feedback.textContent = motsAcquis.length ? texteInterface('feedbackPresque') : '';
@@ -2814,6 +2815,7 @@
         btnVerifierTexte.disabled = true;
         lienBascule.style.display = 'none';
         marquerCarteResolue(carte, ex, 'facile', false);
+        annoncerErreur(ex, texteBrutChoisi); // 🆕 notification prof — voir sa note
       } else {
         feedback.className = 'exercice-feedback presque';
         feedback.textContent = texteInterface('feedbackPresque');
@@ -3037,6 +3039,31 @@
     } else {
       minuteurReponseEnCours = setTimeout(envoyer, DELAI_MIN_PRESENCE - ecoule); // sinon, un seul envoi de rattrapage programmé (jamais deux minuteurs empilés)
     }
+  }
+
+  // 🆕 (14-08-2026, cinquième vague — "notification d'erreur", demande de
+  // Raphaël) : annonce au prof qu'un élève vient d'échouer un exercice
+  // (après ses deux essais, réponse révélée), avec la question ET les
+  // deux réponses (donnée / correcte) — pour qu'il puisse intervenir en
+  // connaissance de cause sans redemander à l'élève ce qu'il a répondu.
+  // Se greffe sur dernierEtatSession comme annoncerReponseEnCours (même
+  // raison : ne pas écraser page/section/étape), mais N'EST PAS soumis
+  // au même throttle : un échec est un événement ponctuel (un seul appel
+  // par exercice raté, jamais une rafale de frappes) — aucun risque de
+  // dépasser le débit Presence ici, voir la note juste au-dessus.
+  function annoncerErreur(ex, reponseDonnee) {
+    const sessionClasse = window.KebBekSessionClasse || null;
+    if (!sessionClasse) return;
+    sessionClasse.annoncerActivite(Object.assign({}, dernierEtatSession, {
+      exercice_id: ex.id,
+      question: texteExercice(ex),
+      reponse_en_cours: null,
+      erreur: {
+        reponse_donnee: (reponseDonnee || '').trim(),
+        reponse_correcte: ex.reponse.join(' '),
+        ts: Date.now()
+      }
+    }));
   }
 
   // Amène l'élève directement à l'étape indexCible du dialogue, en

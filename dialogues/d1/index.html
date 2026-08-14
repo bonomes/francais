@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../../sac-a-dos.css">
+<link rel="stylesheet" href="../../widget-session-prof.css">
 <!-- Page à part entière, même situation que parcours.html/intro-bonomes.html
      (voir COMPTES_ELEVES_v10/v11) : aucun état JS partagé avec index.html,
      donc son propre client Supabase — progression.js en crée un lui-même
@@ -17,6 +18,11 @@
      voir sa propre note de tête. Chargé ici comme progression.js (même
      patron) — page à part entière, aucun état JS partagé avec index.html. -->
 <script src="../../session-classe.js"></script>
+<!-- 🆕 widget-session-prof.js (14-08-2026) — widget flottant "Cours en
+     direct" pour le prof, indépendant du reste de la navigation partagée
+     ci-dessus. Voir restaurationSessionPromesse.then(...) plus bas pour
+     son initialisation. -->
+<script src="../../widget-session-prof.js"></script>
 <style>
   /* ==================================================================
      dialogue-d1.html — PREMIÈRE vraie leçon de dialogue du site (id
@@ -998,6 +1004,15 @@
   let restaurationSessionPromesse = window.KebBekProgression
     ? KebBekProgression.restaurerSessionEtProfil()
     : Promise.resolve();
+
+  // 🆕 (14-08-2026) : widget flottant "Cours en direct" — .then() plutôt
+  // qu'un await bloquant ici, pour ne retarder aucun des multiples appels
+  // qui attendent déjà restaurationSessionPromesse plus bas dans ce
+  // fichier. Ne s'affiche que pour un compte prof reconnu (garde interne,
+  // essayerModeProfesseur), aucun effet sinon.
+  restaurationSessionPromesse.then(function () {
+    if (window.KebBekWidgetSessionProf) window.KebBekWidgetSessionProf.initialiser();
+  });
 
   // ================================================================
   // Contenu du dialogue — confirmé par Raphaël (session du 08-08-2026).

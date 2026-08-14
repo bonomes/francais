@@ -586,6 +586,48 @@
     }
   }
 
+  // ---------- Mode professeur ----------
+  //
+  // 🆕 AJOUT (session du 13-08-2026) — premier maillon du mode professeur
+  // (voir menu-principal.js, entrée « Mode professeur » ajoutée le même
+  // jour, affichée conditionnellement selon le résultat de cette fonction).
+  //
+  // Principe : la table enseignants_autorises (liste blanche) n'est PAS
+  // lisible côté client (RLS fermée, même philosophie que toutes les
+  // autres tables sensibles de ce projet) — il n'y a donc aucun moyen de
+  // "vérifier si ce compte est prof" par une simple lecture. La seule
+  // façon de le savoir est de TENTER l'action réservée aux profs
+  // elle-même : creer_profil_enseignant() (SECURITY DEFINER) consulte la
+  // liste blanche server-side et échoue proprement si le courriel du
+  // compte connecté n'y figure pas. Un échec ici n'est donc PAS une
+  // erreur au sens habituel de ce module (pas de console.warn) — c'est
+  // la réponse normale et attendue pour n'importe quel compte élève, qui
+  // constitue l'immense majorité des appels.
+  //
+  // Idempotente côté serveur (comme creer_profil_enseignant est censée
+  // l'être — à confirmer côté SQL si ce n'est pas déjà le cas) : rappeler
+  // cette fonction pour un compte déjà reconnu comme enseignant ne doit
+  // pas dupliquer de ligne, juste renvoyer le profil existant.
+  //
+  // Ne fait RIEN en mode invité (pas de session = jamais un prof) — sort
+  // immédiatement, même philosophie que attribuerRecompensePremiereFois().
+  //
+  // Retourne { id, courriel, cree_le } si le compte est prof, null sinon
+  // — jamais d'exception qui remonte à l'appelant (menu-principal.js
+  // attrape déjà silencieusement, mais on ne fait pas reposer la sûreté
+  // uniquement sur l'appelant).
+  async function essayerModeProfesseur() {
+    if (!sessionActuelle || !clientSupabase) return null;
+    try {
+      const { data, error } = await clientSupabase.rpc('creer_profil_enseignant');
+      if (error) return null; // pas un compte prof — cas normal, pas un warn
+      return data || null;
+    } catch (e) {
+      console.warn('progression.js : essayerModeProfesseur a échoué (réseau).', e);
+      return null;
+    }
+  }
+
   window.KebBekProgression = {
     initSession,
     definirClient,
@@ -607,6 +649,7 @@
     lireSolde,
     enregistrerIdentite,
     migrerIdentiteInviteVersCompte,
+    essayerModeProfesseur,
     get client() { return clientSupabase; },
     get session() { return sessionActuelle; },
     get profilActifId() { return profilActifId; },

@@ -20,6 +20,7 @@
 <link rel="stylesheet" href="identite-eleve.css?v=2">
 <link rel="stylesheet" href="menu-principal.css">
 <link rel="stylesheet" href="professeur.css">
+<link rel="stylesheet" href="widget-session-prof.css">
 <style>
   /* ==================================================================
      index.html — page d'accueil officielle du site (voir BONOMES_v61,
@@ -1015,6 +1016,11 @@
      sur la ligne sessions_classe, pas de canal broadcast manuel). -->
 <script src="session-classe.js"></script>
 <script src="professeur.js"></script>
+<!-- 🆕 (14-08-2026) Widget flottant "Cours en direct" (widget-session-prof.js)
+     — présent sur toutes les pages qui le chargent, pas seulement cet
+     écran "Mode professeur" ; voir allerAuMenuPrincipal() plus bas pour
+     son initialisation. -->
+<script src="widget-session-prof.js"></script>
 
 <script>
   // ================================================================
@@ -1474,6 +1480,15 @@
       await KebBekProgression.restaurerSessionEtProfil();
     }
 
+    // 🆕 (14-08-2026) : widget flottant "Cours en direct" — s'affiche de
+    // lui-même seulement si le compte est un prof reconnu (voir sa
+    // propre garde interne, essayerModeProfesseur), sinon ne fait rien.
+    // Pas de await : ne doit jamais retarder l'affichage du menu pour
+    // l'écrasante majorité des comptes (élèves) qui n'en ont aucun besoin.
+    if (window.KebBekWidgetSessionProf) {
+      window.KebBekWidgetSessionProf.initialiser();
+    }
+
     KebBekMenu.demarrerMenuPrincipal('menuPrincipal', {
       onHistoires: function () { window.location.href = 'parcours.html'; },
       onPrives: function () { window.location.href = 'cours-prives/'; },
@@ -1504,10 +1519,15 @@
   function allerAuModeProfesseur() {
     document.getElementById('menuPrincipal').style.display = 'none';
     document.getElementById('ecranProfesseur').style.display = '';
+    // 🆕 (14-08-2026) : l'écran Mode professeur a déjà sa propre section
+    // "Session de classe" — le widget flottant ferait doublon pendant
+    // qu'il est affiché, on le masque simplement le temps de l'écran.
+    if (window.KebBekWidgetSessionProf) window.KebBekWidgetSessionProf.masquer();
     KebBekProfesseur.demarrerEcranProfesseur('ecranProfesseur', {
       onRetour: function () {
         document.getElementById('ecranProfesseur').style.display = 'none';
         document.getElementById('menuPrincipal').style.display = '';
+        if (window.KebBekWidgetSessionProf) window.KebBekWidgetSessionProf.afficher();
       }
     });
   }

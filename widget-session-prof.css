@@ -158,6 +158,11 @@
   flex-direction: column;
   gap: 6px;
 }
+.kbw-eleves-entete {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
 .kbw-eleves-titre {
   margin: 0;
   font-size: 0.76rem;
@@ -171,31 +176,80 @@
   font-size: 0.8rem;
   color: var(--brun-clair, #8A7364);
 }
-.kbw-eleves-liste {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-wrap: wrap;
+
+/* 🆕 (14-08-2026, sixième vague — "discussion de groupe") : grille montrant
+   tous les élèves connectés en même temps, avec un aperçu de ce qu'ils
+   écrivent — remplace l'ancienne liste de pastilles à cliquer une par
+   une. auto-fill plutôt qu'un nombre de colonnes fixe : le widget
+   lui-même est étroit (min(86vw, 300px), voir #kbwWidget .kbw-panneau),
+   donc 2 colonnes est le cas courant, 1 seule sur les plus petits écrans
+   — sans média-requête dédiée, juste la largeur minimale des tuiles. */
+.kbw-grille-eleves {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(118px, 1fr));
   gap: 6px;
 }
-.kbw-eleve-item {
+.kbw-tuile-eleve {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
   font-family: inherit;
-  font-weight: 700;
-  font-size: 0.78rem;
   border: 1.5px solid var(--peche);
-  border-radius: 999px;
-  padding: 6px 12px;
+  border-radius: 12px;
+  padding: 7px 10px;
   background: var(--fond);
   color: var(--brun-fonce, var(--brun));
   cursor: pointer;
+  text-align: left;
   transition: background 0.15s ease, color 0.15s ease;
 }
-.kbw-eleve-item:hover { background: var(--peche-pale, rgba(240, 169, 139, 0.16)); }
-.kbw-eleve-item-actif {
+.kbw-tuile-eleve:hover { background: var(--peche-pale, rgba(240, 169, 139, 0.16)); }
+.kbw-tuile-eleve-actif {
   background: var(--peche-fonce);
   border-color: var(--peche-fonce);
   color: #FFFFFF;
+}
+.kbw-tuile-nom {
+  font-weight: 700;
+  font-size: 0.78rem;
+}
+.kbw-tuile-apercu {
+  font-size: 0.7rem;
+  line-height: 1.25;
+  opacity: 0.85;
+  /* Aperçu volontairement tronqué (2 lignes max) — la tuile reste
+     compacte, le détail complet vient au clic (panneau kbw-activite). */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Badges d'erreur non consultée — pastille rouge, ronde, avec le compte.
+   Deux usages : sur une tuile individuelle (coin supérieur droit) et dans
+   l'en-tête "Élèves connectés" (total, toutes tuiles confondues). */
+.kbw-badge-erreurs {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 17px;
+  height: 17px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: #b0402c;
+  color: #FFFFFF;
+  font-size: 0.68rem;
+  font-weight: 700;
+  line-height: 1;
+}
+.kbw-badge-cachee { display: none; }
+.kbw-badge-tuile {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  box-shadow: 0 0 0 2px #FFFFFF;
 }
 
 .kbw-activite {
@@ -219,12 +273,57 @@
   font-size: 0.88rem;
   color: var(--brun-fonce, var(--brun));
 }
+.kbw-activite-question {
+  margin: 0;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--brun-fonce, var(--brun));
+}
 .kbw-activite-detail {
   margin: 0;
   font-size: 0.8rem;
   color: var(--brun-fonce, var(--brun));
   white-space: pre-wrap;
   overflow-wrap: break-word;
+}
+
+/* 🆕 (14-08-2026, sixième vague — "notification d'erreur") : historique
+   des exercices ratés pour l'élève actuellement consulté, question +
+   réponse fautive → réponse correcte. Fond légèrement rougi pour se
+   distinguer visuellement du reste du panneau (même intention que
+   .kbw-message-erreur ailleurs dans ce fichier), sans être alarmant. */
+.kbw-erreurs {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.kbw-erreur-carte {
+  background: rgba(176, 64, 44, 0.08);
+  border: 1px solid rgba(176, 64, 44, 0.25);
+  border-radius: 10px;
+  padding: 7px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.kbw-erreur-question {
+  margin: 0;
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: var(--brun-fonce, var(--brun));
+}
+.kbw-erreur-reponses {
+  margin: 0;
+  font-size: 0.76rem;
+  color: var(--brun-fonce, var(--brun));
+}
+.kbw-erreur-fautive {
+  color: #b0402c;
+  text-decoration: line-through;
+}
+.kbw-erreur-correcte {
+  color: #3d5c2c;
+  font-weight: 700;
 }
 
 .kbw-bouton-fermer-session {

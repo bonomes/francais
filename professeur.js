@@ -6,20 +6,38 @@
    hôte uniquement via callbacks — ce module ne navigue nulle part
    lui-même et ne connaît rien de la structure de la page.
 
-   Ce que fait cet écran (premier jet, session du 13-08-2026) :
-     1. Recherche d'un élève par courriel de compte (lier_eleve_par_courriel)
-        — retourne la ligne eleves si trouvée, sinon message clair (élève
-        introuvable, ou courriel appartenant à plusieurs profils — cas
-        "un parent, plusieurs enfants", pas géré ici pour l'instant, voir
-        note plus bas).
-     2. Attribution d'un succès à l'élève trouvé (attribuer_recompense_enseignant)
-        — liste de succès CODÉE EN DUR (SUCCES_DISPONIBLES ci-dessous),
-        décision de Raphaël (session du 13-08-2026) : le catalogue de
-        succès grandit "au cas par cas", en parallèle des leçons, au même
-        rythme que le code front — une vraie table Supabase serait un
-        aller-retour de plus à chaque nouvelle leçon, pour un gain nul
-        tant que la liste reste courte. Migrer vers une table si/quand
-        cette liste devient longue (30-40+ entrées).
+   Ce que fait cet écran :
+     1. Recherche par courriel de compte (lier_eleve_par_courriel, retourne
+        TOUS les profils élèves de ce compte — un compte-parent peut en
+        avoir plusieurs, voir migration Supabase du 13-08-2026).
+     2. Sélection d'UN OU PLUSIEURS profils parmi les résultats — cases à
+        cocher (🆕 session du 13-08-2026, demande de Raphaël) : utile à la
+        fois pour "un compte, plusieurs enfants" ET pour "une classe de
+        plusieurs élèves reçoit le même succès en même temps" (dans ce
+        second cas, en pratique, le prof fait une recherche par courriel
+        pour chaque élève avant de les avoir tous dans la sélection —
+        cet écran ne cherche qu'un compte à la fois, voir limite plus
+        bas). Un seul profil trouvé = sélectionné automatiquement, aucun
+        clic de plus requis (cas le plus fréquent).
+     3. Attribution d'un succès à TOUS les profils sélectionnés d'un coup
+        (attribuer_recompense_enseignant, une fois par profil) — liste de
+        succès CODÉE EN DUR (SUCCES_DISPONIBLES ci-dessous), décision de
+        Raphaël (session du 13-08-2026) : le catalogue grandit "au cas
+        par cas", en parallèle des leçons, au même rythme que le code
+        front — une vraie table Supabase serait un aller-retour de plus
+        à chaque nouvelle leçon, pour un gain nul tant que la liste reste
+        courte. Migrer vers une table si/quand elle devient longue
+        (30-40+ entrées).
+
+   ⚠️ LIMITE CONNUE : la sélection multiple ne couvre que les profils
+   d'UN SEUL courriel recherché à la fois — pas encore un "panier" qui
+   accumulerait des élèves de plusieurs courriels différents d'une
+   recherche à l'autre. Pour une classe de plusieurs FAMILLES différentes
+   recevant le même succès, il faut donc répéter recherche+attribution
+   par courriel pour l'instant. Un vrai panier cumulatif entre recherches
+   est possible plus tard si ce besoin devient fréquent en pratique — pas
+   construit maintenant, pour ne pas complexifier un premier jet avant de
+   savoir si c'est vraiment nécessaire.
 
    Suppose window.KebBekProgression (progression.js) déjà chargé ET déjà
    authentifié comme compte enseignant reconnu (voir essayerModeProfesseur
@@ -29,29 +47,11 @@
    nouveau. Si progression absent ou pas de session : rend un message
    d'erreur sobre plutôt qu'un écran cassé (même philosophie que le mode
    dégradé de menu-principal.js).
-
-   ⚠️ POINT OUVERT — "un parent, plusieurs enfants" (voir COMPTES_ELEVES) :
-   lier_eleve_par_courriel(p_courriel_eleve) prend le courriel du COMPTE,
-   pas de l'élève individuellement, et retourne UNE seule ligne eleves
-   côté SQL (retour USER-DEFINED eleves, pas SETOF). Si un compte a
-   plusieurs profils élèves, le comportement exact (quel profil revient ?)
-   dépend de la fonction SQL elle-même, pas de ce module — à vérifier
-   côté Raphaël si ce cas se présente en pratique. Pas bloquant pour
-   l'instant (aucun compte multi-profils dans les données actuelles).
    ================================================================== */
 
 (function () {
 
   // ---------- Catalogue des succès (codé en dur, voir note en tête) ----------
-  // Chaque entrée : id (correspond au succes_id stocké côté Supabase,
-  // texte libre — AUCUNE validation serveur ne garantit la cohérence,
-  // donc cette liste EST la source de vérité), nom affiché, et valeurs
-  // par défaut de récompense (modifiables par le prof avant d'attribuer,
-  // les paramètres p_piasses/p_points_bonis de attribuer_recompense_enseignant
-  // acceptent n'importe quelle valeur, pas seulement ces défauts).
-  //
-  // 🆕 Ajouter une entrée ici à chaque nouvelle leçon qui introduit un
-  // nouveau succès — même geste que l'ajout de la leçon elle-même.
   const SUCCES_DISPONIBLES = [
     { id: 'd1_clic_sandwich', nom: 'D1 — A trouvé le sandwich', piasses: 5, pointsBonis: 0 }
   ];
@@ -99,12 +99,13 @@
         '</div>' +
 
         '<div class="kbp-section kbp-section-cachee" id="kbpSectionChoix">' +
-          '<p class="kbp-etiquette">Plusieurs \u00e9l\u00e8ves trouv\u00e9s pour ce courriel \u2014 choisis le bon :</p>' +
+          '<p class="kbp-etiquette">Plusieurs profils trouv\u00e9s pour ce courriel \u2014 coche celui ou ceux \u00e0 s\u00e9lectionner :</p>' +
           '<div class="kbp-liste-choix" id="kbpListeChoix"></div>' +
+          '<button type="button" class="kbp-bouton-action" id="kbpBtnConfirmerChoix">Confirmer la s\u00e9lection</button>' +
         '</div>' +
 
         '<div class="kbp-section kbp-section-cachee" id="kbpSectionEleve">' +
-          '<div class="kbp-fiche-eleve" id="kbpFicheEleve"></div>' +
+          '<div class="kbp-fiches-eleves" id="kbpFichesEleves"></div>' +
 
           '<label class="kbp-etiquette" for="kbpSucces">Succ\u00e8s \u00e0 attribuer</label>' +
           '<select id="kbpSucces" class="kbp-champ"></select>' +
@@ -149,32 +150,24 @@
     selectSucces.addEventListener('change', appliquerDefautsSucces);
     if (SUCCES_DISPONIBLES.length > 0) appliquerDefautsSucces();
 
-    // ---------- Recherche élève ----------
-    let eleveTrouve = null; // { id, prenom, niveau, piasses, points_bonis, ... }
+    // ---------- Recherche + sélection (0, 1, ou plusieurs profils) ----------
+    let eleveSelection = []; // tableau de profils eleves sélectionnés — jamais un seul objet, même quand il n'y en a qu'un, pour que l'attribution n'ait qu'un seul chemin de code (une boucle) au lieu de deux.
     const champCourriel = document.getElementById('kbpCourriel');
     const messageRecherche = document.getElementById('kbpMessageRecherche');
     const sectionEleve = document.getElementById('kbpSectionEleve');
     const sectionChoix = document.getElementById('kbpSectionChoix');
     const listeChoix = document.getElementById('kbpListeChoix');
-    const ficheEleve = document.getElementById('kbpFicheEleve');
+    const fichesEleves = document.getElementById('kbpFichesEleves');
     const btnChercher = document.getElementById('kbpBtnChercher');
+    const btnConfirmerChoix = document.getElementById('kbpBtnConfirmerChoix');
 
-    // 🆕 lier_eleve_par_courriel retourne maintenant TOUS les profils
-    // d'un compte (SETOF eleves, voir migration du 13-08-2026) — un
-    // compte-parent avec plusieurs enfants n'a plus un profil choisi au
-    // hasard côté serveur. Trois cas à gérer ici : aucun résultat, un
-    // seul (comportement inchangé, sélection directe), ou plusieurs
-    // (nouvelle liste de choix — nécessaire aussi parce que deux profils
-    // peuvent partager le même prénom, voir échange avec Raphaël,
-    // session du 13-08-2026 : le prénom seul ne suffit pas à distinguer,
-    // d'où l'affichage de la date de création en plus dans la liste).
     async function chercherEleve() {
       const courriel = champCourriel.value.trim();
       messageRecherche.textContent = '';
       messageRecherche.className = 'kbp-message';
       sectionChoix.classList.add('kbp-section-cachee');
       sectionEleve.classList.add('kbp-section-cachee');
-      eleveTrouve = null;
+      eleveSelection = [];
       if (!courriel) {
         messageRecherche.textContent = 'Entre un courriel d\u2019abord.';
         messageRecherche.classList.add('kbp-message-erreur');
@@ -194,10 +187,14 @@
           messageRecherche.textContent = '\u00c9l\u00e8ve introuvable pour ce courriel.';
           messageRecherche.classList.add('kbp-message-erreur');
         } else if (profils.length === 1) {
-          eleveTrouve = profils[0];
-          rendreFicheEleve();
+          // Un seul profil : sélection directe, aucun clic de plus.
+          eleveSelection = [profils[0]];
+          rendreFichesEleves();
           sectionEleve.classList.remove('kbp-section-cachee');
         } else {
+          // Plusieurs profils (parent, plusieurs enfants) : cases à
+          // cocher — toutes décochées par défaut, le prof choisit qui
+          // reçoit l'attribution (un seul enfant, ou les deux à la fois).
           rendreListeChoix(profils);
           sectionChoix.classList.remove('kbp-section-cachee');
         }
@@ -227,38 +224,60 @@
 
     function rendreListeChoix(profils) {
       listeChoix.innerHTML = '';
-      profils.forEach(function (p) {
-        const btn = document.createElement('button');
-        btn.type = 'button';
-        btn.className = 'kbp-choix-item';
-        btn.innerHTML =
-          '<span class="kbp-choix-nom">' + (p.prenom || 'Sans pr\u00e9nom') + '</span>' +
-          '<span class="kbp-choix-detail">cr\u00e9\u00e9 le ' + formaterDate(p.cree_le) + ' \u00b7 niveau ' + (p.niveau != null ? p.niveau : '\u2014') + '</span>';
-        btn.addEventListener('click', function () {
-          eleveTrouve = p;
-          rendreFicheEleve();
-          sectionChoix.classList.add('kbp-section-cachee');
-          sectionEleve.classList.remove('kbp-section-cachee');
-        });
-        listeChoix.appendChild(btn);
+      profils.forEach(function (p, i) {
+        const idCase = 'kbpChoix' + i;
+        const item = document.createElement('label');
+        item.className = 'kbp-choix-item';
+        item.setAttribute('for', idCase);
+        item.innerHTML =
+          '<input type="checkbox" id="' + idCase + '" class="kbp-choix-case" data-index="' + i + '">' +
+          '<span class="kbp-choix-texte">' +
+            '<span class="kbp-choix-nom">' + (p.prenom || 'Sans pr\u00e9nom') + '</span>' +
+            '<span class="kbp-choix-detail">cr\u00e9\u00e9 le ' + formaterDate(p.cree_le) + ' \u00b7 niveau ' + (p.niveau != null ? p.niveau : '\u2014') + '</span>' +
+          '</span>';
+        listeChoix.appendChild(item);
       });
+      // Stocké sur l'élément pour que btnConfirmerChoix retrouve les
+      // profils correspondant aux cases cochées sans dépendance externe.
+      listeChoix._profils = profils;
     }
 
-    function rendreFicheEleve() {
-      if (!eleveTrouve) return;
-      ficheEleve.innerHTML =
-        '<p class="kbp-fiche-nom">' + (eleveTrouve.prenom || 'Sans pr\u00e9nom') + '</p>' +
-        '<p class="kbp-fiche-detail">Niveau ' + (eleveTrouve.niveau != null ? eleveTrouve.niveau : '\u2014') +
-          ' \u00b7 ' + (eleveTrouve.piasses != null ? eleveTrouve.piasses : 0) + ' P$' +
-          ' \u00b7 ' + (eleveTrouve.points_bonis != null ? eleveTrouve.points_bonis : 0) + ' PB</p>';
+    btnConfirmerChoix.addEventListener('click', function () {
+      const profils = listeChoix._profils || [];
+      const cases = listeChoix.querySelectorAll('.kbp-choix-case:checked');
+      if (cases.length === 0) {
+        messageRecherche.textContent = 'Coche au moins un profil.';
+        messageRecherche.classList.add('kbp-message-erreur');
+        return;
+      }
+      eleveSelection = Array.prototype.map.call(cases, function (c) {
+        return profils[parseInt(c.dataset.index, 10)];
+      });
+      messageRecherche.textContent = '';
+      rendreFichesEleves();
+      sectionChoix.classList.add('kbp-section-cachee');
+      sectionEleve.classList.remove('kbp-section-cachee');
+    });
+
+    // Affiche une petite fiche par profil sélectionné (nom + solde) —
+    // plusieurs cartes empilées si sélection multiple, une seule sinon.
+    function rendreFichesEleves() {
+      fichesEleves.innerHTML = eleveSelection.map(function (el) {
+        return '<div class="kbp-fiche-eleve" data-eleve-id="' + el.id + '">' +
+          '<p class="kbp-fiche-nom">' + (el.prenom || 'Sans pr\u00e9nom') + '</p>' +
+          '<p class="kbp-fiche-detail">Niveau ' + (el.niveau != null ? el.niveau : '\u2014') +
+            ' \u00b7 ' + (el.piasses != null ? el.piasses : 0) + ' P$' +
+            ' \u00b7 ' + (el.points_bonis != null ? el.points_bonis : 0) + ' PB</p>' +
+        '</div>';
+      }).join('');
     }
 
-    // ---------- Attribution ----------
+    // ---------- Attribution (à tous les profils sélectionnés) ----------
     const btnAttribuer = document.getElementById('kbpBtnAttribuer');
     const messageAttribution = document.getElementById('kbpMessageAttribution');
 
     btnAttribuer.addEventListener('click', async function () {
-      if (!eleveTrouve) return;
+      if (eleveSelection.length === 0) return;
       const succesId = selectSucces.value;
       const piasses = parseInt(document.getElementById('kbpPiasses').value, 10) || 0;
       const pointsBonis = parseInt(document.getElementById('kbpPointsBonis').value, 10) || 0;
@@ -267,35 +286,57 @@
       messageAttribution.textContent = '';
       messageAttribution.className = 'kbp-message';
       btnAttribuer.disabled = true;
-      btnAttribuer.textContent = 'Attribution\u2026';
-      try {
-        const { data, error } = await client.rpc('attribuer_recompense_enseignant', {
-          p_eleve_id: eleveTrouve.id,
-          p_succes_id: succesId,
-          p_piasses: piasses,
-          p_points_bonis: pointsBonis,
-          p_note: note
-        });
-        if (error || !data) {
-          messageAttribution.textContent = 'L\u2019attribution a \u00e9chou\u00e9 \u2014 r\u00e9essaie.';
-          messageAttribution.classList.add('kbp-message-erreur');
-          return;
+      btnAttribuer.textContent = eleveSelection.length > 1 ? 'Attribution\u2026 (0/' + eleveSelection.length + ')' : 'Attribution\u2026';
+
+      // Une attribution par profil sélectionné, en séquence (pas en
+      // parallèle) — pour pouvoir afficher une vraie progression sur un
+      // groupe (« 3/12 ») et éviter de saturer l'API si un jour une
+      // classe entière est sélectionnée. Chaque échec individuel est
+      // compté séparément : un profil qui échoue n'empêche pas les
+      // suivants d'être traités.
+      let reussites = 0;
+      const echecs = [];
+      for (let i = 0; i < eleveSelection.length; i++) {
+        const el = eleveSelection[i];
+        try {
+          const { data, error } = await client.rpc('attribuer_recompense_enseignant', {
+            p_eleve_id: el.id,
+            p_succes_id: succesId,
+            p_piasses: piasses,
+            p_points_bonis: pointsBonis,
+            p_note: note
+          });
+          if (error || !data) {
+            echecs.push(el.prenom || el.id);
+          } else {
+            el.piasses = (el.piasses || 0) + piasses;
+            el.points_bonis = (el.points_bonis || 0) + pointsBonis;
+            reussites++;
+          }
+        } catch (e) {
+          console.warn('professeur.js : attribution a \u00e9chou\u00e9 pour', el.id, e);
+          echecs.push(el.prenom || el.id);
         }
-        // Mise à jour optimiste des soldes affichés — pas de nouvel aller-
-        // retour réseau juste pour ça, le prof voit l'effet immédiatement.
-        eleveTrouve.piasses = (eleveTrouve.piasses || 0) + piasses;
-        eleveTrouve.points_bonis = (eleveTrouve.points_bonis || 0) + pointsBonis;
-        rendreFicheEleve();
-        messageAttribution.textContent = 'Succ\u00e8s attribu\u00e9 \u2713';
-        messageAttribution.classList.add('kbp-message-succes');
-      } catch (e) {
-        console.warn('professeur.js : attribution a \u00e9chou\u00e9.', e);
-        messageAttribution.textContent = 'Erreur \u2014 r\u00e9essaie.';
-        messageAttribution.classList.add('kbp-message-erreur');
-      } finally {
-        btnAttribuer.disabled = false;
-        btnAttribuer.textContent = 'Attribuer';
+        if (eleveSelection.length > 1) {
+          btnAttribuer.textContent = 'Attribution\u2026 (' + (i + 1) + '/' + eleveSelection.length + ')';
+        }
       }
+
+      rendreFichesEleves();
+      if (echecs.length === 0) {
+        messageAttribution.textContent = reussites > 1
+          ? 'Succ\u00e8s attribu\u00e9 \u00e0 ' + reussites + ' \u00e9l\u00e8ves \u2713'
+          : 'Succ\u00e8s attribu\u00e9 \u2713';
+        messageAttribution.classList.add('kbp-message-succes');
+      } else if (reussites === 0) {
+        messageAttribution.textContent = 'L\u2019attribution a \u00e9chou\u00e9 \u2014 r\u00e9essaie.';
+        messageAttribution.classList.add('kbp-message-erreur');
+      } else {
+        messageAttribution.textContent = reussites + ' r\u00e9ussie(s), \u00e9chec pour : ' + echecs.join(', ');
+        messageAttribution.classList.add('kbp-message-erreur');
+      }
+      btnAttribuer.disabled = false;
+      btnAttribuer.textContent = 'Attribuer';
     });
   }
 

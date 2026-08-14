@@ -240,6 +240,7 @@
     }
     sessionActuelle = null;
     profilActifId = null;
+    profilProfCache = null; // voir sa propre note plus bas — jamais réutiliser le profil prof d'un compte qu'on vient de quitter
     try { localStorage.removeItem(CLE_DERNIER_PROFIL); } catch (e) {}
   }
 
@@ -616,16 +617,38 @@
   // — jamais d'exception qui remonte à l'appelant (menu-principal.js
   // attrape déjà silencieusement, mais on ne fait pas reposer la sûreté
   // uniquement sur l'appelant).
+  // 🆕 (14-08-2026, suite) : mémorisation par utilisateur — plusieurs
+  // appelants sur la même page (menu-principal.js pour afficher le
+  // bouton "Mode professeur", widget-session-prof.js pour savoir s'il
+  // doit s'afficher) posaient chacun leur propre aller-retour réseau
+  // identique. Ici, un seul appel RPC par utilisateur connecté est
+  // fait, sa Promise est partagée avec quiconque rappelle
+  // essayerModeProfesseur() pendant que ce même utilisateur est
+  // connecté — invalidée dans deconnecter() ci-dessus (ligne
+  // profilProfCache = null), jamais à chaque restaurerSessionEtProfil()
+  // (qui, lui, est rappelé par CHAQUE module qui en a besoin — annuler
+  // le cache à ce moment-là aurait défait la mémorisation pour le
+  // deuxième appelant).
+  let profilProfCache = null; // { userId, promise } | null
+
   async function essayerModeProfesseur() {
     if (!sessionActuelle || !clientSupabase) return null;
-    try {
-      const { data, error } = await clientSupabase.rpc('creer_profil_enseignant');
-      if (error) return null; // pas un compte prof — cas normal, pas un warn
-      return data || null;
-    } catch (e) {
-      console.warn('progression.js : essayerModeProfesseur a échoué (réseau).', e);
-      return null;
+    const userId = sessionActuelle.user && sessionActuelle.user.id;
+    if (profilProfCache && profilProfCache.userId === userId) {
+      return profilProfCache.promise;
     }
+    const promesse = (async function () {
+      try {
+        const { data, error } = await clientSupabase.rpc('creer_profil_enseignant');
+        if (error) return null; // pas un compte prof — cas normal, pas un warn
+        return data || null;
+      } catch (e) {
+        console.warn('progression.js : essayerModeProfesseur a échoué (réseau).', e);
+        return null;
+      }
+    })();
+    profilProfCache = { userId: userId, promise: promesse };
+    return promesse;
   }
 
   window.KebBekProgression = {

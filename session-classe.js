@@ -205,28 +205,55 @@
       return false;
     }
 
+    // 🐛 CORRIGÉ (14-08-2026, troisième passe — diagnostiqué en test réel) :
+    // remplacé postgres_changes par Broadcast depuis la base. postgres_changes
+    // livrait systématiquement "errors: 401 Unauthorized" (new/old vides)
+    // malgré RLS/JWT/publication tous corrects — comportement documenté par
+    // Supabase elle-même comme la raison de préférer Broadcast aujourd'hui.
+    // Voir mettre_a_jour_session_classe / fermer_session_classe (SQL) pour
+    // le realtime.send() correspondant, et la policy RLS sur
+    // realtime.messages qui autorise sa réception.
+    try {
+      const { data: sessionAuth } = await c.auth.getSession();
+      if (sessionAuth && sessionAuth.session) {
+        await c.realtime.setAuth(sessionAuth.session.access_token);
+      }
+    } catch (e) {
+      console.warn('session-classe.js : setAuth Realtime a échoué — abonnement tenté quand même.', e);
+    }
+
+    let session;
+    try {
+      const { data, error } = await c.rpc('rejoindre_session_classe', { p_code: code });
+      if (error || !data) {
+        if (typeof callbacks.onErreur === 'function') callbacks.onErreur();
+        return false;
+      }
+      session = data;
+    } catch (e) {
+      console.warn('session-classe.js : rejoindreSession a échoué (réseau).', e);
+      if (typeof callbacks.onErreur === 'function') callbacks.onErreur();
+      return false;
+    }
+
     const canal = c
-      .channel('session_classe_' + session.id)
-      .on(
-        'postgres_changes',
-        { event: 'UPDATE', schema: 'public', table: 'sessions_classe', filter: 'id=eq.' + session.id },
-        function (payload) {
-          console.log('session-classe.js [diagnostic] : événement postgres_changes reçu.', payload);
-          const nouvelle = payload.new;
-          if (!nouvelle.active) {
-            quitterSession();
-            if (typeof callbacks.onFermee === 'function') callbacks.onFermee();
-            return;
-          }
-          if (typeof callbacks.onEtat === 'function') callbacks.onEtat(nouvelle);
+      .channel('session_classe:' + session.id, { config: { private: true } })
+      .on('broadcast', { event: 'maj' }, function (message) {
+        const maj = message.payload || {};
+        if (maj.active === false) {
+          quitterSession();
+          if (typeof callbacks.onFermee === 'function') callbacks.onFermee();
+          return;
         }
-      )
-      .subscribe(function (statut, err) {
-        // 🩺 diagnostic temporaire (14-08-2026) — à retirer une fois le
-        // canal confirmé fiable. Statuts possibles : SUBSCRIBED,
-        // CHANNEL_ERROR, TIMED_OUT, CLOSED.
-        console.log('session-classe.js [diagnostic] : statut du canal =', statut, err || '');
-      });
+        // Fusionné avec l'état déjà connu plutôt que remplacé en bloc — le
+        // message ne porte que {controle, etat, active}, pas la ligne
+        // entière (id, code, mode... n'ont pas besoin d'être redonnés à
+        // chaque mise à jour, seuls id/code sont utiles à l'appelant et
+        // ils ne changent jamais après la jonction).
+        session = Object.assign({}, session, maj);
+        if (typeof callbacks.onEtat === 'function') callbacks.onEtat(session);
+      })
+      .subscribe();
 
     abonnementActif = { canal: canal, sessionId: session.id };
 

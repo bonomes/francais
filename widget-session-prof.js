@@ -196,6 +196,13 @@
       let nomLecon = etat.page || null;
       const correspondance = nomLecon && nomLecon.match(/dialogues\/d(\d+)\//);
       if (correspondance) nomLecon = 'Dialogue ' + correspondance[1];
+      // 🆕 (14-08-2026, quatrième vague) : réponse en cours de saisie dans
+      // un exercice écrit — priorité d'affichage sur le simple "exercices"
+      // générique, c'est le détail que le prof est venu chercher ici.
+      if (etat.reponse_en_cours !== undefined) {
+        return (nomLecon || 'Le\u00e7on') + ' \u2014 en train d\u2019\u00e9crire : \u00ab\u00a0' +
+          (etat.reponse_en_cours || '\u2026') + '\u00a0\u00bb';
+      }
       if (etat.section === 'exercices') return (nomLecon || 'Le\u00e7on') + ' \u2014 exercices';
       if (etat.section === 'dialogue' && typeof etat.etape === 'number') {
         return (nomLecon || 'Le\u00e7on') + ' \u2014 \u00e9tape ' + (etat.etape + 1);

@@ -2943,6 +2943,12 @@
   function synchroniserEtatSession(etatAPousser) {
     const sessionClasse = window.KebBekSessionClasse || null;
     if (!sessionClasse) return;
+    // 🆕 (14-08-2026, troisième vague) : annonce l'activité LOCALE à ce
+    // même point d'appel, que ce navigateur soit prof ou élève — sans
+    // effet si aucune session n'a été rejointe (voir sa propre note dans
+    // session-classe.js). C'est ce qui alimente "Élèves connectés" dans le
+    // widget flottant du prof.
+    sessionClasse.annoncerActivite(etatAPousser);
     const sessionProf = sessionClasse.sessionProfActive();
     if (!sessionProf) return; // ce navigateur n'est pas en train d'animer une session — rien à faire
     sessionClasse.pousserEtat(sessionProf.id, etatAPousser); // best-effort, résultat ignoré volontairement

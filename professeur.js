@@ -11,15 +11,24 @@
         TOUS les profils élèves de ce compte — un compte-parent peut en
         avoir plusieurs, voir migration Supabase du 13-08-2026).
      2. Sélection d'UN OU PLUSIEURS profils parmi les résultats — cases à
-        cocher (🆕 session du 13-08-2026, demande de Raphaël) : utile à la
+        cocher (session du 13-08-2026, demande de Raphaël) : utile à la
         fois pour "un compte, plusieurs enfants" ET pour "une classe de
-        plusieurs élèves reçoit le même succès en même temps" (dans ce
-        second cas, en pratique, le prof fait une recherche par courriel
-        pour chaque élève avant de les avoir tous dans la sélection —
-        cet écran ne cherche qu'un compte à la fois, voir limite plus
-        bas). Un seul profil trouvé = sélectionné automatiquement, aucun
-        clic de plus requis (cas le plus fréquent).
-     3. Attribution d'un succès à TOUS les profils sélectionnés d'un coup
+        plusieurs élèves reçoit le même succès en même temps". Un seul
+        profil trouvé = ajouté automatiquement au panier, aucun clic de
+        plus requis (cas le plus fréquent).
+     3. 🆕 PANIER CUMULATIF (session du 14-08-2026, ex-limite connue
+        levée) : chaque recherche AJOUTE au panier plutôt que de le
+        remplacer — le prof peut chercher plusieurs courriels différents
+        à la suite (plusieurs familles d'une même classe) et les
+        retrouver tous ensemble avant d'attribuer. Le champ courriel se
+        vide après chaque ajout pour enchaîner directement sur la
+        recherche suivante. Déduplication par id de profil : chercher
+        deux fois le même courriel, ou le même élève via deux comptes
+        différents (improbable mais pas impossible), ne le duplique
+        jamais dans le panier. Chaque fiche du panier a un petit bouton
+        "Retirer" pour corriger une erreur de sélection sans tout
+        recommencer.
+     4. Attribution d'un succès à TOUS les profils du panier d'un coup
         (attribuer_recompense_enseignant, une fois par profil) — liste de
         succès CODÉE EN DUR (SUCCES_DISPONIBLES ci-dessous), décision de
         Raphaël (session du 13-08-2026) : le catalogue grandit "au cas
@@ -28,16 +37,6 @@
         à chaque nouvelle leçon, pour un gain nul tant que la liste reste
         courte. Migrer vers une table si/quand elle devient longue
         (30-40+ entrées).
-
-   ⚠️ LIMITE CONNUE : la sélection multiple ne couvre que les profils
-   d'UN SEUL courriel recherché à la fois — pas encore un "panier" qui
-   accumulerait des élèves de plusieurs courriels différents d'une
-   recherche à l'autre. Pour une classe de plusieurs FAMILLES différentes
-   recevant le même succès, il faut donc répéter recherche+attribution
-   par courriel pour l'instant. Un vrai panier cumulatif entre recherches
-   est possible plus tard si ce besoin devient fréquent en pratique — pas
-   construit maintenant, pour ne pas complexifier un premier jet avant de
-   savoir si c'est vraiment nécessaire.
 
    Suppose window.KebBekProgression (progression.js) déjà chargé ET déjà
    authentifié comme compte enseignant reconnu (voir essayerModeProfesseur
@@ -89,6 +88,22 @@
           '<button type="button" class="kbp-bouton-retour" id="kbpBtnRetour">&larr; Retour</button>' +
         '</div>' +
 
+        '<div class="kbp-section" id="kbpSectionSession">' +
+          '<p class="kbp-etiquette">Session de classe (navigation partag\u00e9e)</p>' +
+          '<div id="kbpSessionInactive">' +
+            '<button type="button" class="kbp-bouton-action" id="kbpBtnDemarrerSession">D\u00e9marrer une session</button>' +
+          '</div>' +
+          '<div class="kbp-section-cachee" id="kbpSessionActive">' +
+            '<p class="kbp-code-session">Code \u00e0 partager : <strong id="kbpCodeSession"></strong></p>' +
+            '<div class="kbp-ligne-valeurs kbp-ligne-controle">' +
+              '<button type="button" class="kbp-bouton-controle" id="kbpBtnControleProf" data-controle="professeur">Professeur contr\u00f4le</button>' +
+              '<button type="button" class="kbp-bouton-controle" id="kbpBtnControleEleves" data-controle="eleves">\u00c9l\u00e8ves contr\u00f4lent</button>' +
+            '</div>' +
+            '<button type="button" class="kbp-bouton-retour" id="kbpBtnFermerSession">Fermer la session</button>' +
+          '</div>' +
+          '<p class="kbp-message" id="kbpMessageSession"></p>' +
+        '</div>' +
+
         '<div class="kbp-section">' +
           '<label class="kbp-etiquette" for="kbpCourriel">Courriel du compte \u00e9l\u00e8ve</label>' +
           '<div class="kbp-ligne-recherche">' +
@@ -132,6 +147,102 @@
     }
     brancherRetour();
 
+    // ---------- Session de classe (navigation partag\u00e9e) ----------
+    // D\u00e9l\u00e9gu\u00e9 \u00e0 session-classe.js (module s\u00e9par\u00e9, voir sa propre
+    // note de t\u00eate) \u2014 ce bloc ne fait que brancher l'UI dessus. Si le
+    // module n'est pas charg\u00e9 (page hôte qui n'a pas encore ajout\u00e9
+    // session-classe.js), la section reste pr\u00e9sente mais son bouton
+    // "D\u00e9marrer" est d\u00e9sactiv\u00e9 \u2014 m\u00eame philosophie de d\u00e9gradation
+    // douce que le reste de cet \u00e9cran, jamais un \u00e9cran cass\u00e9.
+    (function initSessionClasse() {
+      const sessionClasse = window.KebBekSessionClasse || null;
+      const btnDemarrer = document.getElementById('kbpBtnDemarrerSession');
+      const blocInactif = document.getElementById('kbpSessionInactive');
+      const blocActif = document.getElementById('kbpSessionActive');
+      const codeSpan = document.getElementById('kbpCodeSession');
+      const btnControleProf = document.getElementById('kbpBtnControleProf');
+      const btnControleEleves = document.getElementById('kbpBtnControleEleves');
+      const btnFermer = document.getElementById('kbpBtnFermerSession');
+      const messageSession = document.getElementById('kbpMessageSession');
+
+      if (!sessionClasse) {
+        btnDemarrer.disabled = true;
+        messageSession.textContent = 'Navigation partag\u00e9e non disponible sur cette page.';
+        return;
+      }
+
+      let session = null; // ligne sessions_classe courante, ou null si aucune session active
+
+      function rafraichirBoutonsControle() {
+        if (!session) return;
+        btnControleProf.classList.toggle('kbp-bouton-controle-actif', session.controle === 'professeur');
+        btnControleEleves.classList.toggle('kbp-bouton-controle-actif', session.controle === 'eleves');
+      }
+
+      function afficherSessionActive() {
+        blocInactif.classList.add('kbp-section-cachee');
+        blocActif.classList.remove('kbp-section-cachee');
+        codeSpan.textContent = session.code;
+        rafraichirBoutonsControle();
+      }
+
+      function afficherAucuneSession() {
+        session = null;
+        blocActif.classList.add('kbp-section-cachee');
+        blocInactif.classList.remove('kbp-section-cachee');
+      }
+
+      btnDemarrer.addEventListener('click', async function () {
+        btnDemarrer.disabled = true;
+        btnDemarrer.textContent = 'D\u00e9marrage\u2026';
+        messageSession.textContent = '';
+        messageSession.className = 'kbp-message';
+        // Mode fig\u00e9 \u00e0 'distance' pour l'instant \u2014 tous les \u00e9l\u00e8ves de
+        // Raphaël sont \u00e0 distance en pratique (14-08-2026), le
+        // pr\u00e9sentiel reste possible c\u00f4t\u00e9 sch\u00e9ma mais n'a aucun usage
+        // r\u00e9el actuellement, pas de s\u00e9lecteur pour \u00e9viter un choix
+        // qui ne changerait encore rien.
+        const nouvelleSession = await sessionClasse.demarrerSession('distance');
+        btnDemarrer.disabled = false;
+        btnDemarrer.textContent = 'D\u00e9marrer une session';
+        if (!nouvelleSession) {
+          messageSession.textContent = 'Impossible de d\u00e9marrer la session \u2014 r\u00e9essaie.';
+          messageSession.classList.add('kbp-message-erreur');
+          return;
+        }
+        session = nouvelleSession;
+        afficherSessionActive();
+      });
+
+      [btnControleProf, btnControleEleves].forEach(function (btn) {
+        btn.addEventListener('click', async function () {
+          if (!session) return;
+          const controle = btn.dataset.controle;
+          if (session.controle === controle) return; // d\u00e9j\u00e0 dans cet \u00e9tat
+          const maj = await sessionClasse.changerControle(session.id, controle);
+          if (!maj) {
+            messageSession.textContent = 'Erreur \u2014 r\u00e9essaie.';
+            messageSession.classList.add('kbp-message-erreur');
+            return;
+          }
+          session = maj;
+          messageSession.textContent = '';
+          rafraichirBoutonsControle();
+        });
+      });
+
+      btnFermer.addEventListener('click', async function () {
+        if (!session) return;
+        const reussi = await sessionClasse.fermerSession(session.id);
+        if (!reussi) {
+          messageSession.textContent = 'Erreur \u2014 r\u00e9essaie.';
+          messageSession.classList.add('kbp-message-erreur');
+          return;
+        }
+        afficherAucuneSession();
+      });
+    })();
+
     // ---------- Liste des succès ----------
     const selectSucces = document.getElementById('kbpSucces');
     SUCCES_DISPONIBLES.forEach(function (s) {
@@ -151,7 +262,13 @@
     if (SUCCES_DISPONIBLES.length > 0) appliquerDefautsSucces();
 
     // ---------- Recherche + sélection (0, 1, ou plusieurs profils) ----------
-    let eleveSelection = []; // tableau de profils eleves sélectionnés — jamais un seul objet, même quand il n'y en a qu'un, pour que l'attribution n'ait qu'un seul chemin de code (une boucle) au lieu de deux.
+    // Panier cumulatif de profils sélectionnés — jamais un seul objet,
+    // même quand il n'y en a qu'un, pour que l'attribution n'ait qu'un
+    // seul chemin de code (une boucle) au lieu de deux. 🆕 Persiste
+    // maintenant à travers plusieurs recherches successives (14-08-2026)
+    // — voir ajouterAuPanier() ; n'est vidé que par un retrait manuel
+    // (bouton "Retirer" sur une fiche) ou en quittant l'écran.
+    let eleveSelection = [];
     const champCourriel = document.getElementById('kbpCourriel');
     const messageRecherche = document.getElementById('kbpMessageRecherche');
     const sectionEleve = document.getElementById('kbpSectionEleve');
@@ -161,13 +278,32 @@
     const btnChercher = document.getElementById('kbpBtnChercher');
     const btnConfirmerChoix = document.getElementById('kbpBtnConfirmerChoix');
 
+    // Ajoute des profils au panier existant (jamais un remplacement) —
+    // déduplication par id, pour qu'une recherche répétée du même
+    // courriel (ou un même élève retrouvé via deux recherches) ne crée
+    // jamais de doublon dans le panier. Retourne le nombre de profils
+    // réellement ajoutés (utile pour distinguer « déjà dans le panier »
+    // d'un vrai ajout dans le message affiché au prof).
+    function ajouterAuPanier(profils) {
+      let ajoutes = 0;
+      profils.forEach(function (p) {
+        if (!eleveSelection.some(function (el) { return el.id === p.id; })) {
+          eleveSelection.push(p);
+          ajoutes++;
+        }
+      });
+      return ajoutes;
+    }
+
     async function chercherEleve() {
       const courriel = champCourriel.value.trim();
       messageRecherche.textContent = '';
       messageRecherche.className = 'kbp-message';
       sectionChoix.classList.add('kbp-section-cachee');
-      sectionEleve.classList.add('kbp-section-cachee');
-      eleveSelection = [];
+      // 🆕 Panier cumulatif (14-08-2026) : eleveSelection n'est PLUS
+      // vidé ici — chaque recherche s'ajoute au panier existant plutôt
+      // que de l'écraser. sectionEleve reste affichée si le panier
+      // contient déjà des profils d'une recherche précédente.
       if (!courriel) {
         messageRecherche.textContent = 'Entre un courriel d\u2019abord.';
         messageRecherche.classList.add('kbp-message-erreur');
@@ -187,14 +323,21 @@
           messageRecherche.textContent = '\u00c9l\u00e8ve introuvable pour ce courriel.';
           messageRecherche.classList.add('kbp-message-erreur');
         } else if (profils.length === 1) {
-          // Un seul profil : sélection directe, aucun clic de plus.
-          eleveSelection = [profils[0]];
+          // Un seul profil : ajout direct au panier, aucun clic de plus.
+          const ajoutes = ajouterAuPanier(profils);
           rendreFichesEleves();
           sectionEleve.classList.remove('kbp-section-cachee');
+          champCourriel.value = '';
+          champCourriel.focus();
+          if (ajoutes === 0) {
+            messageRecherche.textContent = 'D\u00e9j\u00e0 dans la s\u00e9lection.';
+          }
         } else {
           // Plusieurs profils (parent, plusieurs enfants) : cases à
           // cocher — toutes décochées par défaut, le prof choisit qui
           // reçoit l'attribution (un seul enfant, ou les deux à la fois).
+          // Le panier existant (d'une recherche précédente) n'est pas
+          // touché tant que le prof n'a pas confirmé ce nouveau choix.
           rendreListeChoix(profils);
           sectionChoix.classList.remove('kbp-section-cachee');
         }
@@ -250,27 +393,52 @@
         messageRecherche.classList.add('kbp-message-erreur');
         return;
       }
-      eleveSelection = Array.prototype.map.call(cases, function (c) {
+      const choisis = Array.prototype.map.call(cases, function (c) {
         return profils[parseInt(c.dataset.index, 10)];
       });
+      // 🆕 Panier cumulatif : ajoute au panier existant plutôt que de
+      // l'écraser (même logique que le cas "un seul profil" ci-dessus).
+      ajouterAuPanier(choisis);
       messageRecherche.textContent = '';
       rendreFichesEleves();
       sectionChoix.classList.add('kbp-section-cachee');
       sectionEleve.classList.remove('kbp-section-cachee');
+      champCourriel.value = '';
+      champCourriel.focus();
     });
 
-    // Affiche une petite fiche par profil sélectionné (nom + solde) —
-    // plusieurs cartes empilées si sélection multiple, une seule sinon.
+    // Affiche une petite fiche par profil du panier (nom + solde), avec
+    // un bouton "Retirer" pour corriger une erreur de sélection sans
+    // devoir tout recommencer — plusieurs cartes empilées si panier à
+    // plusieurs profils, une seule sinon.
     function rendreFichesEleves() {
       fichesEleves.innerHTML = eleveSelection.map(function (el) {
         return '<div class="kbp-fiche-eleve" data-eleve-id="' + el.id + '">' +
-          '<p class="kbp-fiche-nom">' + (el.prenom || 'Sans pr\u00e9nom') + '</p>' +
+          '<div class="kbp-fiche-entete">' +
+            '<p class="kbp-fiche-nom">' + (el.prenom || 'Sans pr\u00e9nom') + '</p>' +
+            '<button type="button" class="kbp-fiche-retirer" data-eleve-id="' + el.id + '" aria-label="Retirer ' + (el.prenom || 'ce profil') + ' de la s\u00e9lection">&times;</button>' +
+          '</div>' +
           '<p class="kbp-fiche-detail">Niveau ' + (el.niveau != null ? el.niveau : '\u2014') +
             ' \u00b7 ' + (el.piasses != null ? el.piasses : 0) + ' P$' +
             ' \u00b7 ' + (el.points_bonis != null ? el.points_bonis : 0) + ' PB</p>' +
         '</div>';
       }).join('');
     }
+
+    // Un seul écouteur délégué sur le conteneur des fiches plutôt qu'un
+    // par bouton "Retirer" — rendreFichesEleves() réécrit tout le HTML
+    // à chaque changement du panier (attribution, ajout), donc des
+    // écouteurs individuels seraient reperdus à chaque rendu.
+    fichesEleves.addEventListener('click', function (e) {
+      const btn = e.target.closest('.kbp-fiche-retirer');
+      if (!btn) return;
+      const id = btn.dataset.eleveId;
+      eleveSelection = eleveSelection.filter(function (el) { return el.id !== id; });
+      rendreFichesEleves();
+      if (eleveSelection.length === 0) {
+        sectionEleve.classList.add('kbp-section-cachee');
+      }
+    });
 
     // ---------- Attribution (à tous les profils sélectionnés) ----------
     const btnAttribuer = document.getElementById('kbpBtnAttribuer');

@@ -193,6 +193,7 @@
         'postgres_changes',
         { event: 'UPDATE', schema: 'public', table: 'sessions_classe', filter: 'id=eq.' + session.id },
         function (payload) {
+          console.log('session-classe.js [diagnostic] : événement postgres_changes reçu.', payload);
           const nouvelle = payload.new;
           if (!nouvelle.active) {
             quitterSession();
@@ -202,7 +203,12 @@
           if (typeof callbacks.onEtat === 'function') callbacks.onEtat(nouvelle);
         }
       )
-      .subscribe();
+      .subscribe(function (statut, err) {
+        // 🩺 diagnostic temporaire (14-08-2026) — à retirer une fois le
+        // canal confirmé fiable. Statuts possibles : SUBSCRIBED,
+        // CHANNEL_ERROR, TIMED_OUT, CLOSED.
+        console.log('session-classe.js [diagnostic] : statut du canal =', statut, err || '');
+      });
 
     abonnementActif = { canal: canal, sessionId: session.id };
 

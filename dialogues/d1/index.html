@@ -2803,22 +2803,22 @@
   function marquerCarteResolue(carte, ex, niveau, sansErreur, etatActiviteSupplementaire) {
     carte.classList.add('resolue');
     exercicesResolus.add(ex.id);
-    // 🆕 (14-08-2026, quatrième vague) : l'exercice est réglé — arrête
-    // toute annonce de saisie en attente et fait revenir le widget du prof
-    // à l'état de navigation normal plutôt que de laisser affiché le
-    // dernier texte tapé, qui ne bougera plus (résolu ou révélé, peu
-    // importe le niveau).
+    // 🆕 (14-08-2026, quatrième vague) : l'exercice est réglé — fait
+    // revenir le widget du prof à l'état de navigation normal plutôt que
+    // de laisser affiché le dernier texte tapé, qui ne bougera plus
+    // (résolu ou révélé, peu importe le niveau).
     //
-    // 🐛 CORRIGÉ (Raphaël, "l'élève disparaît en appuyant sur Entrée") :
-    // le paramètre etatActiviteSupplementaire permet à un appelant (voir
+    // 🐛 CORRIGÉ (Raphaël, "l'élève disparaît en appuyant sur Entrée",
+    // puis "l'élève disparaît en commençant les exercices") : le
+    // paramètre etatActiviteSupplementaire permet à un appelant (voir
     // annoncerErreur plus bas) de fournir un état DÉJÀ enrichi (avec
     // erreur/question) à annoncer ICI MÊME, plutôt que de faire un DEUXIÈME
-    // appel à annoncerActivite juste après cette fonction. Deux appels
-    // Presence coup sur coup (0 ms d'écart) reproduisaient exactement le
-    // même genre de rafale que le bug de débit déjà corrigé pour la frappe
-    // au clavier (voir annoncerReponseEnCours) — Supabase coupait la
-    // connexion de l'élève, qui disparaissait de "Élèves connectés".
-    clearTimeout(minuteurReponseEnCours);
+    // appel à annoncerActivite juste après cette fonction. Le throttle
+    // Presence qui empêche ces appels coup sur coup de dépasser la limite
+    // de débit de Supabase vit maintenant dans annoncerActivite() elle-
+    // même (session-classe.js) — plusieurs exercices résolus rapidement
+    // à la suite sont donc protégés automatiquement, sans rien à gérer
+    // ici (voir la note dans session-classe.js pour le détail).
     const sessionClasseActivite = window.KebBekSessionClasse || null;
     if (sessionClasseActivite) sessionClasseActivite.annoncerActivite(etatActiviteSupplementaire || dernierEtatSession);
     if (sansErreur) exercicesResolusSansErreur.add(ex.id);
@@ -3020,7 +3020,6 @@
   function marquerCarteEcouteResolue(carte, ex, niveau, sansErreur, etatActiviteSupplementaire) {
     carte.classList.add('resolue');
     exercicesEcouteResolus.add(ex.id);
-    clearTimeout(minuteurReponseEnCours);
     const sessionClasseActivite = window.KebBekSessionClasse || null;
     if (sessionClasseActivite) sessionClasseActivite.annoncerActivite(etatActiviteSupplementaire || dernierEtatSession);
     if (sansErreur) exercicesEcouteResolusSansErreur.add(ex.id);
@@ -3642,7 +3641,6 @@
   // Presence, voir sa note dans session-classe.js — jamais une fusion
   // automatique côté serveur).
   let dernierEtatSession = null;
-  let minuteurReponseEnCours = null;
 
   // 🆕 (correctif du 14-08-2026, "élève catapulté") : signale au widget
   // flottant (widget-session-prof.js, chargé sur TOUTES les pages) que
@@ -3679,42 +3677,25 @@
   // (page/section/etape déjà connus) plutôt que de le remplacer — voir
   // sa note.
   //
-  // 🐛 CORRIGÉ (Raphaël, "l'élève disparaît de la liste après quelques
-  // secondes") : c'était un pur DEBOUNCE (300 ms après la DERNIÈRE
-  // frappe, relancé à chaque frappe) — sur une phrase tapée sans pause
-  // de 300 ms, ça envoyait quand même un .track() Presence à un rythme
-  // proche de la frappe elle-même. Confirmé dans les logs Supabase du
-  // projet : erreurs "ClientPresenceRateLimitReached:
-  // client_rate_limit_exceeded" au moment même de la frappe — le serveur
-  // coupe le client qui dépasse la limite de débit Presence, ce qui fait
-  // disparaître l'élève de "Élèves connectés" jusqu'à sa prochaine
-  // annonce (et gèle au passage le texte affiché côté prof — voir la
-  // même note dans widget-session-prof.css pour le lien avec le premier
-  // bug signalé). Remplacé par un vrai THROTTLE (envoi immédiat, puis au
-  // plus 1 envoi/seconde pendant une frappe continue, plus un envoi de
-  // rattrapage final) — reste bien sous la limite, tout en gardant le
-  // prof à jour en temps quasi réel.
-  let derniereAnnoncePresence = 0;
-  const DELAI_MIN_PRESENCE = 1000; // ms entre deux annonces Presence au maximum
-
+  // 🐛 CORRIGÉ (15-08-2026) : le throttle Presence (max 1 envoi/seconde,
+  // avec rattrapage garanti) vit maintenant DANS annoncerActivite() elle-
+  // même (session-classe.js), plutôt que réimplémenté ici. Une première
+  // version du correctif (14-08-2026) throttlait uniquement CET appel-ci
+  // — ce qui réglait bien la frappe rapide, mais laissait d'autres
+  // appelants directs (marquerCarteResolue(), synchroniserEtatSession())
+  // sans protection : plusieurs exercices résolus coup sur coup pouvaient
+  // à eux seuls dépasser client_rate_limit_exceeded côté Supabase et faire
+  // disparaître l'élève de "Élèves connectés", même sans qu'il n'ait rien
+  // tapé. Voir la note dans session-classe.js pour le détail — cette
+  // fonction-ci n'a donc plus à s'en soucier du tout.
   function annoncerReponseEnCours(ex, texte) {
     const sessionClasse = window.KebBekSessionClasse || null;
     if (!sessionClasse) return;
-    const envoyer = function () {
-      derniereAnnoncePresence = Date.now();
-      sessionClasse.annoncerActivite(Object.assign({}, dernierEtatSession, {
-        exercice_id: ex.id,
-        question: texteExercice(ex),
-        reponse_en_cours: texte
-      }));
-    };
-    clearTimeout(minuteurReponseEnCours);
-    const ecoule = Date.now() - derniereAnnoncePresence;
-    if (ecoule >= DELAI_MIN_PRESENCE) {
-      envoyer(); // assez longtemps depuis le dernier envoi — tout de suite, pas d'attente artificielle
-    } else {
-      minuteurReponseEnCours = setTimeout(envoyer, DELAI_MIN_PRESENCE - ecoule); // sinon, un seul envoi de rattrapage programmé (jamais deux minuteurs empilés)
-    }
+    sessionClasse.annoncerActivite(Object.assign({}, dernierEtatSession, {
+      exercice_id: ex.id,
+      question: texteExercice(ex),
+      reponse_en_cours: texte
+    }));
   }
 
   // 🆕 (14-08-2026, cinquième vague — "notification d'erreur", demande de

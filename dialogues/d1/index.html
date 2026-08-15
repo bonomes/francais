@@ -2636,6 +2636,22 @@
   async function afficherExercicesEcoute() {
     await profProbePromesse; // best-effort — voir sa définition ; n'empêche jamais l'affichage si le check n'a pas fini
     synchroniserEtatSession({ page: 'dialogues/d1/', section: 'exercices_ecoute' });
+    // 🐛 CORRIGÉ (Raphaël, "l'élève n'est pas transporté à l'écoute") :
+    // cette fonction ne cachait QUE la section exercices normale
+    // (elSectionExercices) — elle supposait toujours être appelée APRÈS
+    // afficherExercices(), qui elle cache la vue dialogue (zone-bulle,
+    // sceneDialogue, nav-dialogue…). C'est vrai localement (le prof
+    // passe forcément par afficherExercices() en cliquant), mais côté
+    // élève téléporté À DISTANCE (voir appliquerEtat() plus bas), rien
+    // ne garantit que la vue actuelle était déjà la section exercices —
+    // elle peut très bien être encore la vue dialogue si le prof saute
+    // directement dessus. Cache donc les deux vues explicitement, de
+    // façon idempotente (sans effet si déjà caché).
+    document.querySelector('.zone-bulle').style.display = 'none';
+    document.getElementById('sceneDialogue').style.display = 'none';
+    document.querySelector('.nav-dialogue').style.display = 'none';
+    document.getElementById('btnRaccourciExercices').style.display = 'none';
+    document.getElementById('compteur').style.display = 'none';
     elSectionExercices.style.display = 'none';
     document.getElementById('txtExercicesEcouteTitre').textContent = texteInterface('ecouteTitre');
     document.getElementById('txtExercicesEcouteIntro').textContent = texteInterface('ecouteIntro');
@@ -3795,6 +3811,16 @@
       if (session.controle !== 'professeur') return; // en mode "élèves", ne jamais forcer d'étape/section non plus — il navigue lui-même
       if (session.etat && session.etat.section === 'exercices') {
         if (elSectionExercices.style.display !== 'flex') afficherExercices();
+      } else if (session.etat && session.etat.section === 'exercices_ecoute') {
+        // 🐛 CORRIGÉ (Raphaël, "l'élève n'est pas transporté à l'écoute") :
+        // synchroniserEtatSession() poussait bien section:'exercices_ecoute'
+        // depuis afficherExercicesEcoute() (voir plus haut), mais ce
+        // aiguillage-ci ne testait que 'exercices' et 'dialogue' — le
+        // troisième cas n'avait jamais été ajouté ici, donc rien ne se
+        // passait côté élève. Aucun lien avec une page différente : c'est
+        // la même page (dialogues/d1/) des deux côtés, juste une section
+        // de plus jamais branchée dans ce if/else.
+        if (elSectionExercicesEcoute.style.display !== 'flex') afficherExercicesEcoute();
       } else if (session.etat && session.etat.section === 'dialogue' && typeof session.etat.etape === 'number') {
         allerAEtapeDistante(session.etat.etape);
       }

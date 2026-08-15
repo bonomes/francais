@@ -382,6 +382,27 @@
       .catch(function () {});
   }
 
+  // 🆕 (15-08-2026) : liste les sessions actuellement actives, pour que
+  // l'élève puisse en choisir une plutôt que de taper un code à l'aveugle
+  // (demande de Raphaël). Retourne un tableau (vide si aucune session
+  // active, jamais null pour ce cas normal — null réservé à un échec
+  // réseau/auth) de { code, prenom_enseignant, nom_enseignant, controle,
+  // mode, creee_le }. Le code est inclus tel quel : rejoindreSession(code,
+  // ...) ci-dessus fait déjà toute la validation nécessaire, pas besoin
+  // de dupliquer cette logique ici avec un id interne.
+  async function listerSessionsActives() {
+    const c = client();
+    if (!c) return null;
+    try {
+      const { data, error } = await c.rpc('lister_sessions_actives');
+      if (error) { console.warn('session-classe.js : listerSessionsActives a échoué.', error); return null; }
+      return data || [];
+    } catch (e) {
+      console.warn('session-classe.js : listerSessionsActives a échoué (réseau).', e);
+      return null;
+    }
+  }
+
   // ---------- Côté professeur : voir l'activité des élèves ----------
   // 🆕 (14-08-2026, troisième vague) : canal d'ÉCOUTE séparé de celui
   // qu'utilise rejoindreSession() côté élève — un même navigateur ne joue
@@ -462,6 +483,7 @@
     quitterSession,
     annoncerActivite,
     ecouterActiviteEleves,
-    arreterEcouteActivite
+    arreterEcouteActivite,
+    listerSessionsActives
   };
 })();

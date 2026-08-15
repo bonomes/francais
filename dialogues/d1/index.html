@@ -178,6 +178,7 @@
     width: min(92vw, 560px);
     min-height: 60px;
     align-items: flex-end;
+    gap: 8px;
     padding: 0 5%;
   }
 
@@ -447,6 +448,30 @@
   .btn-toggle-trad svg { width: 12px; height: 12px; }
   .btn-toggle-trad.actif { background: var(--peche-fonce, #D98C63); border-color: var(--peche-fonce, #D98C63); color: #FFFFFF; }
 
+  /* 🆕 (15-08-2026) Bouton 🔊 de la bulle active — jumeau visuel du
+     bouton "traduction" mais rond, à côté de la bulle plutôt que dedans
+     (voir HTML : sibling de #bulleDialogue dans .zone-bulle). Caché par
+     défaut, révélé par body.audio-actif (voir btnToggleAudio). */
+  .bouton-audio-bulle {
+    flex-shrink: 0;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    border: none;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background: var(--peche-fonce, #D98C63);
+    color: #FFFFFF;
+    cursor: pointer;
+    margin-bottom: 6px;
+    transition: transform 0.15s ease, opacity 0.15s ease;
+  }
+  .bouton-audio-bulle svg { width: 16px; height: 16px; }
+  .bouton-audio-bulle:hover { transform: scale(1.08); }
+  .bouton-audio-bulle:active { opacity: 0.7; transform: scale(0.96); }
+  body.audio-actif .bouton-audio-bulle { display: flex; }
+
   .pile-dialogue { display: flex; flex-direction: column; gap: 2px; }
 
   .pile-item {
@@ -505,6 +530,29 @@
     transition: max-height 0.25s ease, opacity 0.25s ease, margin 0.25s ease;
   }
   .pile-trad.visible { max-height: 80px; opacity: 1; margin-top: 3px; }
+
+  /* 🆕 (15-08-2026) Bouton 🔊 par réplique de la pile — même logique
+     de révélation que .bouton-audio-bulle (body.audio-actif). Discret
+     (transparent, pas de fond) pour ne pas rivaliser avec pile-avatar. */
+  .pile-audio {
+    flex-shrink: 0;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: none;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    color: var(--peche-fonce, #D98C63);
+    cursor: pointer;
+    padding: 0;
+    font-family: inherit;
+    transition: transform 0.15s ease;
+  }
+  .pile-audio svg { width: 14px; height: 14px; }
+  .pile-audio:hover { transform: scale(1.15); }
+  body.audio-actif .pile-audio { display: flex; }
 
   /* Notes grammaticales — même langage visuel qu'un contenu d'aide
      ponctuel ailleurs sur le site (.sac-intro dans sac-a-dos.css,
@@ -686,6 +734,41 @@
     color: var(--brun-clair, #8A7364);
     padding: 30px 10px;
   }
+
+  /* 🆕 (15-08-2026) Carte d'écoute (creerCarteExercice, ex.type === 'ecoute') :
+     même gabarit que .exercice-image-cadre (largeur, hauteur max, fond) pour
+     que les deux types de carte restent visuellement cohérents dans la même
+     grille — mais avec un gros bouton 🔊 rond au centre à la place d'une
+     image. Même couleur/forme que .bouton-audio-bulle (identité visuelle du
+     bouton audio sur tout le site), juste agrandi puisqu'il est ici le
+     contenu principal de la carte plutôt qu'un accessoire à côté d'une bulle. */
+  .exercice-audio-cadre {
+    width: 100%;
+    max-height: 220px;
+    min-height: 130px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 14px;
+    background: var(--peche-pale);
+  }
+  .exercice-btn-ecouter {
+    flex-shrink: 0;
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--peche-fonce, #D98C63);
+    color: #FFFFFF;
+    cursor: pointer;
+    transition: transform 0.15s ease, opacity 0.15s ease;
+  }
+  .exercice-btn-ecouter svg { width: 30px; height: 30px; }
+  .exercice-btn-ecouter:hover { transform: scale(1.08); }
+  .exercice-btn-ecouter:active { opacity: 0.7; transform: scale(0.96); }
 
   .exercice-instruction {
     font-size: 1rem;
@@ -945,6 +1028,13 @@
 
 <div class="zone-bulle">
   <div class="bulle-dialogue" id="bulleDialogue"></div>
+  <!-- 🆕 (15-08-2026) : visible seulement si btnToggleAudio est actif (voir
+       CSS .audio-actif) — lit la réplique EN COURS via lireAudio(). Hors
+       de bulleDialogue exprès : ce dernier est vidé/reconstruit à chaque
+       étape par construireBulleMots(), un enfant direct y serait détruit. -->
+  <button type="button" class="bouton-audio-bulle" id="btnAudioBulle" aria-label="Écouter">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H2v6h4l5 4V5Z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/></svg>
+  </button>
 </div>
 
 <div class="scene-dialogue" id="sceneDialogue"></div>
@@ -959,10 +1049,24 @@
   <div>
     <div class="pile-entete">
       <div class="pile-section-titre" id="titrePileDialogue">Ce qui a été dit</div>
-      <button type="button" class="btn-toggle-trad" id="btnToggleTraductions" aria-pressed="false">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h7"/><path d="M9 3v2c0 4.5-2 8-6 10"/><path d="M5 9c1.5 2.5 4 4 7 4"/><path d="m13 20 4-9 4 9"/><path d="M14.5 17h5"/></svg>
-        <span id="txtToggleTraductions">Afficher la traduction</span>
-      </button>
+      <!-- 🆕 (15-08-2026) : les deux boutons "afficher/cacher" (traduction,
+           puis audio) regroupés dans un même conteneur flex — pile-entete
+           est en space-between entre le titre et CE conteneur, jamais
+           entre les boutons eux-mêmes (avec 3 enfants directs à plat,
+           space-between les aurait étalés bizarrement sur toute la ligne). -->
+      <div class="pile-boutons-toggle">
+        <button type="button" class="btn-toggle-trad" id="btnToggleTraductions" aria-pressed="false">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h7"/><path d="M9 3v2c0 4.5-2 8-6 10"/><path d="M5 9c1.5 2.5 4 4 7 4"/><path d="m13 20 4-9 4 9"/><path d="M14.5 17h5"/></svg>
+          <span id="txtToggleTraductions">Afficher la traduction</span>
+        </button>
+        <!-- Bouton jumeau, même style, pour ne pas surcharger l'écran par
+             défaut — bascule l'affichage des boutons 🔊 individuels (bulle
+             + répliques de la pile), jamais actif tant qu'on ne clique pas. -->
+        <button type="button" class="btn-toggle-trad btn-toggle-audio" id="btnToggleAudio" aria-pressed="false">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H2v6h4l5 4V5Z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 5.5a9 9 0 0 1 0 13"/></svg>
+          <span id="txtToggleAudio">Afficher l'audio</span>
+        </button>
+      </div>
     </div>
     <div class="pile-dialogue" id="pileDialogue"></div>
   </div>
@@ -992,6 +1096,26 @@
   <div id="conteneurExercices"></div>
   <div id="remarqueQuatreDifficile" class="remarque-difficile" style="display:none;"></div>
   <button type="button" class="bouton-nav suivant bouton-terminer-exercices" id="btnTerminerExercices">Terminer ›</button>
+</section>
+
+<!-- 🆕 (15-08-2026) Section exercices d'écoute — phase 2 du chantier
+     demandé par Raphaël, greffée APRÈS la section exercices ci-dessus
+     (confirmé : "Nouvelle section après les exercices actuels"), jamais
+     mélangée avec elle (voir EXERCICES_ECOUTE, marquerCarteEcouteResolue).
+     Même charpente visuelle que sectionExercices (mêmes classes
+     .exercices-transition / .exercice-carte / .exercice-niveau-toggle)
+     pour rester cohérent, mais SANS sélecteur de niveau global (chaque
+     carte reste réglable individuellement — pas nécessaire d'ajouter un
+     deuxième sélecteur global pour seulement 4 cartes). Cachée par
+     défaut, affichée par afficherExercicesEcoute() (appelée depuis le
+     bouton Terminer de sectionExercices — voir son câblage plus bas). -->
+<section id="sectionExercicesEcoute" style="display:none;">
+  <div class="exercices-transition">
+    <div class="exercices-transition-titre" id="txtExercicesEcouteTitre"></div>
+    <div class="exercices-transition-intro" id="txtExercicesEcouteIntro"></div>
+  </div>
+  <div id="conteneurExercicesEcoute"></div>
+  <button type="button" class="bouton-nav suivant bouton-terminer-exercices" id="btnTerminerExercicesEcoute">Terminer ›</button>
 </section>
 
 <script>
@@ -1480,26 +1604,26 @@
   // Textes d'interface (boutons, titres de pile) dans la langue de
   // l'apprenant, dans les 19 langues du site.
   const INTERFACE = {
-    fr: { precedent: 'Précédent', continuer: 'Continuer', terminer: 'Terminer', ceQuiAEteDit: 'Ce qui a été dit', aRetenir: 'À retenir' , afficherTrad: 'Afficher la traduction', cacherTrad: 'Cacher la traduction', exercicesTitre: 'On s\u2019entraîne\u00A0?', exercicesIntro: 'Pas d\u2019examen ici — juste deux petites mises en situation pour ancrer ce que tu viens de voir.', niveauFacile: 'Facile', niveauDifficile: 'Difficile', boutonVerifier: 'Vérifier', feedbackCorrect: 'C\u2019est ça\u00A0!', feedbackPresque: 'Presque\u00A0! Il manque un mot\u00A0:', reponseEtait: 'La réponse était\u00A0:', placeholderReponse: 'Écris ta réponse ici…', boutonRecommencer: 'Recommencer', basculerVersTexte: 'Écrire la réponse plutôt', basculerVersTuiles: 'Revenir aux tuiles', remarqueQuatreDifficile: 'Bravo\u00A0! Tu as réussi les quatre exercices en mode difficile\u00A0\u2014\u00A0une belle étape de franchie.', niveauGlobalLabel: 'Niveau\u00A0:', raccourciExercices: 'Passer aux exercices', sessionInvite: 'Cours en direct ?', sessionPlaceholderCode: 'Code', sessionBtnSuivre: 'Suivre', sessionBtnQuitter: 'Quitter', sessionStatutProf: '● En direct — tu suis le prof', sessionStatutEleves: '● En direct — à toi de jouer !', sessionTerminee: 'Session terminée — tu peux continuer par toi-même.', sessionCodeInvalide: 'Code invalide ou session fermée — vérifie avec ton prof.' },
-    en: { precedent: 'Back', continuer: 'Continue', terminer: 'Finish', ceQuiAEteDit: 'What was said', aRetenir: 'Good to know' , afficherTrad: 'Show translation', cacherTrad: 'Hide translation', exercicesTitre: 'Let\u2019s practice!', exercicesIntro: 'No test here — just two quick situations to help what you just saw sink in.', niveauFacile: 'Easy', niveauDifficile: 'Hard', boutonVerifier: 'Check', feedbackCorrect: 'That\u2019s it!', feedbackPresque: 'Almost! One word is missing:', reponseEtait: 'The answer was:', placeholderReponse: 'Type your answer here…', boutonRecommencer: 'Try again', basculerVersTexte: 'Type the answer instead', basculerVersTuiles: 'Back to the tiles', remarqueQuatreDifficile: 'Nice work! You completed all four exercises in Hard mode \u2014 that\u2019s a real milestone.', niveauGlobalLabel: 'Level:', raccourciExercices: 'Skip to exercises', sessionInvite: 'Live class?', sessionPlaceholderCode: 'Code', sessionBtnSuivre: 'Follow', sessionBtnQuitter: 'Leave', sessionStatutProf: '● Live — you’re following the teacher', sessionStatutEleves: '● Live — your turn now!', sessionTerminee: 'Session ended — you can carry on by yourself.', sessionCodeInvalide: 'Invalid or closed code — check with your teacher.' },
-    es: { precedent: 'Atrás', continuer: 'Continuar', terminer: 'Terminar', ceQuiAEteDit: 'Lo que se dijo', aRetenir: 'Para recordar' , afficherTrad: 'Mostrar traducción', cacherTrad: 'Ocultar traducción', exercicesTitre: '¡A practicar!', exercicesIntro: 'Nada de examen — solo cuatro situaciones rápidas para que se te quede lo que acabas de ver.', niveauFacile: 'Fácil', niveauDifficile: 'Difícil', boutonVerifier: 'Comprobar', feedbackCorrect: '¡Eso es!', feedbackPresque: '¡Casi! Falta una palabra:', reponseEtait: 'La respuesta era:', placeholderReponse: 'Escribe tu respuesta aquí…', boutonRecommencer: 'Intentar de nuevo', basculerVersTexte: 'Escribir la respuesta en su lugar', basculerVersTuiles: 'Volver a las fichas', remarqueQuatreDifficile: '¡Muy bien\u00A0! Completaste los cuatro ejercicios en modo difícil \u2014 es un logro importante.', niveauGlobalLabel: 'Nivel:', raccourciExercices: 'Saltar a los ejercicios', sessionInvite: '¿Clase en directo?', sessionPlaceholderCode: 'Código', sessionBtnSuivre: 'Seguir', sessionBtnQuitter: 'Salir', sessionStatutProf: '● En directo — estás siguiendo al profe', sessionStatutEleves: '● En directo — ¡ahora te toca a ti!', sessionTerminee: 'Sesión terminada — puedes continuar por tu cuenta.', sessionCodeInvalide: 'Código inválido o sesión cerrada — pregúntale a tu profe.' },
-    it: { precedent: 'Indietro', continuer: 'Continua', terminer: 'Fine', ceQuiAEteDit: 'Cosa è stato detto', aRetenir: 'Da ricordare' , afficherTrad: 'Mostra traduzione', cacherTrad: 'Nascondi traduzione', exercicesTitre: 'Ci alleniamo?', exercicesIntro: 'Niente esame — solo quattro situazioni veloci per far restare quello che hai appena visto.', niveauFacile: 'Facile', niveauDifficile: 'Difficile', boutonVerifier: 'Verifica', feedbackCorrect: 'Esatto!', feedbackPresque: 'Quasi! Manca una parola:', reponseEtait: 'La risposta era:', placeholderReponse: 'Scrivi qui la tua risposta…', boutonRecommencer: 'Riprova', basculerVersTexte: 'Scrivi invece la risposta', basculerVersTuiles: 'Torna alle tessere', remarqueQuatreDifficile: 'Ottimo lavoro! Hai completato tutti e quattro gli esercizi in modalità difficile \u2014 un bel traguardo.', niveauGlobalLabel: 'Livello:', raccourciExercices: 'Vai agli esercizi', sessionInvite: 'Lezione in diretta?', sessionPlaceholderCode: 'Codice', sessionBtnSuivre: 'Segui', sessionBtnQuitter: 'Esci', sessionStatutProf: '● In diretta — stai seguendo l’insegnante', sessionStatutEleves: '● In diretta — tocca a te!', sessionTerminee: 'Sessione terminata — puoi continuare da solo.', sessionCodeInvalide: 'Codice non valido o sessione chiusa — chiedi al tuo insegnante.' },
-    pt: { precedent: 'Voltar', continuer: 'Continuar', terminer: 'Terminar', ceQuiAEteDit: 'O que foi dito', aRetenir: 'A reter' , afficherTrad: 'Mostrar tradução', cacherTrad: 'Ocultar tradução', exercicesTitre: 'Vamos praticar?', exercicesIntro: 'Nada de exame — só quatro situações rápidas para fixar o que acabaste de ver.', niveauFacile: 'Fácil', niveauDifficile: 'Difícil', boutonVerifier: 'Verificar', feedbackCorrect: 'É isso!', feedbackPresque: 'Quase! Falta uma palavra:', reponseEtait: 'A resposta era:', placeholderReponse: 'Escreve aqui a tua resposta…', boutonRecommencer: 'Tentar outra vez', basculerVersTexte: 'Escrever a resposta em vez disso', basculerVersTuiles: 'Voltar às peças', remarqueQuatreDifficile: 'Bom trabalho! Completaste os quatro exercícios no nível difícil \u2014 uma etapa importante.', niveauGlobalLabel: 'Nível:', raccourciExercices: 'Saltar para os exercícios', sessionInvite: 'Aula em direto?', sessionPlaceholderCode: 'Código', sessionBtnSuivre: 'Seguir', sessionBtnQuitter: 'Sair', sessionStatutProf: '● Em direto — estás a seguir o professor', sessionStatutEleves: '● Em direto — agora és tu!', sessionTerminee: 'Sessão terminada — podes continuar sozinho.', sessionCodeInvalide: 'Código inválido ou sessão fechada — verifica com o teu professor.' },
-    ca: { precedent: 'Enrere', continuer: 'Continua', terminer: 'Acaba', ceQuiAEteDit: 'El que s\u2019ha dit', aRetenir: 'Per recordar' , afficherTrad: 'Mostra la traducció', cacherTrad: 'Amaga la traducció', exercicesTitre: 'Practiquem?', exercicesIntro: 'Res d\u2019examen — només quatre situacions ràpides perquè se\u2019t quedi el que acabes de veure.', niveauFacile: 'Fàcil', niveauDifficile: 'Difícil', boutonVerifier: 'Comprova', feedbackCorrect: 'Això mateix!', feedbackPresque: 'Quasi! Falta una paraula:', reponseEtait: 'La resposta era:', placeholderReponse: 'Escriu la teva resposta aquí…', boutonRecommencer: 'Torna-ho a provar', basculerVersTexte: 'Escriure la resposta en comptes d’això', basculerVersTuiles: 'Tornar a les fitxes', remarqueQuatreDifficile: 'Molt bé! Has completat els quatre exercicis en mode difícil \u2014 una bona fita.', niveauGlobalLabel: 'Nivell:', raccourciExercices: 'Salta als exercicis', sessionInvite: 'Classe en directe?', sessionPlaceholderCode: 'Codi', sessionBtnSuivre: 'Segueix', sessionBtnQuitter: 'Surt', sessionStatutProf: '● En directe — estàs seguint el professor', sessionStatutEleves: '● En directe — ara et toca a tu!', sessionTerminee: 'Sessió acabada — pots continuar tot sol.', sessionCodeInvalide: 'Codi no vàlid o sessió tancada — pregunta al teu professor.' },
-    eo: { precedent: 'Reen', continuer: 'Daŭrigi', terminer: 'Fini', ceQuiAEteDit: 'Kio estis dirita', aRetenir: 'Por memori' , afficherTrad: 'Montri tradukon', cacherTrad: 'Kaŝi tradukon', exercicesTitre: 'Ni ekzercu?', exercicesIntro: 'Neniu ekzameno ĉi tie — nur kvar rapidaj situacioj por ke tio, kion vi ĵus vidis, restu en la memoro.', niveauFacile: 'Facila', niveauDifficile: 'Malfacila', boutonVerifier: 'Kontroli', feedbackCorrect: 'Ĝuste!', feedbackPresque: 'Preskaŭ! Mankas unu vorto:', reponseEtait: 'La respondo estis:', placeholderReponse: 'Skribu vian respondon ĉi tie…', boutonRecommencer: 'Reprovi', basculerVersTexte: 'Skribi la respondon anstataŭ', basculerVersTuiles: 'Reveni al la kaheloj', remarqueQuatreDifficile: 'Bonege! Vi kompletigis ĉiujn kvar ekzercojn en malfacila reĝimo \u2014 vera atingo.', niveauGlobalLabel: 'Nivelo:', raccourciExercices: 'Salti al la ekzercoj', sessionInvite: 'Ĉu viva klaso?', sessionPlaceholderCode: 'Kodo', sessionBtnSuivre: 'Sekvi', sessionBtnQuitter: 'Forlasi', sessionStatutProf: '● Vive — vi sekvas la instruiston', sessionStatutEleves: '● Vive — nun estas via vico!', sessionTerminee: 'Seanco finiĝis — vi povas daŭrigi mem.', sessionCodeInvalide: 'Nevalida kodo aŭ fermita seanco — kontrolu kun via instruisto.' },
-    zh: { precedent: '返回', continuer: '继续', terminer: '完成', ceQuiAEteDit: '已说内容', aRetenir: '记住这个' , afficherTrad: '显示翻译', cacherTrad: '隐藏翻译', exercicesTitre: '来练习一下？', exercicesIntro: '不是考试——只是四个小情境，帮你记住刚才学的内容。', niveauFacile: '简单', niveauDifficile: '困难', boutonVerifier: '检查', feedbackCorrect: '对啦！', feedbackPresque: '差一点！还差一个词：', reponseEtait: '正确答案是：', placeholderReponse: '在这里输入你的答案……', boutonRecommencer: '再试一次', basculerVersTexte: '改成手动输入', basculerVersTuiles: '返回方块', remarqueQuatreDifficile: '太棒了！你在困难模式下完成了全部四个练习——这是一个重要的里程碑。', niveauGlobalLabel: '难度：', raccourciExercices: '跳到练习', sessionInvite: '实时课程？', sessionPlaceholderCode: '代码', sessionBtnSuivre: '跟随', sessionBtnQuitter: '离开', sessionStatutProf: '● 直播中——你正跟着老师', sessionStatutEleves: '● 直播中——轮到你了！', sessionTerminee: '课程已结束——你可以自己继续。', sessionCodeInvalide: '代码无效或课程已关闭——请向老师确认。' },
-    ja: { precedent: '戻る', continuer: '続ける', terminer: '終了', ceQuiAEteDit: '話されたこと', aRetenir: '覚えておこう' , afficherTrad: '翻訳を表示', cacherTrad: '翻訳を隠す', exercicesTitre: 'ちょっと練習しよう！', exercicesIntro: 'テストじゃないよ——今学んだことを覚えるための、ちょっとした場面が4つあるだけ。', niveauFacile: 'かんたん', niveauDifficile: 'むずかしい', boutonVerifier: '確認する', feedbackCorrect: 'そのとおり！', feedbackPresque: 'おしい！あと1語たりない：', reponseEtait: '正解は：', placeholderReponse: 'ここに答えを書いてね…', boutonRecommencer: 'もう一度', basculerVersTexte: '代わりに書いて答える', basculerVersTuiles: 'タイルに戻る', remarqueQuatreDifficile: 'すごい！むずかしいモードで4つの練習を全部クリアしたね \u2014 大きな一歩だよ。', niveauGlobalLabel: 'レベル：', raccourciExercices: '練習にスキップ', sessionInvite: 'ライブ授業？', sessionPlaceholderCode: 'コード', sessionBtnSuivre: '参加する', sessionBtnQuitter: '退出', sessionStatutProf: '● ライブ中 — 先生についていっているよ', sessionStatutEleves: '● ライブ中 — 今は君の番！', sessionTerminee: 'セッションが終了しました — ここからは自分で続けられるよ。', sessionCodeInvalide: 'コードが無効か、セッションが終了しています — 先生に確認してね。' },
-    ko: { precedent: '뒤로', continuer: '계속', terminer: '완료', ceQuiAEteDit: '나눈 이야기', aRetenir: '기억해두기' , afficherTrad: '번역 보기', cacherTrad: '번역 숨기기', exercicesTitre: '연습해 볼까?', exercicesIntro: '시험이 아니에요 — 방금 배운 걸 익히도록 짧은 상황 네 개만 준비했어요.', niveauFacile: '쉬움', niveauDifficile: '어려움', boutonVerifier: '확인', feedbackCorrect: '맞아요!', feedbackPresque: '거의 다 왔어요! 단어 하나가 빠졌어요:', reponseEtait: '정답은:', placeholderReponse: '여기에 답을 써 보세요…', boutonRecommencer: '다시 해보기', basculerVersTexte: '대신 답을 입력하기', basculerVersTuiles: '타일로 돌아가기', remarqueQuatreDifficile: '잘했어요! 어려움 모드에서 네 가지 연습을 모두 완료했어요 \u2014 정말 큰 성과예요.', niveauGlobalLabel: '레벨:', raccourciExercices: '연습으로 건너뛰기', sessionInvite: '실시간 수업?', sessionPlaceholderCode: '코드', sessionBtnSuivre: '따라가기', sessionBtnQuitter: '나가기', sessionStatutProf: '● 실시간 — 선생님을 따라가고 있어요', sessionStatutEleves: '● 실시간 — 이제 네 차례예요!', sessionTerminee: '세션이 종료되었어요 — 이제 혼자서 계속할 수 있어요.', sessionCodeInvalide: '코드가 잘못되었거나 세션이 닫혔어요 — 선생님께 확인해 보세요.' },
-    vi: { precedent: 'Quay lại', continuer: 'Tiếp tục', terminer: 'Hoàn thành', ceQuiAEteDit: 'Những gì đã nói', aRetenir: 'Ghi nhớ' , afficherTrad: 'Hiện bản dịch', cacherTrad: 'Ẩn bản dịch', exercicesTitre: 'Luyện tập một chút nhé?', exercicesIntro: 'Không phải bài kiểm tra đâu — chỉ là bốn tình huống nhỏ để nhớ những gì bạn vừa học.', niveauFacile: 'Dễ', niveauDifficile: 'Khó', boutonVerifier: 'Kiểm tra', feedbackCorrect: 'Đúng rồi!', feedbackPresque: 'Gần đúng rồi! Còn thiếu một từ:', reponseEtait: 'Đáp án là:', placeholderReponse: 'Viết câu trả lời của bạn ở đây…', boutonRecommencer: 'Thử lại', basculerVersTexte: 'Viết câu trả lời thay vào đó', basculerVersTuiles: 'Quay lại các ô từ', remarqueQuatreDifficile: 'Làm tốt lắm! Bạn đã hoàn thành cả bốn bài tập ở chế độ Khó \u2014 đó là một cột mốc thực sự.', niveauGlobalLabel: 'Mức độ:', raccourciExercices: 'Bỏ qua đến phần bài tập', sessionInvite: 'Học trực tiếp?', sessionPlaceholderCode: 'Mã', sessionBtnSuivre: 'Theo dõi', sessionBtnQuitter: 'Rời đi', sessionStatutProf: '● Trực tiếp — bạn đang theo giáo viên', sessionStatutEleves: '● Trực tiếp — đến lượt bạn rồi!', sessionTerminee: 'Buổi học đã kết thúc — bạn có thể tự tiếp tục.', sessionCodeInvalide: 'Mã không hợp lệ hoặc buổi học đã đóng — hãy hỏi lại giáo viên.' },
-    ht: { precedent: 'Tounen', continuer: 'Kontinye', terminer: 'Fini', ceQuiAEteDit: 'Sa ki te di', aRetenir: 'Pou sonje' , afficherTrad: 'Montre tradiksyon', cacherTrad: 'Kache tradiksyon', exercicesTitre: 'Annou pratike?', exercicesIntro: 'Se pa yon egzamen — se sèlman kat ti sitiyasyon rapid pou ede ou sonje sa ou fèk wè a.', niveauFacile: 'Fasil', niveauDifficile: 'Difisil', boutonVerifier: 'Verifye', feedbackCorrect: 'Se sa!', feedbackPresque: 'Prèske! Manke yon mo:', reponseEtait: 'Repons lan te:', placeholderReponse: 'Ekri repons ou isit la…', boutonRecommencer: 'Eseye ankò', basculerVersTexte: 'Ekri repons lan pito', basculerVersTuiles: 'Retounen nan mo yo', remarqueQuatreDifficile: 'Bon travay! Ou fin fè tout kat egzèsis yo nan mòd difisil \u2014 se yon bèl etap.', niveauGlobalLabel: 'Nivo:', raccourciExercices: 'Sote ale nan egzèsis yo', sessionInvite: 'Kou an dirèk?', sessionPlaceholderCode: 'Kòd', sessionBtnSuivre: 'Swiv', sessionBtnQuitter: 'Kite', sessionStatutProf: '● An dirèk — w ap swiv pwofesè a', sessionStatutEleves: '● An dirèk — se tou pa ou kounye a!', sessionTerminee: 'Sesyon an fini — ou ka kontinye poukont ou.', sessionCodeInvalide: 'Kòd envalid oswa sesyon fèmen — tcheke ak pwofesè ou.' },
-    tl: { precedent: 'Bumalik', continuer: 'Magpatuloy', terminer: 'Tapusin', ceQuiAEteDit: 'Ang nasabi na', aRetenir: 'Dapat tandaan' , afficherTrad: 'Ipakita ang salin', cacherTrad: 'Itago ang salin', exercicesTitre: 'Mag-ensayo tayo?', exercicesIntro: 'Walang pagsusulit dito — apat na maiikling sitwasyon lang para maalala mo ang natutunan mo.', niveauFacile: 'Madali', niveauDifficile: 'Mahirap', boutonVerifier: 'Suriin', feedbackCorrect: 'Tama iyan!', feedbackPresque: 'Halos tama! Kulang ng isang salita:', reponseEtait: 'Ang sagot ay:', placeholderReponse: 'Isulat ang iyong sagot dito…', boutonRecommencer: 'Subukan ulit', basculerVersTexte: 'Isulat na lang ang sagot', basculerVersTuiles: 'Bumalik sa mga tile', remarqueQuatreDifficile: 'Ang galing! Natapos mo ang apat na ehersisyo sa Mahirap na antas \u2014 isa itong malaking tagumpay.', niveauGlobalLabel: 'Antas:', raccourciExercices: 'Lumaktaw sa mga ehersisyo', sessionInvite: 'Live na klase?', sessionPlaceholderCode: 'Code', sessionBtnSuivre: 'Sundan', sessionBtnQuitter: 'Umalis', sessionStatutProf: '● Live — sinusundan mo ang guro', sessionStatutEleves: '● Live — turn mo na!', sessionTerminee: 'Tapos na ang sesyon — puwede ka nang magpatuloy nang mag-isa.', sessionCodeInvalide: 'Di-wastong code o sarado na ang sesyon — magtanong sa iyong guro.' },
-    id: { precedent: 'Kembali', continuer: 'Lanjut', terminer: 'Selesai', ceQuiAEteDit: 'Yang sudah dikatakan', aRetenir: 'Perlu diingat' , afficherTrad: 'Tampilkan terjemahan', cacherTrad: 'Sembunyikan terjemahan', exercicesTitre: 'Yuk, latihan!', exercicesIntro: 'Bukan ujian kok — cuma empat situasi singkat biar apa yang baru kamu lihat makin nempel.', niveauFacile: 'Mudah', niveauDifficile: 'Sulit', boutonVerifier: 'Periksa', feedbackCorrect: 'Betul!', feedbackPresque: 'Hampir! Masih kurang satu kata:', reponseEtait: 'Jawabannya adalah:', placeholderReponse: 'Tulis jawabanmu di sini…', boutonRecommencer: 'Coba lagi', basculerVersTexte: 'Ketik saja jawabannya', basculerVersTuiles: 'Kembali ke ubin', remarqueQuatreDifficile: 'Kerja bagus! Kamu berhasil menyelesaikan keempat latihan di mode Sulit \u2014 ini pencapaian yang keren.', niveauGlobalLabel: 'Level:', raccourciExercices: 'Lompat ke latihan', sessionInvite: 'Kelas langsung?', sessionPlaceholderCode: 'Kode', sessionBtnSuivre: 'Ikuti', sessionBtnQuitter: 'Keluar', sessionStatutProf: '● Langsung — kamu sedang mengikuti guru', sessionStatutEleves: '● Langsung — sekarang giliranmu!', sessionTerminee: 'Sesi berakhir — kamu bisa lanjut sendiri.', sessionCodeInvalide: 'Kode tidak valid atau sesi sudah ditutup — tanyakan ke gurumu.' },
-    nl: { precedent: 'Terug', continuer: 'Verder', terminer: 'Klaar', ceQuiAEteDit: 'Wat er gezegd is', aRetenir: 'Om te onthouden' , afficherTrad: 'Vertaling tonen', cacherTrad: 'Vertaling verbergen', exercicesTitre: 'Zullen we oefenen?', exercicesIntro: 'Geen examen hoor — gewoon vier korte situaties om vast te houden wat je net hebt gezien.', niveauFacile: 'Makkelijk', niveauDifficile: 'Moeilijk', boutonVerifier: 'Controleren', feedbackCorrect: 'Dat is \u2019m!', feedbackPresque: 'Bijna! Er ontbreekt nog één woord:', reponseEtait: 'Het antwoord was:', placeholderReponse: 'Typ hier je antwoord…', boutonRecommencer: 'Opnieuw proberen', basculerVersTexte: 'Antwoord liever typen', basculerVersTuiles: 'Terug naar de tegels', remarqueQuatreDifficile: 'Goed gedaan! Je hebt alle vier de oefeningen op het niveau Moeilijk voltooid \u2014 een mooie mijlpaal.', niveauGlobalLabel: 'Niveau:', raccourciExercices: 'Naar de oefeningen springen', sessionInvite: 'Live les?', sessionPlaceholderCode: 'Code', sessionBtnSuivre: 'Volgen', sessionBtnQuitter: 'Verlaten', sessionStatutProf: '● Live — je volgt de leraar', sessionStatutEleves: '● Live — nu ben jij aan de beurt!', sessionTerminee: 'Sessie beëindigd — je kunt zelf verdergaan.', sessionCodeInvalide: 'Ongeldige code of gesloten sessie — vraag het aan je leraar.' },
-    de: { precedent: 'Zurück', continuer: 'Weiter', terminer: 'Fertig', ceQuiAEteDit: 'Was gesagt wurde', aRetenir: 'Zum Merken' , afficherTrad: 'Übersetzung anzeigen', cacherTrad: 'Übersetzung ausblenden', exercicesTitre: 'Lust zu üben?', exercicesIntro: 'Keine Prüfung — nur vier kurze Situationen, damit das Gelernte hängen bleibt.', niveauFacile: 'Leicht', niveauDifficile: 'Schwer', boutonVerifier: 'Prüfen', feedbackCorrect: 'Genau!', feedbackPresque: 'Fast! Ein Wort fehlt noch:', reponseEtait: 'Die Antwort war:', placeholderReponse: 'Schreib hier deine Antwort…', boutonRecommencer: 'Nochmal versuchen', basculerVersTexte: 'Antwort stattdessen tippen', basculerVersTuiles: 'Zurück zu den Kacheln', remarqueQuatreDifficile: 'Gut gemacht! Du hast alle vier Übungen im Modus Schwer abgeschlossen \u2014 ein echter Meilenstein.', niveauGlobalLabel: 'Stufe:', raccourciExercices: 'Zu den Übungen springen', sessionInvite: 'Live-Unterricht?', sessionPlaceholderCode: 'Code', sessionBtnSuivre: 'Folgen', sessionBtnQuitter: 'Verlassen', sessionStatutProf: '● Live — du folgst der Lehrperson', sessionStatutEleves: '● Live — jetzt bist du dran!', sessionTerminee: 'Sitzung beendet — du kannst allein weitermachen.', sessionCodeInvalide: 'Ungültiger Code oder Sitzung geschlossen — frag deine Lehrperson.' },
-    fa: { precedent: 'بازگشت', continuer: 'ادامه', terminer: 'پایان', ceQuiAEteDit: 'آنچه گفته شد', aRetenir: 'نکته\u200cی مهم' , afficherTrad: 'نمایش ترجمه', cacherTrad: 'پنهان کردن ترجمه', exercicesTitre: 'کمی تمرین کنیم؟', exercicesIntro: 'این امتحان نیست — فقط چهار موقعیت کوتاه برای اینکه چیزی که الان دیدی بهتر یادت بماند.', niveauFacile: 'آسان', niveauDifficile: 'سخت', boutonVerifier: 'بررسی', feedbackCorrect: 'درسته!', feedbackPresque: 'تقریباً! یک کلمه کم داری:', reponseEtait: 'جواب این بود:', placeholderReponse: 'پاسخت را اینجا بنویس…', boutonRecommencer: 'دوباره امتحان کن', basculerVersTexte: 'در عوض پاسخ را بنویس', basculerVersTuiles: 'بازگشت به کاشی‌ها', remarqueQuatreDifficile: 'آفرین! هر چهار تمرین را در حالت سخت کامل کردی \u2014 این یک دستاورد واقعی است.', niveauGlobalLabel: 'سطح:', raccourciExercices: 'پرش به تمرین\u200cها', sessionInvite: 'کلاس زنده؟', sessionPlaceholderCode: 'کد', sessionBtnSuivre: 'دنبال کردن', sessionBtnQuitter: 'خروج', sessionStatutProf: '● زنده — داری معلم رو دنبال می‌کنی', sessionStatutEleves: '● زنده — حالا نوبت توئه!', sessionTerminee: 'جلسه تمام شد — می‌تونی خودت ادامه بدی.', sessionCodeInvalide: 'کد نامعتبر یا جلسه بسته شده — با معلمت بررسی کن.' },
-    sv: { precedent: 'Tillbaka', continuer: 'Fortsätt', terminer: 'Klart', ceQuiAEteDit: 'Vad som sagts', aRetenir: 'Bra att veta' , afficherTrad: 'Visa översättning', cacherTrad: 'Dölj översättning', exercicesTitre: 'Ska vi öva?', exercicesIntro: 'Inget prov här — bara fyra snabba situationer så att det du just sett fastnar.', niveauFacile: 'Lätt', niveauDifficile: 'Svårt', boutonVerifier: 'Kontrollera', feedbackCorrect: 'Just det!', feedbackPresque: 'Nästan! Ett ord saknas:', reponseEtait: 'Svaret var:', placeholderReponse: 'Skriv ditt svar här…', boutonRecommencer: 'Försök igen', basculerVersTexte: 'Skriv svaret istället', basculerVersTuiles: 'Tillbaka till brickorna', remarqueQuatreDifficile: 'Snyggt jobbat! Du klarade alla fyra övningarna på svårt läge \u2014 en riktig milstolpe.', niveauGlobalLabel: 'Nivå:', raccourciExercices: 'Hoppa till övningarna', sessionInvite: 'Livelektion?', sessionPlaceholderCode: 'Kod', sessionBtnSuivre: 'Följ', sessionBtnQuitter: 'Lämna', sessionStatutProf: '● Live — du följer läraren', sessionStatutEleves: '● Live — nu är det din tur!', sessionTerminee: 'Sessionen är slut — du kan fortsätta själv.', sessionCodeInvalide: 'Ogiltig kod eller stängd session — kolla med din lärare.' },
-    no: { precedent: 'Tilbake', continuer: 'Fortsett', terminer: 'Ferdig', ceQuiAEteDit: 'Det som ble sagt', aRetenir: 'Verdt å huske' , afficherTrad: 'Vis oversettelse', cacherTrad: 'Skjul oversettelse', exercicesTitre: 'Skal vi øve litt?', exercicesIntro: 'Ingen prøve her — bare fire raske situasjoner for å feste det du nettopp så.', niveauFacile: 'Lett', niveauDifficile: 'Vanskelig', boutonVerifier: 'Sjekk', feedbackCorrect: 'Akkurat!', feedbackPresque: 'Nesten! Ett ord mangler:', reponseEtait: 'Svaret var:', placeholderReponse: 'Skriv svaret ditt her…', boutonRecommencer: 'Prøv igjen', basculerVersTexte: 'Skriv svaret i stedet', basculerVersTuiles: 'Tilbake til brikkene', remarqueQuatreDifficile: 'Bra jobbet! Du fullførte alle fire øvelsene på vanskelig nivå \u2014 en fin milepæl.', niveauGlobalLabel: 'Nivå:', raccourciExercices: 'Hopp til øvelsene', sessionInvite: 'Direktetime?', sessionPlaceholderCode: 'Kode', sessionBtnSuivre: 'Følg', sessionBtnQuitter: 'Forlat', sessionStatutProf: '● Direkte — du følger læreren', sessionStatutEleves: '● Direkte — nå er det din tur!', sessionTerminee: 'Økten er over — du kan fortsette på egen hånd.', sessionCodeInvalide: 'Ugyldig kode eller stengt økt — sjekk med læreren din.' },
-    ru: { precedent: 'Назад', continuer: 'Далее', terminer: 'Готово', ceQuiAEteDit: 'Что было сказано', aRetenir: 'Важно запомнить', afficherTrad: 'Показать перевод', cacherTrad: 'Скрыть перевод', exercicesTitre: 'Потренируемся?', exercicesIntro: 'Это не экзамен — всего четыре коротких ситуации, чтобы закрепить то, что ты только что увидел(а).', niveauFacile: 'Легко', niveauDifficile: 'Сложно', boutonVerifier: 'Проверить', feedbackCorrect: 'Верно!', feedbackPresque: 'Почти! Не хватает одного слова:', reponseEtait: 'Правильный ответ:', placeholderReponse: 'Напиши свой ответ здесь…', boutonRecommencer: 'Попробовать снова', basculerVersTexte: 'Ввести ответ вручную', basculerVersTuiles: 'Вернуться к плиткам', remarqueQuatreDifficile: 'Отлично! Ты выполнил(а) все четыре упражнения на сложном уровне \u2014 это настоящее достижение.', niveauGlobalLabel: 'Уровень:', raccourciExercices: 'Перейти к упражнениям', sessionInvite: 'Живой урок?', sessionPlaceholderCode: 'Код', sessionBtnSuivre: 'Следовать', sessionBtnQuitter: 'Выйти', sessionStatutProf: '● В эфире — ты следуешь за учителем', sessionStatutEleves: '● В эфире — теперь твоя очередь!', sessionTerminee: 'Сессия завершена — можешь продолжать сам(а).', sessionCodeInvalide: 'Неверный код или сессия закрыта — уточни у учителя.' }
+    fr: { precedent: 'Précédent', continuer: 'Continuer', terminer: 'Terminer', ceQuiAEteDit: 'Ce qui a été dit', aRetenir: 'À retenir' , afficherTrad: 'Afficher la traduction', cacherTrad: 'Cacher la traduction', afficherAudio: 'Afficher l\u2019audio', cacherAudio: 'Cacher l\u2019audio', ecouteTitre: 'On écoute ?', ecouteIntro: 'Le prof (ou le bouton 🔊) lit une phrase à voix haute — écris ou choisis les mots que tu entends.', ecouteConsigne: 'Écris ce que tu entends', exercicesTitre: 'On s\u2019entraîne\u00A0?', exercicesIntro: 'Pas d\u2019examen ici — juste deux petites mises en situation pour ancrer ce que tu viens de voir.', niveauFacile: 'Facile', niveauDifficile: 'Difficile', boutonVerifier: 'Vérifier', feedbackCorrect: 'C\u2019est ça\u00A0!', feedbackPresque: 'Presque\u00A0! Il manque un mot\u00A0:', reponseEtait: 'La réponse était\u00A0:', placeholderReponse: 'Écris ta réponse ici…', boutonRecommencer: 'Recommencer', basculerVersTexte: 'Écrire la réponse plutôt', basculerVersTuiles: 'Revenir aux tuiles', remarqueQuatreDifficile: 'Bravo\u00A0! Tu as réussi les quatre exercices en mode difficile\u00A0\u2014\u00A0une belle étape de franchie.', niveauGlobalLabel: 'Niveau\u00A0:', raccourciExercices: 'Passer aux exercices', sessionInvite: 'Cours en direct ?', sessionPlaceholderCode: 'Code', sessionBtnSuivre: 'Suivre', sessionBtnQuitter: 'Quitter', sessionStatutProf: '● En direct — tu suis le prof', sessionStatutEleves: '● En direct — à toi de jouer !', sessionTerminee: 'Session terminée — tu peux continuer par toi-même.', sessionCodeInvalide: 'Code invalide ou session fermée — vérifie avec ton prof.' },
+    en: { precedent: 'Back', continuer: 'Continue', terminer: 'Finish', ceQuiAEteDit: 'What was said', aRetenir: 'Good to know' , afficherTrad: 'Show translation', cacherTrad: 'Hide translation', afficherAudio: 'Show audio', cacherAudio: 'Hide audio', ecouteTitre: 'Let’s listen!', ecouteIntro: 'Your teacher (or the 🔊 button) will read a sentence out loud — write or pick the words you hear.', ecouteConsigne: 'Write what you hear', exercicesTitre: 'Let\u2019s practice!', exercicesIntro: 'No test here — just two quick situations to help what you just saw sink in.', niveauFacile: 'Easy', niveauDifficile: 'Hard', boutonVerifier: 'Check', feedbackCorrect: 'That\u2019s it!', feedbackPresque: 'Almost! One word is missing:', reponseEtait: 'The answer was:', placeholderReponse: 'Type your answer here…', boutonRecommencer: 'Try again', basculerVersTexte: 'Type the answer instead', basculerVersTuiles: 'Back to the tiles', remarqueQuatreDifficile: 'Nice work! You completed all four exercises in Hard mode \u2014 that\u2019s a real milestone.', niveauGlobalLabel: 'Level:', raccourciExercices: 'Skip to exercises', sessionInvite: 'Live class?', sessionPlaceholderCode: 'Code', sessionBtnSuivre: 'Follow', sessionBtnQuitter: 'Leave', sessionStatutProf: '● Live — you’re following the teacher', sessionStatutEleves: '● Live — your turn now!', sessionTerminee: 'Session ended — you can carry on by yourself.', sessionCodeInvalide: 'Invalid or closed code — check with your teacher.' },
+    es: { precedent: 'Atrás', continuer: 'Continuar', terminer: 'Terminar', ceQuiAEteDit: 'Lo que se dijo', aRetenir: 'Para recordar' , afficherTrad: 'Mostrar traducción', cacherTrad: 'Ocultar traducción', afficherAudio: 'Mostrar audio', cacherAudio: 'Ocultar audio', ecouteTitre: '¡A escuchar!', ecouteIntro: 'Tu profe (o el botón 🔊) va a leer una frase en voz alta — escribe o elige las palabras que escuches.', ecouteConsigne: 'Escribe lo que escuchas', exercicesTitre: '¡A practicar!', exercicesIntro: 'Nada de examen — solo cuatro situaciones rápidas para que se te quede lo que acabas de ver.', niveauFacile: 'Fácil', niveauDifficile: 'Difícil', boutonVerifier: 'Comprobar', feedbackCorrect: '¡Eso es!', feedbackPresque: '¡Casi! Falta una palabra:', reponseEtait: 'La respuesta era:', placeholderReponse: 'Escribe tu respuesta aquí…', boutonRecommencer: 'Intentar de nuevo', basculerVersTexte: 'Escribir la respuesta en su lugar', basculerVersTuiles: 'Volver a las fichas', remarqueQuatreDifficile: '¡Muy bien\u00A0! Completaste los cuatro ejercicios en modo difícil \u2014 es un logro importante.', niveauGlobalLabel: 'Nivel:', raccourciExercices: 'Saltar a los ejercicios', sessionInvite: '¿Clase en directo?', sessionPlaceholderCode: 'Código', sessionBtnSuivre: 'Seguir', sessionBtnQuitter: 'Salir', sessionStatutProf: '● En directo — estás siguiendo al profe', sessionStatutEleves: '● En directo — ¡ahora te toca a ti!', sessionTerminee: 'Sesión terminada — puedes continuar por tu cuenta.', sessionCodeInvalide: 'Código inválido o sesión cerrada — pregúntale a tu profe.' },
+    it: { precedent: 'Indietro', continuer: 'Continua', terminer: 'Fine', ceQuiAEteDit: 'Cosa è stato detto', aRetenir: 'Da ricordare' , afficherTrad: 'Mostra traduzione', cacherTrad: 'Nascondi traduzione', afficherAudio: 'Mostra audio', cacherAudio: 'Nascondi audio', ecouteTitre: 'Ascoltiamo!', ecouteIntro: 'L’insegnante (o il pulsante 🔊) leggerà una frase ad alta voce — scrivi o scegli le parole che senti.', ecouteConsigne: 'Scrivi quello che senti', exercicesTitre: 'Ci alleniamo?', exercicesIntro: 'Niente esame — solo quattro situazioni veloci per far restare quello che hai appena visto.', niveauFacile: 'Facile', niveauDifficile: 'Difficile', boutonVerifier: 'Verifica', feedbackCorrect: 'Esatto!', feedbackPresque: 'Quasi! Manca una parola:', reponseEtait: 'La risposta era:', placeholderReponse: 'Scrivi qui la tua risposta…', boutonRecommencer: 'Riprova', basculerVersTexte: 'Scrivi invece la risposta', basculerVersTuiles: 'Torna alle tessere', remarqueQuatreDifficile: 'Ottimo lavoro! Hai completato tutti e quattro gli esercizi in modalità difficile \u2014 un bel traguardo.', niveauGlobalLabel: 'Livello:', raccourciExercices: 'Vai agli esercizi', sessionInvite: 'Lezione in diretta?', sessionPlaceholderCode: 'Codice', sessionBtnSuivre: 'Segui', sessionBtnQuitter: 'Esci', sessionStatutProf: '● In diretta — stai seguendo l’insegnante', sessionStatutEleves: '● In diretta — tocca a te!', sessionTerminee: 'Sessione terminata — puoi continuare da solo.', sessionCodeInvalide: 'Codice non valido o sessione chiusa — chiedi al tuo insegnante.' },
+    pt: { precedent: 'Voltar', continuer: 'Continuar', terminer: 'Terminar', ceQuiAEteDit: 'O que foi dito', aRetenir: 'A reter' , afficherTrad: 'Mostrar tradução', cacherTrad: 'Ocultar tradução', afficherAudio: 'Mostrar áudio', cacherAudio: 'Ocultar áudio', ecouteTitre: 'Vamos ouvir?', ecouteIntro: 'O professor (ou o botão 🔊) vai ler uma frase em voz alta — escreve ou escolhe as palavras que ouves.', ecouteConsigne: 'Escreve o que ouves', exercicesTitre: 'Vamos praticar?', exercicesIntro: 'Nada de exame — só quatro situações rápidas para fixar o que acabaste de ver.', niveauFacile: 'Fácil', niveauDifficile: 'Difícil', boutonVerifier: 'Verificar', feedbackCorrect: 'É isso!', feedbackPresque: 'Quase! Falta uma palavra:', reponseEtait: 'A resposta era:', placeholderReponse: 'Escreve aqui a tua resposta…', boutonRecommencer: 'Tentar outra vez', basculerVersTexte: 'Escrever a resposta em vez disso', basculerVersTuiles: 'Voltar às peças', remarqueQuatreDifficile: 'Bom trabalho! Completaste os quatro exercícios no nível difícil \u2014 uma etapa importante.', niveauGlobalLabel: 'Nível:', raccourciExercices: 'Saltar para os exercícios', sessionInvite: 'Aula em direto?', sessionPlaceholderCode: 'Código', sessionBtnSuivre: 'Seguir', sessionBtnQuitter: 'Sair', sessionStatutProf: '● Em direto — estás a seguir o professor', sessionStatutEleves: '● Em direto — agora és tu!', sessionTerminee: 'Sessão terminada — podes continuar sozinho.', sessionCodeInvalide: 'Código inválido ou sessão fechada — verifica com o teu professor.' },
+    ca: { precedent: 'Enrere', continuer: 'Continua', terminer: 'Acaba', ceQuiAEteDit: 'El que s\u2019ha dit', aRetenir: 'Per recordar' , afficherTrad: 'Mostra la traducció', cacherTrad: 'Amaga la traducció', afficherAudio: 'Mostra l\u2019àudio', cacherAudio: 'Amaga l\u2019àudio', ecouteTitre: 'Escoltem?', ecouteIntro: 'El professor (o el botó 🔊) llegirà una frase en veu alta — escriu o tria les paraules que sentis.', ecouteConsigne: 'Escriu el que sentis', exercicesTitre: 'Practiquem?', exercicesIntro: 'Res d\u2019examen — només quatre situacions ràpides perquè se\u2019t quedi el que acabes de veure.', niveauFacile: 'Fàcil', niveauDifficile: 'Difícil', boutonVerifier: 'Comprova', feedbackCorrect: 'Això mateix!', feedbackPresque: 'Quasi! Falta una paraula:', reponseEtait: 'La resposta era:', placeholderReponse: 'Escriu la teva resposta aquí…', boutonRecommencer: 'Torna-ho a provar', basculerVersTexte: 'Escriure la resposta en comptes d’això', basculerVersTuiles: 'Tornar a les fitxes', remarqueQuatreDifficile: 'Molt bé! Has completat els quatre exercicis en mode difícil \u2014 una bona fita.', niveauGlobalLabel: 'Nivell:', raccourciExercices: 'Salta als exercicis', sessionInvite: 'Classe en directe?', sessionPlaceholderCode: 'Codi', sessionBtnSuivre: 'Segueix', sessionBtnQuitter: 'Surt', sessionStatutProf: '● En directe — estàs seguint el professor', sessionStatutEleves: '● En directe — ara et toca a tu!', sessionTerminee: 'Sessió acabada — pots continuar tot sol.', sessionCodeInvalide: 'Codi no vàlid o sessió tancada — pregunta al teu professor.' },
+    eo: { precedent: 'Reen', continuer: 'Daŭrigi', terminer: 'Fini', ceQuiAEteDit: 'Kio estis dirita', aRetenir: 'Por memori' , afficherTrad: 'Montri tradukon', cacherTrad: 'Kaŝi tradukon', afficherAudio: 'Montri aŭdion', cacherAudio: 'Kaŝi aŭdion', ecouteTitre: 'Ĉu ni aŭskultu?', ecouteIntro: 'Via instruisto (aŭ la butono 🔊) legos frazon laŭte — skribu aŭ elektu la vortojn, kiujn vi aŭdas.', ecouteConsigne: 'Skribu tion, kion vi aŭdas', exercicesTitre: 'Ni ekzercu?', exercicesIntro: 'Neniu ekzameno ĉi tie — nur kvar rapidaj situacioj por ke tio, kion vi ĵus vidis, restu en la memoro.', niveauFacile: 'Facila', niveauDifficile: 'Malfacila', boutonVerifier: 'Kontroli', feedbackCorrect: 'Ĝuste!', feedbackPresque: 'Preskaŭ! Mankas unu vorto:', reponseEtait: 'La respondo estis:', placeholderReponse: 'Skribu vian respondon ĉi tie…', boutonRecommencer: 'Reprovi', basculerVersTexte: 'Skribi la respondon anstataŭ', basculerVersTuiles: 'Reveni al la kaheloj', remarqueQuatreDifficile: 'Bonege! Vi kompletigis ĉiujn kvar ekzercojn en malfacila reĝimo \u2014 vera atingo.', niveauGlobalLabel: 'Nivelo:', raccourciExercices: 'Salti al la ekzercoj', sessionInvite: 'Ĉu viva klaso?', sessionPlaceholderCode: 'Kodo', sessionBtnSuivre: 'Sekvi', sessionBtnQuitter: 'Forlasi', sessionStatutProf: '● Vive — vi sekvas la instruiston', sessionStatutEleves: '● Vive — nun estas via vico!', sessionTerminee: 'Seanco finiĝis — vi povas daŭrigi mem.', sessionCodeInvalide: 'Nevalida kodo aŭ fermita seanco — kontrolu kun via instruisto.' },
+    zh: { precedent: '返回', continuer: '继续', terminer: '完成', ceQuiAEteDit: '已说内容', aRetenir: '记住这个' , afficherTrad: '显示翻译', cacherTrad: '隐藏翻译', afficherAudio: '显示音频', cacherAudio: '隐藏音频', ecouteTitre: '来听一听？', ecouteIntro: '老师（或者点🔊按钮）会大声读一句话——写下或选出你听到的词。', ecouteConsigne: '写下你听到的内容', exercicesTitre: '来练习一下？', exercicesIntro: '不是考试——只是四个小情境，帮你记住刚才学的内容。', niveauFacile: '简单', niveauDifficile: '困难', boutonVerifier: '检查', feedbackCorrect: '对啦！', feedbackPresque: '差一点！还差一个词：', reponseEtait: '正确答案是：', placeholderReponse: '在这里输入你的答案……', boutonRecommencer: '再试一次', basculerVersTexte: '改成手动输入', basculerVersTuiles: '返回方块', remarqueQuatreDifficile: '太棒了！你在困难模式下完成了全部四个练习——这是一个重要的里程碑。', niveauGlobalLabel: '难度：', raccourciExercices: '跳到练习', sessionInvite: '实时课程？', sessionPlaceholderCode: '代码', sessionBtnSuivre: '跟随', sessionBtnQuitter: '离开', sessionStatutProf: '● 直播中——你正跟着老师', sessionStatutEleves: '● 直播中——轮到你了！', sessionTerminee: '课程已结束——你可以自己继续。', sessionCodeInvalide: '代码无效或课程已关闭——请向老师确认。' },
+    ja: { precedent: '戻る', continuer: '続ける', terminer: '終了', ceQuiAEteDit: '話されたこと', aRetenir: '覚えておこう' , afficherTrad: '翻訳を表示', cacherTrad: '翻訳を隠す', afficherAudio: '音声を表示', cacherAudio: '音声を隠す', ecouteTitre: '聞いてみよう！', ecouteIntro: '先生（または🔊ボタン）が文を声に出して読むよ—聞こえた単語を書くか選んでね。', ecouteConsigne: '聞こえたことを書いてね', exercicesTitre: 'ちょっと練習しよう！', exercicesIntro: 'テストじゃないよ——今学んだことを覚えるための、ちょっとした場面が4つあるだけ。', niveauFacile: 'かんたん', niveauDifficile: 'むずかしい', boutonVerifier: '確認する', feedbackCorrect: 'そのとおり！', feedbackPresque: 'おしい！あと1語たりない：', reponseEtait: '正解は：', placeholderReponse: 'ここに答えを書いてね…', boutonRecommencer: 'もう一度', basculerVersTexte: '代わりに書いて答える', basculerVersTuiles: 'タイルに戻る', remarqueQuatreDifficile: 'すごい！むずかしいモードで4つの練習を全部クリアしたね \u2014 大きな一歩だよ。', niveauGlobalLabel: 'レベル：', raccourciExercices: '練習にスキップ', sessionInvite: 'ライブ授業？', sessionPlaceholderCode: 'コード', sessionBtnSuivre: '参加する', sessionBtnQuitter: '退出', sessionStatutProf: '● ライブ中 — 先生についていっているよ', sessionStatutEleves: '● ライブ中 — 今は君の番！', sessionTerminee: 'セッションが終了しました — ここからは自分で続けられるよ。', sessionCodeInvalide: 'コードが無効か、セッションが終了しています — 先生に確認してね。' },
+    ko: { precedent: '뒤로', continuer: '계속', terminer: '완료', ceQuiAEteDit: '나눈 이야기', aRetenir: '기억해두기' , afficherTrad: '번역 보기', cacherTrad: '번역 숨기기', afficherAudio: '오디오 보기', cacherAudio: '오디오 숨기기', ecouteTitre: '들어볼까?', ecouteIntro: '선생님이 (또는 🔊 버튼이) 문장을 소리 내어 읽어줄 거예요 — 들리는 단어를 쓰거나 골라보세요.', ecouteConsigne: '들리는 대로 써 보세요', exercicesTitre: '연습해 볼까?', exercicesIntro: '시험이 아니에요 — 방금 배운 걸 익히도록 짧은 상황 네 개만 준비했어요.', niveauFacile: '쉬움', niveauDifficile: '어려움', boutonVerifier: '확인', feedbackCorrect: '맞아요!', feedbackPresque: '거의 다 왔어요! 단어 하나가 빠졌어요:', reponseEtait: '정답은:', placeholderReponse: '여기에 답을 써 보세요…', boutonRecommencer: '다시 해보기', basculerVersTexte: '대신 답을 입력하기', basculerVersTuiles: '타일로 돌아가기', remarqueQuatreDifficile: '잘했어요! 어려움 모드에서 네 가지 연습을 모두 완료했어요 \u2014 정말 큰 성과예요.', niveauGlobalLabel: '레벨:', raccourciExercices: '연습으로 건너뛰기', sessionInvite: '실시간 수업?', sessionPlaceholderCode: '코드', sessionBtnSuivre: '따라가기', sessionBtnQuitter: '나가기', sessionStatutProf: '● 실시간 — 선생님을 따라가고 있어요', sessionStatutEleves: '● 실시간 — 이제 네 차례예요!', sessionTerminee: '세션이 종료되었어요 — 이제 혼자서 계속할 수 있어요.', sessionCodeInvalide: '코드가 잘못되었거나 세션이 닫혔어요 — 선생님께 확인해 보세요.' },
+    vi: { precedent: 'Quay lại', continuer: 'Tiếp tục', terminer: 'Hoàn thành', ceQuiAEteDit: 'Những gì đã nói', aRetenir: 'Ghi nhớ' , afficherTrad: 'Hiện bản dịch', cacherTrad: 'Ẩn bản dịch', afficherAudio: 'Hiện âm thanh', cacherAudio: 'Ẩn âm thanh', ecouteTitre: 'Cùng nghe nhé?', ecouteIntro: 'Giáo viên (hoặc nút 🔊) sẽ đọc to một câu — hãy viết hoặc chọn những từ bạn nghe được.', ecouteConsigne: 'Viết lại những gì bạn nghe được', exercicesTitre: 'Luyện tập một chút nhé?', exercicesIntro: 'Không phải bài kiểm tra đâu — chỉ là bốn tình huống nhỏ để nhớ những gì bạn vừa học.', niveauFacile: 'Dễ', niveauDifficile: 'Khó', boutonVerifier: 'Kiểm tra', feedbackCorrect: 'Đúng rồi!', feedbackPresque: 'Gần đúng rồi! Còn thiếu một từ:', reponseEtait: 'Đáp án là:', placeholderReponse: 'Viết câu trả lời của bạn ở đây…', boutonRecommencer: 'Thử lại', basculerVersTexte: 'Viết câu trả lời thay vào đó', basculerVersTuiles: 'Quay lại các ô từ', remarqueQuatreDifficile: 'Làm tốt lắm! Bạn đã hoàn thành cả bốn bài tập ở chế độ Khó \u2014 đó là một cột mốc thực sự.', niveauGlobalLabel: 'Mức độ:', raccourciExercices: 'Bỏ qua đến phần bài tập', sessionInvite: 'Học trực tiếp?', sessionPlaceholderCode: 'Mã', sessionBtnSuivre: 'Theo dõi', sessionBtnQuitter: 'Rời đi', sessionStatutProf: '● Trực tiếp — bạn đang theo giáo viên', sessionStatutEleves: '● Trực tiếp — đến lượt bạn rồi!', sessionTerminee: 'Buổi học đã kết thúc — bạn có thể tự tiếp tục.', sessionCodeInvalide: 'Mã không hợp lệ hoặc buổi học đã đóng — hãy hỏi lại giáo viên.' },
+    ht: { precedent: 'Tounen', continuer: 'Kontinye', terminer: 'Fini', ceQuiAEteDit: 'Sa ki te di', aRetenir: 'Pou sonje' , afficherTrad: 'Montre tradiksyon', cacherTrad: 'Kache tradiksyon', afficherAudio: 'Montre odyo', cacherAudio: 'Kache odyo', ecouteTitre: 'Ann koute?', ecouteIntro: 'Pwofesè a (oswa bouton 🔊 a) ap li yon fraz awotvò — ekri oswa chwazi mo ou tande yo.', ecouteConsigne: 'Ekri sa ou tande', exercicesTitre: 'Annou pratike?', exercicesIntro: 'Se pa yon egzamen — se sèlman kat ti sitiyasyon rapid pou ede ou sonje sa ou fèk wè a.', niveauFacile: 'Fasil', niveauDifficile: 'Difisil', boutonVerifier: 'Verifye', feedbackCorrect: 'Se sa!', feedbackPresque: 'Prèske! Manke yon mo:', reponseEtait: 'Repons lan te:', placeholderReponse: 'Ekri repons ou isit la…', boutonRecommencer: 'Eseye ankò', basculerVersTexte: 'Ekri repons lan pito', basculerVersTuiles: 'Retounen nan mo yo', remarqueQuatreDifficile: 'Bon travay! Ou fin fè tout kat egzèsis yo nan mòd difisil \u2014 se yon bèl etap.', niveauGlobalLabel: 'Nivo:', raccourciExercices: 'Sote ale nan egzèsis yo', sessionInvite: 'Kou an dirèk?', sessionPlaceholderCode: 'Kòd', sessionBtnSuivre: 'Swiv', sessionBtnQuitter: 'Kite', sessionStatutProf: '● An dirèk — w ap swiv pwofesè a', sessionStatutEleves: '● An dirèk — se tou pa ou kounye a!', sessionTerminee: 'Sesyon an fini — ou ka kontinye poukont ou.', sessionCodeInvalide: 'Kòd envalid oswa sesyon fèmen — tcheke ak pwofesè ou.' },
+    tl: { precedent: 'Bumalik', continuer: 'Magpatuloy', terminer: 'Tapusin', ceQuiAEteDit: 'Ang nasabi na', aRetenir: 'Dapat tandaan' , afficherTrad: 'Ipakita ang salin', cacherTrad: 'Itago ang salin', afficherAudio: 'Ipakita ang audio', cacherAudio: 'Itago ang audio', ecouteTitre: 'Makinig tayo?', ecouteIntro: 'Babasahin nang malakas ng titser (o ng 🔊 button) ang isang pangungusap — isulat o piliin ang mga salitang narinig mo.', ecouteConsigne: 'Isulat ang naririnig mo', exercicesTitre: 'Mag-ensayo tayo?', exercicesIntro: 'Walang pagsusulit dito — apat na maiikling sitwasyon lang para maalala mo ang natutunan mo.', niveauFacile: 'Madali', niveauDifficile: 'Mahirap', boutonVerifier: 'Suriin', feedbackCorrect: 'Tama iyan!', feedbackPresque: 'Halos tama! Kulang ng isang salita:', reponseEtait: 'Ang sagot ay:', placeholderReponse: 'Isulat ang iyong sagot dito…', boutonRecommencer: 'Subukan ulit', basculerVersTexte: 'Isulat na lang ang sagot', basculerVersTuiles: 'Bumalik sa mga tile', remarqueQuatreDifficile: 'Ang galing! Natapos mo ang apat na ehersisyo sa Mahirap na antas \u2014 isa itong malaking tagumpay.', niveauGlobalLabel: 'Antas:', raccourciExercices: 'Lumaktaw sa mga ehersisyo', sessionInvite: 'Live na klase?', sessionPlaceholderCode: 'Code', sessionBtnSuivre: 'Sundan', sessionBtnQuitter: 'Umalis', sessionStatutProf: '● Live — sinusundan mo ang guro', sessionStatutEleves: '● Live — turn mo na!', sessionTerminee: 'Tapos na ang sesyon — puwede ka nang magpatuloy nang mag-isa.', sessionCodeInvalide: 'Di-wastong code o sarado na ang sesyon — magtanong sa iyong guro.' },
+    id: { precedent: 'Kembali', continuer: 'Lanjut', terminer: 'Selesai', ceQuiAEteDit: 'Yang sudah dikatakan', aRetenir: 'Perlu diingat' , afficherTrad: 'Tampilkan terjemahan', cacherTrad: 'Sembunyikan terjemahan', afficherAudio: 'Tampilkan audio', cacherAudio: 'Sembunyikan audio', ecouteTitre: 'Yuk, dengarkan!', ecouteIntro: 'Gurumu (atau tombol 🔊) akan membacakan sebuah kalimat — tulis atau pilih kata-kata yang kamu dengar.', ecouteConsigne: 'Tulis apa yang kamu dengar', exercicesTitre: 'Yuk, latihan!', exercicesIntro: 'Bukan ujian kok — cuma empat situasi singkat biar apa yang baru kamu lihat makin nempel.', niveauFacile: 'Mudah', niveauDifficile: 'Sulit', boutonVerifier: 'Periksa', feedbackCorrect: 'Betul!', feedbackPresque: 'Hampir! Masih kurang satu kata:', reponseEtait: 'Jawabannya adalah:', placeholderReponse: 'Tulis jawabanmu di sini…', boutonRecommencer: 'Coba lagi', basculerVersTexte: 'Ketik saja jawabannya', basculerVersTuiles: 'Kembali ke ubin', remarqueQuatreDifficile: 'Kerja bagus! Kamu berhasil menyelesaikan keempat latihan di mode Sulit \u2014 ini pencapaian yang keren.', niveauGlobalLabel: 'Level:', raccourciExercices: 'Lompat ke latihan', sessionInvite: 'Kelas langsung?', sessionPlaceholderCode: 'Kode', sessionBtnSuivre: 'Ikuti', sessionBtnQuitter: 'Keluar', sessionStatutProf: '● Langsung — kamu sedang mengikuti guru', sessionStatutEleves: '● Langsung — sekarang giliranmu!', sessionTerminee: 'Sesi berakhir — kamu bisa lanjut sendiri.', sessionCodeInvalide: 'Kode tidak valid atau sesi sudah ditutup — tanyakan ke gurumu.' },
+    nl: { precedent: 'Terug', continuer: 'Verder', terminer: 'Klaar', ceQuiAEteDit: 'Wat er gezegd is', aRetenir: 'Om te onthouden' , afficherTrad: 'Vertaling tonen', cacherTrad: 'Vertaling verbergen', afficherAudio: 'Audio tonen', cacherAudio: 'Audio verbergen', ecouteTitre: 'Zullen we luisteren?', ecouteIntro: 'Je leraar (of de 🔊-knop) leest een zin hardop voor — schrijf op of kies de woorden die je hoort.', ecouteConsigne: 'Schrijf op wat je hoort', exercicesTitre: 'Zullen we oefenen?', exercicesIntro: 'Geen examen hoor — gewoon vier korte situaties om vast te houden wat je net hebt gezien.', niveauFacile: 'Makkelijk', niveauDifficile: 'Moeilijk', boutonVerifier: 'Controleren', feedbackCorrect: 'Dat is \u2019m!', feedbackPresque: 'Bijna! Er ontbreekt nog één woord:', reponseEtait: 'Het antwoord was:', placeholderReponse: 'Typ hier je antwoord…', boutonRecommencer: 'Opnieuw proberen', basculerVersTexte: 'Antwoord liever typen', basculerVersTuiles: 'Terug naar de tegels', remarqueQuatreDifficile: 'Goed gedaan! Je hebt alle vier de oefeningen op het niveau Moeilijk voltooid \u2014 een mooie mijlpaal.', niveauGlobalLabel: 'Niveau:', raccourciExercices: 'Naar de oefeningen springen', sessionInvite: 'Live les?', sessionPlaceholderCode: 'Code', sessionBtnSuivre: 'Volgen', sessionBtnQuitter: 'Verlaten', sessionStatutProf: '● Live — je volgt de leraar', sessionStatutEleves: '● Live — nu ben jij aan de beurt!', sessionTerminee: 'Sessie beëindigd — je kunt zelf verdergaan.', sessionCodeInvalide: 'Ongeldige code of gesloten sessie — vraag het aan je leraar.' },
+    de: { precedent: 'Zurück', continuer: 'Weiter', terminer: 'Fertig', ceQuiAEteDit: 'Was gesagt wurde', aRetenir: 'Zum Merken' , afficherTrad: 'Übersetzung anzeigen', cacherTrad: 'Übersetzung ausblenden', afficherAudio: 'Audio anzeigen', cacherAudio: 'Audio ausblenden', ecouteTitre: 'Hören wir mal zu?', ecouteIntro: 'Deine Lehrkraft (oder der 🔊-Knopf) liest einen Satz laut vor — schreib oder wähle die Wörter, die du hörst.', ecouteConsigne: 'Schreib, was du hörst', exercicesTitre: 'Lust zu üben?', exercicesIntro: 'Keine Prüfung — nur vier kurze Situationen, damit das Gelernte hängen bleibt.', niveauFacile: 'Leicht', niveauDifficile: 'Schwer', boutonVerifier: 'Prüfen', feedbackCorrect: 'Genau!', feedbackPresque: 'Fast! Ein Wort fehlt noch:', reponseEtait: 'Die Antwort war:', placeholderReponse: 'Schreib hier deine Antwort…', boutonRecommencer: 'Nochmal versuchen', basculerVersTexte: 'Antwort stattdessen tippen', basculerVersTuiles: 'Zurück zu den Kacheln', remarqueQuatreDifficile: 'Gut gemacht! Du hast alle vier Übungen im Modus Schwer abgeschlossen \u2014 ein echter Meilenstein.', niveauGlobalLabel: 'Stufe:', raccourciExercices: 'Zu den Übungen springen', sessionInvite: 'Live-Unterricht?', sessionPlaceholderCode: 'Code', sessionBtnSuivre: 'Folgen', sessionBtnQuitter: 'Verlassen', sessionStatutProf: '● Live — du folgst der Lehrperson', sessionStatutEleves: '● Live — jetzt bist du dran!', sessionTerminee: 'Sitzung beendet — du kannst allein weitermachen.', sessionCodeInvalide: 'Ungültiger Code oder Sitzung geschlossen — frag deine Lehrperson.' },
+    fa: { precedent: 'بازگشت', continuer: 'ادامه', terminer: 'پایان', ceQuiAEteDit: 'آنچه گفته شد', aRetenir: 'نکته\u200cی مهم' , afficherTrad: 'نمایش ترجمه', cacherTrad: 'پنهان کردن ترجمه', afficherAudio: 'نمایش صدا', cacherAudio: 'پنهان کردن صدا', ecouteTitre: 'گوش بدهیم؟', ecouteIntro: 'معلم (یا دکمه 🔊) یک جمله را با صدای بلند می‌خواند — کلماتی را که می‌شنوی بنویس یا انتخاب کن.', ecouteConsigne: 'بنویس چه می‌شنوی', exercicesTitre: 'کمی تمرین کنیم؟', exercicesIntro: 'این امتحان نیست — فقط چهار موقعیت کوتاه برای اینکه چیزی که الان دیدی بهتر یادت بماند.', niveauFacile: 'آسان', niveauDifficile: 'سخت', boutonVerifier: 'بررسی', feedbackCorrect: 'درسته!', feedbackPresque: 'تقریباً! یک کلمه کم داری:', reponseEtait: 'جواب این بود:', placeholderReponse: 'پاسخت را اینجا بنویس…', boutonRecommencer: 'دوباره امتحان کن', basculerVersTexte: 'در عوض پاسخ را بنویس', basculerVersTuiles: 'بازگشت به کاشی‌ها', remarqueQuatreDifficile: 'آفرین! هر چهار تمرین را در حالت سخت کامل کردی \u2014 این یک دستاورد واقعی است.', niveauGlobalLabel: 'سطح:', raccourciExercices: 'پرش به تمرین\u200cها', sessionInvite: 'کلاس زنده؟', sessionPlaceholderCode: 'کد', sessionBtnSuivre: 'دنبال کردن', sessionBtnQuitter: 'خروج', sessionStatutProf: '● زنده — داری معلم رو دنبال می‌کنی', sessionStatutEleves: '● زنده — حالا نوبت توئه!', sessionTerminee: 'جلسه تمام شد — می‌تونی خودت ادامه بدی.', sessionCodeInvalide: 'کد نامعتبر یا جلسه بسته شده — با معلمت بررسی کن.' },
+    sv: { precedent: 'Tillbaka', continuer: 'Fortsätt', terminer: 'Klart', ceQuiAEteDit: 'Vad som sagts', aRetenir: 'Bra att veta' , afficherTrad: 'Visa översättning', cacherTrad: 'Dölj översättning', afficherAudio: 'Visa ljud', cacherAudio: 'Dölj ljud', ecouteTitre: 'Ska vi lyssna?', ecouteIntro: 'Din lärare (eller 🔊-knappen) läser en mening högt — skriv eller välj orden du hör.', ecouteConsigne: 'Skriv vad du hör', exercicesTitre: 'Ska vi öva?', exercicesIntro: 'Inget prov här — bara fyra snabba situationer så att det du just sett fastnar.', niveauFacile: 'Lätt', niveauDifficile: 'Svårt', boutonVerifier: 'Kontrollera', feedbackCorrect: 'Just det!', feedbackPresque: 'Nästan! Ett ord saknas:', reponseEtait: 'Svaret var:', placeholderReponse: 'Skriv ditt svar här…', boutonRecommencer: 'Försök igen', basculerVersTexte: 'Skriv svaret istället', basculerVersTuiles: 'Tillbaka till brickorna', remarqueQuatreDifficile: 'Snyggt jobbat! Du klarade alla fyra övningarna på svårt läge \u2014 en riktig milstolpe.', niveauGlobalLabel: 'Nivå:', raccourciExercices: 'Hoppa till övningarna', sessionInvite: 'Livelektion?', sessionPlaceholderCode: 'Kod', sessionBtnSuivre: 'Följ', sessionBtnQuitter: 'Lämna', sessionStatutProf: '● Live — du följer läraren', sessionStatutEleves: '● Live — nu är det din tur!', sessionTerminee: 'Sessionen är slut — du kan fortsätta själv.', sessionCodeInvalide: 'Ogiltig kod eller stängd session — kolla med din lärare.' },
+    no: { precedent: 'Tilbake', continuer: 'Fortsett', terminer: 'Ferdig', ceQuiAEteDit: 'Det som ble sagt', aRetenir: 'Verdt å huske' , afficherTrad: 'Vis oversettelse', cacherTrad: 'Skjul oversettelse', afficherAudio: 'Vis lyd', cacherAudio: 'Skjul lyd', ecouteTitre: 'Skal vi lytte?', ecouteIntro: 'Læreren din (eller 🔊-knappen) leser en setning høyt — skriv eller velg ordene du hører.', ecouteConsigne: 'Skriv det du hører', exercicesTitre: 'Skal vi øve litt?', exercicesIntro: 'Ingen prøve her — bare fire raske situasjoner for å feste det du nettopp så.', niveauFacile: 'Lett', niveauDifficile: 'Vanskelig', boutonVerifier: 'Sjekk', feedbackCorrect: 'Akkurat!', feedbackPresque: 'Nesten! Ett ord mangler:', reponseEtait: 'Svaret var:', placeholderReponse: 'Skriv svaret ditt her…', boutonRecommencer: 'Prøv igjen', basculerVersTexte: 'Skriv svaret i stedet', basculerVersTuiles: 'Tilbake til brikkene', remarqueQuatreDifficile: 'Bra jobbet! Du fullførte alle fire øvelsene på vanskelig nivå \u2014 en fin milepæl.', niveauGlobalLabel: 'Nivå:', raccourciExercices: 'Hopp til øvelsene', sessionInvite: 'Direktetime?', sessionPlaceholderCode: 'Kode', sessionBtnSuivre: 'Følg', sessionBtnQuitter: 'Forlat', sessionStatutProf: '● Direkte — du følger læreren', sessionStatutEleves: '● Direkte — nå er det din tur!', sessionTerminee: 'Økten er over — du kan fortsette på egen hånd.', sessionCodeInvalide: 'Ugyldig kode eller stengt økt — sjekk med læreren din.' },
+    ru: { precedent: 'Назад', continuer: 'Далее', terminer: 'Готово', ceQuiAEteDit: 'Что было сказано', aRetenir: 'Важно запомнить', afficherTrad: 'Показать перевод', cacherTrad: 'Скрыть перевод', afficherAudio: 'Показать аудио', cacherAudio: 'Скрыть аудио', ecouteTitre: 'Послушаем?', ecouteIntro: 'Учитель (или кнопка 🔊) прочтёт фразу вслух — напиши или выбери слова, которые ты услышишь.', ecouteConsigne: 'Напиши, что ты слышишь', exercicesTitre: 'Потренируемся?', exercicesIntro: 'Это не экзамен — всего четыре коротких ситуации, чтобы закрепить то, что ты только что увидел(а).', niveauFacile: 'Легко', niveauDifficile: 'Сложно', boutonVerifier: 'Проверить', feedbackCorrect: 'Верно!', feedbackPresque: 'Почти! Не хватает одного слова:', reponseEtait: 'Правильный ответ:', placeholderReponse: 'Напиши свой ответ здесь…', boutonRecommencer: 'Попробовать снова', basculerVersTexte: 'Ввести ответ вручную', basculerVersTuiles: 'Вернуться к плиткам', remarqueQuatreDifficile: 'Отлично! Ты выполнил(а) все четыре упражнения на сложном уровне \u2014 это настоящее достижение.', niveauGlobalLabel: 'Уровень:', raccourciExercices: 'Перейти к упражнениям', sessionInvite: 'Живой урок?', sessionPlaceholderCode: 'Код', sessionBtnSuivre: 'Следовать', sessionBtnQuitter: 'Выйти', sessionStatutProf: '● В эфире — ты следуешь за учителем', sessionStatutEleves: '● В эфире — теперь твоя очередь!', sessionTerminee: 'Сессия завершена — можешь продолжать сам(а).', sessionCodeInvalide: 'Неверный код или сессия закрыта — уточни у учителя.' }
   };
 
   function texteInterface(cle) {
@@ -1679,7 +1803,63 @@
     }
   ];
 
+  // 🆕 (15-08-2026) Exercices d'écoute — phase 2 du chantier demandé par
+  // Raphaël, section séparée des EXERCICES ci-dessus (jamais mélangée :
+  // récompenses, compteurs de réussite et affichage sont indépendants,
+  // voir plus bas exercicesEcouteResolus etc.). Contrairement aux
+  // EXERCICES d'image, la consigne est TOUJOURS la même (texteInterface
+  // 'ecouteConsigne', voir texteExercice ci-dessous) — ce qui varie ici
+  // c'est `texte`, la phrase à faire entendre, JAMAIS montrée à l'élève :
+  //   - en session de classe active, c'est cette valeur que le prof doit
+  //     lire à voix haute (voir synchroniserEtatSession dans
+  //     afficherExercicesEcoute — poussée dès l'affichage, pas seulement
+  //     à la saisie, contrairement à annoncerReponseEnCours) ;
+  //   - en solo, c'est elle que lireAudio() (phase 1) synthétise au clic
+  //     sur le bouton 🔊 de la carte (voir creerCarteExercice, branche
+  //     ex.type === 'ecoute').
+  // `reponse` reprend le même format que EXERCICES (mots dans l'ordre,
+  // ponctuation isolée sautée par MOT_PONCTUATION_SEULE_EXERCICE) —
+  // entièrement réévaluable par evaluerReponseExercice/reponsesAcceptees
+  // sans aucune modification de ces fonctions.
+  // Vocabulaire volontairement limité à ce qui a déjà été vu dans le
+  // dialogue ci-dessus (Mange/un/sandwich/J'ai/faim/Tu/comprends/Quoi) —
+  // niveau archi-débutant, rien de nouveau à deviner par-dessus l'écoute
+  // elle-même.
+  const EXERCICES_ECOUTE = [
+    {
+      id: 'd1_ecoute_1',
+      type: 'ecoute',
+      texte: 'Mange un sandwich.',
+      reponse: ['Mange', 'un', 'sandwich.'],
+      distracteurs: ['le', 'manges']
+    },
+    {
+      id: 'd1_ecoute_2',
+      type: 'ecoute',
+      texte: 'J\u2019ai faim.',
+      reponse: ['J\u2019ai', 'faim.'],
+      distracteurs: ['Tu', 'as']
+    },
+    {
+      id: 'd1_ecoute_3',
+      type: 'ecoute',
+      texte: 'Quoi\u00A0?',
+      reponse: ['Quoi', '?'],
+      distracteurs: ['Qui', 'Comment']
+    },
+    {
+      id: 'd1_ecoute_4',
+      type: 'ecoute',
+      texte: 'Tu comprends\u00A0?',
+      reponse: ['Tu', 'comprends', '?'],
+      distracteurs: ['Il', 'comprend']
+    }
+  ];
+
+  // 🆕 ex.type === 'ecoute' : consigne fixe (jamais la phrase elle-même,
+  // voir note de tête d'EXERCICES_ECOUTE) — sinon comportement inchangé.
   function texteExercice(ex) {
+    if (ex.type === 'ecoute') return texteInterface('ecouteConsigne');
     return ex.instruction[langueActuelle()] || ex.instruction.en;
   }
 
@@ -1979,11 +2159,15 @@
     const div = document.createElement('div');
     div.className = 'pile-item ' + def.speaker;
     const trad = traductionPhrase(def);
+    // 🆕 (15-08-2026) .pile-audio : bouton 🔊 par réplique, sibling de
+    // pile-avatar (même logique de révélation que btnAudioBulle, voir
+    // body.audio-actif) — lit def.texte via lireAudio() au clic.
     div.innerHTML = '<button type="button" class="pile-avatar" aria-label="' + texteInterface('afficherTrad') + '">' + INITIALES[def.speaker] + '</button>' +
       '<div class="pile-corps"><span class="pile-qui">' + NOMS[def.speaker] + '</span>' +
       '<div class="pile-texte">' + def.texte + '</div>' +
       (trad ? '<div class="pile-trad">' + trad + '</div>' : '') +
-      '</div>';
+      '</div>' +
+      '<button type="button" class="pile-audio" aria-label="Écouter"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H2v6h4l5 4V5Z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/></svg></button>';
     const elTrad = div.querySelector('.pile-trad');
     if (elTrad && traductionsVisiblesParDefaut) elTrad.classList.add('visible');
     if (elTrad) {
@@ -1991,6 +2175,10 @@
       div.querySelector('.pile-avatar').addEventListener('click', bascule);
       div.querySelector('.pile-texte').addEventListener('click', bascule);
     }
+    div.querySelector('.pile-audio').addEventListener('click', (e) => {
+      e.stopPropagation();
+      lireAudio(def.texte);
+    });
     elPileDialogue.appendChild(div);
     requestAnimationFrame(() => requestAnimationFrame(() => div.classList.add('in')));
   }
@@ -2158,6 +2346,22 @@
   // premiere_fois — mais autant éviter les appels réseau redondants).
   const recompensesExercicesDonnees = { base: false, parfait: false, parfaitDifficile: false };
 
+  // 🆕 (15-08-2026) Même mécanique que ci-dessus, mais pour
+  // EXERCICES_ECOUTE — état ENTIÈREMENT séparé exprès (voir note de tête
+  // d'EXERCICES_ECOUTE) : un élève qui ne fait QUE les exercices
+  // d'écoute ne doit jamais déclencher les récompenses "d1_exercices_*"
+  // prévues pour les 2 exercices d'image, et vice-versa. Clés RPC
+  // distinctes (d1_exercices_ecoute_*), mêmes montants que la section
+  // exercices pour rester cohérent (5 P$ / +5 P$ / +1 PB).
+  const elSectionExercicesEcoute = document.getElementById('sectionExercicesEcoute');
+  const elConteneurExercicesEcoute = document.getElementById('conteneurExercicesEcoute');
+  const btnTerminerExercicesEcoute = document.getElementById('btnTerminerExercicesEcoute');
+  const exercicesEcouteResolus = new Set();
+  const exercicesEcouteResolusDifficile = new Set();
+  const exercicesEcouteResolusSansErreur = new Set();
+  const exercicesEcouteResolusSansErreurDifficile = new Set();
+  const recompensesExercicesEcouteDonnees = { base: false, parfait: false, parfaitDifficile: false };
+
   // 🐛 CORRIGÉ (13-08-2026) : jamais déclarée nulle part dans ce fichier —
   // terminerLecon() (voir plus bas) la LISAIT (if (leconTerminee) return;)
   // avant toute affectation, ce qui levait une ReferenceError à chaque
@@ -2240,24 +2444,73 @@
     elSectionExercices.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
-  function creerCarteExercice(ex, index, niveauInitial) {
+  // 🆕 (15-08-2026) Pendant de afficherExercices() pour la section écoute —
+  // affichée à sa place une fois celle-ci terminée (voir câblage de
+  // btnTerminerExercices plus bas, remplacé pour mener ici plutôt qu'à
+  // terminerLecon() directement). Pas de sélecteur de niveau global (voir
+  // note de tête du HTML #sectionExercicesEcoute) : chaque carte démarre en
+  // 'facile' et reste réglable individuellement.
+  function afficherExercicesEcoute() {
+    // 🆕 Poussée dès l'affichage de la section (pas seulement à la saisie,
+    // contrairement à annoncerReponseEnCours — voir note de tête
+    // d'EXERCICES_ECOUTE) : les phrases elles-mêmes, pour que le prof les
+    // ait sous les yeux à lire à voix haute en session active. `texte`
+    // n'est jamais envoyé nulle part côté élève — uniquement dans cet état
+    // Presence/Broadcast destiné au widget du prof.
+    synchroniserEtatSession({
+      page: 'dialogues/d1/',
+      section: 'exercices_ecoute',
+      phrases: EXERCICES_ECOUTE.map(function (ex) { return { id: ex.id, texte: ex.texte }; })
+    });
+    elSectionExercices.style.display = 'none';
+    document.getElementById('txtExercicesEcouteTitre').textContent = texteInterface('ecouteTitre');
+    document.getElementById('txtExercicesEcouteIntro').textContent = texteInterface('ecouteIntro');
+    btnTerminerExercicesEcoute.textContent = texteInterface('terminer') + ' \u203a';
+    elConteneurExercicesEcoute.innerHTML = '';
+    EXERCICES_ECOUTE.forEach(function (ex, index) {
+      elConteneurExercicesEcoute.appendChild(creerCarteExercice(ex, index, 'facile', marquerCarteEcouteResolue));
+    });
+    elSectionExercicesEcoute.style.display = 'flex';
+    elSectionExercicesEcoute.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function creerCarteExercice(ex, index, niveauInitial, marquerFn) {
     const carte = document.createElement('div');
     carte.className = 'exercice-carte';
     carte.dataset.exerciceId = ex.id;
 
-    const cadreImage = document.createElement('div');
-    cadreImage.className = 'exercice-image-cadre';
-    const img = document.createElement('img');
-    img.src = ex.image;
-    img.alt = '';
-    img.onerror = function () {
-      const repli = document.createElement('div');
-      repli.className = 'repli-image-manquante';
-      repli.textContent = 'Image not ready yet';
-      img.replaceWith(repli);
-    };
-    cadreImage.appendChild(img);
-    carte.appendChild(cadreImage);
+    if (ex.type === 'ecoute') {
+      // 🆕 Carte d'écoute : pas d'image, un bouton 🔊 central à la place
+      // — clique = lireAudio(ex.texte) (phase 1). ex.texte n'apparaît
+      // JAMAIS dans le DOM ni dans aucun attribut visible/lisible par
+      // l'élève, uniquement capturé dans cette fermeture JS et dans
+      // l'état poussé au prof (voir afficherExercicesEcoute).
+      const cadreAudio = document.createElement('div');
+      cadreAudio.className = 'exercice-audio-cadre';
+      const btnEcouter = document.createElement('button');
+      btnEcouter.type = 'button';
+      btnEcouter.className = 'exercice-btn-ecouter';
+      btnEcouter.setAttribute('aria-label', 'Écouter');
+      btnEcouter.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H2v6h4l5 4V5Z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 5.5a9 9 0 0 1 0 13"/></svg>';
+      if (!('speechSynthesis' in window)) btnEcouter.style.display = 'none'; // pas de TTS : seule la lecture par le prof en session reste possible
+      btnEcouter.addEventListener('click', function () { lireAudio(ex.texte); });
+      cadreAudio.appendChild(btnEcouter);
+      carte.appendChild(cadreAudio);
+    } else {
+      const cadreImage = document.createElement('div');
+      cadreImage.className = 'exercice-image-cadre';
+      const img = document.createElement('img');
+      img.src = ex.image;
+      img.alt = '';
+      img.onerror = function () {
+        const repli = document.createElement('div');
+        repli.className = 'repli-image-manquante';
+        repli.textContent = 'Image not ready yet';
+        img.replaceWith(repli);
+      };
+      cadreImage.appendChild(img);
+      carte.appendChild(cadreImage);
+    }
 
     const instruction = document.createElement('div');
     instruction.className = 'exercice-instruction';
@@ -2281,11 +2534,17 @@
     const zoneJeu = document.createElement('div');
     carte.appendChild(zoneJeu);
 
+    // 🆕 marquerFn : par défaut marquerCarteResolue (EXERCICES d'image),
+    // mais afficherExercicesEcoute passe marquerCarteEcouteResolue pour
+    // que les cartes d'écoute alimentent leur PROPRE compteur/récompense,
+    // jamais celui des EXERCICES (voir sa note de tête).
+    const marquer = marquerFn || marquerCarteResolue;
+
     function choisirNiveau(niveau) {
       btnFacile.classList.toggle('actif', niveau === 'facile');
       btnDifficile.classList.toggle('actif', niveau === 'difficile');
       zoneJeu.innerHTML = '';
-      zoneJeu.appendChild(niveau === 'facile' ? creerZoneFacile(ex, carte) : creerZoneDifficile(ex, carte));
+      zoneJeu.appendChild(niveau === 'facile' ? creerZoneFacile(ex, carte, marquer) : creerZoneDifficile(ex, carte, marquer));
     }
     btnFacile.addEventListener('click', function () { choisirNiveau('facile'); });
     btnDifficile.addEventListener('click', function () { choisirNiveau('difficile'); });
@@ -2426,7 +2685,11 @@
   // gagner et que ces points rejoignent visuellement le sac. Repli
   // silencieux si le sac est absent/masqué, même prudence
   // qu'animerMotVersSac (identité du mécanisme sur tout le site).
-  function afficherRecompenseEtEnvoyerAuSac(piasses, pointsBonis) {
+  // 🆕 (15-08-2026) boutonAncre : optionnel, défaut btnTerminerExercices
+  // (comportement d'origine, inchangé) — verifierRecompensesExercicesEcoute
+  // passe btnTerminerExercicesEcoute pour ancrer correctement le toast
+  // pendant que la section exercices d'image (et son bouton) est cachée.
+  function afficherRecompenseEtEnvoyerAuSac(piasses, pointsBonis, boutonAncre) {
     const bouton = document.getElementById('sacBouton');
     if (!bouton || getComputedStyle(bouton).display === 'none') return;
 
@@ -2435,10 +2698,10 @@
     if (pointsBonis > 0) morceaux.push('+' + pointsBonis + ' PB');
     if (morceaux.length === 0) return;
 
-    // Ancré juste au-dessus du bouton Terminer (visible dès qu'un palier
-    // se débloque, puisque ça n'arrive qu'une fois les 4 exercices
-    // traités, moment où ce bouton est déjà à l'écran).
-    const ancre = btnTerminerExercices.getBoundingClientRect();
+    // Ancré juste au-dessus du bouton Terminer concerné (visible dès
+    // qu'un palier se débloque, puisque ça n'arrive qu'une fois la
+    // section correspondante déjà à l'écran).
+    const ancre = (boutonAncre || btnTerminerExercices).getBoundingClientRect();
     const toast = document.createElement('div');
     toast.className = 'recompense-toast';
     toast.textContent = morceaux.join(' \u00b7 ');
@@ -2509,8 +2772,70 @@
     elRemarqueDifficile.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   }
 
+  // 🆕 (15-08-2026) Pendant de marquerCarteResolue pour EXERCICES_ECOUTE
+  // — mêmes mécanismes (Presence, sets sans-erreur/difficile, appel à la
+  // vérification de récompense) mais sur l'état ÉCOUTE séparé (voir sa
+  // note de tête). Volontairement SANS le bloc "quatre en difficile
+  // débloquent d1_exercices_completes" de marquerCarteResolue : cette
+  // condition reste propre aux 2 EXERCICES d'image (déblocage "Le
+  // sandwich de Ginette", bravo-mecanique-synthese_v7.md §17) — l'écoute
+  // n'y participe pas.
+  function marquerCarteEcouteResolue(carte, ex, niveau, sansErreur, etatActiviteSupplementaire) {
+    carte.classList.add('resolue');
+    exercicesEcouteResolus.add(ex.id);
+    clearTimeout(minuteurReponseEnCours);
+    const sessionClasseActivite = window.KebBekSessionClasse || null;
+    if (sessionClasseActivite) sessionClasseActivite.annoncerActivite(etatActiviteSupplementaire || dernierEtatSession);
+    if (sansErreur) exercicesEcouteResolusSansErreur.add(ex.id);
+    if (niveau === 'difficile') {
+      exercicesEcouteResolusDifficile.add(ex.id);
+      if (sansErreur) exercicesEcouteResolusSansErreurDifficile.add(ex.id);
+    }
+    verifierRecompensesExercicesEcoute();
+  }
+
+  // 🆕 Mêmes trois paliers que verifierRecompensesExercices, mêmes
+  // montants (5 P$ / +5 P$ / +1 PB), mais clés RPC distinctes
+  // (d1_exercices_ecoute_*) et calculées sur EXERCICES_ECOUTE.length —
+  // totalement indépendant de la section exercices d'image.
+  async function verifierRecompensesExercicesEcoute() {
+    const attributions = [];
+    if (!recompensesExercicesEcouteDonnees.base && exercicesEcouteResolus.size === EXERCICES_ECOUTE.length) {
+      recompensesExercicesEcouteDonnees.base = true;
+      attributions.push(attribuerRecompenseExercice('d1_exercices_ecoute_base', 5, 0).then(function (accorde) {
+        return accorde ? { piasses: 5, pointsBonis: 0 } : null;
+      }));
+    }
+    if (!recompensesExercicesEcouteDonnees.parfait && exercicesEcouteResolusSansErreur.size === EXERCICES_ECOUTE.length) {
+      recompensesExercicesEcouteDonnees.parfait = true;
+      attributions.push(attribuerRecompenseExercice('d1_exercices_ecoute_parfait', 5, 0).then(function (accorde) {
+        return accorde ? { piasses: 5, pointsBonis: 0 } : null;
+      }));
+    }
+    if (!recompensesExercicesEcouteDonnees.parfaitDifficile && exercicesEcouteResolusSansErreurDifficile.size === EXERCICES_ECOUTE.length) {
+      recompensesExercicesEcouteDonnees.parfaitDifficile = true;
+      attributions.push(attribuerRecompenseExercice('d1_exercices_ecoute_parfait_difficile', 0, 1).then(function (accorde) {
+        return accorde ? { piasses: 0, pointsBonis: 1 } : null;
+      }));
+    }
+    if (attributions.length === 0) return;
+
+    const resultats = await Promise.all(attributions);
+    let piassesGagnees = 0;
+    let pointsBonisGagnes = 0;
+    resultats.forEach(function (r) {
+      if (!r) return;
+      piassesGagnees += r.piasses;
+      pointsBonisGagnes += r.pointsBonis;
+    });
+    if (piassesGagnees > 0 || pointsBonisGagnes > 0) {
+      afficherRecompenseEtEnvoyerAuSac(piassesGagnees, pointsBonisGagnes, btnTerminerExercicesEcoute);
+    }
+  }
+
   // ---------- Mode difficile : réponse libre, correction progressive ----------
-  function creerZoneDifficile(ex, carte) {
+  function creerZoneDifficile(ex, carte, marquerFn) {
+    const marquer = marquerFn || marquerCarteResolue;
     const wrapper = document.createElement('div');
     wrapper.style.display = 'flex';
     wrapper.style.flexDirection = 'column';
@@ -2576,7 +2901,7 @@
         btnVerifier.disabled = true;
         feedback.className = 'exercice-feedback correct';
         feedback.textContent = texteInterface('feedbackCorrect');
-        marquerCarteResolue(carte, ex, 'difficile', essais === 1);
+        marquer(carte, ex, 'difficile', essais === 1);
         return;
       }
 
@@ -2618,7 +2943,7 @@
           chips.appendChild(chip);
         });
         chips.style.display = 'flex';
-        marquerCarteResolue(carte, ex, 'difficile', false, etatErreur(ex, saisieComplete));
+        marquer(carte, ex, 'difficile', false, etatErreur(ex, saisieComplete));
       } else {
         feedback.className = 'exercice-feedback presque';
         feedback.textContent = motsAcquis.length ? texteInterface('feedbackPresque') : '';
@@ -2646,7 +2971,8 @@
   // clavier n'obtient pas un essai supplémentaire gratuit. La bascule
   // elle-même se désactive une fois l'exercice résolu ou révélé, comme
   // le reste de la carte.
-  function creerZoneFacile(ex, carte) {
+  function creerZoneFacile(ex, carte, marquerFn) {
+    const marquer = marquerFn || marquerCarteResolue;
     const wrapper = document.createElement('div');
     wrapper.style.display = 'flex';
     wrapper.style.flexDirection = 'column';
@@ -2834,7 +3160,7 @@
         champ.disabled = true;
         btnVerifierTexte.disabled = true;
         lienBascule.style.display = 'none';
-        marquerCarteResolue(carte, ex, 'facile', essais === 1);
+        marquer(carte, ex, 'facile', essais === 1);
         return;
       }
       if (essais >= 2) {
@@ -2849,7 +3175,7 @@
         champ.disabled = true;
         btnVerifierTexte.disabled = true;
         lienBascule.style.display = 'none';
-        marquerCarteResolue(carte, ex, 'facile', false, etatErreur(ex, texteBrutChoisi));
+        marquer(carte, ex, 'facile', false, etatErreur(ex, texteBrutChoisi));
       } else {
         feedback.className = 'exercice-feedback presque';
         feedback.textContent = texteInterface('feedbackPresque');
@@ -2886,7 +3212,11 @@
     return copie;
   }
 
-  btnTerminerExercices.addEventListener('click', terminerLecon);
+  // 🆕 (15-08-2026) Mène désormais à la section écoute plutôt que de
+  // terminer directement la leçon (phase 2 du chantier) — c'est
+  // btnTerminerExercicesEcoute, juste en dessous, qui appelle terminerLecon().
+  btnTerminerExercices.addEventListener('click', afficherExercicesEcoute);
+  btnTerminerExercicesEcoute.addEventListener('click', terminerLecon);
 
 
   async function terminerLecon() {
@@ -2974,6 +3304,81 @@
     metAJourBoutonToggleTraductions();
   });
   metAJourBoutonToggleTraductions();
+
+  // ================================================================
+  // 🆕 (15-08-2026) Audio — synthèse vocale (Web Speech API), phase 1
+  // du chantier demandé par Raphaël. En attendant de vrais
+  // enregistrements des personnages : lireAudio(texte) est autonome et
+  // sera réutilisée telle quelle par les exercices d'écoute en solo
+  // (phase 2) — quand un fichier audio existera pour une phrase donnée,
+  // il primera sur la synthèse (voir note de tête de la section
+  // EXERCICES plus haut, à ajouter en phase 2).
+  //
+  // Bouton global (même famille visuelle que "Afficher la traduction") :
+  // ne lit RIEN automatiquement, il révèle seulement les boutons 🔊
+  // individuels (bulle active + chaque réplique déjà dans la pile) —
+  // l'élève choisit quoi écouter et quand, comme demandé.
+  // ================================================================
+  let voixFrancaise = null;
+  function choisirVoixFrancaise() {
+    if (!('speechSynthesis' in window)) return null;
+    const voix = window.speechSynthesis.getVoices();
+    if (!voix.length) return null;
+    // Préférence fr-CA (accent québécois) si présente sur l'appareil,
+    // sinon n'importe quelle voix française — mieux que de forcer
+    // fr-FR et se retrouver sans voix du tout sur certains systèmes.
+    return voix.find(v => v.lang === 'fr-CA') ||
+           voix.find(v => v.lang && v.lang.toLowerCase().startsWith('fr')) ||
+           null;
+  }
+  const synthesesDisponibles = 'speechSynthesis' in window;
+  if (synthesesDisponibles) {
+    voixFrancaise = choisirVoixFrancaise();
+    // Sur Chrome, la liste des voix arrive de façon asynchrone après le
+    // chargement de la page — sans ça, le tout premier essai peut se
+    // retrouver sans voix française sélectionnée.
+    window.speechSynthesis.onvoiceschanged = () => { voixFrancaise = choisirVoixFrancaise(); };
+  }
+
+  function lireAudio(texte) {
+    if (!synthesesDisponibles || !texte) return;
+    // Retire toute balise HTML par prudence (texte vient normalement
+    // déjà en texte brut depuis ETAPES/EXERCICES, mais mieux vaut ne
+    // jamais faire lire des chevrons à la synthèse).
+    const propre = String(texte).replace(/<[^>]*>/g, '').trim();
+    if (!propre) return;
+    window.speechSynthesis.cancel(); // une seule lecture à la fois
+    const enonce = new SpeechSynthesisUtterance(propre);
+    enonce.lang = voixFrancaise ? voixFrancaise.lang : 'fr-FR';
+    if (voixFrancaise) enonce.voice = voixFrancaise;
+    enonce.rate = 0.92; // légèrement ralenti, public débutant
+    window.speechSynthesis.speak(enonce);
+  }
+
+  const btnToggleAudio = document.getElementById('btnToggleAudio');
+  const txtToggleAudio = document.getElementById('txtToggleAudio');
+  const btnAudioBulle = document.getElementById('btnAudioBulle');
+  let audioVisibleParDefaut = false;
+  function metAJourBoutonToggleAudio() {
+    txtToggleAudio.textContent = texteInterface(audioVisibleParDefaut ? 'cacherAudio' : 'afficherAudio');
+    btnToggleAudio.setAttribute('aria-pressed', String(audioVisibleParDefaut));
+    btnToggleAudio.classList.toggle('actif', audioVisibleParDefaut);
+    document.body.classList.toggle('audio-actif', audioVisibleParDefaut);
+  }
+  if (synthesesDisponibles) {
+    btnToggleAudio.addEventListener('click', () => {
+      audioVisibleParDefaut = !audioVisibleParDefaut;
+      metAJourBoutonToggleAudio();
+    });
+    btnAudioBulle.addEventListener('click', () => {
+      lireAudio(ETAPES[etape].texte);
+    });
+    metAJourBoutonToggleAudio();
+  } else {
+    // Navigateur sans synthèse vocale (rare, mais existe) : on ne montre
+    // pas une fonctionnalité qui ne ferait jamais rien au clic.
+    btnToggleAudio.style.display = 'none';
+  }
 
   // ================================================================
   // Session en direct (session-classe.js, 14-08-2026) — voir sa propre

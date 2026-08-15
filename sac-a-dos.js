@@ -58,8 +58,8 @@ function langueActuelleSac() {
 }
 
 const DICO_SAC = {
-  fr: { catMots: "Mots appris", catCodes: "Codes", catSucces: "Réussites", catTrophees: "Trophées", catCartes: "Cartes", sacVide: "rien pour l'instant", sacRienIci: "Rien ici pour l'instant.", sacRetirer: "Retirer", sacCopier: "Copier", sacUnItem: "{n} élément enregistré", sacPlusieursItems: "{n} éléments enregistrés", sacIntroPremiereFois: "Des mots que tu as déjà croisés sont ici ! Tu peux les copier ou les enlever — bientôt, tu pourras cocher les nouveaux mots que tu veux garder.", sacIntroCompris: "Compris !", sacViderCategorie: "Vider", sacViderTout: "Tout vider", sacConfirmViderCategorie: "Vider complètement « {categorie} » ? Cette action est irréversible.", sacConfirmViderTout: "Vider complètement le sac à dos ? Cette action est irréversible.", sacCopierCategorie: "Copier la catégorie", sacCopierTout: "Copier tout le sac", sacRienACopier: "Rien à copier dans cette catégorie.", sacModalCopierPuisVider: "Copier, puis vider", sacModalViderSansCopier: "Vider sans copier", sacModalAnnuler: "Annuler", natureArticle: "Articles", natureNom: "Noms", naturePronom: "Pronoms", natureVerbe: "Verbes", natureAdjectif: "Adjectifs", natureAdverbe: "Adverbes", naturePreposition: "Prépositions", natureInterjection: "Interjections", natureExpression: "Expressions", natureAutre: "Autres" },
-  en: { catMots: "Words learned", catCodes: "Codes", catSucces: "Achievements", catTrophees: "Trophies", catCartes: "Cards", sacVide: "nothing yet", sacRienIci: "Nothing here yet.", sacRetirer: "Remove", sacCopier: "Copy", sacUnItem: "{n} item saved", sacPlusieursItems: "{n} items saved", sacIntroPremiereFois: "Some words you've already come across are here! You can copy them or remove them — soon, you'll be able to check off any new word you want to keep.", sacIntroCompris: "Got it!", sacViderCategorie: "Clear", sacViderTout: "Clear everything", sacConfirmViderCategorie: "Completely clear \"{categorie}\"? This can't be undone.", sacConfirmViderTout: "Completely clear the whole backpack? This can't be undone.", sacCopierCategorie: "Copy this category", sacCopierTout: "Copy the whole backpack", sacRienACopier: "Nothing to copy in this category.", sacModalCopierPuisVider: "Copy, then clear", sacModalViderSansCopier: "Clear without copying", sacModalAnnuler: "Cancel", natureArticle: "Articles", natureNom: "Nouns", naturePronom: "Pronouns", natureVerbe: "Verbs", natureAdjectif: "Adjectives", natureAdverbe: "Adverbs", naturePreposition: "Prepositions", natureInterjection: "Interjections", natureExpression: "Expressions", natureAutre: "Other" },
+  fr: { catMots: "Mots appris", catCodes: "Codes", catSucces: "Réussites", catTrophees: "Trophées", catCartes: "Cartes", sacVide: "rien pour l'instant", sacRienIci: "Rien ici pour l'instant.", sacRetirer: "Retirer", sacCopier: "Copier", sacUnItem: "{n} élément enregistré", sacPlusieursItems: "{n} éléments enregistrés", sacIntroPremiereFois: "Des mots que tu as déjà croisés sont ici ! Tu peux les copier ou les enlever — bientôt, tu pourras cocher les nouveaux mots que tu veux garder.", sacIntroCompris: "Compris !", sacViderCategorie: "Vider", sacViderTout: "Tout vider", sacConfirmViderCategorie: "Vider complètement « {categorie} » ? Cette action est irréversible.", sacConfirmViderTout: "Vider complètement le sac à dos ? Cette action est irréversible.", sacCopierCategorie: "Copier la catégorie", sacCopierTout: "Copier tout le sac", sacRienACopier: "Rien à copier dans cette catégorie.", sacModalCopierPuisVider: "Copier, puis vider", sacModalViderSansCopier: "Vider sans copier", sacModalAnnuler: "Annuler", natureArticle: "Articles", natureDeterminant: "Déterminants", natureNom: "Noms", naturePronom: "Pronoms", natureVerbe: "Verbes", natureAdjectif: "Adjectifs", natureAdverbe: "Adverbes", naturePreposition: "Prépositions", natureConjonction: "Conjonctions", natureInterjection: "Interjections", natureExpression: "Expressions", natureAutre: "Autres", naturePrefixeVerbe: "verbe", conjIndicatifPresent: "Indicatif présent", conjImperatifPresent: "Impératif" },
+  en: { catMots: "Words learned", catCodes: "Codes", catSucces: "Achievements", catTrophees: "Trophies", catCartes: "Cards", sacVide: "nothing yet", sacRienIci: "Nothing here yet.", sacRetirer: "Remove", sacCopier: "Copy", sacUnItem: "{n} item saved", sacPlusieursItems: "{n} items saved", sacIntroPremiereFois: "Some words you've already come across are here! You can copy them or remove them — soon, you'll be able to check off any new word you want to keep.", sacIntroCompris: "Got it!", sacViderCategorie: "Clear", sacViderTout: "Clear everything", sacConfirmViderCategorie: "Completely clear \"{categorie}\"? This can't be undone.", sacConfirmViderTout: "Completely clear the whole backpack? This can't be undone.", sacCopierCategorie: "Copy this category", sacCopierTout: "Copy the whole backpack", sacRienACopier: "Nothing to copy in this category.", sacModalCopierPuisVider: "Copy, then clear", sacModalViderSansCopier: "Clear without copying", sacModalAnnuler: "Cancel", natureArticle: "Articles", natureDeterminant: "Determiners", natureNom: "Nouns", naturePronom: "Pronouns", natureVerbe: "Verbs", natureAdjectif: "Adjectives", natureAdverbe: "Adverbs", naturePreposition: "Prepositions", natureConjonction: "Conjunctions", natureInterjection: "Interjections", natureExpression: "Expressions", natureAutre: "Other", naturePrefixeVerbe: "verb", conjIndicatifPresent: "Present indicative", conjImperatifPresent: "Imperative" },
   es: { catMots: "Palabras aprendidas", catCodes: "Códigos", catSucces: "Logros", catTrophees: "Trofeos", catCartes: "Cartas", sacVide: "nada todavía", sacRienIci: "Todavía no hay nada aquí.", sacRetirer: "Quitar", sacCopier: "Copiar", sacUnItem: "{n} elemento guardado", sacPlusieursItems: "{n} elementos guardados", sacIntroPremiereFois: "Algunas palabras que ya has visto están aquí. Puedes copiarlas o quitarlas — pronto podrás marcar las palabras nuevas que quieras conservar.", sacIntroCompris: "¡Entendido!" },
   pt: { catMots: "Palavras aprendidas", catCodes: "Códigos", catSucces: "Sucessos", catTrophees: "Troféus", catCartes: "Cartas", sacVide: "nada ainda", sacRienIci: "Ainda não há nada aqui.", sacRetirer: "Remover", sacCopier: "Copiar", sacUnItem: "{n} item guardado", sacPlusieursItems: "{n} itens guardados", sacIntroPremiereFois: "Algumas palavras que já viste estão aqui. Podes copiá-las ou removê-las — em breve, vais poder assinalar as novas palavras que queres guardar.", sacIntroCompris: "Entendido!" },
   it: { catMots: "Parole imparate", catCodes: "Codici", catSucces: "Traguardi", catTrophees: "Trofei", catCartes: "Carte", sacVide: "ancora niente", sacRienIci: "Ancora niente qui.", sacRetirer: "Rimuovi", sacCopier: "Copia", sacUnItem: "{n} elemento salvato", sacPlusieursItems: "{n} elementi salvati", sacIntroPremiereFois: "Alcune parole che hai già incontrato sono qui. Puoi copiarle o rimuoverle — presto potrai selezionare le nuove parole che vuoi conservare.", sacIntroCompris: "Capito!" },
@@ -96,18 +96,43 @@ const CATEGORIES_SAC = [
 // tant qu'un item de mot n'a pas ce champ, il tombe dans le seau "autre"
 // ci-dessous plutôt que de disparaître ou de faire planter l'affichage.
 // L'ordre de ce tableau EST l'ordre d'affichage des sous-groupes.
+//
+// 🆕 (retour Raphaël, 15-08-2026, "la catégorie autre est trop large") :
+// ajout de 'determinant' (mon/ton/ce/cette… — distinct de 'article', qui
+// reste réservé à un/une/le/la/des) et 'conjonction', pour que les mots-
+// outils les plus courants aient chacun un vrai sous-groupe plutôt que
+// de s'entasser dans "autre". "autre" reste un dernier repli (mots pas
+// encore classés), mais ne devrait plus être la destination par défaut
+// d'un mot-outil courant.
 const NATURES_MOTS = [
   { id: 'article',      cle: 'natureArticle',      nomParDefaut: 'Articles' },
+  { id: 'determinant',  cle: 'natureDeterminant',  nomParDefaut: 'Determiners' },
   { id: 'nom',          cle: 'natureNom',          nomParDefaut: 'Nouns' },
   { id: 'pronom',       cle: 'naturePronom',       nomParDefaut: 'Pronouns' },
   { id: 'verbe',        cle: 'natureVerbe',        nomParDefaut: 'Verbs' },
   { id: 'adjectif',     cle: 'natureAdjectif',     nomParDefaut: 'Adjectives' },
   { id: 'adverbe',      cle: 'natureAdverbe',      nomParDefaut: 'Adverbs' },
   { id: 'preposition',  cle: 'naturePreposition',  nomParDefaut: 'Prepositions' },
+  { id: 'conjonction',  cle: 'natureConjonction',  nomParDefaut: 'Conjunctions' },
   { id: 'interjection', cle: 'natureInterjection', nomParDefaut: 'Interjections' },
   { id: 'expression',   cle: 'natureExpression',   nomParDefaut: 'Expressions' },
   { id: 'autre',        cle: 'natureAutre',        nomParDefaut: 'Other' }
 ];
+
+// 🆕 (retour Raphaël, 15-08-2026) : conjugaisons connues, pour le sous-
+// groupement des verbes par mode/temps À L'INTÉRIEUR de chaque infinitif
+// (voir rendreGroupeVerbes plus bas). Une page peut passer n'importe
+// quelle clé ici ; une clé absente de ce dictionnaire est simplement
+// affichée telle quelle (repli, voir libelleConjugaison) plutôt que de
+// faire disparaître le sous-titre.
+const CONJUGAISONS_VERBES = {
+  indicatif_present: { cle: 'conjIndicatifPresent', nomParDefaut: 'Present indicative' },
+  imperatif_present: { cle: 'conjImperatifPresent', nomParDefaut: 'Imperative' }
+};
+function libelleConjugaison(cleConjugaison) {
+  const conj = CONJUGAISONS_VERBES[cleConjugaison];
+  return conj ? tSacOuDefaut(conj.cle, conj.nomParDefaut) : cleConjugaison;
+}
 
 // Traduit via le système du site si cette page en a un (index.html,
 // parcours.html), sinon retombe sur l'anglais en clair (intro-bonomes.html
@@ -392,8 +417,24 @@ function copierDepuisSac(bouton) {
 // même logique que texteACopier dans rafraichirAffichageSac(), extraite
 // ici pour être réutilisée par copierCategorieSac()/copierToutSac() sans
 // dupliquer la règle nomAffiche/detailAffiche à deux endroits.
+// 🆕 (retour Raphaël, 15-08-2026, "un nom devrait TOUJOURS indiquer son
+// genre") : nom d'affichage d'un item, article ('un'/'une', si présent
+// et pertinent pour ce mot) préfixé et genre ('m'/'f') suffixé "(m)"/"(f)"
+// — UNIQUEMENT pour les items de type 'nom' (un verbe ou un adjectif n'a
+// pas de genre propre à afficher ici). Les deux champs sont optionnels et
+// indépendants : "faim" n'a pas d'article naturel dans ce dialogue
+// ("j'ai faim", jamais "une faim") mais affiche quand même son genre
+// ("faim (f)") ; "sandwich" affiche les deux ("un sandwich (m)").
+function nomAvecGenre(item) {
+  const base = item.nom || item.mot || item.code || '—';
+  if (item.type !== 'nom') return base;
+  const prefixe = item.article ? item.article + ' ' : '';
+  const suffixe = item.genre === 'f' ? ' (f)' : item.genre === 'm' ? ' (m)' : '';
+  return prefixe + base + suffixe;
+}
+
 function ligneCopiableItem(item) {
-  const nomAffiche = item.nom || item.mot || item.code || '—';
+  const nomAffiche = nomAvecGenre(item);
   const detailAffiche = item.trad || item.description || item.titre || '';
   return detailAffiche ? (nomAffiche + ' : ' + detailAffiche) : nomAffiche;
 }
@@ -455,12 +496,22 @@ function compterToutSac(sac) {
 // rendu groupé par nature (catégorie "mots" seulement, voir plus bas).
 function rendreLigneItemSac(i, categorieId) {
   const identifiant = i.mot || i.code || i.titre || i.nom || '';
-  const nomAffiche = i.nom || i.mot || i.code || '—';
+  const nomAffichePlain = nomAvecGenre(i);
   const detailAffiche = i.trad || i.description || i.titre || '';
-  const texteACopier = detailAffiche ? (nomAffiche + ' : ' + detailAffiche) : nomAffiche;
+  const texteACopier = detailAffiche ? (nomAffichePlain + ' : ' + detailAffiche) : nomAffichePlain;
+  // 🆕 Affichage : même contenu que nomAffichePlain, mais le suffixe de
+  // genre est isolé dans son propre <span> pour une mise en valeur
+  // discrète (voir .sac-item-genre dans sac-a-dos.css) sans toucher au
+  // texte copié (data-texte ci-dessous reste nomAffichePlain, en clair).
+  const base = i.nom || i.mot || i.code || '—';
+  const estNomAvecGenre = i.type === 'nom' && (i.genre === 'f' || i.genre === 'm');
+  const prefixeArticle = (i.type === 'nom' && i.article) ? i.article + ' ' : '';
+  const nomAfficheHtml = estNomAvecGenre
+    ? prefixeArticle + base + ' <span class="sac-item-genre">(' + i.genre + ')</span>'
+    : prefixeArticle + base;
   return '<div class="sac-item">' +
     '<span class="sac-item-principal">' +
-      '<span class="sac-item-nom">' + nomAffiche + '</span>' +
+      '<span class="sac-item-nom">' + nomAfficheHtml + '</span>' +
       '<span class="sac-item-detail">' + detailAffiche + '</span>' +
     '</span>' +
     '<button type="button" class="sac-item-copier" title="' + echapperAttribut(tSacOuDefaut('sacCopier', 'Copy')) + '" ' +
@@ -470,6 +521,44 @@ function rendreLigneItemSac(i, categorieId) {
       'data-cat="' + categorieId + '" data-id="' + echapperAttribut(identifiant) + '" ' +
       'onclick="retirerDuSac(this.dataset.cat, this.dataset.id)">&times;</button>' +
   '</div>';
+}
+
+// 🆕 (retour Raphaël, 15-08-2026, "verbe 'avoir', indicatif présent —
+// classé d'abord comme le verbe avoir avec une sous-catégorie pour la
+// conjugaison") : rendu spécifique du sous-groupe "Verbes" — regroupé
+// D'ABORD par infinitif (item.infinitif, ex. 'avoir'), puis À L'INTÉRIEUR
+// par conjugaison (item.conjugaison, ex. 'indicatif_present', voir
+// CONJUGAISONS_VERBES). Un item sans infinitif connu retombe sur sa
+// propre forme (mot lui-même) plutôt que de disparaître — même logique
+// de repli que le reste de ce fichier (voir NATURES_MOTS). L'ordre des
+// sous-groupes suit l'ordre de première apparition dans `items` (déjà
+// dans l'ordre d'ajout au sac).
+function rendreGroupeVerbes(items, categorieId) {
+  const infinitifs = [];
+  const parInfinitif = {};
+  items.forEach(function (i) {
+    const inf = i.infinitif || i.mot || i.nom;
+    if (!parInfinitif[inf]) { parInfinitif[inf] = []; infinitifs.push(inf); }
+    parInfinitif[inf].push(i);
+  });
+  return infinitifs.map(function (inf) {
+    const itemsVerbe = parInfinitif[inf];
+    const conjugaisons = [];
+    const parConjugaison = {};
+    itemsVerbe.forEach(function (i) {
+      const cle = i.conjugaison || '';
+      if (!parConjugaison[cle]) { parConjugaison[cle] = []; conjugaisons.push(cle); }
+      parConjugaison[cle].push(i);
+    });
+    return '<div class="sac-verbe-groupe">' +
+      '<div class="sac-verbe-infinitif">' + tSacOuDefaut('naturePrefixeVerbe', 'verb') + ' « ' + inf + ' »</div>' +
+      conjugaisons.map(function (cj) {
+        const itemsCj = parConjugaison[cj];
+        const titreCj = cj ? '<div class="sac-verbe-conjugaison">' + libelleConjugaison(cj) + '</div>' : '';
+        return titreCj + itemsCj.map(function (i) { return rendreLigneItemSac(i, categorieId); }).join('');
+      }).join('') +
+    '</div>';
+  }).join('');
 }
 
 // Rendu d'origine, sans sous-groupement — toujours utilisé pour codes/
@@ -487,9 +576,15 @@ function rendreItemsMotsParNature(items, categorieId) {
   return NATURES_MOTS.map(nature => {
     const itemsDuGroupe = items.filter(i => (i.type || 'autre') === nature.id);
     if (itemsDuGroupe.length === 0) return '';
+    // 🆕 (retour Raphaël, 15-08-2026) : le sous-groupe "Verbes" a son propre
+    // rendu (par infinitif puis par conjugaison, voir rendreGroupeVerbes) —
+    // tous les autres sous-groupes gardent le rendu simple d'origine.
+    const contenu = nature.id === 'verbe'
+      ? rendreGroupeVerbes(itemsDuGroupe, categorieId)
+      : itemsDuGroupe.map(i => rendreLigneItemSac(i, categorieId)).join('');
     return '<div class="sac-nature-groupe">' +
       '<div class="sac-nature-titre">' + tSacOuDefaut(nature.cle, nature.nomParDefaut) + '</div>' +
-      itemsDuGroupe.map(i => rendreLigneItemSac(i, categorieId)).join('') +
+      contenu +
     '</div>';
   }).join('');
 }

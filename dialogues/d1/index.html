@@ -749,6 +749,11 @@
   }
   .exercice-champ.correcte { border-color: #6FAE7A; background: #F1FAF2; }
   .exercice-champ.fautive { border-color: #E0876A; }
+  /* 🆕 Voir la note sur .exercice-chip-revele : même distinction pour le
+     champ texte du mode facile, qui affiche la réponse complète après
+     échec — rouge, jamais vert, pour ne jamais ressembler à une saisie
+     validée. */
+  .exercice-champ.revele { border-color: #b0402c; background: #FCEEEC; }
 
   .exercice-chips { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
   .exercice-chip {
@@ -763,6 +768,15 @@
     font-weight: 700;
     font-size: 0.92rem;
   }
+  /* 🐛 CORRIGÉ (Raphaël, "la bonne réponse s'affiche en vert, comme si
+     c'était validé") : .exercice-chip est vert par défaut, sans distinction
+     entre un mot que l'élève a VRAIMENT tapé juste et un mot simplement
+     RÉVÉLÉ après échec des deux essais — donnant l'impression que toute
+     réponse finit "acceptée". Ce modificateur (ajouté seulement aux mots
+     révélés, jamais aux mots acquis par l'élève — voir creerZoneDifficile/
+     creerZoneFacile) les affiche en rouge à la place, pour que l'échec
+     reste visible même si l'élève ne lit pas le message texte plus bas. */
+  .exercice-chip-revele { background: #FCEEEC; border-color: #E3A99C; color: #b0402c; }
 
   .exercice-ligne-action { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
   .exercice-btn-verifier {
@@ -2290,7 +2304,7 @@
     return carte;
   }
 
-  function marquerCarteResolue(carte, ex, niveau, sansErreur) {
+  function marquerCarteResolue(carte, ex, niveau, sansErreur, etatActiviteSupplementaire) {
     carte.classList.add('resolue');
     exercicesResolus.add(ex.id);
     // 🆕 (14-08-2026, quatrième vague) : l'exercice est réglé — arrête
@@ -2298,9 +2312,19 @@
     // à l'état de navigation normal plutôt que de laisser affiché le
     // dernier texte tapé, qui ne bougera plus (résolu ou révélé, peu
     // importe le niveau).
+    //
+    // 🐛 CORRIGÉ (Raphaël, "l'élève disparaît en appuyant sur Entrée") :
+    // le paramètre etatActiviteSupplementaire permet à un appelant (voir
+    // annoncerErreur plus bas) de fournir un état DÉJÀ enrichi (avec
+    // erreur/question) à annoncer ICI MÊME, plutôt que de faire un DEUXIÈME
+    // appel à annoncerActivite juste après cette fonction. Deux appels
+    // Presence coup sur coup (0 ms d'écart) reproduisaient exactement le
+    // même genre de rafale que le bug de débit déjà corrigé pour la frappe
+    // au clavier (voir annoncerReponseEnCours) — Supabase coupait la
+    // connexion de l'élève, qui disparaissait de "Élèves connectés".
     clearTimeout(minuteurReponseEnCours);
     const sessionClasseActivite = window.KebBekSessionClasse || null;
-    if (sessionClasseActivite) sessionClasseActivite.annoncerActivite(dernierEtatSession);
+    if (sessionClasseActivite) sessionClasseActivite.annoncerActivite(etatActiviteSupplementaire || dernierEtatSession);
     if (sansErreur) exercicesResolusSansErreur.add(ex.id);
     if (niveau === 'difficile') {
       exercicesResolusDifficile.add(ex.id);
@@ -2578,18 +2602,23 @@
       if (essais >= 2) {
         champ.disabled = true;
         btnVerifier.disabled = true;
+        champ.classList.remove('fautive');
+        champ.classList.add('revele');
         feedback.className = 'exercice-feedback revele';
         feedback.textContent = texteInterface('reponseEtait') + ' ' + ex.reponse.join(' ');
         const chipsFinal = ex.reponse.slice(motsAcquis.length);
         chipsFinal.forEach(function (mot) {
           const chip = document.createElement('span');
-          chip.className = 'exercice-chip';
+          // 🐛 CORRIGÉ (Raphaël) : ces mots n'ont PAS été acquis par
+          // l'élève, contrairement aux chips de motsAcquis juste au-dessus
+          // (boucle motsAcquis.forEach, classe 'exercice-chip' seule,
+          // verte, inchangée) — voir la note sur exercice-chip-revele.
+          chip.className = 'exercice-chip exercice-chip-revele';
           chip.textContent = mot;
           chips.appendChild(chip);
         });
         chips.style.display = 'flex';
-        marquerCarteResolue(carte, ex, 'difficile', false);
-        annoncerErreur(ex, saisieComplete); // 🆕 notification prof — voir sa note
+        marquerCarteResolue(carte, ex, 'difficile', false, etatErreur(ex, saisieComplete));
       } else {
         feedback.className = 'exercice-feedback presque';
         feedback.textContent = motsAcquis.length ? texteInterface('feedbackPresque') : '';
@@ -2738,7 +2767,12 @@
       phraseConstruite.innerHTML = '';
       reponseChoisie.forEach(function (item) {
         const chip = document.createElement('span');
-        chip.className = 'exercice-chip exercice-chip-amovible';
+        // 🐛 CORRIGÉ (Raphaël) : item.revele distingue un mot RÉVÉLÉ après
+        // échec (jamais choisi par l'élève, voir la branche essais >= 2 de
+        // verifier()) d'un mot que l'élève a réellement cliqué/tapé — voir
+        // la note sur exercice-chip-revele, même raisonnement que le mode
+        // difficile juste au-dessus dans ce fichier.
+        chip.className = 'exercice-chip exercice-chip-amovible' + (item.revele ? ' exercice-chip-revele' : '');
         chip.textContent = item.mot;
         chip.title = texteInterface('boutonRecommencer');
         chip.addEventListener('click', function () {
@@ -2807,15 +2841,15 @@
         resolu = true;
         feedback.className = 'exercice-feedback revele';
         feedback.textContent = texteInterface('reponseEtait') + ' ' + ex.reponse.join(' ');
-        reponseChoisie = ex.reponse.map(function (mot) { return { mot: mot, index: -1 }; });
+        reponseChoisie = ex.reponse.map(function (mot) { return { mot: mot, index: -1, revele: true }; });
         rendrePhraseConstruite();
         champ.value = ex.reponse.join(' ');
         champ.classList.remove('fautive');
+        champ.classList.add('revele');
         champ.disabled = true;
         btnVerifierTexte.disabled = true;
         lienBascule.style.display = 'none';
-        marquerCarteResolue(carte, ex, 'facile', false);
-        annoncerErreur(ex, texteBrutChoisi); // 🆕 notification prof — voir sa note
+        marquerCarteResolue(carte, ex, 'facile', false, etatErreur(ex, texteBrutChoisi));
       } else {
         feedback.className = 'exercice-feedback presque';
         feedback.textContent = texteInterface('feedbackPresque');
@@ -3042,19 +3076,14 @@
   }
 
   // 🆕 (14-08-2026, cinquième vague — "notification d'erreur", demande de
-  // Raphaël) : annonce au prof qu'un élève vient d'échouer un exercice
-  // (après ses deux essais, réponse révélée), avec la question ET les
-  // deux réponses (donnée / correcte) — pour qu'il puisse intervenir en
-  // connaissance de cause sans redemander à l'élève ce qu'il a répondu.
-  // Se greffe sur dernierEtatSession comme annoncerReponseEnCours (même
-  // raison : ne pas écraser page/section/étape), mais N'EST PAS soumis
-  // au même throttle : un échec est un événement ponctuel (un seul appel
-  // par exercice raté, jamais une rafale de frappes) — aucun risque de
-  // dépasser le débit Presence ici, voir la note juste au-dessus.
-  function annoncerErreur(ex, reponseDonnee) {
-    const sessionClasse = window.KebBekSessionClasse || null;
-    if (!sessionClasse) return;
-    sessionClasse.annoncerActivite(Object.assign({}, dernierEtatSession, {
+  // Raphaël) : construit (SANS l'envoyer) l'état enrichi à annoncer au
+  // prof quand un élève échoue un exercice — question, réponse fautive,
+  // réponse correcte. C'est marquerCarteResolue() qui l'envoie, en UN
+  // SEUL appel Presence (voir sa note) — jamais ce module n'appelle
+  // annoncerActivite() lui-même, pour ne jamais risquer un deuxième
+  // .track() coup sur coup avec celui déjà fait par marquerCarteResolue.
+  function etatErreur(ex, reponseDonnee) {
+    return Object.assign({}, dernierEtatSession, {
       exercice_id: ex.id,
       question: texteExercice(ex),
       reponse_en_cours: null,
@@ -3063,7 +3092,7 @@
         reponse_correcte: ex.reponse.join(' '),
         ts: Date.now()
       }
-    }));
+    });
   }
 
   // Amène l'élève directement à l'étape indexCible du dialogue, en

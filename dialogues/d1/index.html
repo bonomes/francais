@@ -1179,15 +1179,22 @@
      mélangée avec elle (voir EXERCICES_ECOUTE, marquerCarteEcouteResolue).
      Même charpente visuelle que sectionExercices (mêmes classes
      .exercices-transition / .exercice-carte / .exercice-niveau-toggle)
-     pour rester cohérent, mais SANS sélecteur de niveau global (chaque
-     carte reste réglable individuellement — pas nécessaire d'ajouter un
-     deuxième sélecteur global pour seulement 4 cartes). Cachée par
-     défaut, affichée par afficherExercicesEcoute() (appelée depuis le
+     pour rester cohérent — y compris désormais le sélecteur de niveau
+     global (Raphaël, 15-08-2026 : "comme pour les exercices d'écriture,
+     un bouton pour tout basculer, pas seulement au cas par cas"). Cachée
+     par défaut, affichée par afficherExercicesEcoute() (appelée depuis le
      bouton Terminer de sectionExercices — voir son câblage plus bas). -->
 <section id="sectionExercicesEcoute" style="display:none;">
   <div class="exercices-transition">
     <div class="exercices-transition-titre" id="txtExercicesEcouteTitre"></div>
     <div class="exercices-transition-intro" id="txtExercicesEcouteIntro"></div>
+  </div>
+  <div class="niveau-global-bloc">
+    <span class="niveau-global-label" id="txtNiveauGlobalLabelEcoute"></span>
+    <div class="exercice-niveau-toggle niveau-global-toggle" id="toggleNiveauGlobalEcoute">
+      <button type="button" class="exercice-niveau-btn" id="btnNiveauGlobalFacileEcoute"></button>
+      <button type="button" class="exercice-niveau-btn" id="btnNiveauGlobalDifficileEcoute"></button>
+    </div>
   </div>
   <div id="conteneurExercicesEcoute"></div>
   <button type="button" class="bouton-nav suivant bouton-terminer-exercices" id="btnTerminerExercicesEcoute">Terminer ›</button>
@@ -2529,21 +2536,45 @@
   // premiere_fois — mais autant éviter les appels réseau redondants).
   const recompensesExercicesDonnees = { base: false, parfait: false, parfaitDifficile: false };
 
-  // 🆕 (15-08-2026) Même mécanique que ci-dessus, mais pour
-  // EXERCICES_ECOUTE — état ENTIÈREMENT séparé exprès (voir note de tête
-  // d'EXERCICES_ECOUTE) : un élève qui ne fait QUE les exercices
-  // d'écoute ne doit jamais déclencher les récompenses "d1_exercices_*"
-  // prévues pour les 2 exercices d'image, et vice-versa. Clés RPC
-  // distinctes (d1_exercices_ecoute_*), mêmes montants que la section
-  // exercices pour rester cohérent (5 P$ / +5 P$ / +1 PB).
+  // 🆕 (15-08-2026, demande de Raphaël) Récompenses ÉCOUTE — état
+  // ENTIÈREMENT SÉPARÉ de la section exercices d'image ci-dessus (un
+  // élève qui ne fait QUE l'écoute ne doit jamais déclencher les
+  // récompenses "d1_exercices_*", et vice-versa), ET un RAISONNEMENT
+  // DIFFÉRENT de celui-ci (Raphaël, 15-08-2026 : "récompenser les deux
+  // domaines de façon discriminée" — pas d'uniformisation). Ici, les
+  // paliers sont organisés autour du NIVEAU atteint plutôt que de
+  // l'absence totale d'erreur :
+  //   - "réussi" (pour les deux premiers paliers) tolère UNE faute par
+  //     exercice — un exercice n'est un ÉCHEC que s'il est encore faux
+  //     au 2e essai (révélé). Ce seuil est déjà la limite existante du
+  //     moteur d'exercice (essais >= 2 → révélation, voir
+  //     creerZoneFacile/creerZoneDifficile) : aucune nouvelle mécanique
+  //     de comptage n'était nécessaire, seulement distinguer "réussi"
+  //     (essais 1 OU 2) d'"échec" (révélé) au moment de marquer() — voir
+  //     le nouveau paramètre `reussi`.
+  //   1. Les 4 exercices RÉUSSIS (≤ 1 faute chacun) alors qu'ils étaient
+  //      réglés en FACILE            → 5 P$ (une seule fois)
+  //   2. Les 4 exercices RÉUSSIS (≤ 1 faute chacun) alors qu'ils étaient
+  //      réglés en DIFFICILE          → +5 P$ (une seule fois) — ET si le
+  //      palier 1 n'a JAMAIS été accordé (élève qui saute directement en
+  //      difficile sans jamais passer par facile), il est accordé EN
+  //      MÊME TEMPS ici plutôt que de rester à jamais hors d'atteinte
+  //      (voir verifierRecompensesExercicesEcoute).
+  //   3. Les 4 exercices réussis SANS AUCUNE FAUTE (1er essai correct)
+  //      spécifiquement en DIFFICILE → +1 PB (une seule fois)
+  // Total maximal : 10 P$ + 1 PB — même total que la section exercices,
+  // mais atteint différemment. Un exercice déjà résolu reste rejouable
+  // (voir carte.choisirNiveau, toujours reconstruit à neuf) : rien
+  // n'empêche un élève de repasser un exercice déjà réussi en facile
+  // pour aller chercher le palier difficile, puis le palier PB, jusqu'à
+  // avoir obtenu tous les paliers.
   const elSectionExercicesEcoute = document.getElementById('sectionExercicesEcoute');
   const elConteneurExercicesEcoute = document.getElementById('conteneurExercicesEcoute');
   const btnTerminerExercicesEcoute = document.getElementById('btnTerminerExercicesEcoute');
-  const exercicesEcouteResolus = new Set();
-  const exercicesEcouteResolusDifficile = new Set();
-  const exercicesEcouteResolusSansErreur = new Set();
-  const exercicesEcouteResolusSansErreurDifficile = new Set();
-  const recompensesExercicesEcouteDonnees = { base: false, parfait: false, parfaitDifficile: false };
+  const exercicesEcouteReussisFacile = new Set(); // réussis (≤ 1 faute), niveau facile au moment de la réussite
+  const exercicesEcouteReussisDifficile = new Set(); // réussis (≤ 1 faute), niveau difficile
+  const exercicesEcouteReussisSansErreurDifficile = new Set(); // réussis du 1er coup (0 faute), niveau difficile — condition du PB
+  const recompensesExercicesEcouteDonnees = { facile: false, difficile: false, parfaitDifficile: false };
 
   // 🐛 CORRIGÉ (13-08-2026) : jamais déclarée nulle part dans ce fichier —
   // terminerLecon() (voir plus bas) la LISAIT (if (leconTerminee) return;)
@@ -2572,6 +2603,29 @@
   }
   btnNiveauGlobalFacile.addEventListener('click', function () { choisirNiveauGlobal('facile'); });
   btnNiveauGlobalDifficile.addEventListener('click', function () { choisirNiveauGlobal('difficile'); });
+
+  // 🆕 (15-08-2026, demande de Raphaël) : même sélecteur de niveau global,
+  // mais pour la section écoute — exactement le même patron que ci-dessus
+  // (variable d'état + boutons + parcours des cartes via carte.choisirNiveau,
+  // déjà exposé par creerCarteExercice pour les DEUX sections). État séparé
+  // de niveauGlobalCourant : rien n'oblige les deux sections à partager le
+  // même niveau de départ, l'élève peut très bien vouloir "facile" en
+  // écriture et "difficile" en écoute, ou l'inverse.
+  let niveauGlobalCourantEcoute = 'facile';
+  const elToggleNiveauGlobalEcoute = document.getElementById('toggleNiveauGlobalEcoute');
+  const btnNiveauGlobalFacileEcoute = document.getElementById('btnNiveauGlobalFacileEcoute');
+  const btnNiveauGlobalDifficileEcoute = document.getElementById('btnNiveauGlobalDifficileEcoute');
+
+  function choisirNiveauGlobalEcoute(niveau) {
+    niveauGlobalCourantEcoute = niveau;
+    btnNiveauGlobalFacileEcoute.classList.toggle('actif', niveau === 'facile');
+    btnNiveauGlobalDifficileEcoute.classList.toggle('actif', niveau === 'difficile');
+    elConteneurExercicesEcoute.querySelectorAll('.exercice-carte').forEach(function (carte) {
+      if (carte.choisirNiveau) carte.choisirNiveau(niveau);
+    });
+  }
+  btnNiveauGlobalFacileEcoute.addEventListener('click', function () { choisirNiveauGlobalEcoute('facile'); });
+  btnNiveauGlobalDifficileEcoute.addEventListener('click', function () { choisirNiveauGlobalEcoute('difficile'); });
 
   // 🆕 Raccourci "passer aux exercices" (demande de Raphaël) : saute les
   // étapes du dialogue restantes sans les faire jouer une à une. Les
@@ -2637,9 +2691,9 @@
   // 🆕 (15-08-2026) Pendant de afficherExercices() pour la section écoute —
   // affichée à sa place une fois celle-ci terminée (voir câblage de
   // btnTerminerExercices plus bas, remplacé pour mener ici plutôt qu'à
-  // terminerLecon() directement). Pas de sélecteur de niveau global (voir
-  // note de tête du HTML #sectionExercicesEcoute) : chaque carte démarre en
-  // 'facile' et reste réglable individuellement.
+  // terminerLecon() directement). Sélecteur de niveau global (Raphaël,
+  // 15-08-2026), même patron que afficherExercices() — voir
+  // choisirNiveauGlobalEcoute plus haut.
   //
   // 🐛 CORRIGÉ (15-08-2026, retour Raphaël sur test réel) : une première
   // version poussait aussi `phrases` (le texte des 4 phrases) dans l'état
@@ -2680,10 +2734,15 @@
     elSectionExercices.style.display = 'none';
     document.getElementById('txtExercicesEcouteTitre').textContent = texteInterface('ecouteTitre');
     document.getElementById('txtExercicesEcouteIntro').textContent = texteInterface('ecouteIntro');
+    document.getElementById('txtNiveauGlobalLabelEcoute').textContent = texteInterface('niveauGlobalLabel');
+    btnNiveauGlobalFacileEcoute.textContent = texteInterface('niveauFacile');
+    btnNiveauGlobalDifficileEcoute.textContent = texteInterface('niveauDifficile');
+    btnNiveauGlobalFacileEcoute.classList.toggle('actif', niveauGlobalCourantEcoute === 'facile');
+    btnNiveauGlobalDifficileEcoute.classList.toggle('actif', niveauGlobalCourantEcoute === 'difficile');
     btnTerminerExercicesEcoute.textContent = texteInterface('terminer') + ' \u203a';
     elConteneurExercicesEcoute.innerHTML = '';
     EXERCICES_ECOUTE.forEach(function (ex, index) {
-      elConteneurExercicesEcoute.appendChild(creerCarteExercice(ex, index, 'facile', marquerCarteEcouteResolue));
+      elConteneurExercicesEcoute.appendChild(creerCarteExercice(ex, index, niveauGlobalCourantEcoute, marquerCarteEcouteResolue));
     });
     elSectionExercicesEcoute.style.display = 'flex';
     elSectionExercicesEcoute.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -2800,7 +2859,14 @@
     return carte;
   }
 
-  function marquerCarteResolue(carte, ex, niveau, sansErreur, etatActiviteSupplementaire) {
+  // 🆕 (15-08-2026) Paramètre `reussi` ajouté — inutilisé PAR CETTE
+  // fonction (les récompenses de la section exercices d'image restent
+  // basées sur exercicesResolus/exercicesResolusSansErreur, inchangées),
+  // mais creerZoneFacile()/creerZoneDifficile() sont PARTAGÉES entre
+  // cette fonction et marquerCarteEcouteResolue (voir sa propre note) —
+  // un seul gabarit d'appel pour les deux évite un branchement spécial
+  // selon `marquerFn` à l'intérieur des zones d'exercice.
+  function marquerCarteResolue(carte, ex, niveau, sansErreur, reussi, etatActiviteSupplementaire) {
     carte.classList.add('resolue');
     exercicesResolus.add(ex.id);
     // 🆕 (14-08-2026, quatrième vague) : l'exercice est réglé — fait
@@ -3010,45 +3076,77 @@
   }
 
   // 🆕 (15-08-2026) Pendant de marquerCarteResolue pour EXERCICES_ECOUTE
-  // — mêmes mécanismes (Presence, sets sans-erreur/difficile, appel à la
-  // vérification de récompense) mais sur l'état ÉCOUTE séparé (voir sa
-  // note de tête). Volontairement SANS le bloc "quatre en difficile
-  // débloquent d1_exercices_completes" de marquerCarteResolue : cette
-  // condition reste propre aux 2 EXERCICES d'image (déblocage "Le
-  // sandwich de Ginette", bravo-mecanique-synthese_v7.md §17) — l'écoute
-  // n'y participe pas.
-  function marquerCarteEcouteResolue(carte, ex, niveau, sansErreur, etatActiviteSupplementaire) {
+  // — mêmes mécanismes de base (Presence, appel à la vérification de
+  // récompense) mais RAISONNEMENT DE RÉCOMPENSE DIFFÉRENT (voir la note
+  // de tête de exercicesEcouteReussisFacile plus haut). Volontairement
+  // SANS le bloc "quatre en difficile débloquent d1_exercices_completes"
+  // de marquerCarteResolue : cette condition reste propre aux 2
+  // EXERCICES d'image (déblocage "Le sandwich de Ginette",
+  // bravo-mecanique-synthese_v7.md §17) — l'écoute n'y participe pas.
+  //
+  // 🆕 `reussi` (true = réponse correcte obtenue, au 1er ou 2e essai ;
+  // false = révélé après 2 essais ratés, c.-à-d. un ÉCHEC) — distinct de
+  // `sansErreur` (true UNIQUEMENT si correct dès le 1er essai). Un
+  // exercice réussi au 2e essai compte pour les paliers 1 et 2
+  // (facile/difficile, 1 faute tolérée) mais jamais pour le palier 3
+  // (PB, qui exige sansErreur). Un exercice révélé (reussi === false) ne
+  // compte pour AUCUN palier.
+  function marquerCarteEcouteResolue(carte, ex, niveau, sansErreur, reussi, etatActiviteSupplementaire) {
     carte.classList.add('resolue');
-    exercicesEcouteResolus.add(ex.id);
     const sessionClasseActivite = window.KebBekSessionClasse || null;
     if (sessionClasseActivite) sessionClasseActivite.annoncerActivite(etatActiviteSupplementaire || dernierEtatSession);
-    if (sansErreur) exercicesEcouteResolusSansErreur.add(ex.id);
-    if (niveau === 'difficile') {
-      exercicesEcouteResolusDifficile.add(ex.id);
-      if (sansErreur) exercicesEcouteResolusSansErreurDifficile.add(ex.id);
+    if (reussi) {
+      if (niveau === 'facile') exercicesEcouteReussisFacile.add(ex.id);
+      if (niveau === 'difficile') {
+        exercicesEcouteReussisDifficile.add(ex.id);
+        if (sansErreur) exercicesEcouteReussisSansErreurDifficile.add(ex.id);
+      }
     }
     verifierRecompensesExercicesEcoute();
   }
 
-  // 🆕 Mêmes trois paliers que verifierRecompensesExercices, mêmes
-  // montants (5 P$ / +5 P$ / +1 PB), mais clés RPC distinctes
-  // (d1_exercices_ecoute_*) et calculées sur EXERCICES_ECOUTE.length —
-  // totalement indépendant de la section exercices d'image.
+  // 🆕 (15-08-2026) Trois paliers ORGANISÉS PAR NIVEAU (voir la note de
+  // tête de exercicesEcouteReussisFacile pour le raisonnement complet) —
+  // clés RPC distinctes (d1_exercices_ecoute_*), calculées sur
+  // EXERCICES_ECOUTE.length, totalement indépendant de la section
+  // exercices d'image.
   async function verifierRecompensesExercicesEcoute() {
     const attributions = [];
-    if (!recompensesExercicesEcouteDonnees.base && exercicesEcouteResolus.size === EXERCICES_ECOUTE.length) {
-      recompensesExercicesEcouteDonnees.base = true;
-      attributions.push(attribuerRecompenseExercice('d1_exercices_ecoute_base', 5, 0).then(function (accorde) {
+    // Palier 1 — les 4 réussis (≤ 1 faute) en FACILE.
+    if (!recompensesExercicesEcouteDonnees.facile && exercicesEcouteReussisFacile.size === EXERCICES_ECOUTE.length) {
+      recompensesExercicesEcouteDonnees.facile = true;
+      attributions.push(attribuerRecompenseExercice('d1_exercices_ecoute_facile', 5, 0).then(function (accorde) {
         return accorde ? { piasses: 5, pointsBonis: 0 } : null;
       }));
     }
-    if (!recompensesExercicesEcouteDonnees.parfait && exercicesEcouteResolusSansErreur.size === EXERCICES_ECOUTE.length) {
-      recompensesExercicesEcouteDonnees.parfait = true;
-      attributions.push(attribuerRecompenseExercice('d1_exercices_ecoute_parfait', 5, 0).then(function (accorde) {
+    // Palier 2 — les 4 réussis (≤ 1 faute) en DIFFICILE. Si le palier 1
+    // n'a jamais été accordé (élève passé directement au difficile, sans
+    // jamais réussir les 4 en facile), il est accordé EN MÊME TEMPS ici
+    // — sinon un élève qui ne fait QUE du difficile ne toucherait jamais
+    // les 5 P$ du palier 1, ce qui contredit la demande de Raphaël
+    // ("avec les 5P$ automatiques du mode facile s'ils n'ont jamais été
+    // accordés").
+    if (!recompensesExercicesEcouteDonnees.difficile && exercicesEcouteReussisDifficile.size === EXERCICES_ECOUTE.length) {
+      recompensesExercicesEcouteDonnees.difficile = true;
+      if (!recompensesExercicesEcouteDonnees.facile) {
+        recompensesExercicesEcouteDonnees.facile = true;
+        attributions.push(attribuerRecompenseExercice('d1_exercices_ecoute_facile', 5, 0).then(function (accorde) {
+          return accorde ? { piasses: 5, pointsBonis: 0 } : null;
+        }));
+      }
+      attributions.push(attribuerRecompenseExercice('d1_exercices_ecoute_difficile', 5, 0).then(function (accorde) {
         return accorde ? { piasses: 5, pointsBonis: 0 } : null;
       }));
     }
-    if (!recompensesExercicesEcouteDonnees.parfaitDifficile && exercicesEcouteResolusSansErreurDifficile.size === EXERCICES_ECOUTE.length) {
+    // Palier 3 (PB) — les 4 réussis SANS AUCUNE faute, spécifiquement en
+    // difficile. Implique déjà le palier 2 (un exercice réussi sans
+    // faute EST un exercice réussi) : exercicesEcouteReussisDifficile
+    // est toujours rempli en même temps que
+    // exercicesEcouteReussisSansErreurDifficile (voir
+    // marquerCarteEcouteResolue), donc le bloc ci-dessus aura déjà
+    // déclenché les paliers 1 et 2 dans CE MÊME appel si besoin — pas de
+    // redéclenchement nécessaire ici.
+    if (!recompensesExercicesEcouteDonnees.parfaitDifficile && exercicesEcouteReussisSansErreurDifficile.size === EXERCICES_ECOUTE.length) {
       recompensesExercicesEcouteDonnees.parfaitDifficile = true;
       attributions.push(attribuerRecompenseExercice('d1_exercices_ecoute_parfait_difficile', 0, 1).then(function (accorde) {
         return accorde ? { piasses: 0, pointsBonis: 1 } : null;
@@ -3137,7 +3235,7 @@
         btnVerifier.disabled = true;
         feedback.className = 'exercice-feedback correct';
         feedback.textContent = texteInterface('feedbackCorrect');
-        marquer(carte, ex, 'difficile', essais === 1);
+        marquer(carte, ex, 'difficile', essais === 1, true);
         return;
       }
 
@@ -3179,7 +3277,7 @@
           chips.appendChild(chip);
         });
         chips.style.display = 'flex';
-        marquer(carte, ex, 'difficile', false, etatErreur(ex, saisieComplete));
+        marquer(carte, ex, 'difficile', false, false, etatErreur(ex, saisieComplete));
       } else {
         feedback.className = 'exercice-feedback presque';
         feedback.textContent = motsAcquis.length ? texteInterface('feedbackPresque') : '';
@@ -3396,7 +3494,7 @@
         champ.disabled = true;
         btnVerifierTexte.disabled = true;
         lienBascule.style.display = 'none';
-        marquer(carte, ex, 'facile', essais === 1);
+        marquer(carte, ex, 'facile', essais === 1, true);
         return;
       }
       if (essais >= 2) {
@@ -3411,7 +3509,7 @@
         champ.disabled = true;
         btnVerifierTexte.disabled = true;
         lienBascule.style.display = 'none';
-        marquer(carte, ex, 'facile', false, etatErreur(ex, texteBrutChoisi));
+        marquer(carte, ex, 'facile', false, false, etatErreur(ex, texteBrutChoisi));
       } else {
         feedback.className = 'exercice-feedback presque';
         feedback.textContent = texteInterface('feedbackPresque');

@@ -959,6 +959,35 @@
     min-height: 1em;
   }
 
+  /* 🆕 (15-08-2026) Liste des sessions actives — pastilles cliquables,
+     une par session, sous le champ code. Même langage visuel que
+     .bse-champ-code/.bse-bouton-suivre (pêche/brun, pilule) plutôt
+     qu'un style neuf, pour rester évidemment le même composant. */
+  .bse-liste-sessions {
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    justify-content: center;
+  }
+  .bse-session-pill {
+    font-family: inherit;
+    font-weight: 700;
+    font-size: 0.76rem;
+    border: 1.5px solid var(--peche);
+    border-radius: 999px;
+    padding: 6px 13px;
+    background: var(--fond);
+    color: var(--brun-fonce);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .bse-session-pill:hover:not(:disabled) { background: var(--peche-pale, rgba(240, 169, 139, 0.16)); }
+  .bse-session-pill:disabled { opacity: 0.55; cursor: default; }
+  .bse-session-pill .bse-statut-point { animation: none; opacity: 1; }
+
   /* État "en direct" — pastille qui pulse doucement, même intention
      qu'un témoin "live" plutôt qu'un simple texte statique. */
   .bse-statut-point {
@@ -1564,6 +1593,17 @@
         <input type="text" id="bseCode" class="bse-champ-code" placeholder="Code" maxlength="6" autocomplete="off" autocapitalize="characters">
         <button type="button" id="bseBtnSuivre" class="bse-bouton-suivre">Suivre</button>
       </div>
+      <!-- 🆕 (15-08-2026, demande de Raphaël) : liste des sessions actives,
+           en plus du code — un clic rejoint directement, sans taper le
+           code. Toujours à côté du champ code (jamais à sa place) : le
+           code reste utile si l'élève l'a reçu par un autre canal (ex.
+           dicté à voix haute) et que la session n'apparaît pas encore ici
+           pour une raison quelconque. Caché par défaut, rempli par
+           rafraichirListeSessions() plus bas — vide (aucune session
+           active) = simplement rien à afficher, pas de message "vide"
+           qui alourdirait ce petit bandeau pour le cas normal (99% du
+           temps, hors d'un cours). -->
+      <div id="bseListeSessions" class="bse-liste-sessions" style="display:none;"></div>
       <p id="bseMessage" class="bse-message"></p>
     </div>
     <div id="bseActif" class="bse-bloc" style="display:none;">
@@ -2927,6 +2967,7 @@
     const blocActif = document.getElementById('bseActif');
     const statutTexte = document.getElementById('bseStatutTexte');
     const btnQuitter = document.getElementById('bseBtnQuitter');
+    const listeSessions = document.getElementById('bseListeSessions');
 
     const sessionClasse = window.KebBekSessionClasse || null;
     if (!bandeau || !sessionClasse) return; // page hôte incomplète ou module absent — dégradation silencieuse
@@ -2994,8 +3035,47 @@
 
     declencheur.addEventListener('click', function () {
       formulaire.style.display = formulaire.style.display === 'none' ? 'flex' : 'none';
-      if (formulaire.style.display !== 'none') champCode.focus();
+      if (formulaire.style.display !== 'none') {
+        champCode.focus();
+        rafraichirListeSessions();
+      }
     });
+
+    // 🆕 (15-08-2026, demande de Raphaël) : liste des sessions actives à
+    // l'ouverture du formulaire — une pastille par session, un clic dessus
+    // rejoint directement avec sessionClasse.rejoindreSession(code, ...),
+    // exactement le même chemin que taper le code + "Suivre" (aucune
+    // logique dupliquée). Lue une seule fois à l'ouverture plutôt qu'en
+    // continu (pas de canal Realtime dédié pour "sessions actives en ce
+    // moment" — un rafraîchissement à chaque ouverture du formulaire
+    // suffit largement pour ce cas d'usage).
+    async function rafraichirListeSessions() {
+      listeSessions.innerHTML = '';
+      listeSessions.style.display = 'none';
+      const sessions = await sessionClasse.listerSessionsActives();
+      if (!sessions || !sessions.length) return; // aucune session, ou échec — dégradation silencieuse, le champ code reste utilisable
+      sessions.forEach(function (s) {
+        const pastille = document.createElement('button');
+        pastille.type = 'button';
+        pastille.className = 'bse-session-pill';
+        const point = document.createElement('span');
+        point.className = 'bse-statut-point';
+        point.setAttribute('aria-hidden', 'true');
+        pastille.appendChild(point);
+        pastille.appendChild(document.createTextNode(s.prenom_enseignant || 'Prof'));
+        pastille.addEventListener('click', async function () {
+          pastille.disabled = true;
+          message.textContent = '';
+          const reussi = await sessionClasse.rejoindreSession(s.code, callbacks);
+          if (!reussi) {
+            pastille.disabled = false;
+            if (!message.textContent) message.textContent = t('sessionCodeInvalide');
+          }
+        });
+        listeSessions.appendChild(pastille);
+      });
+      listeSessions.style.display = 'flex';
+    }
 
     btnSuivre.addEventListener('click', async function () {
       const code = champCode.value.trim();

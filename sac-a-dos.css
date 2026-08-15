@@ -304,6 +304,36 @@
 }
 .sac-vide { font-size: 0.76rem; color: var(--brun-clair, #8A7364); font-style: italic; padding: 4px 0; }
 
+/* 🆕 (retour Raphaël, 15-08-2026) : marqueur de genre grammatical "(f)"/
+   "(m)" sur les noms — discret (non gras, teinte atténuée) pour rester une
+   précision annexe, jamais aussi visible que le mot lui-même. */
+.sac-item-genre {
+  font-weight: 400;
+  color: var(--brun-clair, #8A7364);
+}
+
+/* 🆕 Sous-groupement des verbes par infinitif puis par conjugaison, à
+   l'intérieur du sous-groupe "Verbes" (voir rendreGroupeVerbes dans le
+   .js). Indentation légère pour marquer un troisième niveau de
+   hiérarchie (catégorie > nature > infinitif > conjugaison) sans
+   dupliquer le poids visuel de .sac-nature-titre. */
+.sac-verbe-groupe { margin-top: 6px; }
+.sac-verbe-groupe:first-child { margin-top: 0; }
+
+.sac-verbe-infinitif {
+  font-size: 0.72rem;
+  font-weight: 700;
+  font-style: italic;
+  color: var(--brun, #665045);
+  padding: 2px 0 2px 4px;
+}
+
+.sac-verbe-conjugaison {
+  font-size: 0.66rem;
+  color: var(--brun-clair, #8A7364);
+  padding: 1px 0 1px 10px;
+}
+
 .sac-item-retirer {
   flex-shrink: 0;
   width: 20px;

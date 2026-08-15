@@ -207,6 +207,28 @@
   // rejoint ou après quitterSession()/onFermee().
   let abonnementActif = null;
 
+  // ---------- Throttle Presence (élève) ----------
+  // 🆕 (15-08-2026) : déplacé ICI, à LA SOURCE (annoncerActivite), plutôt
+  // que réimplémenté par chaque appelant. Avant ce correctif, seule la
+  // saisie clavier (annoncerReponseEnCours, dialogue-d1.html) était
+  // protégée par un délai minimum — mais marquerCarteResolue() et
+  // synchroniserEtatSession() appelaient annoncerActivite() directement,
+  // sans throttle. Un(e) élève qui enchaîne plusieurs exercices résolus
+  // coup sur coup (typique du mode facile, en tout début de série)
+  // suffisait à dépasser client_rate_limit_exceeded côté Supabase Realtime
+  // — l'élève disparaissait alors de "Élèves connectés" jusqu'à la
+  // prochaine annonce réussie. En centralisant ici, TOUT appelant présent
+  // ou futur (n'importe quelle page de leçon) est protégé automatiquement,
+  // sans avoir à s'en souvenir à chaque nouveau point d'appel.
+  // Toujours au plus 1 envoi Presence par seconde, TOUS appelants
+  // confondus — mais aucun état annoncé n'est jamais perdu : un appel qui
+  // arrive trop tôt programme un envoi de rattrapage (remplaçant tout
+  // envoi de rattrapage déjà en attente) plutôt que d'être simplement
+  // ignoré.
+  const DELAI_MIN_PRESENCE = 1000; // ms entre deux envois Presence au maximum
+  let derniereAnnoncePresence = 0;
+  let minuteurAnnoncePresence = null;
+
   // 🆕 (14-08-2026, troisième vague) : identité annoncée en Presence sur
   // le canal — {id, prenom}. Lue une seule fois à la jonction (via
   // progression.js), pas à chaque annonce : un élève ne change pas de
@@ -360,6 +382,8 @@
   // prochaine page (voir reprendreSessionEleve).
   function quitterSession() {
     if (!abonnementActif) return;
+    clearTimeout(minuteurAnnoncePresence); // évite un envoi de rattrapage tardif vers un canal qu'on vient de retirer
+    minuteurAnnoncePresence = null;
     const c = client();
     if (c) c.removeChannel(abonnementActif.canal);
     abonnementActif = null;
@@ -377,9 +401,25 @@
   // contenu, ce module ne l'interprète jamais.
   function annoncerActivite(etat) {
     if (!abonnementActif) return;
-    abonnementActif.canal
-      .track({ prenom: abonnementActif.infoEleve.prenom, etat: etat || null })
-      .catch(function () {});
+
+    const envoyer = function () {
+      // L'élève a pu quitter la session pendant le délai d'attente (voir
+      // quitterSession(), qui annule ce minuteur — filet de sécurité
+      // supplémentaire si jamais l'ordre d'exécution changeait).
+      if (!abonnementActif) return;
+      derniereAnnoncePresence = Date.now();
+      abonnementActif.canal
+        .track({ prenom: abonnementActif.infoEleve.prenom, etat: etat || null })
+        .catch(function () {});
+    };
+
+    clearTimeout(minuteurAnnoncePresence); // un seul envoi de rattrapage en attente à la fois — le plus récent état gagne
+    const ecoule = Date.now() - derniereAnnoncePresence;
+    if (ecoule >= DELAI_MIN_PRESENCE) {
+      envoyer(); // assez longtemps depuis le dernier envoi, tous appelants confondus — tout de suite
+    } else {
+      minuteurAnnoncePresence = setTimeout(envoyer, DELAI_MIN_PRESENCE - ecoule);
+    }
   }
 
   // 🆕 (15-08-2026) : liste les sessions actuellement actives, pour que

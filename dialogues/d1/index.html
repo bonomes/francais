@@ -59,9 +59,15 @@
                ailleurs sur le site — un contenu "aide/explication", pas
                une réplique du dialogue lui-même).
 
-     PAS DE GENRE (masculin/féminin) à ce stade — demande explicite de
-     Raphaël : rien dans ce dialogue n'introduit cette distinction, donc
-     rien dans la mise en scène n'en dépend non plus.
+     PAS DE GENRE (masculin/féminin) enseigné dans le déroulement du
+     dialogue lui-même à ce stade — demande explicite de Raphaël : rien
+     dans la mise en scène ou les répliques n'introduit ou ne dépend de
+     cette distinction. 🆕 (15-08-2026) Nuance : le SAC À DOS, lui,
+     affiche maintenant le genre grammatical des noms qu'on y ajoute
+     ("faim (f)", "un sandwich (m)" — voir GENRE_NOMS/ARTICLE_NOMS plus
+     bas) — c'est une info de référence dans un outil séparé, pas un
+     enseignement actif inséré dans le dialogue ; la restriction ci-
+     dessus reste donc valide pour la mise en scène.
 
      IMAGES : aucune illustration propre à cette leçon n'existe encore.
      Chemins RÉSERVÉS ci-dessous (images/dialogue-d1/...), avec le même
@@ -692,6 +698,21 @@
     gap: 22px;
   }
 
+  /* 🐛 CORRIGÉ (15-08-2026, retour Raphaël, capture d'écran "disposition
+     étrange") : #sectionExercicesEcoute n'avait JAMAIS reçu l'équivalent
+     de la règle #sectionExercices ci-dessus — sans largeur ni mise en page
+     flex, ses enfants (.exercices-transition, #conteneurExercicesEcoute,
+     les .exercice-carte) retombaient en bloc plein-largeur par défaut,
+     d'où le fouillis constaté (cartes très larges, grands vides, chevau-
+     chement avec le widget "Cours en direct"). Même règle, verbatim. */
+  #sectionExercicesEcoute {
+    width: min(92vw, 560px);
+    margin: 34px 0 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+  }
+
   .exercices-transition { text-align: center; padding: 6px 8px 2px; }
   .exercices-transition-titre {
     font-family: 'Baloo 2', sans-serif;
@@ -747,10 +768,29 @@
     max-height: 220px;
     min-height: 130px;
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
+    gap: 10px;
     border-radius: 14px;
     background: var(--peche-pale);
+  }
+  /* 🆕 (15-08-2026) Étiquette visible uniquement du prof (voir
+     estProfesseurConfirme, creerCarteExercice) — bordure en pointillés et
+     icône 👁️ pour bien marquer visuellement "ceci n'existe pas côté
+     élève", plutôt qu'un simple texte qui pourrait passer pour un élément
+     normal de l'interface. */
+  .exercice-phrase-prof {
+    margin: 0;
+    max-width: 90%;
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-align: center;
+    color: var(--brun-fonce, var(--brun));
+    background: #FFFFFF;
+    border: 1.5px dashed var(--peche-fonce, #D98C63);
+    border-radius: 10px;
+    padding: 5px 10px;
   }
   .exercice-btn-ecouter {
     flex-shrink: 0;
@@ -775,6 +815,16 @@
     font-weight: 700;
     color: var(--brun-fonce);
     line-height: 1.35;
+  }
+
+  /* 🆕 (retour Raphaël, 15-08-2026) : indice optionnel sous la consigne —
+     discret (taille réduite, italique, teinte atténuée) pour rester une
+     aide facultative, pas une seconde consigne. */
+  .exercice-indice {
+    font-size: 0.82rem;
+    font-style: italic;
+    color: var(--brun-clair, #8A7364);
+    margin-top: -6px;
   }
 
   .exercice-niveau-toggle { display: inline-flex; align-self: flex-start; border-radius: 999px; background: var(--fond); padding: 3px; gap: 2px; }
@@ -1095,7 +1145,7 @@
   </div>
   <div id="conteneurExercices"></div>
   <div id="remarqueQuatreDifficile" class="remarque-difficile" style="display:none;"></div>
-  <button type="button" class="bouton-nav suivant bouton-terminer-exercices" id="btnTerminerExercices">Terminer ›</button>
+  <button type="button" class="bouton-nav suivant bouton-terminer-exercices" id="btnTerminerExercices">Continuer ›</button>
 </section>
 
 <!-- 🆕 (15-08-2026) Section exercices d'écoute — phase 2 du chantier
@@ -1150,6 +1200,21 @@
   // essayerModeProfesseur), aucun effet sinon.
   restaurationSessionPromesse.then(function () {
     if (window.KebBekWidgetSessionProf) window.KebBekWidgetSessionProf.initialiser();
+  });
+
+  // 🆕 (15-08-2026) : même vérification serveur que widget-session-prof.js
+  // (essayerModeProfesseur — jamais une liste blanche côté client, voir sa
+  // propre note dans progression.js), reprise ICI pour que
+  // creerCarteExercice() sache, pour les cartes d'écoute, si CE navigateur
+  // peut voir la phrase à lire (voir afficherExercicesEcoute). estProfesseurConfirme
+  // reste `false` par défaut (élève/invité, ou vérification pas encore
+  // terminée) — jamais l'inverse : en cas de doute, la phrase reste cachée.
+  let estProfesseurConfirme = false;
+  const profProbePromesse = restaurationSessionPromesse.then(function () {
+    if (!window.KebBekProgression || !window.KebBekProgression.essayerModeProfesseur) return null;
+    return window.KebBekProgression.essayerModeProfesseur().catch(function () { return null; });
+  }).then(function (profil) {
+    estProfesseurConfirme = !!profil;
   });
 
   // ================================================================
@@ -1584,15 +1649,43 @@
   // sac-a-dos.js). Un mot absent d'ici tombe dans 'autre' côté sac,
   // donc toute nouvelle réplique ajoutée au dialogue doit penser à
   // compléter cette table.
+  //
+  // 🐛 CORRIGÉ (retour Raphaël, 15-08-2026) : "mon" était classé 'adjectif',
+  // ce qui n'est grammaticalement pas exact — c'est un déterminant
+  // possessif, pas un adjectif qualificatif. Reclassé sous le nouveau
+  // sous-groupe 'determinant' (voir NATURES_MOTS dans sac-a-dos.js) —
+  // c'est justement le genre de mot-outil qui finissait entassé dans
+  // "autre" faute d'un sous-groupe dédié.
   const NATURE_MOTS = {
     "j'ai": 'verbe', 'un': 'article', 'faim': 'nom', 'mange': 'verbe',
-    'quoi': 'pronom', 'mon': 'adjectif', 'sandwich': 'nom',
+    'quoi': 'pronom', 'mon': 'determinant', 'sandwich': 'nom',
     'oh': 'interjection', 'merci': 'interjection'
   };
 
   function natureDeMot(mot) {
     return NATURE_MOTS[mot.toLowerCase()] || 'autre';
   }
+
+  // 🆕 (retour Raphaël, 15-08-2026, "un nom devrait TOUJOURS indiquer son
+  // genre") : genre grammatical des noms de ce dialogue, consulté
+  // uniquement quand natureDeMot() renvoie 'nom' (voir son usage dans
+  // ajouterMotAuSac plus bas). 'article' optionnel et séparé : "faim" n'a
+  // volontairement pas d'article ici ("j'ai faim", jamais "une faim" dans
+  // ce contexte), alors que "sandwich" en a un naturel.
+  const GENRE_NOMS = { 'faim': 'f', 'sandwich': 'm' };
+  const ARTICLE_NOMS = { 'sandwich': 'un' };
+
+  // 🆕 (retour Raphaël, 15-08-2026, "verbe 'avoir', indicatif présent —
+  // classé d'abord comme le verbe avoir avec une sous-catégorie pour la
+  // conjugaison") : infinitif + conjugaison de chaque verbe conjugué de ce
+  // dialogue, consultés uniquement quand natureDeMot() renvoie 'verbe'
+  // (voir rendreGroupeVerbes/CONJUGAISONS_VERBES dans sac-a-dos.js — les
+  // clés de conjugaison ci-dessous doivent correspondre à ce dictionnaire).
+  const CONJUGAISON_VERBES = {
+    "j'ai": { infinitif: 'avoir', conjugaison: 'indicatif_present' },
+    'mange': { infinitif: 'manger', conjugaison: 'imperatif_present' }
+  };
+
   const ETIQUETTE_INFORMEL = {
     fr: '(tutoiement)', en: '(informal)', es: '(informal)', it: '(informale)',
     pt: '(informal)', ca: '(informal)', eo: '(neformala)', zh: '（非正式）',
@@ -1725,31 +1818,45 @@
       id: 'd1_e3',
       image: '../../images/dialogues/d1/d1_e2_bek-sandwich_01.webp',
       reponse: ['merci'],
-      // 🆕 (retour Raphaël, 13-08-2026) : "Merci beaucoup" accepté en
-      // plus de "merci" seul — même logique que d1_e2 ci-dessus.
-      reponsesAlternatives: [['merci', 'beaucoup']],
+      // 🆕 (retour Raphaël, 15-08-2026) : élève au clavier peut légitimement
+      // répondre par bien d'autres variantes que "merci" / "merci beaucoup" —
+      // toutes acceptées ici (mode texte/difficile ; longueurs différentes
+      // de reponse.length, donc invisibles en mode facile tuiles comme les
+      // alternatives ci-dessus, voir note sur d1_e2).
+      reponsesAlternatives: [
+        ['merci', 'beaucoup'],
+        ['merci', 'Bek'],
+        ['merci', 'beaucoup', 'Bek'],
+        ['merci', 'pour', 'le', 'sandwich'],
+        ['merci', "c'est", 'gentil']
+      ],
       distracteurs: ["c'est", 'un'],
+      // 🆕 (retour Raphaël, 15-08-2026) : consigne rendue plus précise —
+      // "tu veux la remercier" oriente explicitement vers un remerciement
+      // (au lieu de laisser deviner l'intention à partir de la seule
+      // situation), ce qui permet d'élargir reponsesAlternatives ci-dessus
+      // sans pour autant ouvrir la porte à des réponses hors sujet.
       instruction: {
-        fr: 'Tu es Keb. Bek te donne un sandwich. Que dis-tu\u00A0?',
-        en: 'You\u2019re Keb. Bek hands you a sandwich. What do you say?',
-        es: 'Eres Keb. Bek te da un sándwich. ¿Qué dices?',
-        it: 'Sei Keb. Bek ti dà un panino. Cosa dici?',
-        pt: 'És o Keb. A Bek dá-te uma sandes. O que dizes?',
-        ca: 'Ets en Keb. La Bek et dona un entrepà. Què dius?',
-        eo: 'Vi estas Keb. Bek donas al vi sandviĉon. Kion vi diras?',
-        zh: '你是 Keb。Bek 给了你一个三明治。你会说什么？',
-        ja: 'あなたはケブです。ベックがサンドイッチをくれました。何て言う？',
-        ko: '당신은 케브예요. 벡이 샌드위치를 줘요. 뭐라고 말할까요?',
-        vi: 'Bạn là Keb. Bek đưa cho bạn một chiếc sandwich. Bạn nói gì?',
-        ht: 'Ou se Keb. Bek ba ou yon sandwich. Kisa ou di?',
-        tl: 'Ikaw si Keb. Binigyan ka ni Bek ng sandwich. Ano ang sasabihin mo?',
-        id: 'Kamu Keb. Bek memberimu sandwich. Apa yang kamu katakan?',
-        nl: 'Jij bent Keb. Bek geeft je een boterham. Wat zeg je?',
-        de: 'Du bist Keb. Bek gibt dir ein Sandwich. Was sagst du?',
-        fa: 'تو کب هستی. بک به تو یک ساندویچ می\u200cدهد. چه می\u200cگویی؟',
-        sv: 'Du är Keb. Bek ger dig en smörgås. Vad säger du?',
-        no: 'Du er Keb. Bek gir deg en smørbrød. Hva sier du?',
-        ru: 'Ты — Кеб. Бек даёт тебе сэндвич. Что ты скажешь?'
+        fr: 'Tu es Keb. Bek te donne un sandwich et tu veux la remercier. Que dis-tu\u00A0?',
+        en: 'You\u2019re Keb. Bek hands you a sandwich, and you want to thank her. What do you say?',
+        es: 'Eres Keb. Bek te da un sándwich y quieres darle las gracias. ¿Qué dices?',
+        it: 'Sei Keb. Bek ti dà un panino e vuoi ringraziarla. Cosa dici?',
+        pt: 'És o Keb. A Bek dá-te uma sandes e queres agradecer-lhe. O que dizes?',
+        ca: 'Ets en Keb. La Bek et dona un entrepà i vols donar-li les gràcies. Què dius?',
+        eo: 'Vi estas Keb. Bek donas al vi sandviĉon, kaj vi volas danki ŝin. Kion vi diras?',
+        zh: '你是 Keb。Bek 给了你一个三明治，你想谢谢她。你会说什么？',
+        ja: 'あなたはケブです。ベックがサンドイッチをくれて、お礼を言いたいです。何て言う？',
+        ko: '당신은 케브예요. 벡이 샌드위치를 줘요, 그리고 고맙다고 말하고 싶어요. 뭐라고 말할까요?',
+        vi: 'Bạn là Keb. Bek đưa cho bạn một chiếc sandwich, và bạn muốn cảm ơn cô ấy. Bạn nói gì?',
+        ht: 'Ou se Keb. Bek ba ou yon sandwich, epi ou vle di l mèsi. Kisa ou di?',
+        tl: 'Ikaw si Keb. Binigyan ka ni Bek ng sandwich, at gusto mong pasalamatan siya. Ano ang sasabihin mo?',
+        id: 'Kamu Keb. Bek memberimu sandwich, dan kamu ingin berterima kasih padanya. Apa yang kamu katakan?',
+        nl: 'Jij bent Keb. Bek geeft je een boterham en je wilt haar bedanken. Wat zeg je?',
+        de: 'Du bist Keb. Bek gibt dir ein Sandwich, und du möchtest dich bei ihr bedanken. Was sagst du?',
+        fa: 'تو کب هستی. بک به تو یک ساندویچ می\u200cدهد و می\u200cخواهی از او تشکر کنی. چه می\u200cگویی؟',
+        sv: 'Du är Keb. Bek ger dig en smörgås och du vill tacka henne. Vad säger du?',
+        no: 'Du er Keb. Bek gir deg en smørbrød og du vil takke henne. Hva sier du?',
+        ru: 'Ты — Кеб. Бек даёт тебе сэндвич, и ты хочешь её поблагодарить. Что ты скажешь?'
       }
     },
     {
@@ -1799,6 +1906,33 @@
         sv: 'Bek vill att Keb ska börja äta. Hur säger du åt din vän att äta?',
         no: 'Bek vil at Keb skal begynne å spise. Hvordan sier du til vennen din at han skal spise?',
         ru: 'Бек хочет, чтобы Кеб начал есть. Как ты скажешь другу, чтобы он поел?'
+      },
+      // 🆕 (retour Raphaël, 15-08-2026) : indice optionnel — affiché sous
+      // la consigne (voir texteIndice/creerCarteExercice), dans la langue
+      // de l'apprenant. Champ facultatif : un exercice sans `indice` n'a
+      // simplement rien à afficher à cet endroit (voir creerCarteExercice,
+      // condition `if (ex.indice)`).
+      indice: {
+        fr: 'Indice\u00A0: juste un mot\u00A0!',
+        en: 'Hint: just one word!',
+        es: 'Pista: solo una palabra.',
+        it: 'Suggerimento: una sola parola.',
+        pt: 'Dica: só uma palavra.',
+        ca: 'Pista: només una paraula.',
+        eo: 'Indico: nur unu vorto.',
+        zh: '提示：只需要一个词。',
+        ja: 'ヒント：単語ひとつだけ。',
+        ko: '힌트: 한 단어만.',
+        vi: 'Gợi ý: chỉ một từ thôi.',
+        ht: 'Endikasyon: yon sèl mo.',
+        tl: 'Hint: isang salita lang.',
+        id: 'Petunjuk: cuma satu kata.',
+        nl: 'Hint: maar één woord.',
+        de: 'Tipp: nur ein Wort.',
+        fa: 'راهنمایی: فقط یک کلمه.',
+        sv: 'Tips: bara ett ord.',
+        no: 'Tips: bare ett ord.',
+        ru: 'Подсказка: всего одно слово.'
       }
     }
   ];
@@ -1825,34 +1959,33 @@
   // dialogue ci-dessus (Mange/un/sandwich/J'ai/faim/Tu/comprends/Quoi) —
   // niveau archi-débutant, rien de nouveau à deviner par-dessus l'écoute
   // elle-même.
+  // 🐛 CORRIGÉ (retour Raphaël, 15-08-2026) : un 4e exercice ("Tu
+  // comprends ?") avait été ajouté par erreur — "comprends" n'est pas un
+  // mot enseigné dans ce dialogue (vocabulaire volontairement limité, voir
+  // note ci-dessus). Retiré ; les 3 exercices restants suffisent, et les
+  // récompenses (voir plus bas) se basent déjà sur EXERCICES_ECOUTE.length,
+  // donc rien d'autre à ajuster.
   const EXERCICES_ECOUTE = [
     {
       id: 'd1_ecoute_1',
-      type: 'ecoute',
-      texte: 'Mange un sandwich.',
-      reponse: ['Mange', 'un', 'sandwich.'],
-      distracteurs: ['le', 'manges']
-    },
-    {
-      id: 'd1_ecoute_2',
       type: 'ecoute',
       texte: 'J\u2019ai faim.',
       reponse: ['J\u2019ai', 'faim.'],
       distracteurs: ['Tu', 'as']
     },
     {
-      id: 'd1_ecoute_3',
+      id: 'd1_ecoute_2',
       type: 'ecoute',
       texte: 'Quoi\u00A0?',
       reponse: ['Quoi', '?'],
       distracteurs: ['Qui', 'Comment']
     },
     {
-      id: 'd1_ecoute_4',
+      id: 'd1_ecoute_3',
       type: 'ecoute',
-      texte: 'Tu comprends\u00A0?',
-      reponse: ['Tu', 'comprends', '?'],
-      distracteurs: ['Il', 'comprend']
+      texte: 'Mange un sandwich.',
+      reponse: ['Mange', 'un', 'sandwich.'],
+      distracteurs: ['le', 'manges']
     }
   ];
 
@@ -1861,6 +1994,15 @@
   function texteExercice(ex) {
     if (ex.type === 'ecoute') return texteInterface('ecouteConsigne');
     return ex.instruction[langueActuelle()] || ex.instruction.en;
+  }
+
+  // 🆕 Indice optionnel (voir ex.indice sur d1_e4) : même repli fr→en que
+  // texteExercice ci-dessus si la langue de l'apprenant manque. Retourne
+  // null quand l'exercice n'a pas d'indice — creerCarteExercice n'affiche
+  // alors rien.
+  function texteIndice(ex) {
+    if (!ex.indice) return null;
+    return ex.indice[langueActuelle()] || ex.indice.en;
   }
 
   // ---------- Correction progressive (mode difficile) ----------
@@ -2076,7 +2218,23 @@
   function ajouterMotAuSac(span, mot) {
     if (typeof window.ajouterAuSac !== 'function') return; // sac-a-dos.js absent : repli silencieux
     const cle = mot.toLowerCase();
-    window.ajouterAuSac('mots', { mot: cle, trad: traductionDeMot(mot) || '', informel: motEstInformel(mot), type: natureDeMot(mot) });
+    const type = natureDeMot(cle);
+    const item = { mot: cle, trad: traductionDeMot(mot) || '', informel: motEstInformel(mot), type: type };
+    // 🆕 (retour Raphaël, 15-08-2026) : genre/article pour les noms,
+    // infinitif/conjugaison pour les verbes — voir GENRE_NOMS/ARTICLE_NOMS/
+    // CONJUGAISON_VERBES ci-dessus. Champs simplement absents de l'item
+    // quand non applicables (ex. un nom sans article naturel comme
+    // "faim") : sac-a-dos.js gère déjà leur absence proprement.
+    if (type === 'nom') {
+      const genre = GENRE_NOMS[cle];
+      if (genre) item.genre = genre;
+      const article = ARTICLE_NOMS[cle];
+      if (article) item.article = article;
+    } else if (type === 'verbe') {
+      const conj = CONJUGAISON_VERBES[cle];
+      if (conj) { item.infinitif = conj.infinitif; item.conjugaison = conj.conjugaison; }
+    }
+    window.ajouterAuSac('mots', item);
     animerMotVersSac(span);
     if (motsDejaAjoutes.has(cle)) return;
     motsDejaAjoutes.add(cle);
@@ -2437,7 +2595,14 @@
     btnNiveauGlobalDifficile.textContent = texteInterface('niveauDifficile');
     btnNiveauGlobalFacile.classList.toggle('actif', niveauGlobalCourant === 'facile');
     btnNiveauGlobalDifficile.classList.toggle('actif', niveauGlobalCourant === 'difficile');
-    btnTerminerExercices.textContent = texteInterface('terminer') + ' \u203a';
+    // 🆕 (retour Raphaël, 15-08-2026) : ce bouton ne termine pas la leçon —
+    // il mène aux exercices d'écoute juste après (voir son câblage plus
+    // bas : btnTerminerExercices.addEventListener('click',
+    // afficherExercicesEcoute)). "Terminer" était donc trompeur ; on
+    // réutilise la clé "continuer" déjà traduite dans les 20 langues.
+    // btnTerminerExercicesEcoute, lui, termine bel et bien la leçon
+    // (terminerLecon()) et garde donc "terminer".
+    btnTerminerExercices.textContent = texteInterface('continuer') + ' \u203a';
     elConteneurExercices.innerHTML = '';
     EXERCICES.forEach(function (ex, index) { elConteneurExercices.appendChild(creerCarteExercice(ex, index, niveauGlobalCourant)); });
     elSectionExercices.style.display = 'flex';
@@ -2450,18 +2615,27 @@
   // terminerLecon() directement). Pas de sélecteur de niveau global (voir
   // note de tête du HTML #sectionExercicesEcoute) : chaque carte démarre en
   // 'facile' et reste réglable individuellement.
-  function afficherExercicesEcoute() {
-    // 🆕 Poussée dès l'affichage de la section (pas seulement à la saisie,
-    // contrairement à annoncerReponseEnCours — voir note de tête
-    // d'EXERCICES_ECOUTE) : les phrases elles-mêmes, pour que le prof les
-    // ait sous les yeux à lire à voix haute en session active. `texte`
-    // n'est jamais envoyé nulle part côté élève — uniquement dans cet état
-    // Presence/Broadcast destiné au widget du prof.
-    synchroniserEtatSession({
-      page: 'dialogues/d1/',
-      section: 'exercices_ecoute',
-      phrases: EXERCICES_ECOUTE.map(function (ex) { return { id: ex.id, texte: ex.texte }; })
-    });
+  //
+  // 🐛 CORRIGÉ (15-08-2026, retour Raphaël sur test réel) : une première
+  // version poussait aussi `phrases` (le texte des 4 phrases) dans l'état
+  // synchroniserEtatSession() — ce qui semblait raisonnable ("le prof doit
+  // les avoir sous les yeux") mais était en réalité une vraie fuite : cet
+  // état passe par pousserEtat()/session-classe.js, qui l'ÉCRIT dans
+  // sessions_classe.etat et le RENVOIE tel quel à TOUT élève qui suit le
+  // prof (controle === 'professeur', voir le canal broadcast 'maj' dans
+  // session-classe.js) — même si aucun code d'affichage élève ne s'en sert,
+  // le JSON brut atterrit bel et bien dans le navigateur de l'élève
+  // (console/onglet réseau). Inacceptable pour un contenu qui doit rester
+  // "jamais visible pour l'élève en aucune circonstance". Solution
+  // retenue : ne plus rien pousser de spécial à l'écoute — le prof voit
+  // maintenant les phrases directement sur SA PROPRE page (ce navigateur-
+  // ci), révélées par creerCarteExercice() uniquement si
+  // estProfesseurConfirme est vrai (vérifié côté serveur via
+  // essayerModeProfesseur(), jamais une simple supposition côté client) —
+  // aucune donnée sensible ne transite plus par le canal élève.
+  async function afficherExercicesEcoute() {
+    await profProbePromesse; // best-effort — voir sa définition ; n'empêche jamais l'affichage si le check n'a pas fini
+    synchroniserEtatSession({ page: 'dialogues/d1/', section: 'exercices_ecoute' });
     elSectionExercices.style.display = 'none';
     document.getElementById('txtExercicesEcouteTitre').textContent = texteInterface('ecouteTitre');
     document.getElementById('txtExercicesEcouteIntro').textContent = texteInterface('ecouteIntro');
@@ -2495,6 +2669,18 @@
       if (!('speechSynthesis' in window)) btnEcouter.style.display = 'none'; // pas de TTS : seule la lecture par le prof en session reste possible
       btnEcouter.addEventListener('click', function () { lireAudio(ex.texte); });
       cadreAudio.appendChild(btnEcouter);
+      // 🆕 (15-08-2026) Révélation LOCALE de la phrase, uniquement si CE
+      // navigateur est un compte prof confirmé côté serveur (voir
+      // estProfesseurConfirme) — jamais transmise ailleurs (voir la note
+      // de tête de afficherExercicesEcoute sur la fuite corrigée). Permet
+      // au prof de lire la phrase à voix haute directement depuis son
+      // propre écran, sans dépendre du widget flottant.
+      if (estProfesseurConfirme) {
+        const phraseProf = document.createElement('p');
+        phraseProf.className = 'exercice-phrase-prof';
+        phraseProf.textContent = '\uD83D\uDC41\uFE0F ' + ex.texte;
+        cadreAudio.appendChild(phraseProf);
+      }
       carte.appendChild(cadreAudio);
     } else {
       const cadreImage = document.createElement('div');
@@ -2516,6 +2702,16 @@
     instruction.className = 'exercice-instruction';
     instruction.textContent = texteExercice(ex);
     carte.appendChild(instruction);
+
+    // 🆕 (retour Raphaël, 15-08-2026) : indice optionnel, sous la
+    // consigne — rien n'est ajouté au DOM si l'exercice n'en a pas.
+    const indice = texteIndice(ex);
+    if (indice) {
+      const elIndice = document.createElement('div');
+      elIndice.className = 'exercice-indice';
+      elIndice.textContent = indice;
+      carte.appendChild(elIndice);
+    }
 
     const toggleNiveau = document.createElement('div');
     toggleNiveau.className = 'exercice-niveau-toggle';

@@ -331,7 +331,20 @@
           tuile.appendChild(badge);
         }
 
-        tuile.addEventListener('click', function () { afficherActivite(eleve); });
+        tuile.addEventListener('click', function (e) {
+          // 🐛 CORRIGÉ (Raphaël, "cliquer sur un élève ferme le panneau") :
+          // afficherActivite() appelle rafraichirGrilleEleves(), qui
+          // reconstruit la grille (innerHTML = '') — donc CETTE tuile est
+          // retirée du DOM pendant que le clic remonte encore vers
+          // l'écouteur global (voir plus haut, celui qui ferme le panneau
+          // sur un clic "à l'extérieur"). Une fois la tuile détachée, le
+          // test conteneur.contains(e.target) échoue à tort et referme
+          // tout. stopPropagation() empêche ce clic-ci d'atteindre cet
+          // écouteur — de toute façon, un clic sur une tuile est par
+          // définition un clic À L'INTÉRIEUR du widget.
+          e.stopPropagation();
+          afficherActivite(eleve);
+        });
         grilleEleves.appendChild(tuile);
       });
       // L'élève visualisé s'est déconnecté entre-temps — referme le panneau

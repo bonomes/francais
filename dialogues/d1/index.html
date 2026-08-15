@@ -258,7 +258,31 @@
     font-size: 0.75rem;
     color: #b0402c;
     min-height: 1em;
+
+  /* 🆕 (15-08-2026) même liste que le bandeau de parcours.html (voir
+     .bse-liste-sessions/.bse-session-pill là-bas) — reprise ici avec les
+     classes kbb- pour rester cohérente avec le reste de ce bandeau-ci. */
   }
+  .kbb-session-liste {
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 6px;
+  }
+  .kbb-session-pastille {
+    font-family: inherit;
+    font-weight: 700;
+    font-size: 0.76rem;
+    border: 1.5px solid var(--peche);
+    border-radius: 999px;
+    padding: 6px 13px;
+    background: #FFFFFF;
+    color: var(--brun-fonce);
+    cursor: pointer;
+  }
+  .kbb-session-pastille:hover:not(:disabled) { background: var(--peche-pale, rgba(240, 169, 139, 0.16)); }
+  .kbb-session-pastille:disabled { opacity: 0.55; cursor: default; }
 
   .bulle-dialogue {
     position: relative;
@@ -1067,6 +1091,7 @@
       <button type="button" id="kbbSessionBtnRejoindre" class="kbb-session-bouton">Suivre</button>
     </div>
   </div>
+  <div id="kbbSessionListe" class="kbb-session-liste" style="display:none;"></div>
   <div class="kbb-session-actif kbb-session-cachee" id="kbbSessionActif">
     <span class="kbb-session-statut" id="kbbSessionStatutTexte"></span>
     <button type="button" id="kbbSessionBtnQuitter" class="kbb-session-bouton-quitter">Quitter</button>
@@ -3755,6 +3780,7 @@
     const btnQuitter = document.getElementById('kbbSessionBtnQuitter');
     const statutTexte = document.getElementById('kbbSessionStatutTexte');
     const message = document.getElementById('kbbSessionMessage');
+    const listeSessions = document.getElementById('kbbSessionListe');
 
     if (!sessionClasse) { document.getElementById('kbbSession').style.display = 'none'; return; }
 
@@ -3826,6 +3852,61 @@
       }
     }
 
+    // 🆕 (15-08-2026, demande de Raphaël) : même liste de sessions actives
+    // que le bandeau de parcours.html (voir rafraichirListeSessions() là-
+    // bas et sa note) — un clic sur une pastille rejoint directement, sans
+    // taper le code, via le même sessionClasse.rejoindreSession(code, ...)
+    // que btnRejoindre plus bas. callbacksJonction factorisé ici (onEtat +
+    // onFermee, communs aux trois points de jonction) pour ne pas dupliquer
+    // ces deux fonctions à plusieurs endroits — onErreur reste propre à
+    // chaque appelant (voir sa note juste en dessous).
+    const callbacksJonction = {
+      onEtat: appliquerEtat,
+      onFermee: function () {
+        syncControleBloque = false;
+        elActif.classList.add('kbb-session-cachee');
+        elInvite.classList.remove('kbb-session-cachee');
+        message.textContent = texteInterface('sessionTerminee');
+        message.style.color = 'var(--brun)';
+        rafraichirListeSessionsKbb();
+      }
+      // Pas de onErreur commun ici, volontairement : la reprise automatique
+      // (reprendreSessionEleve) doit rester silencieuse sur un échec (aucun
+      // code tapé par l'élève à ce moment-là), alors qu'un clic manuel sur
+      // "Suivre" ou sur une pastille DOIT afficher le message d'erreur —
+      // chaque appelant ajoute son propre onErreur via Object.assign.
+    };
+
+    async function rafraichirListeSessionsKbb() {
+      listeSessions.innerHTML = '';
+      listeSessions.style.display = 'none';
+      const sessions = await sessionClasse.listerSessionsActives();
+      if (!sessions || !sessions.length) return;
+      sessions.forEach(function (s) {
+        const pastille = document.createElement('button');
+        pastille.type = 'button';
+        pastille.className = 'kbb-session-pastille';
+        pastille.textContent = s.prenom_enseignant || 'Prof';
+        pastille.addEventListener('click', async function () {
+          pastille.disabled = true;
+          message.textContent = '';
+          const reussi = await sessionClasse.rejoindreSession(s.code, Object.assign({
+            onErreur: function () { message.textContent = texteInterface('sessionCodeInvalide'); message.style.color = '#b0402c'; }
+          }, callbacksJonction));
+          if (reussi) {
+            elInvite.classList.add('kbb-session-cachee');
+            elActif.classList.remove('kbb-session-cachee');
+            listeSessions.style.display = 'none';
+          } else {
+            pastille.disabled = false;
+            if (!message.textContent) message.textContent = texteInterface('sessionCodeInvalide');
+          }
+        });
+        listeSessions.appendChild(pastille);
+      });
+      listeSessions.style.display = 'flex';
+    }
+
     // 🆕 Reprise automatique (14-08-2026, deuxième vague) — si l'élève
     // avait déjà rejoint une session ailleurs (ex. bandeau de
     // parcours.html) et navigue ici (soit par un clic normal, soit
@@ -3834,20 +3915,14 @@
     // la question de Raphaël "est-ce que quitter la leçon fait perdre
     // le contrôle ?" pour CETTE page — voir session-classe.js pour le
     // mécanisme (localStorage, symétrique du côté prof).
-    sessionClasse.reprendreSessionEleve({
-      onEtat: appliquerEtat,
-      onFermee: function () {
-        syncControleBloque = false;
-        elActif.classList.add('kbb-session-cachee');
-        elInvite.classList.remove('kbb-session-cachee');
-        message.textContent = texteInterface('sessionTerminee');
-        message.style.color = 'var(--brun)';
-      },
+    sessionClasse.reprendreSessionEleve(Object.assign({
       onErreur: function () { /* rien à afficher — reprise silencieuse, aucun code n'a été tapé ici */ }
-    }).then(function (reussi) {
+    }, callbacksJonction)).then(function (reussi) {
       if (reussi) {
         elInvite.classList.add('kbb-session-cachee');
         elActif.classList.remove('kbb-session-cachee');
+      } else {
+        rafraichirListeSessionsKbb(); // rien à reprendre — montre ce qui est disponible
       }
     });
 
@@ -3856,20 +3931,9 @@
       if (!code) return;
       btnRejoindre.disabled = true;
       message.textContent = '';
-      const reussi = await sessionClasse.rejoindreSession(code, {
-        onEtat: appliquerEtat,
-        onFermee: function () {
-          syncControleBloque = false;
-          elActif.classList.add('kbb-session-cachee');
-          elInvite.classList.remove('kbb-session-cachee');
-          message.textContent = texteInterface('sessionTerminee');
-          message.style.color = 'var(--brun)';
-        },
-        onErreur: function () {
-          message.textContent = texteInterface('sessionCodeInvalide');
-          message.style.color = '#b0402c';
-        }
-      });
+      const reussi = await sessionClasse.rejoindreSession(code, Object.assign({
+        onErreur: function () { message.textContent = texteInterface('sessionCodeInvalide'); message.style.color = '#b0402c'; }
+      }, callbacksJonction));
       btnRejoindre.disabled = false;
       if (reussi) {
         elInvite.classList.add('kbb-session-cachee');
@@ -3887,6 +3951,7 @@
       elInvite.classList.remove('kbb-session-cachee');
       message.textContent = '';
       champCode.value = '';
+      rafraichirListeSessionsKbb();
     });
   })();
 

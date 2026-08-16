@@ -1301,7 +1301,7 @@
     },
     {
       speaker: "bek", texte: "Alors, comment est le sandwich ?",
-      img: "../../images/dialogues/d2/d2_01_bonomes_keb_bek_comment-sandwich_02.webp", grammaire: "gCommentEstLe",
+      img: "../../images/dialogues/d2/d2_01_bonomes_keb_bek_comment-sandwich_02.webp", grammaire: ["gCommentQuoi", "gLeUn", "gEstEtre"],
       trad: {
         en: "So, how's the sandwich?",
         es: "Entonces, ¿cómo está el sándwich?",
@@ -1455,31 +1455,75 @@
   // du site — repli sur l'anglais pour toute clé qui manquerait malgré
   // tout (voir texteGrammaire ci-dessous).
   const GRAMMAIRE = {
-    gCommentEstLe: {
-      fr: "« Comment » sert à demander une description ou une qualité — pas à faire un choix (contrairement à « quoi »). On dit « le » sandwich, pas « un » sandwich, parce que Bek et Keb parlent d'un sandwich précis, déjà connu des deux : celui que Bek vient de donner à Keb. « Le » et « un » sont ici deux déterminants masculins — le féminin (« la », « une ») arrivera bientôt. « Est » vient du verbe être, pour la toute première fois : Le sandwich est bon. / Il est bon.",
-      en: "“Comment” (“how”) asks for a description or quality — not a choice (unlike “quoi,” “what”). We say “le” sandwich, not “un” sandwich, because Bek and Keb are talking about one specific, already-known sandwich — the one Bek just gave Keb. “Le” and “un” are both masculine here — the feminine forms (“la,” “une”) are coming soon. “Est” comes from the verb être (“to be”), for the very first time here: Le sandwich est bon. / Il est bon.",
-      es: "“Comment” (“cómo”) pide una descripción o una cualidad — no una elección (a diferencia de “quoi”, “qué”). Se dice “le” sandwich, no “un” sandwich, porque Bek y Keb hablan de un sándwich concreto, ya conocido por los dos: el que Bek le acaba de dar a Keb. “Le” y “un” son aquí dos determinantes masculinos — el femenino (“la”, “une”) llegará pronto. “Est” viene del verbo être (“ser/estar”), por primera vez aquí: Le sandwich est bon. / Il est bon.",
-      it: "“Comment” (“come”) chiede una descrizione o una qualità — non una scelta (a differenza di “quoi”, “cosa”). Si dice “le” sandwich, non “un” sandwich, perché Bek e Keb parlano di un panino preciso, già noto a entrambi: quello che Bek ha appena dato a Keb. “Le” e “un” sono qui due determinanti maschili — il femminile (“la”, “une”) arriverà presto. “Est” viene dal verbo être (“essere”), qui per la prima volta: Le sandwich est bon. / Il est bon.",
-      pt: "“Comment” (“como”) pede uma descrição ou uma qualidade — não uma escolha (ao contrário de “quoi”, “o quê”). Diz-se “le” sandwich, não “un” sandwich, porque a Bek e o Keb falam de uma sandes precisa, já conhecida dos dois: aquela que a Bek acabou de dar ao Keb. “Le” e “un” são aqui dois determinantes masculinos — o feminino (“la”, “une”) chegará em breve. “Est” vem do verbo être (“ser/estar”), aqui pela primeira vez: Le sandwich est bon. / Il est bon.",
-      ca: "“Comment” (“com”) demana una descripció o una qualitat — no una tria (a diferència de “quoi”, “què”). Es diu “le” sandwich, no “un” sandwich, perquè la Bek i en Keb parlen d'un entrepà concret, ja conegut pels dos: el que la Bek acaba de donar a en Keb. “Le” i “un” són aquí dos determinants masculins — el femení (“la”, “une”) arribarà aviat. “Est” ve del verb être (“ser/estar”), aquí per primera vegada: Le sandwich est bon. / Il est bon.",
-      eo: "“Comment” (“kiel”) petas priskribon aŭ kvaliton — ne elekton (male al “quoi”, “kio”). Oni diras “le” sandviĉo, ne “un” sandviĉo, ĉar Bek kaj Keb parolas pri specifa, jam konata sandviĉo: tiu, kiun Bek ĵus donis al Keb. “Le” kaj “un” ĉi tie estas ambaŭ viraj artikoloj — la ina formo (“la”, “une”) baldaŭ venos. “Est” venas de la verbo être (“esti”), ĉi tie la unuan fojon: Le sandwich est bon. / Il est bon.",
-      zh: "「comment」（怎么样）用来询问描述或性质，不是在做选择（这点跟「quoi」「什么」不同）。这里说「le」三明治而不是「un」三明治，因为 Bek 和 Keb 说的是一个具体的、双方都已经知道的三明治，就是 Bek 刚给 Keb 的那个。「le」和「un」在这里都是阳性冠词，阴性形式（「la」「une」）很快就会出现。「est」来自动词 être（是），这里是第一次出现：Le sandwich est bon. / Il est bon.",
-      ja: "「comment」（どう）は説明や性質を尋ねるための言葉で、「quoi」（何）のような選択を尋ねるものではありません。「un」ではなく「le」サンドイッチと言うのは、ベックとケブが特定の、すでに知っているサンドイッチ——ベックがケブにあげたばかりのもの——について話しているからです。「le」と「un」はここでは両方とも男性形、女性形（「la」「une」）はもうすぐ出てきます。「est」は動詞 être（である）から来ていて、ここが初登場です：Le sandwich est bon. / Il est bon.",
-      ko: "“comment”(“어떻게”)는 묘사나 성질을 물을 때 쓰여요, “quoi”(“무엇”)처럼 선택을 묻는 게 아니에요. “un” 대신 “le” 샌드위치라고 하는 건, 벡과 케브가 특정한, 둘 다 이미 알고 있는 샌드위치, 벡이 케브에게 방금 준 그것에 대해 말하고 있기 때문이에요. “le”와 “un”은 여기서 둘 다 남성형이에요, 여성형(“la”, “une”)은 곧 나올 거예요. “est”는 동사 être(“이다”)에서 왔고, 여기서 처음 등장해요: Le sandwich est bon. / Il est bon.",
-      vi: "“Comment” (“như thế nào”) dùng để hỏi về mô tả hay tính chất, không phải để chọn lựa (khác với “quoi”, “cái gì”). Ta nói “le” sandwich, không phải “un” sandwich, vì Bek và Keb đang nói về một chiếc sandwich cụ thể, cả hai đều đã biết: chiếc mà Bek vừa đưa cho Keb. “Le” và “un” ở đây đều là mạo từ giống đực, dạng giống cái (“la”, “une”) sẽ sớm xuất hiện. “Est” đến từ động từ être (“là”), lần đầu tiên xuất hiện ở đây: Le sandwich est bon. / Il est bon.",
-      ht: "“Comment” (“kijan”) sèvi pou mande yon deskripsyon oswa yon kalite, se pa yon chwa (kontrèman ak “quoi”, “kisa”). Nou di “le” sandwich, pa “un” sandwich, paske Bek ak Keb ap pale de yon sandwich espesifik, tou de deja konnen l: sandwich Bek fenk bay Keb la. “Le” ak “un” isit la se de atik maskilen, fòm feminen an (“la”, “une”) ap vini talè. “Est” soti nan vèb être (“se”), premye fwa isit la: Le sandwich est bon. / Il est bon.",
-      tl: "Ang “comment” (“paano”) ay naghahanap ng paglalarawan o katangian, hindi pagpili (kaiba sa “quoi”, “ano”). Sinasabing “le” sandwich, hindi “un” sandwich, dahil pinag-uusapan nina Bek at Keb ang isang tiyak na sandwich na alam na nilang dalawa: iyong ibinigay lang ni Bek kay Keb. Ang “le” at “un” dito ay parehong panlalaking pantukoy, ang pambabae (“la”, “une”) ay darating na rin. Ang “est” ay mula sa pandiwang être (“maging”), unang beses lumitaw dito: Le sandwich est bon. / Il est bon.",
-      id: "“Comment” (“bagaimana”) menanyakan deskripsi atau sifat, bukan pilihan (berbeda dari “quoi”, “apa”). Kita bilang “le” sandwich, bukan “un” sandwich, karena Bek dan Keb membicarakan satu sandwich tertentu yang sudah diketahui keduanya: yang baru saja diberikan Bek kepada Keb. “Le” dan “un” di sini sama-sama maskulin, bentuk feminin (“la”, “une”) akan segera muncul. “Est” berasal dari kata kerja être (“menjadi/adalah”), pertama kali muncul di sini: Le sandwich est bon. / Il est bon.",
-      nl: "“Comment” (“hoe”) vraagt om een beschrijving of eigenschap, geen keuze (in tegenstelling tot “quoi”, “wat”). We zeggen “le” sandwich, niet “un” sandwich, omdat Bek en Keb het hebben over één specifieke, al bekende sandwich: degene die Bek net aan Keb heeft gegeven. “Le” en “un” zijn hier beide mannelijk, de vrouwelijke vorm (“la”, “une”) komt binnenkort. “Est” komt van het werkwoord être (“zijn”), hier voor het eerst: Le sandwich est bon. / Il est bon.",
-      de: "“Comment” (“wie”) fragt nach einer Beschreibung oder Eigenschaft, keine Auswahl (anders als “quoi”, “was”). Man sagt “le” sandwich, nicht “un” sandwich, weil Bek und Keb über ein bestimmtes, beiden schon bekanntes Sandwich sprechen: das, was Bek Keb gerade gegeben hat. “Le” und “un” sind hier beide maskulin, die weibliche Form (“la”, “une”) kommt bald. “Est” kommt vom Verb être (“sein”), hier zum allerersten Mal: Le sandwich est bon. / Il est bon.",
-      fa: "«comment» («چطور») برای پرسیدن توصیف یا ویژگی به‌کار می‌رود، نه برای انتخاب (برخلاف «quoi»، «چی»). می‌گوییم «le» ساندویچ، نه «un» ساندویچ، چون بک و کب درباره‌ی یک ساندویچ مشخص و از پیش شناخته‌شده حرف می‌زنند: همانی که بک تازه به کب داده. «le» و «un» اینجا هر دو مذکر هستند، شکل مؤنث («la»، «une») به‌زودی می‌آید. «est» از فعل être («بودن») می‌آید، اینجا برای اولین بار: Le sandwich est bon. / Il est bon.",
-      sv: "“Comment” (“hur”) frågar efter en beskrivning eller egenskap, inte ett val (till skillnad från “quoi”, “vad”). Man säger “le” sandwich, inte “un” sandwich, för att Bek och Keb pratar om en specifik, redan känd smörgås: den som Bek just gav Keb. “Le” och “un” är här båda maskulina, den feminina formen (“la”, “une”) kommer snart. “Est” kommer från verbet être (“att vara”), här för allra första gången: Le sandwich est bon. / Il est bon.",
-      no: "“Comment” (“hvordan”) spør etter en beskrivelse eller egenskap, ikke et valg (i motsetning til “quoi”, “hva”). Man sier “le” sandwich, ikke “un” sandwich, fordi Bek og Keb snakker om én bestemt, allerede kjent sandwich: den Bek nettopp ga Keb. “Le” og “un” er her begge hankjønn, hunkjønnsformen (“la”, “une”) kommer snart. “Est” kommer fra verbet être (“å være”), her for aller første gang: Le sandwich est bon. / Il est bon.",
-      ru: "«Comment» («как») используется, чтобы спросить об описании или качестве, а не о выборе (в отличие от «quoi», «что»). Говорят «le» sandwich, а не «un» sandwich, потому что Бек и Кеб говорят об одном конкретном, уже известном обоим сэндвиче — том, который Бек только что отдала Кебу. «Le» и «un» здесь оба мужского рода, форма женского рода («la», «une») появится совсем скоро. «Est» происходит от глагола être («быть»), здесь оно встречается впервые: Le sandwich est bon. / Il est bon."
+    gCommentQuoi: {
+      fr: "**Comment** sert à demander une description ou une qualité — pas à faire un choix (contrairement à **quoi**).",
+      en: "**Comment** (“how”) asks for a description or quality — not a choice (unlike **quoi**, “what”).",
+      es: "**Comment** (“cómo”) pide una descripción o una cualidad — no una elección (a diferencia de **quoi**, “qué”).",
+      it: "**Comment** (“come”) chiede una descrizione o una qualità — non una scelta (a differenza di **quoi**, “cosa”).",
+      pt: "**Comment** (“como”) pede uma descrição ou uma qualidade — não uma escolha (ao contrário de **quoi**, “o quê”).",
+      ca: "**Comment** (“com”) demana una descripció o una qualitat — no una tria (a diferència de **quoi**, “què”).",
+      eo: "**Comment** (“kiel”) petas priskribon aŭ kvaliton — ne elekton (male al **quoi**, “kio”).",
+      zh: "**comment**（怎么样）用来询问描述或性质，不是在做选择，这点跟 **quoi**（什么）不同。",
+      ja: "**comment**（どう）は説明や性質を尋ねる言葉で、**quoi**（何）のような選択を尋ねるものではありません。",
+      ko: "**comment**(“어떻게”)는 묘사나 성질을 물을 때 쓰이고, **quoi**(“무엇”)처럼 선택을 묻는 게 아니에요.",
+      vi: "**Comment** (“như thế nào”) dùng để hỏi về mô tả hay tính chất, không phải để chọn lựa (khác với **quoi**, “cái gì”).",
+      ht: "**Comment** (“kijan”) sèvi pou mande yon deskripsyon oswa yon kalite — se pa yon chwa (kontrèman ak **quoi**, “kisa”).",
+      tl: "Ang **comment** (“paano”) ay naghahanap ng paglalarawan o katangian — hindi pagpili (kaiba sa **quoi**, “ano”).",
+      id: "**Comment** (“bagaimana”) menanyakan deskripsi atau sifat — bukan pilihan (berbeda dari **quoi**, “apa”).",
+      nl: "**Comment** (“hoe”) vraagt om een beschrijving of eigenschap — geen keuze (in tegenstelling tot **quoi**, “wat”).",
+      de: "**Comment** (“wie”) fragt nach einer Beschreibung oder Eigenschaft — keine Auswahl (anders als **quoi**, “was”).",
+      fa: "**comment** («چطور») برای پرسیدن توصیف یا ویژگی به‌کار می‌رود، نه برای انتخاب (برخلاف **quoi**، «چی»).",
+      sv: "**Comment** (“hur”) frågar efter en beskrivning eller egenskap — inte ett val (till skillnad från **quoi**, “vad”).",
+      no: "**Comment** (“hvordan”) spør etter en beskrivelse eller egenskap — ikke et valg (i motsetning til **quoi**, “hva”).",
+      ru: "**Comment** («как») используется, чтобы спросить об описании или качестве — а не о выборе (в отличие от **quoi**, «что»)."
+    },
+    gLeUn: {
+      fr: "On dit **le** sandwich, pas **un** sandwich, parce que Bek et Keb parlent d'un sandwich précis, déjà connu des deux : celui que Bek vient de donner à Keb. **Le** et **un** sont ici deux déterminants masculins — le féminin (« la », « une ») arrivera bientôt.",
+      en: "We say **le** sandwich, not **un** sandwich, because Bek and Keb are talking about one specific, already-known sandwich — the one Bek just gave Keb. **Le** and **un** are both masculine here — the feminine forms (“la,” “une”) are coming soon.",
+      es: "Se dice **le** sandwich, no **un** sandwich, porque Bek y Keb hablan de un sándwich concreto, ya conocido por los dos: el que Bek le acaba de dar a Keb. **Le** y **un** son aquí dos determinantes masculinos — el femenino (“la”, “une”) llegará pronto.",
+      it: "Si dice **le** sandwich, non **un** sandwich, perché Bek e Keb parlano di un panino preciso, già noto a entrambi: quello che Bek ha appena dato a Keb. **Le** e **un** sono qui due determinanti maschili — il femminile (“la”, “une”) arriverà presto.",
+      pt: "Diz-se **le** sandwich, não **un** sandwich, porque a Bek e o Keb falam de uma sandes precisa, já conhecida dos dois: aquela que a Bek acabou de dar ao Keb. **Le** e **un** são aqui dois determinantes masculinos — o feminino (“la”, “une”) chegará em breve.",
+      ca: "Es diu **le** sandwich, no **un** sandwich, perquè la Bek i en Keb parlen d'un entrepà concret, ja conegut pels dos: el que la Bek acaba de donar a en Keb. **Le** i **un** són aquí dos determinants masculins — el femení (“la”, “une”) arribarà aviat.",
+      eo: "Oni diras **le** sandviĉo, ne **un** sandviĉo, ĉar Bek kaj Keb parolas pri specifa, jam konata sandviĉo: tiu, kiun Bek ĵus donis al Keb. **Le** kaj **un** ĉi tie estas ambaŭ viraj artikoloj — la ina formo (“la”, “une”) baldaŭ venos.",
+      zh: "这里说 **le** 三明治而不是 **un** 三明治，因为 Bek 和 Keb 说的是一个具体的、双方都已经知道的三明治，就是 Bek 刚给 Keb 的那个。**le** 和 **un** 在这里都是阳性冠词，阴性形式（「la」「une」）很快就会出现。",
+      ja: "「un」ではなく **le** サンドイッチと言うのは、ベックとケブが特定の、すでに知っているサンドイッチ——ベックがケブにあげたばかりのもの——について話しているからです。**le** と **un** はここでは両方とも男性形、女性形（「la」「une」）はもうすぐ出てきます。",
+      ko: "“un” 대신 **le** 샌드위치라고 하는 건, 벡과 케브가 특정한, 둘 다 이미 알고 있는 샌드위치, 벡이 케브에게 방금 준 그것에 대해 말하고 있기 때문이에요. **le**와 **un**은 여기서 둘 다 남성형이에요, 여성형(“la”, “une”)은 곧 나올 거예요.",
+      vi: "Ta nói **le** sandwich, không phải **un** sandwich, vì Bek và Keb đang nói về một chiếc sandwich cụ thể, cả hai đều đã biết: chiếc mà Bek vừa đưa cho Keb. **Le** và **un** ở đây đều là mạo từ giống đực, dạng giống cái (“la”, “une”) sẽ sớm xuất hiện.",
+      ht: "Nou di **le** sandwich, pa **un** sandwich, paske Bek ak Keb ap pale de yon sandwich espesifik, tou de deja konnen l: sandwich Bek fenk bay Keb la. **Le** ak **un** isit la se de atik maskilen, fòm feminen an (“la”, “une”) ap vini talè.",
+      tl: "Sinasabing **le** sandwich, hindi **un** sandwich, dahil pinag-uusapan nina Bek at Keb ang isang tiyak na sandwich na alam na nilang dalawa: iyong ibinigay lang ni Bek kay Keb. Ang **le** at **un** dito ay parehong panlalaking pantukoy — ang pambabae (“la”, “une”) ay darating na rin.",
+      id: "Kita bilang **le** sandwich, bukan **un** sandwich, karena Bek dan Keb membicarakan satu sandwich tertentu yang sudah diketahui keduanya: yang baru saja diberikan Bek kepada Keb. **Le** dan **un** di sini sama-sama maskulin — bentuk feminin (“la”, “une”) akan segera muncul.",
+      nl: "We zeggen **le** sandwich, niet **un** sandwich, omdat Bek en Keb het hebben over één specifieke, al bekende sandwich: degene die Bek net aan Keb heeft gegeven. **Le** en **un** zijn hier beide mannelijk — de vrouwelijke vorm (“la”, “une”) komt binnenkort.",
+      de: "Man sagt **le** sandwich, nicht **un** sandwich, weil Bek und Keb über ein bestimmtes, beiden schon bekanntes Sandwich sprechen: das, was Bek Keb gerade gegeben hat. **Le** und **un** sind hier beide maskulin — die weibliche Form (“la”, “une”) kommt bald.",
+      fa: "می‌گوییم **le** ساندویچ، نه **un** ساندویچ، چون بک و کب درباره‌ی یک ساندویچ مشخص و از پیش شناخته‌شده حرف می‌زنند: همانی که بک تازه به کب داده. **le** و **un** اینجا هر دو مذکر هستند، شکل مؤنث («la»، «une») به‌زودی می‌آید.",
+      sv: "Man säger **le** sandwich, inte **un** sandwich, för att Bek och Keb pratar om en specifik, redan känd smörgås: den som Bek just gav Keb. **Le** och **un** är här båda maskulina — den feminina formen (“la”, “une”) kommer snart.",
+      no: "Man sier **le** sandwich, ikke **un** sandwich, fordi Bek og Keb snakker om én bestemt, allerede kjent sandwich: den Bek nettopp ga Keb. **Le** og **un** er her begge hankjønn — hunkjønnsformen (“la”, “une”) kommer snart.",
+      ru: "Говорят **le** sandwich, а не **un** sandwich, потому что Бек и Кеб говорят об одном конкретном, уже известном обоим сэндвиче — том, который Бек только что отдала Кебу. **Le** и **un** здесь оба мужского рода — форма женского рода («la», «une») появится совсем скоро."
+    },
+    gEstEtre: {
+      fr: "**Est** vient du verbe **être**, ici pour la toute première fois : Le sandwich est bon. / Il est bon.",
+      en: "**Est** comes from the verb **être** (“to be”), for the very first time here: Le sandwich est bon. / Il est bon.",
+      es: "**Est** viene del verbo **être** (“ser/estar”), por primera vez aquí: Le sandwich est bon. / Il est bon.",
+      it: "**Est** viene dal verbo **être** (“essere”), qui per la prima volta: Le sandwich est bon. / Il est bon.",
+      pt: "**Est** vem do verbo **être** (“ser/estar”), aqui pela primeira vez: Le sandwich est bon. / Il est bon.",
+      ca: "**Est** ve del verb **être** (“ser/estar”), aquí per primera vegada: Le sandwich est bon. / Il est bon.",
+      eo: "**Est** venas de la verbo **être** (“esti”), ĉi tie la unuan fojon: Le sandwich est bon. / Il est bon.",
+      zh: "**est** 来自动词 **être**（是），这里是第一次出现：Le sandwich est bon. / Il est bon.",
+      ja: "**est** は動詞 **être**（である）から来ていて、ここが初登場です：Le sandwich est bon. / Il est bon.",
+      ko: "**est**는 동사 **être**(“이다”)에서 왔고, 여기서 처음 등장해요: Le sandwich est bon. / Il est bon.",
+      vi: "**Est** đến từ động từ **être** (“là”), lần đầu tiên xuất hiện ở đây: Le sandwich est bon. / Il est bon.",
+      ht: "**Est** soti nan vèb **être** (“se”), premye fwa isit la: Le sandwich est bon. / Il est bon.",
+      tl: "Ang **est** ay mula sa pandiwang **être** (“maging”), unang beses lumitaw dito: Le sandwich est bon. / Il est bon.",
+      id: "**Est** berasal dari kata kerja **être** (“menjadi/adalah”), pertama kali muncul di sini: Le sandwich est bon. / Il est bon.",
+      nl: "**Est** komt van het werkwoord **être** (“zijn”), hier voor het eerst: Le sandwich est bon. / Il est bon.",
+      de: "**Est** kommt vom Verb **être** (“sein”), hier zum allerersten Mal: Le sandwich est bon. / Il est bon.",
+      fa: "**est** از فعل **être** («بودن») می‌آید، اینجا برای اولین بار: Le sandwich est bon. / Il est bon.",
+      sv: "**Est** kommer från verbet **être** (“att vara”), här för allra första gången: Le sandwich est bon. / Il est bon.",
+      no: "**Est** kommer fra verbet **être** (“å være”), her for aller første gang: Le sandwich est bon. / Il est bon.",
+      ru: "**Est** происходит от глагола **être** («быть»), здесь оно встречается впервые: Le sandwich est bon. / Il est bon."
     },
     gBon: {
-      fr: "« Bon » est un mot très polyvalent en français — il peut décrire à peu près n'importe quoi : une chose (Le sandwich est bon), un moment, ou même une personne et ses talents (Keb est bon, au soccer, par exemple).",
-      en: "“Bon” (“good”) is a very versatile word in French — it can describe almost anything: a thing (Le sandwich est bon), a moment, or even a person and their talents (Keb est bon, at soccer, for instance).",
+      fr: "**Bon** est un mot très polyvalent en français — il peut décrire à peu près n'importe quoi : une chose (Le sandwich est bon), un moment, ou même une personne et ses talents (Keb est bon, au soccer, par exemple).",
+      en: "**Bon** (“good”) is a very versatile word in French — it can describe almost anything: a thing (Le sandwich est bon), a moment, or even a person and their talents (Keb est bon, at soccer, for instance).",
       es: "“Bon” (“bueno”) es una palabra muy versátil en francés: puede describir casi cualquier cosa: algo (Le sandwich est bon), un momento, o incluso a una persona y sus talentos (Keb est bon, en el fútbol, por ejemplo).",
       it: "“Bon” (“buono”) è una parola molto versatile in francese: può descrivere quasi qualsiasi cosa: un oggetto (Le sandwich est bon), un momento, o persino una persona e i suoi talenti (Keb est bon, a calcio, per esempio).",
       pt: "“Bon” (“bom”) é uma palavra muito versátil em francês: pode descrever quase tudo: uma coisa (Le sandwich est bon), um momento, ou até uma pessoa e os seus talentos (Keb est bon, no futebol, por exemplo).",
@@ -1500,8 +1544,8 @@
       ru: "«Bon» («хороший») — очень универсальное слово во французском языке: им можно описать почти всё — вещь (Le sandwich est bon), момент или даже человека и его таланты (например, Keb est bon — про футбол, в смысле «Кеб хорош»)."
     },
     gEuh: {
-      fr: "« Euh » ne veut rien dire en soi — c'est un petit son qu'on utilise à l'oral pour marquer une hésitation, le temps de trouver ses mots. On l'entend partout en français parlé, même chez les gens qui parlent très bien !",
-      en: "“Euh” doesn't actually mean anything — it's a small sound used out loud to mark hesitation, buying time to find one's words. You'll hear it everywhere in spoken French, even from people who speak beautifully!",
+      fr: "**Euh** ne veut rien dire en soi — c'est un petit son qu'on utilise à l'oral pour marquer une hésitation, le temps de trouver ses mots. On l'entend partout en français parlé, même chez les gens qui parlent très bien !",
+      en: "**Euh** doesn't actually mean anything — it's a small sound used out loud to mark hesitation, buying time to find one's words. You'll hear it everywhere in spoken French, even from people who speak beautifully!",
       es: "“Euh” no significa nada en sí mismo: es un pequeño sonido que se usa al hablar para marcar una duda, mientras se buscan las palabras. Se escucha por todas partes en el francés hablado, ¡incluso entre quienes hablan muy bien!",
       it: "“Euh” non significa nulla di per sé: è un piccolo suono usato a voce per segnalare un'esitazione, il tempo di trovare le parole. Lo si sente ovunque nel francese parlato, anche da chi parla benissimo!",
       pt: "“Euh” não significa nada em si — é um pequeno som usado ao falar para marcar uma hesitação, o tempo de encontrar as palavras. Ouve-se por todo o lado no francês falado, até por quem fala muito bem!",
@@ -1842,7 +1886,7 @@
       id: "d2_e1",
       image: "../../images/dialogues/d2/d2_e1_bek-demande.png",
       reponse: ["Comment", "est", "le", "sandwich", "?"],
-      reponsesAlternatives: [["Comment", "trouves-tu", "le", "sandwich", "?"], ["Qu'est-ce", "que", "tu", "penses", "du", "sandwich", "?"], ["Alors", ",", "le", "sandwich", "?"], ["Il", "est", "comment", ",", "le", "sandwich", "?"]],
+      reponsesAlternatives: [["Comment", "trouves-tu", "le", "sandwich", "?"], ["Qu'est-ce", "que", "tu", "penses", "du", "sandwich", "?"], ["Que", "penses-tu", "du", "sandwich", "?"], ["Alors", ",", "le", "sandwich", "?"], ["Il", "est", "comment", ",", "le", "sandwich", "?"]],
       distracteurs: ["un", "bon"],
       instruction: {
         fr: "Tu es Bek. Tu veux savoir ce que Keb pense du sandwich. Comment le lui demandes-tu ?",
@@ -1865,35 +1909,57 @@
         sv: "Du är Bek. Du vill veta vad Keb tycker om smörgåsen. Hur frågar du honom?",
         no: "Du er Bek. Du vil vite hva Keb synes om sandwichen. Hvordan spør du ham?",
         ru: "Ты — Бек. Ты хочешь узнать, что Кеб думает о сэндвиче. Как ты его спросишь?"
+      },
+      indice: {
+        fr: "Plusieurs formulations marchent — évite juste une question qui appelle un « oui » ou un « non ».",
+        en: "Several phrasings work here — just avoid a question that leads to a “yes” or “no.”",
+        es: "Varias formulaciones funcionan aquí — solo evita una pregunta que lleve a un “sí” o un “no”.",
+        it: "Qui vanno bene diverse formulazioni — evita solo una domanda che porti a un “sì” o un “no”.",
+        pt: "Várias formulações funcionam aqui — evita apenas uma pergunta que leve a um “sim” ou “não”.",
+        ca: "Diverses formulacions funcionen aquí — evita només una pregunta que porti a un “sí” o un “no”.",
+        eo: "Pluraj formuloj funkcias ĉi tie — nur evitu demandon, kiu kondukas al “jes” aŭ “ne”.",
+        zh: "这里有好几种说法都可以，只要避免会得到“是”或“不是”的问题就行。",
+        ja: "言い方はいろいろOK。「はい」か「いいえ」で答えられる質問だけ避けてね。",
+        ko: "여러 표현이 가능해요 — “네”나 “아니요”로 답하게 되는 질문만 피하면 돼요.",
+        vi: "Có nhiều cách nói đều được — chỉ cần tránh câu hỏi dẫn đến “có” hay “không”.",
+        ht: "Plizyè fason fè afè — jis evite yon kesyon ki mennen nan yon “wi” oswa yon “non”.",
+        tl: "Maraming paraan ng pagsasabi ang tama — iwasan lang ang tanong na sasagutin ng “oo” o “hindi”.",
+        id: "Beberapa cara mengungkapkan bisa dipakai di sini — hindari saja pertanyaan yang berujung pada “ya” atau “tidak”.",
+        nl: "Verschillende formuleringen werken hier — vermijd alleen een vraag die tot een “ja” of “nee” leidt.",
+        de: "Hier funktionieren mehrere Formulierungen — vermeide nur eine Frage, die zu einem „Ja“ oder „Nein“ führt.",
+        fa: "چند جور جمله‌بندی اینجا درست است — فقط از سؤالی که به «بله» یا «نه» ختم شود پرهیز کن.",
+        sv: "Flera formuleringar funkar här — undvik bara en fråga som leder till ett “ja” eller “nej”.",
+        no: "Flere formuleringer funker her — bare unngå et spørsmål som leder til et “ja” eller “nei”.",
+        ru: "Здесь подойдёт несколько формулировок — только избегай вопроса, на который отвечают «да» или «нет»."
       }
     },
     {
       id: "d2_e2",
       image: "../../images/dialogues/d2/d2_e2_keb-repond.png",
       reponse: ["Il", "est", "bon", "."],
-      reponsesAlternatives: [["Il", "est", "délicieux", "."], ["Le", "sandwich", "est", "bon", "."], ["Le", "sandwich", "est", "délicieux", "."]],
+      reponsesAlternatives: [["Il", "est", "délicieux", "."], ["Le", "sandwich", "est", "bon", "."], ["Le", "sandwich", "est", "délicieux", "."], ["Il", "est", "très", "bon", "."], ["Il", "est", "très", "délicieux", "."], ["Le", "sandwich", "est", "très", "bon", "."], ["Le", "sandwich", "est", "très", "délicieux", "."]],
       distracteurs: ["un", "euh"],
       instruction: {
-        fr: "Tu es Keb. Tu réponds à sa question.",
-        en: "You're Keb. You answer her question.",
-        es: "Eres Keb. Respondes a su pregunta.",
-        it: "Sei Keb. Rispondi alla sua domanda.",
-        pt: "És o Keb. Respondes à pergunta dela.",
-        ca: "Ets en Keb. Respons a la seva pregunta.",
-        eo: "Vi estas Keb. Vi respondas ŝian demandon.",
-        zh: "你是 Keb。回答她的问题。",
-        ja: "あなたはケブです。彼女の質問に答えます。",
-        ko: "당신은 케브예요. 그녀의 질문에 대답해요.",
-        vi: "Bạn là Keb. Bạn trả lời câu hỏi của cô ấy.",
-        ht: "Ou se Keb. Ou reponn kesyon li a.",
-        tl: "Ikaw si Keb. Sagutin mo ang tanong niya.",
-        id: "Kamu Keb. Jawab pertanyaannya.",
-        nl: "Jij bent Keb. Je beantwoordt haar vraag.",
-        de: "Du bist Keb. Du beantwortest ihre Frage.",
-        fa: "تو کب هستی. به سؤالش جواب می‌دهی.",
-        sv: "Du är Keb. Du svarar på hennes fråga.",
-        no: "Du er Keb. Du svarer på spørsmålet hennes.",
-        ru: "Ты — Кеб. Ты отвечаешь на её вопрос."
+        fr: "Tu es Keb. Tu aimes le sandwich. Tu réponds à sa question.",
+        en: "You're Keb. You like the sandwich. You answer her question.",
+        es: "Eres Keb. Te gusta el sándwich. Respondes a su pregunta.",
+        it: "Sei Keb. Ti piace il panino. Rispondi alla sua domanda.",
+        pt: "És o Keb. Gostas da sandes. Respondes à pergunta dela.",
+        ca: "Ets en Keb. T'agrada l'entrepà. Respons a la seva pregunta.",
+        eo: "Vi estas Keb. Vi ŝatas la sandviĉon. Vi respondas ŝian demandon.",
+        zh: "你是 Keb。你喜欢这个三明治。回答她的问题。",
+        ja: "あなたはケブです。サンドイッチが気に入っています。彼女の質問に答えます。",
+        ko: "당신은 케브예요. 샌드위치가 마음에 들어요. 그녀의 질문에 대답해요.",
+        vi: "Bạn là Keb. Bạn thích chiếc sandwich này. Bạn trả lời câu hỏi của cô ấy.",
+        ht: "Ou se Keb. Ou renmen sandwich la. Ou reponn kesyon li a.",
+        tl: "Ikaw si Keb. Gusto mo ang sandwich. Sagutin mo ang tanong niya.",
+        id: "Kamu Keb. Kamu suka sandwich itu. Jawab pertanyaannya.",
+        nl: "Jij bent Keb. Je vindt de sandwich lekker. Je beantwoordt haar vraag.",
+        de: "Du bist Keb. Dir schmeckt das Sandwich. Du beantwortest ihre Frage.",
+        fa: "تو کب هستی. ساندویچ را دوست داری. به سؤالش جواب می‌دهی.",
+        sv: "Du är Keb. Du gillar smörgåsen. Du svarar på hennes fråga.",
+        no: "Du er Keb. Du liker sandwichen. Du svarer på spørsmålet hennes.",
+        ru: "Ты — Кеб. Тебе нравится сэндвич. Ты отвечаешь на её вопрос."
       }
     },
     {
@@ -1902,26 +1968,26 @@
       reponse: ["un", "sandwich"],
       distracteurs: ["le", "des"],
       instruction: {
-        fr: "C'est la première fois que Bek et Keb parlent de ce sandwich. Comment dit-on « sandwich » ici ?",
-        en: "This is the first time Bek and Keb talk about this sandwich. How do we say “sandwich” here?",
-        es: "Es la primera vez que Bek y Keb hablan de este sándwich. ¿Cómo se dice “sándwich” aquí?",
-        it: "È la prima volta che Bek e Keb parlano di questo panino. Come si dice “panino” qui?",
-        pt: "É a primeira vez que a Bek e o Keb falam desta sandes. Como se diz “sandes” aqui?",
-        ca: "És la primera vegada que la Bek i en Keb parlen d'aquest entrepà. Com es diu “entrepà” aquí?",
-        eo: "Estas la unua fojo, ke Bek kaj Keb parolas pri ĉi tiu sandviĉo. Kiel oni diras “sandviĉo” ĉi tie?",
-        zh: "这是 Bek 和 Keb 第一次谈到这个三明治。这里“三明治”怎么说？",
-        ja: "これはベックとケブがこのサンドイッチについて話す最初です。ここで「サンドイッチ」はどう言いますか？",
-        ko: "벡과 케브가 이 샌드위치에 대해 이야기하는 건 처음이에요. 여기서 “샌드위치”는 어떻게 말할까요?",
-        vi: "Đây là lần đầu tiên Bek và Keb nói về chiếc sandwich này. Ở đây, “sandwich” được nói thế nào?",
-        ht: "Se premye fwa Bek ak Keb ap pale de sandwich sa a. Kijan yo di “sandwich” isit la?",
-        tl: "Ito ang unang pagkakataong pinag-usapan nina Bek at Keb ang sandwich na ito. Paano sasabihin ang “sandwich” dito?",
-        id: "Ini pertama kalinya Bek dan Keb membicarakan sandwich ini. Bagaimana cara mengatakan “sandwich” di sini?",
-        nl: "Dit is de eerste keer dat Bek en Keb over deze sandwich praten. Hoe zeg je hier “sandwich”?",
-        de: "Das ist das erste Mal, dass Bek und Keb über dieses Sandwich sprechen. Wie sagt man hier “Sandwich”?",
-        fa: "این اولین باری است که بک و کب درباره‌ی این ساندویچ صحبت می‌کنند. اینجا «ساندویچ» چطور گفته می‌شود؟",
-        sv: "Det här är första gången Bek och Keb pratar om den här smörgåsen. Hur säger man “smörgås” här?",
-        no: "Dette er første gang Bek og Keb snakker om denne sandwichen. Hvordan sier man “sandwich” her?",
-        ru: "Это первый раз, когда Бек и Кеб говорят об этом сэндвиче. Как здесь сказать «сэндвич»?"
+        fr: "Bek propose à Keb de manger quelque chose qu'il n'a pas encore vu. Dit-elle « un sandwich » ou « le sandwich » ?",
+        en: "Bek offers Keb something to eat that he hasn't seen yet. Does she say “un sandwich” or “le sandwich”?",
+        es: "Bek le ofrece a Keb algo de comer que él todavía no ha visto. ¿Dice “un sandwich” o “le sandwich”?",
+        it: "Bek offre a Keb qualcosa da mangiare che lui non ha ancora visto. Dice “un sandwich” o “le sandwich”?",
+        pt: "A Bek oferece ao Keb algo para comer que ele ainda não viu. Ela diz “un sandwich” ou “le sandwich”?",
+        ca: "La Bek ofereix a en Keb alguna cosa per menjar que ell encara no ha vist. Diu “un sandwich” o “le sandwich”?",
+        eo: "Bek proponas al Keb ion por manĝi, kion li ankoraŭ ne vidis. Ĉu ŝi diras “un sandwich” aŭ “le sandwich”?",
+        zh: "Bek 要给 Keb 一样他还没看过的东西吃。她会说“un sandwich”还是“le sandwich”？",
+        ja: "ベックはケブがまだ見たことのない食べ物をあげようとしています。「un sandwich」と言いますか、それとも「le sandwich」と言いますか？",
+        ko: "벡이 케브에게 아직 못 본 먹을 것을 주려고 해요. “un sandwich”라고 할까요, “le sandwich”라고 할까요?",
+        vi: "Bek định cho Keb ăn một thứ mà anh ấy chưa từng thấy. Cô ấy nói “un sandwich” hay “le sandwich”?",
+        ht: "Bek ofri Keb yon bagay pou l manje ke li poko wè. Èske li di “un sandwich” oswa “le sandwich”?",
+        tl: "Inaalok ni Bek si Keb ng kakainin na hindi pa niya nakikita. Sasabihin ba niyang “un sandwich” o “le sandwich”?",
+        id: "Bek menawarkan Keb sesuatu untuk dimakan yang belum pernah dilihatnya. Apakah dia bilang “un sandwich” atau “le sandwich”?",
+        nl: "Bek biedt Keb iets aan om te eten dat hij nog niet heeft gezien. Zegt ze “un sandwich” of “le sandwich”?",
+        de: "Bek bietet Keb etwas zu essen an, das er noch nicht gesehen hat. Sagt sie “un sandwich” oder “le sandwich”?",
+        fa: "بک چیزی برای خوردن به کب پیشنهاد می‌دهد که او هنوز ندیده. آیا می‌گوید «un sandwich» یا «le sandwich»؟",
+        sv: "Bek erbjuder Keb något att äta som han inte har sett än. Säger hon “un sandwich” eller “le sandwich”?",
+        no: "Bek tilbyr Keb noe å spise som han ikke har sett ennå. Sier hun “un sandwich” eller “le sandwich”?",
+        ru: "Бек предлагает Кебу поесть что-то, чего он ещё не видел. Она скажет «un sandwich» или «le sandwich»?"
       }
     },
     {
@@ -1930,26 +1996,26 @@
       reponse: ["le", "sandwich"],
       distracteurs: ["un", "des"],
       instruction: {
-        fr: "Maintenant, Bek et Keb parlent du sandwich que Keb vient de manger. Comment dit-on « sandwich » ici ?",
-        en: "Now Bek and Keb are talking about the sandwich Keb just ate. How do we say “sandwich” here?",
-        es: "Ahora Bek y Keb hablan del sándwich que Keb acaba de comer. ¿Cómo se dice “sándwich” aquí?",
-        it: "Ora Bek e Keb parlano del panino che Keb ha appena mangiato. Come si dice “panino” qui?",
-        pt: "Agora a Bek e o Keb falam da sandes que o Keb acabou de comer. Como se diz “sandes” aqui?",
-        ca: "Ara la Bek i en Keb parlen de l'entrepà que en Keb acaba de menjar. Com es diu “entrepà” aquí?",
-        eo: "Nun Bek kaj Keb parolas pri la sandviĉo, kiun Keb ĵus manĝis. Kiel oni diras “sandviĉo” ĉi tie?",
-        zh: "现在 Bek 和 Keb 说的是 Keb 刚吃过的那个三明治。这里“三明治”怎么说？",
-        ja: "今度は、ベックとケブはケブがちょうど食べたサンドイッチについて話しています。ここで「サンドイッチ」はどう言いますか？",
-        ko: "이제 벡과 케브는 케브가 방금 먹은 샌드위치에 대해 이야기해요. 여기서 “샌드위치”는 어떻게 말할까요?",
-        vi: "Bây giờ Bek và Keb đang nói về chiếc sandwich mà Keb vừa ăn. Ở đây, “sandwich” được nói thế nào?",
-        ht: "Kounye a, Bek ak Keb ap pale de sandwich Keb fenk manje a. Kijan yo di “sandwich” isit la?",
-        tl: "Ngayon, pinag-uusapan nina Bek at Keb ang sandwich na kakakain lang ni Keb. Paano sasabihin ang “sandwich” dito?",
-        id: "Sekarang Bek dan Keb membicarakan sandwich yang baru saja dimakan Keb. Bagaimana cara mengatakan “sandwich” di sini?",
-        nl: "Nu praten Bek en Keb over de sandwich die Keb net heeft opgegeten. Hoe zeg je hier “sandwich”?",
-        de: "Jetzt sprechen Bek und Keb über das Sandwich, das Keb gerade gegessen hat. Wie sagt man hier “Sandwich”?",
-        fa: "حالا بک و کب درباره‌ی ساندویچی صحبت می‌کنند که کب تازه خورده. اینجا «ساندویچ» چطور گفته می‌شود؟",
-        sv: "Nu pratar Bek och Keb om smörgåsen som Keb just åt. Hur säger man “smörgås” här?",
-        no: "Nå snakker Bek og Keb om sandwichen som Keb nettopp spiste. Hvordan sier man “sandwich” her?",
-        ru: "Теперь Бек и Кеб говорят о сэндвиче, который Кеб только что съел. Как здесь сказать «сэндвич»?"
+        fr: "Bek veut savoir ce que Keb pense du sandwich qu'elle vient de lui donner. Dit-elle « un sandwich » ou « le sandwich » ?",
+        en: "Bek wants to know what Keb thinks of the sandwich she just gave him. Does she say “un sandwich” or “le sandwich”?",
+        es: "Bek quiere saber qué piensa Keb del sándwich que le acaba de dar. ¿Dice “un sandwich” o “le sandwich”?",
+        it: "Bek vuole sapere cosa pensa Keb del panino che gli ha appena dato. Dice “un sandwich” o “le sandwich”?",
+        pt: "A Bek quer saber o que o Keb acha da sandes que acabou de lhe dar. Ela diz “un sandwich” ou “le sandwich”?",
+        ca: "La Bek vol saber què pensa en Keb de l'entrepà que li acaba de donar. Diu “un sandwich” o “le sandwich”?",
+        eo: "Bek volas scii, kion Keb pensas pri la sandviĉo, kiun ŝi ĵus donis al li. Ĉu ŝi diras “un sandwich” aŭ “le sandwich”?",
+        zh: "Bek 想知道 Keb 觉得她刚给他的那个三明治怎么样。她会说“un sandwich”还是“le sandwich”？",
+        ja: "ベックは、自分がケブに渡したばかりのサンドイッチについてケブがどう思うか知りたいです。「un sandwich」と言いますか、それとも「le sandwich」と言いますか？",
+        ko: "벡은 케브가 방금 자신이 준 샌드위치를 어떻게 생각하는지 알고 싶어요. “un sandwich”라고 할까요, “le sandwich”라고 할까요?",
+        vi: "Bek muốn biết Keb nghĩ gì về chiếc sandwich mà cô ấy vừa đưa cho anh. Cô ấy nói “un sandwich” hay “le sandwich”?",
+        ht: "Bek vle konnen sa Keb panse de sandwich li fenk ba li a. Èske li di “un sandwich” oswa “le sandwich”?",
+        tl: "Gusto malaman ni Bek kung ano ang tingin ni Keb sa sandwich na kababigay lang niya. Sasabihin ba niyang “un sandwich” o “le sandwich”?",
+        id: "Bek ingin tahu pendapat Keb tentang sandwich yang baru saja diberikannya. Apakah dia bilang “un sandwich” atau “le sandwich”?",
+        nl: "Bek wil weten wat Keb vindt van de sandwich die ze hem net heeft gegeven. Zegt ze “un sandwich” of “le sandwich”?",
+        de: "Bek möchte wissen, was Keb von dem Sandwich hält, das sie ihm gerade gegeben hat. Sagt sie “un sandwich” oder “le sandwich”?",
+        fa: "بک می‌خواهد بداند کب درباره‌ی ساندویچی که تازه به او داده چه فکر می‌کند. آیا می‌گوید «un sandwich» یا «le sandwich»؟",
+        sv: "Bek vill veta vad Keb tycker om smörgåsen hon just gav honom. Säger hon “un sandwich” eller “le sandwich”?",
+        no: "Bek vil vite hva Keb synes om sandwichen hun nettopp ga ham. Sier hun “un sandwich” eller “le sandwich”?",
+        ru: "Бек хочет узнать, что Кеб думает о сэндвиче, который она только что ему дала. Она скажет «un sandwich» или «le sandwich»?"
       }
     }
   ];
@@ -2108,10 +2174,29 @@
     try { return localStorage.getItem('kebbek_langue') || 'en'; } catch (e) { return 'en'; }
   }
 
+  // 🆕 (16-08-2026, demande de Raphaël) : les notes grammaticales sont
+  // écrites en Markdown très simple (**gras** / *italique*) dans GRAMMAIRE,
+  // pour faire ressortir les mots-clés — rendu plus vivant qu'un bloc de
+  // texte uniforme. On échappe d'abord le HTML (défense en profondeur, même
+  // si le contenu vient de nous et pas de l'utilisateur), PUIS on convertit
+  // les marqueurs Markdown en balises — sinon un "<" tapé dans une note
+  // casserait le rendu.
+  function echapperHtml(texte) {
+    const div = document.createElement('div');
+    div.textContent = texte;
+    return div.innerHTML;
+  }
+
+  function markdownVersHtml(texte) {
+    return echapperHtml(texte)
+      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\*(.+?)\*/g, '<em>$1</em>');
+  }
+
   function texteGrammaire(cle) {
     const dict = GRAMMAIRE[cle];
     if (!dict) return '';
-    return dict[langueActuelle()] || dict.en;
+    return markdownVersHtml(dict[langueActuelle()] || dict.en);
   }
 
   // 🆕 Traduction de la phrase complète (demande de Raphaël : le mot-à-mot
@@ -2421,12 +2506,21 @@
 
   function ajouterNoteGrammaire(def) {
     if (!def.grammaire) return;
+    // 🆕 (16-08-2026, demande de Raphaël) : "une ligne de dialogue peut
+    // engendrer plus qu'une note grammaticale" — def.grammaire est
+    // maintenant un tableau de clés (repli sur [def.grammaire] si jamais
+    // une étape garde encore une simple chaîne). Chaque clé produit SA
+    // PROPRE boîte .grammaire-item dans la pile, au lieu d'un unique bloc
+    // de texte agglutiné — plus lisible, moins intimidant.
+    const cles = Array.isArray(def.grammaire) ? def.grammaire : [def.grammaire];
     blocGrammaire.style.display = 'block';
-    const div = document.createElement('div');
-    div.className = 'grammaire-item';
-    div.textContent = texteGrammaire(def.grammaire);
-    elPileGrammaire.appendChild(div);
-    requestAnimationFrame(() => requestAnimationFrame(() => div.classList.add('in')));
+    cles.forEach(function (cle) {
+      const div = document.createElement('div');
+      div.className = 'grammaire-item';
+      div.innerHTML = texteGrammaire(cle);
+      elPileGrammaire.appendChild(div);
+      requestAnimationFrame(() => requestAnimationFrame(() => div.classList.add('in')));
+    });
   }
 
   function rendreEtape() {

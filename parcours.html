@@ -1948,7 +1948,7 @@
   // de contenu réel/provisoire.
   const NIVEAUX = [
     { id: 'niveau-1', titre: 'Les salutations *', etat: 'actuel', chapitres: [
-        { id: 'd1', type: 'dialogue', titre: 'J\u2019ai faim', etat: 'actuel', reel: true, page: 'dialogues/d1/',
+        { id: 'd1', type: 'dialogue', titre: 'J\u2019ai faim', etat: 'complete', reel: true, page: 'dialogues/d1/',
           motsCles: ['manger', 'faim', 'sandwich', 'impératif', 'nourriture', 'eat', 'hungry', 'food', 'imperative'],
           resume: {
             fr: 'Keb a faim et demande de l\u2019aide — Bek partage son sandwich. Un tout premier échange, simple et chaleureux, entre Keb et Bek.',
@@ -1956,7 +1956,13 @@
           },
           image: 'images/dialogues/d1/d1_vignette_01.webp' },
         { id: 'h1', type: 'histoire', titre: 'À venir *', etat: 'verrouille' },
-        { id: 'd2', type: 'dialogue', titre: 'À venir *', etat: 'verrouille' },
+        { id: 'd2', type: 'dialogue', titre: 'C\u2019est bon\u00A0! Euh... C\u2019est délicieux.', etat: 'actuel', reel: true, page: 'dialogues/d2/',
+          motsCles: ['comment', 'bon', 'délicieux', 'goût', 'adjectif', 'sandwich', 'how', 'good', 'delicious', 'taste', 'adjective'],
+          resume: {
+            fr: 'Bek insiste pour savoir ce que Keb pense vraiment du sandwich — et Keb finit par avouer qu\u2019il est carrément délicieux.',
+            en: 'Bek pushes to find out what Keb really thinks of the sandwich — and Keb finally admits it\u2019s downright delicious.'
+          },
+          image: 'images/dialogues/d2/d2_vignette_01.webp' },
         { id: 'ex1', type: 'examen', titre: "L'examen *", etat: 'verrouille' }
     ]},
     { id: 'niveau-2', titre: 'Au parc *', etat: 'verrouille', chapitres: [

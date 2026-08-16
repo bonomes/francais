@@ -64,7 +64,7 @@
      dans la mise en scène ou les répliques n'introduit ou ne dépend de
      cette distinction. 🆕 (15-08-2026) Nuance : le SAC À DOS, lui,
      affiche maintenant le genre grammatical des noms qu'on y ajoute
-     ("faim (f)", "un sandwich (m)" — voir GENRE_NOMS/ARTICLE_NOMS plus
+     ("faim (f)", "un sandwich (m)" — voir VOCABULAIRE plus
      bas) — c'est une info de référence dans un outil séparé, pas un
      enseignement actif inséré dans le dialogue ; la restriction ci-
      dessus reste donc valide pour la mise en scène.
@@ -603,6 +603,31 @@
     transition: max-height 0.3s ease, opacity 0.3s ease, padding 0.3s ease;
   }
   .grammaire-item.in { opacity: 1; max-height: 160px; padding: 10px 14px; overflow: visible; }
+
+  /* 🆕 (16-08-2026, chantier "contexte + grammaire dans le sac") : bouton
+     "Ajouter au sac" sous chaque note — même geste que le double-clic sur
+     un mot, mais pour un point de grammaire entier (voir
+     ajouterPointGrammaireAuSac() plus bas). Discret par défaut, se
+     détache légèrement au survol pour rester découvrable sans concurrencer
+     visuellement le texte de la note elle-même. */
+  .grammaire-ajouter-sac {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 8px;
+    padding: 3px 10px;
+    border: 1px solid rgba(102, 80, 69, 0.25);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.5);
+    color: var(--brun-fonce);
+    font: inherit;
+    font-size: 0.72rem;
+    cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease;
+  }
+  .grammaire-ajouter-sac:hover { background: #fff; border-color: var(--peche-fonce); }
+  .grammaire-ajouter-sac.ajoute { color: #2E7D32; border-color: #2E7D32; }
+  .grammaire-ajouter-sac svg { width: 12px; height: 12px; flex-shrink: 0; }
 
   @media (max-width: 460px) {
     .bulle-dialogue { font-size: 1rem; padding: 10px 16px; }
@@ -1672,51 +1697,47 @@
     }
   };
 
-  // 'mange' est un tutoiement (impératif informel) — seul mot informel de
-  // ce dialogue à ce jour, voir gImperatif ci-dessus.
-  const MOTS_INFORMELS = new Set(['mange']);
-
-  // Nature grammaticale de chaque mot de ce dialogue — alimente le
-  // sous-groupement par nature du sac à dos (voir NATURES_MOTS dans
-  // sac-a-dos.js). Un mot absent d'ici tombe dans 'autre' côté sac,
-  // donc toute nouvelle réplique ajoutée au dialogue doit penser à
-  // compléter cette table.
+  // ==================================================================
+  // VOCABULAIRE — source UNIQUE pour chaque mot cliquable de CE dialogue :
+  // nature grammaticale, genre/article (noms), infinitif/conjugaison
+  // (verbes) et tutoiement informel, tous au même endroit pour un même
+  // mot. Alimente le sous-groupement par nature du sac à dos (voir
+  // NATURES_MOTS dans sac-a-dos.js). Un mot absent d'ici tombe dans
+  // 'autre' côté sac, donc toute nouvelle réplique ajoutée au dialogue
+  // doit penser à compléter cette table.
   //
-  // 🐛 CORRIGÉ (retour Raphaël, 15-08-2026) : "mon" était classé 'adjectif',
-  // ce qui n'est grammaticalement pas exact — c'est un déterminant
-  // possessif, pas un adjectif qualificatif. Reclassé sous le nouveau
-  // sous-groupe 'determinant' (voir NATURES_MOTS dans sac-a-dos.js) —
-  // c'est justement le genre de mot-outil qui finissait entassé dans
-  // "autre" faute d'un sous-groupe dédié.
-  const NATURE_MOTS = {
-    "j'ai": 'verbe', 'un': 'article', 'faim': 'nom', 'mange': 'verbe',
-    'quoi': 'pronom', 'mon': 'determinant', 'sandwich': 'nom',
-    'oh': 'interjection', 'merci': 'interjection'
+  // 🐛 CORRIGÉ (16-08-2026, chantier "contexte + grammaire dans le sac") :
+  // avant, ces informations vivaient dans QUATRE dictionnaires séparés
+  // (NATURE_MOTS, GENRE_NOMS, ARTICLE_NOMS, CONJUGAISON_VERBES) + un
+  // cinquième pour l'informel (MOTS_INFORMELS) — copiés-collés d'un
+  // dialogue à l'autre à chaque nouvelle leçon. C'est exactement ce
+  // copier-coller qui avait laissé dialogue-d2.html avec LE VOCABULAIRE DE
+  // CE DIALOGUE-CI (j'ai/faim/mange/sandwich) au lieu du sien
+  // (comment/est/le/bon/délicieux…) : chaque mot cliquable de d2 tombait
+  // silencieusement dans "Autre", sans genre ni conjugaison, sans qu'aucune
+  // erreur ne le signale. Un seul dictionnaire par leçon rend cet oubli
+  // beaucoup plus difficile à reproduire : un mot du dialogue qui manque
+  // ici saute aux yeux (une seule table à vérifier, pas cinq).
+  //
+  // 🐛 CORRIGÉ (retour Raphaël, 15-08-2026, repris ici) : "mon" était classé
+  // 'adjectif', ce qui n'est grammaticalement pas exact — c'est un
+  // déterminant possessif. Reclassé sous 'determinant'.
+  const VOCABULAIRE = {
+    "j'ai":     { type: 'verbe', infinitif: 'avoir', conjugaison: 'indicatif_present' },
+    'un':       { type: 'article' },
+    'faim':     { type: 'nom', genre: 'f' }, // pas d'article naturel ici ("j'ai faim", jamais "une faim")
+    'mange':    { type: 'verbe', infinitif: 'manger', conjugaison: 'imperatif_present', informel: true },
+    'quoi':     { type: 'pronom' },
+    'mon':      { type: 'determinant' },
+    'sandwich': { type: 'nom', genre: 'm', article: 'un' },
+    'oh':       { type: 'interjection' },
+    'merci':    { type: 'interjection' }
   };
 
   function natureDeMot(mot) {
-    return NATURE_MOTS[mot.toLowerCase()] || 'autre';
+    const entree = VOCABULAIRE[mot.toLowerCase()];
+    return entree ? entree.type : 'autre';
   }
-
-  // 🆕 (retour Raphaël, 15-08-2026, "un nom devrait TOUJOURS indiquer son
-  // genre") : genre grammatical des noms de ce dialogue, consulté
-  // uniquement quand natureDeMot() renvoie 'nom' (voir son usage dans
-  // ajouterMotAuSac plus bas). 'article' optionnel et séparé : "faim" n'a
-  // volontairement pas d'article ici ("j'ai faim", jamais "une faim" dans
-  // ce contexte), alors que "sandwich" en a un naturel.
-  const GENRE_NOMS = { 'faim': 'f', 'sandwich': 'm' };
-  const ARTICLE_NOMS = { 'sandwich': 'un' };
-
-  // 🆕 (retour Raphaël, 15-08-2026, "verbe 'avoir', indicatif présent —
-  // classé d'abord comme le verbe avoir avec une sous-catégorie pour la
-  // conjugaison") : infinitif + conjugaison de chaque verbe conjugué de ce
-  // dialogue, consultés uniquement quand natureDeMot() renvoie 'verbe'
-  // (voir rendreGroupeVerbes/CONJUGAISONS_VERBES dans sac-a-dos.js — les
-  // clés de conjugaison ci-dessous doivent correspondre à ce dictionnaire).
-  const CONJUGAISON_VERBES = {
-    "j'ai": { infinitif: 'avoir', conjugaison: 'indicatif_present' },
-    'mange': { infinitif: 'manger', conjugaison: 'imperatif_present' }
-  };
 
   const ETIQUETTE_INFORMEL = {
     fr: '(tutoiement)', en: '(informal)', es: '(informal)', it: '(informale)',
@@ -2107,7 +2128,8 @@
   }
 
   function motEstInformel(mot) {
-    return MOTS_INFORMELS.has(mot.toLowerCase());
+    const entree = VOCABULAIRE[mot.toLowerCase()];
+    return !!(entree && entree.informel);
   }
 
   // Même clé que sac-a-dos.js/menu-principal.js — un seul réglage de
@@ -2251,20 +2273,31 @@
     if (typeof window.ajouterAuSac !== 'function') return; // sac-a-dos.js absent : repli silencieux
     const cle = mot.toLowerCase();
     const type = natureDeMot(cle);
-    const item = { mot: cle, trad: traductionDeMot(mot) || '', informel: motEstInformel(mot), type: type };
+    const item = { mot: cle, trad: traductionDeMot(mot) || '', informel: motEstInformel(mot), type: type, source: 'd1' };
     // 🆕 (retour Raphaël, 15-08-2026) : genre/article pour les noms,
-    // infinitif/conjugaison pour les verbes — voir GENRE_NOMS/ARTICLE_NOMS/
-    // CONJUGAISON_VERBES ci-dessus. Champs simplement absents de l'item
-    // quand non applicables (ex. un nom sans article naturel comme
-    // "faim") : sac-a-dos.js gère déjà leur absence proprement.
-    if (type === 'nom') {
-      const genre = GENRE_NOMS[cle];
-      if (genre) item.genre = genre;
-      const article = ARTICLE_NOMS[cle];
-      if (article) item.article = article;
-    } else if (type === 'verbe') {
-      const conj = CONJUGAISON_VERBES[cle];
-      if (conj) { item.infinitif = conj.infinitif; item.conjugaison = conj.conjugaison; }
+    // infinitif/conjugaison pour les verbes — voir VOCABULAIRE ci-dessus.
+    // Champs simplement absents de l'item quand non applicables (ex. un
+    // nom sans article naturel comme "faim") : sac-a-dos.js gère déjà
+    // leur absence proprement.
+    const entree = VOCABULAIRE[cle];
+    if (type === 'nom' && entree) {
+      if (entree.genre) item.genre = entree.genre;
+      if (entree.article) item.article = entree.article;
+    } else if (type === 'verbe' && entree) {
+      if (entree.infinitif) item.infinitif = entree.infinitif;
+      if (entree.conjugaison) item.conjugaison = entree.conjugaison;
+    }
+    // 🆕 (16-08-2026, chantier "contexte + grammaire dans le sac") : phrase
+    // d'exemple = la réplique affichée au moment du clic (ETAPES[etape]),
+    // et sa traduction complète (déjà calculée ailleurs par
+    // traductionPhrase() — même fonction, pas de logique dupliquée). Un
+    // mot pour un mot sans contexte n'était "pas très utile" (retour
+    // Raphaël) ; cette phrase donne enfin ce contexte.
+    const def = ETAPES[etape];
+    if (def && def.texte) {
+      item.exemple = def.texte;
+      const trad = traductionPhrase(def);
+      if (trad) item.exempleTrad = trad;
     }
     window.ajouterAuSac('mots', item);
     animerMotVersSac(span);
@@ -2373,14 +2406,71 @@
     requestAnimationFrame(() => requestAnimationFrame(() => div.classList.add('in')));
   }
 
+  // 🆕 (16-08-2026, chantier "contexte + grammaire dans le sac") : une
+  // étape peut désormais porter PLUSIEURS points de grammaire (utile pour
+  // les leçons à venir, voir dialogue-d2.html qui en a déjà besoin) —
+  // repli sur [def.grammaire] si c'est encore une simple chaîne comme dans
+  // toutes les étapes actuelles de CE dialogue, pour ne rien casser.
+  // formaterMarkdownLeger() vient de sac-a-dos.js (chargé avant ce script,
+  // voir l'ordre des <script> en tête de page) : un seul endroit où la
+  // règle "**gras** -> <strong>" est définie, partagée avec le rendu du
+  // sac lui-même. Chaque note gagne un bouton "Ajouter au sac" (demande
+  // de Raphaël : "copier" les points de grammaire, pas seulement les
+  // mots) — absent si sac-a-dos.js n'est pas chargé sur cette page.
   function ajouterNoteGrammaire(def) {
     if (!def.grammaire) return;
     blocGrammaire.style.display = 'block';
-    const div = document.createElement('div');
-    div.className = 'grammaire-item';
-    div.textContent = texteGrammaire(def.grammaire);
-    elPileGrammaire.appendChild(div);
-    requestAnimationFrame(() => requestAnimationFrame(() => div.classList.add('in')));
+    const cles = Array.isArray(def.grammaire) ? def.grammaire : [def.grammaire];
+    cles.forEach(function (cle) {
+      const texteBrut = texteGrammaire(cle);
+      if (!texteBrut) return;
+      const div = document.createElement('div');
+      div.className = 'grammaire-item';
+      const corps = document.createElement('div');
+      corps.className = 'grammaire-item-texte';
+      corps.innerHTML = (typeof formaterMarkdownLeger === 'function') ? formaterMarkdownLeger(texteBrut) : texteBrut;
+      div.appendChild(corps);
+
+      if (typeof window.ajouterAuSac === 'function') {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'grammaire-ajouter-sac';
+        btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg><span>' +
+          (typeof tSacOuDefaut === 'function' ? tSacOuDefaut('sacAjouterAuSac', 'Add to backpack') : 'Add to backpack') + '</span>';
+        btn.addEventListener('click', function () {
+          ajouterPointGrammaireAuSac(cle, texteBrut, def);
+          btn.classList.add('ajoute');
+          const svg = btn.querySelector('svg');
+          if (svg) svg.innerHTML = '<path d="M5 13l4 4L19 7"/>';
+          setTimeout(function () {
+            btn.classList.remove('ajoute');
+            if (svg) svg.innerHTML = '<path d="M12 5v14M5 12h14"/>';
+          }, 1100);
+        });
+        div.appendChild(btn);
+      }
+
+      elPileGrammaire.appendChild(div);
+      requestAnimationFrame(() => requestAnimationFrame(() => div.classList.add('in')));
+    });
+  }
+
+  // 🆕 (16-08-2026) : "Ajouter au sac" pour un point de grammaire entier
+  // (demande de Raphaël : "on pourrait vouloir 'copier' également les
+  // points grammaticaux") — même mécanique que ajouterMotAuSac ci-dessus
+  // (même phrase d'exemple, même traduction), mais pour une note de
+  // "À retenir" plutôt qu'un mot cliqué dans la bulle. `cle` est préfixée
+  // par l'identifiant de la leçon ('d1_') pour rester unique si une
+  // leçon future réutilise un jour un nom de clé court comme celui-ci.
+  function ajouterPointGrammaireAuSac(cle, texteBrut, def) {
+    if (typeof window.ajouterAuSac !== 'function') return;
+    const item = { cle: 'd1_' + cle, texte: texteBrut, source: 'd1' };
+    if (def && def.texte) {
+      item.exemple = def.texte;
+      const trad = traductionPhrase(def);
+      if (trad) item.exempleTrad = trad;
+    }
+    window.ajouterAuSac('grammaire', item);
   }
 
   function rendreEtape() {

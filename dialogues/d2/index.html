@@ -305,6 +305,14 @@
     transition: opacity 0.3s ease, transform 0.3s ease;
   }
   .bulle-dialogue.in { opacity: 1; transform: translateY(0); }
+  /* 🆕 (15-08-2026) : étape silencieuse d'ouverture (ETAPES[0]) — pas de
+     bulle du tout, plutôt qu'une bulle vide qui prendrait quand même sa
+     place dans la mise en page. */
+  .bulle-dialogue.bulle-vide { display: none; }
+  /* 🆕 (15-08-2026) : le bouton audio de la bulle n'a rien à lire pendant
+     l'étape silencieuse — inutile de le laisser visible (même si audio-actif
+     est activé) pour un clic qui ne ferait rien. */
+  .zone-bulle:has(.bulle-vide) .bouton-audio-bulle { display: none; }
 
   .bulle-dialogue.cote-keb { margin-right: auto; text-align: left; border: 2.5px solid var(--keb-couleur); color: var(--keb-couleur); }
   .bulle-dialogue.cote-bek { margin-left: auto; text-align: right; border: 2.5px solid var(--bek-couleur); color: var(--bek-couleur); }
@@ -1105,7 +1113,7 @@
   <p class="kbb-session-message" id="kbbSessionMessage"></p>
 </div>
 
-<div class="compteur" id="compteur">1 / 5</div>
+<div class="compteur" id="compteur">1 / 6</div>
 
 <div class="zone-bulle">
   <div class="bulle-dialogue" id="bulleDialogue"></div>
@@ -1262,8 +1270,17 @@
   // ================================================================
   const ETAPES = [
     {
+      // 🆕 (15-08-2026, demande explicite de Raphaël) : toute première
+      // étape SILENCIEUSE — aucune réplique, juste la scène (Keb qui mange,
+      // Bek qui l’observe) avant que Bek pose sa question à l’étape
+      // suivante. speaker/texte volontairement absents : voir rendreEtape()
+      // (bulle cachée via .bulle-vide) et ajouterLigneDialogue() (ne pousse
+      // rien dans #pileDialogue quand def.texte est absent).
+      img: "../../images/dialogues/d2/d2_01_bonomes_keb_bek_comment-sandwich_01.webp"
+    },
+    {
       speaker: "bek", texte: "Alors, comment est le sandwich ?",
-      img: "../../images/dialogues/d2/d2_01_bonomes_keb_bek_comment-sandwich_01.webp", grammaire: "gCommentEstLe",
+      img: "../../images/dialogues/d2/d2_01_bonomes_keb_bek_comment-sandwich_02.webp", grammaire: "gCommentEstLe",
       trad: {
         en: "So, how's the sandwich?",
         es: "Entonces, ¿cómo está el sándwich?",
@@ -2300,6 +2317,9 @@
   let traductionsVisiblesParDefaut = false;
 
   function ajouterLigneDialogue(def) {
+    // 🆕 (15-08-2026) : étape silencieuse (voir ETAPES[0]) — rien à pousser
+    // dans #pileDialogue, même patron que ajouterNoteGrammaire() ci-dessous.
+    if (!def.texte) return;
     const div = document.createElement('div');
     div.className = 'pile-item ' + def.speaker;
     const trad = traductionPhrase(def);
@@ -2349,10 +2369,19 @@
     // Bulle unique — remplacée, jamais empilée. Mots cliquables (voir
     // construireBulleMots) : clic/tap = traduction, double-clic/double-tap
     // = ajout au sac — même mécanisme que partout ailleurs sur le site.
+    // 🆕 (15-08-2026) : étape silencieuse (def.texte absent, voir ETAPES[0])
+    // → bulle cachée entièrement (.bulle-vide) plutôt que d'afficher une
+    // bulle avec un mot "undefined" (String(undefined) sinon construit par
+    // construireBulleMots).
     elBulle.classList.remove('in');
-    elBulle.className = 'bulle-dialogue cote-' + def.speaker;
-    construireBulleMots(def.texte);
-    requestAnimationFrame(() => requestAnimationFrame(() => elBulle.classList.add('in')));
+    if (def.texte) {
+      elBulle.className = 'bulle-dialogue cote-' + def.speaker;
+      construireBulleMots(def.texte);
+      requestAnimationFrame(() => requestAnimationFrame(() => elBulle.classList.add('in')));
+    } else {
+      elBulle.className = 'bulle-dialogue bulle-vide';
+      elBulle.innerHTML = '';
+    }
 
     // Scène — une image par étape (repli gracieux tant que l'art n'existe
     // pas encore, voir creerImage()).

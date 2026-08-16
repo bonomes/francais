@@ -67,10 +67,13 @@
 
      GENRE (masculin/féminin) : « le » et « un » sont ici présentés
      UNIQUEMENT comme deux déterminants masculins (voir GRAMMAIRE,
-     gCommentEstLe) — le féminin (« la », « une ») n'est ni enseigné ni
+     gLeUn — 🐛 nom de clé corrigé le 16-08-2026, cette note faisait
+     encore référence à "gCommentEstLe", qui n'a jamais existé : la note
+     a été scindée en trois clés distinctes, gCommentQuoi/gLeUn/gEstEtre)
+     — le féminin (« la », « une ») n'est ni enseigné ni
      nommé à ce stade, demande explicite de Raphaël, cohérent avec d1.
      Le SAC À DOS, lui, continue d'afficher le genre grammatical des
-     noms qu'on y ajoute (voir GENRE_NOMS/ARTICLE_NOMS plus bas) — outil
+     noms qu'on y ajoute (voir VOCABULAIRE plus bas) — outil
      de référence séparé, pas un enseignement actif dans le dialogue.
 
      IMAGES : aucune illustration propre à cette leçon n'existe encore.
@@ -635,6 +638,27 @@
     transition: max-height 0.3s ease, opacity 0.3s ease, padding 0.3s ease;
   }
   .grammaire-item.in { opacity: 1; max-height: 160px; padding: 10px 14px; overflow: visible; }
+
+  /* 🆕 (16-08-2026, chantier "contexte + grammaire dans le sac") : voir
+     dialogue-d1.html pour la même règle, même intention. */
+  .grammaire-ajouter-sac {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 8px;
+    padding: 3px 10px;
+    border: 1px solid rgba(102, 80, 69, 0.25);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.5);
+    color: var(--brun-fonce);
+    font: inherit;
+    font-size: 0.72rem;
+    cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease;
+  }
+  .grammaire-ajouter-sac:hover { background: #fff; border-color: var(--peche-fonce); }
+  .grammaire-ajouter-sac.ajoute { color: #2E7D32; border-color: #2E7D32; }
+  .grammaire-ajouter-sac svg { width: 12px; height: 12px; flex-shrink: 0; }
 
   @media (max-width: 460px) {
     .bulle-dialogue { font-size: 1rem; padding: 10px 16px; }
@@ -1577,261 +1601,288 @@
   // mot dans le sac (pas d'ajout automatique au simple clic ici).
   const TRADUCTIONS = {
     en: {
-      'j\u2019ai': 'I have',
-      'un': 'a',
-      'faim': 'hunger (= hungry)',
-      'mange': 'eat!',
-      'quoi': 'what',
-      'mon': 'my',
-      'sandwich': 'sandwich',
-      'oh': 'oh',
-      'merci': 'thank you'
+      "alors": "so, then",
+      "comment": "how",
+      "est": "is",
+      "le": "the",
+      "sandwich": "sandwich",
+      "il": "he / it",
+      "bon": "good",
+      "oui": "yes",
+      "juste": "just, only",
+      "euh": "um...",
+      "délicieux": "delicious"
     },
     es: {
-      'j\u2019ai': 'tengo',
-      'un': 'un',
-      'faim': 'hambre (= tener hambre)',
-      'mange': '¡come!',
-      'quoi': 'qué',
-      'mon': 'mi',
-      'sandwich': 'sándwich',
-      'oh': 'oh',
-      'merci': 'gracias'
+      "alors": "entonces",
+      "comment": "cómo",
+      "est": "es / está",
+      "le": "el",
+      "sandwich": "sándwich",
+      "il": "él",
+      "bon": "bueno",
+      "oui": "sí",
+      "juste": "solo, justo",
+      "euh": "eh...",
+      "délicieux": "delicioso"
     },
     it: {
-      'j\u2019ai': 'ho',
-      'un': 'un',
-      'faim': 'fame (= avere fame)',
-      'mange': 'mangia!',
-      'quoi': 'cosa',
-      'mon': 'il mio',
-      'sandwich': 'panino',
-      'oh': 'oh',
-      'merci': 'grazie'
+      "alors": "allora",
+      "comment": "come",
+      "est": "è",
+      "le": "il",
+      "sandwich": "panino",
+      "il": "lui",
+      "bon": "buono",
+      "oui": "sì",
+      "juste": "solo, giusto",
+      "euh": "ehm...",
+      "délicieux": "delizioso"
     },
     pt: {
-      'j\u2019ai': 'tenho',
-      'un': 'um',
-      'faim': 'fome (= estar com fome)',
-      'mange': 'come!',
-      'quoi': 'o quê',
-      'mon': 'o meu',
-      'sandwich': 'sandes',
-      'oh': 'oh',
-      'merci': 'obrigado'
+      "alors": "então",
+      "comment": "como",
+      "est": "está / é",
+      "le": "o",
+      "sandwich": "sandes",
+      "il": "ele",
+      "bon": "bom",
+      "oui": "sim",
+      "juste": "só, apenas",
+      "euh": "hum...",
+      "délicieux": "delicioso"
     },
     ca: {
-      'j\u2019ai': 'tinc',
-      'un': 'un',
-      'faim': 'gana (= tenir gana)',
-      'mange': 'menja!',
-      'quoi': 'què',
-      'mon': 'el meu',
-      'sandwich': 'entrepà',
-      'oh': 'oh',
-      'merci': 'gràcies'
+      "alors": "llavors",
+      "comment": "com",
+      "est": "és",
+      "le": "el",
+      "sandwich": "entrepà",
+      "il": "ell",
+      "bon": "bo",
+      "oui": "sí",
+      "juste": "només",
+      "euh": "eh...",
+      "délicieux": "deliciós"
     },
     eo: {
-      'j\u2019ai': 'mi havas',
-      'un': '(Esperanto ne havas nedifinan artikolon)',
-      'faim': 'malsato (= malsati)',
-      'mange': 'manĝu!',
-      'quoi': 'kio',
-      'mon': 'mia',
-      'sandwich': 'sandviĉo',
-      'oh': 'ho',
-      'merci': 'dankon'
+      "alors": "do",
+      "comment": "kiel",
+      "est": "estas",
+      "le": "la",
+      "sandwich": "sandviĉo",
+      "il": "li / ĝi",
+      "bon": "bona",
+      "oui": "jes",
+      "juste": "nur",
+      "euh": "hm...",
+      "délicieux": "bongusta"
     },
     zh: {
-      'j\u2019ai': '我有',
-      'un': '（中文没有冠词）',
-      'faim': '饿（=饥饿）',
-      'mange': '吃！',
-      'quoi': '什么',
-      'mon': '我的',
-      'sandwich': '三明治',
-      'oh': '哦',
-      'merci': '谢谢'
+      "alors": "那么",
+      "comment": "怎么样",
+      "est": "是（être 的现在时变位）",
+      "le": "（阳性定冠词）",
+      "sandwich": "三明治",
+      "il": "他 / 它",
+      "bon": "好，好吃",
+      "oui": "是的",
+      "juste": "只是",
+      "euh": "呃……",
+      "délicieux": "好吃极了"
     },
     ja: {
-      'j\u2019ai': '持っている',
-      'un': '（日本語に冠詞はない）',
-      'faim': '空腹（＝お腹がすいた）',
-      'mange': '食べて！',
-      'quoi': '何',
-      'mon': '私の',
-      'sandwich': 'サンドイッチ',
-      'oh': 'ああ',
-      'merci': 'ありがとう'
+      "alors": "それで",
+      "comment": "どう",
+      "est": "〜だ（être の現在形）",
+      "le": "（男性定冠詞）",
+      "sandwich": "サンドイッチ",
+      "il": "彼 / それ",
+      "bon": "おいしい、いい",
+      "oui": "うん",
+      "juste": "ただ",
+      "euh": "えっと……",
+      "délicieux": "とてもおいしい"
     },
     ko: {
-      'j\u2019ai': '나는 있다',
-      'un': '(한국어에는 관사가 없음)',
-      'faim': '배고픔 (= 배고프다)',
-      'mange': '먹어!',
-      'quoi': '무엇',
-      'mon': '나의',
-      'sandwich': '샌드위치',
-      'oh': '오',
-      'merci': '고마워'
+      "alors": "그래서",
+      "comment": "어때",
+      "est": "~이다 (être 현재형)",
+      "le": "(남성 정관사)",
+      "sandwich": "샌드위치",
+      "il": "그 / 그것",
+      "bon": "좋은, 맛있는",
+      "oui": "응",
+      "juste": "그냥",
+      "euh": "음...",
+      "délicieux": "정말 맛있는"
     },
     vi: {
-      'j\u2019ai': 'tôi có',
-      'un': '(tiếng Việt không có mạo từ)',
-      'faim': 'đói (= bị đói)',
-      'mange': 'ăn đi!',
-      'quoi': 'gì',
-      'mon': 'của tôi',
-      'sandwich': 'bánh sandwich',
-      'oh': 'ồ',
-      'merci': 'cảm ơn'
+      "alors": "vậy",
+      "comment": "thế nào",
+      "est": "thì (chia của être)",
+      "le": "(mạo từ giống đực)",
+      "sandwich": "bánh sandwich",
+      "il": "anh ấy / nó",
+      "bon": "ngon, tốt",
+      "oui": "ừ",
+      "juste": "chỉ là",
+      "euh": "ừm...",
+      "délicieux": "ngon tuyệt"
     },
     ht: {
-      'j\u2019ai': 'mwen genyen',
-      'un': 'yon',
-      'faim': 'grangou',
-      'mange': 'manje!',
-      'quoi': 'ki sa',
-      'mon': 'pa mwen',
-      'sandwich': 'sandwich',
-      'oh': 'oh',
-      'merci': 'mèsi'
+      "alors": "alò",
+      "comment": "kijan",
+      "est": "se (konjige vèb être)",
+      "le": "(atik maskilen)",
+      "sandwich": "sandwich",
+      "il": "li",
+      "bon": "bon",
+      "oui": "wi",
+      "juste": "jis",
+      "euh": "ee...",
+      "délicieux": "dilisye"
     },
     tl: {
-      'j\u2019ai': 'mayroon ako',
-      'un': 'isang',
-      'faim': 'gutom (= nagugutom)',
-      'mange': 'kumain ka!',
-      'quoi': 'ano',
-      'mon': 'akin',
-      'sandwich': 'sandwich',
-      'oh': 'oh',
-      'merci': 'salamat'
+      "alors": "kaya",
+      "comment": "kumusta",
+      "est": "ay (anyo ng être)",
+      "le": "(panlalaking pantukoy)",
+      "sandwich": "sandwich",
+      "il": "siya / ito",
+      "bon": "masarap, mabuti",
+      "oui": "oo",
+      "juste": "lang, tanging",
+      "euh": "eh...",
+      "délicieux": "napakasarap"
     },
     id: {
-      'j\u2019ai': 'saya punya',
-      'un': 'sebuah',
-      'faim': 'lapar (= merasa lapar)',
-      'mange': 'makan!',
-      'quoi': 'apa',
-      'mon': 'milikku',
-      'sandwich': 'sandwich',
-      'oh': 'oh',
-      'merci': 'terima kasih'
+      "alors": "jadi",
+      "comment": "bagaimana",
+      "est": "adalah (bentuk être)",
+      "le": "(artikel maskulin)",
+      "sandwich": "sandwich",
+      "il": "dia",
+      "bon": "enak, baik",
+      "oui": "ya",
+      "juste": "cuma, hanya",
+      "euh": "eh...",
+      "délicieux": "lezat"
     },
     nl: {
-      'j\u2019ai': 'ik heb',
-      'un': 'een',
-      'faim': 'honger (= honger hebben)',
-      'mange': 'eet!',
-      'quoi': 'wat',
-      'mon': 'mijn',
-      'sandwich': 'boterham',
-      'oh': 'oh',
-      'merci': 'dank je'
+      "alors": "dus",
+      "comment": "hoe",
+      "est": "is",
+      "le": "de/het (mannelijk lidwoord)",
+      "sandwich": "sandwich",
+      "il": "hij",
+      "bon": "lekker, goed",
+      "oui": "ja",
+      "juste": "gewoon, alleen",
+      "euh": "eh...",
+      "délicieux": "heerlijk"
     },
     de: {
-      'j\u2019ai': 'ich habe',
-      'un': 'ein',
-      'faim': 'Hunger (= hungrig sein)',
-      'mange': 'iss!',
-      'quoi': 'was',
-      'mon': 'mein',
-      'sandwich': 'Sandwich',
-      'oh': 'oh',
-      'merci': 'danke'
+      "alors": "also",
+      "comment": "wie",
+      "est": "ist",
+      "le": "der (männlicher Artikel)",
+      "sandwich": "Sandwich",
+      "il": "er",
+      "bon": "gut, lecker",
+      "oui": "ja",
+      "juste": "nur",
+      "euh": "äh...",
+      "délicieux": "köstlich"
     },
     fa: {
-      'j\u2019ai': 'من دارم',
-      'un': 'یک',
-      'faim': 'گرسنگی (= گرسنه بودن)',
-      'mange': 'بخور!',
-      'quoi': 'چی',
-      'mon': 'مال من',
-      'sandwich': 'ساندویچ',
-      'oh': 'اوه',
-      'merci': 'ممنون'
+      "alors": "خب",
+      "comment": "چطور",
+      "est": "است (صرف être)",
+      "le": "(حرف تعریف مذکر)",
+      "sandwich": "ساندویچ",
+      "il": "او",
+      "bon": "خوب",
+      "oui": "آره",
+      "juste": "فقط",
+      "euh": "اِاِ...",
+      "délicieux": "خوشمزه"
     },
     sv: {
-      'j\u2019ai': 'jag har',
-      'un': 'en',
-      'faim': 'hunger (= vara hungrig)',
-      'mange': 'ät!',
-      'quoi': 'vad',
-      'mon': 'min',
-      'sandwich': 'smörgås',
-      'oh': 'åh',
-      'merci': 'tack'
+      "alors": "så",
+      "comment": "hur",
+      "est": "är",
+      "le": "den (maskulin artikel)",
+      "sandwich": "smörgås",
+      "il": "han",
+      "bon": "god",
+      "oui": "ja",
+      "juste": "bara",
+      "euh": "öh...",
+      "délicieux": "utsökt"
     },
     no: {
-      'j\u2019ai': 'jeg har',
-      'un': 'en',
-      'faim': 'sult (= være sulten)',
-      'mange': 'spis!',
-      'quoi': 'hva',
-      'mon': 'min',
-      'sandwich': 'smørbrød',
-      'oh': 'å',
-      'merci': 'takk'
+      "alors": "så",
+      "comment": "hvordan",
+      "est": "er",
+      "le": "den (hankjønnsartikkel)",
+      "sandwich": "sandwich",
+      "il": "han",
+      "bon": "god",
+      "oui": "ja",
+      "juste": "bare",
+      "euh": "øh...",
+      "délicieux": "nydelig"
     },
     ru: {
-      'j\u2019ai': 'у меня есть',
-      'un': '(в русском нет артиклей)',
-      'faim': 'голод (= быть голодным)',
-      'mange': 'ешь!',
-      'quoi': 'что',
-      'mon': 'мой',
-      'sandwich': 'сэндвич',
-      'oh': 'о',
-      'merci': 'спасибо'
+      "alors": "итак",
+      "comment": "как",
+      "est": "есть (форма être)",
+      "le": "(артикля в русском нет)",
+      "sandwich": "сэндвич",
+      "il": "он",
+      "bon": "хороший, вкусный",
+      "oui": "да",
+      "juste": "просто",
+      "euh": "э-э...",
+      "délicieux": "восхитительный"
     }
   };
 
-  // 'mange' est un tutoiement (impératif informel) — seul mot informel de
-  // ce dialogue à ce jour, voir gImperatif ci-dessus.
-  const MOTS_INFORMELS = new Set(['mange']);
-
-  // Nature grammaticale de chaque mot de ce dialogue — alimente le
-  // sous-groupement par nature du sac à dos (voir NATURES_MOTS dans
-  // sac-a-dos.js). Un mot absent d'ici tombe dans 'autre' côté sac,
-  // donc toute nouvelle réplique ajoutée au dialogue doit penser à
-  // compléter cette table.
+  // ==================================================================
+  // VOCABULAIRE — source UNIQUE pour chaque mot cliquable de CE dialogue
+  // (même format que dialogue-d1.html). Alimente le sous-groupement par
+  // nature du sac à dos (voir NATURES_MOTS dans sac-a-dos.js).
   //
-  // 🐛 CORRIGÉ (retour Raphaël, 15-08-2026) : "mon" était classé 'adjectif',
-  // ce qui n'est grammaticalement pas exact — c'est un déterminant
-  // possessif, pas un adjectif qualificatif. Reclassé sous le nouveau
-  // sous-groupe 'determinant' (voir NATURES_MOTS dans sac-a-dos.js) —
-  // c'est justement le genre de mot-outil qui finissait entassé dans
-  // "autre" faute d'un sous-groupe dédié.
-  const NATURE_MOTS = {
-    "j'ai": 'verbe', 'un': 'article', 'faim': 'nom', 'mange': 'verbe',
-    'quoi': 'pronom', 'mon': 'determinant', 'sandwich': 'nom',
-    'oh': 'interjection', 'merci': 'interjection'
+  // 🐛 CORRIGÉ (16-08-2026, chantier "contexte + grammaire dans le sac") :
+  // ce dictionnaire — et TRADUCTIONS juste au-dessus — contenaient encore
+  // le copier-coller intégral de dialogue-d1.html (j'ai/faim/mange/mon/
+  // sandwich/oh/merci) alors que le dialogue de CETTE leçon ne parle PAS
+  // du tout de ça (il parle d'un sandwich qu'on goûte : alors/comment/
+  // est/le/il/bon/oui/juste/euh/délicieux). Concrètement, ça voulait dire
+  // que chaque mot cliquable de cette leçon retombait silencieusement
+  // dans "Autre" côté sac, SANS traduction du tout au clic (TRADUCTIONS
+  // ne contenait aucun des vrais mots du dialogue) — aucune erreur
+  // visible, juste des informations manquantes. Les deux dictionnaires
+  // reflètent maintenant le vrai vocabulaire de cette leçon.
+  const VOCABULAIRE = {
+    'alors':     { type: 'adverbe' },
+    'comment':   { type: 'adverbe' },      // adverbe interrogatif — demande une description (voir gCommentQuoi)
+    'est':       { type: 'verbe', infinitif: 'être', conjugaison: 'indicatif_present' },
+    'le':        { type: 'article' },
+    'sandwich':  { type: 'nom', genre: 'm', article: 'un' },
+    'il':        { type: 'pronom' },
+    'bon':       { type: 'adjectif' },
+    'oui':       { type: 'adverbe' },      // adverbe d'affirmation, pas une interjection — vraie fonction syntaxique
+    'juste':     { type: 'adverbe' },      // "juste bon ?" = seulement bon, rien de plus
+    'euh':       { type: 'interjection' }, // véritable interjection (hésitation), à la différence de "oui"
+    'délicieux': { type: 'adjectif' }
   };
 
   function natureDeMot(mot) {
-    return NATURE_MOTS[mot.toLowerCase()] || 'autre';
+    const entree = VOCABULAIRE[mot.toLowerCase()];
+    return entree ? entree.type : 'autre';
   }
-
-  // 🆕 (retour Raphaël, 15-08-2026, "un nom devrait TOUJOURS indiquer son
-  // genre") : genre grammatical des noms de ce dialogue, consulté
-  // uniquement quand natureDeMot() renvoie 'nom' (voir son usage dans
-  // ajouterMotAuSac plus bas). 'article' optionnel et séparé : "faim" n'a
-  // volontairement pas d'article ici ("j'ai faim", jamais "une faim" dans
-  // ce contexte), alors que "sandwich" en a un naturel.
-  const GENRE_NOMS = { 'faim': 'f', 'sandwich': 'm' };
-  const ARTICLE_NOMS = { 'sandwich': 'un' };
-
-  // 🆕 (retour Raphaël, 15-08-2026, "verbe 'avoir', indicatif présent —
-  // classé d'abord comme le verbe avoir avec une sous-catégorie pour la
-  // conjugaison") : infinitif + conjugaison de chaque verbe conjugué de ce
-  // dialogue, consultés uniquement quand natureDeMot() renvoie 'verbe'
-  // (voir rendreGroupeVerbes/CONJUGAISONS_VERBES dans sac-a-dos.js — les
-  // clés de conjugaison ci-dessous doivent correspondre à ce dictionnaire).
-  const CONJUGAISON_VERBES = {
-    "j'ai": { infinitif: 'avoir', conjugaison: 'indicatif_present' },
-    'mange': { infinitif: 'manger', conjugaison: 'imperatif_present' }
-  };
 
   const ETIQUETTE_INFORMEL = {
     fr: '(tutoiement)', en: '(informal)', es: '(informal)', it: '(informale)',
@@ -1884,9 +1935,9 @@
   const EXERCICES = [
     {
       id: "d2_e1",
-      image: "../../images/dialogues/d2/d2_e1_bek-demande.png",
+      image: "../../images/dialogues/d2/d2_e1_alors-le-sandwich_01.webp",
       reponse: ["Comment", "est", "le", "sandwich", "?"],
-      reponsesAlternatives: [["Comment", "trouves-tu", "le", "sandwich", "?"], ["Qu'est-ce", "que", "tu", "penses", "du", "sandwich", "?"], ["Que", "penses-tu", "du", "sandwich", "?"], ["Alors", ",", "le", "sandwich", "?"], ["Il", "est", "comment", ",", "le", "sandwich", "?"]],
+      reponsesAlternatives: [["Comment", "trouves-tu", "le", "sandwich", "?"], ["Qu'est-ce", "que", "tu", "penses", "du", "sandwich", "?"], ["Que", "penses-tu", "du", "sandwich", "?"], ["Alors", ",", "le", "sandwich", "?"], ["Il", "est", "comment", ",", "le", "sandwich", "?"], ["Alors", ",", "comment", "est", "le", "sandwich", "?"], ["Alors", ",", "comment", "trouves-tu", "le", "sandwich", "?"], ["Alors", ",", "qu'est-ce", "que", "tu", "penses", "du", "sandwich", "?"], ["Alors", ",", "que", "penses-tu", "du", "sandwich", "?"], ["Alors", ",", "il", "est", "comment", ",", "le", "sandwich", "?"]],
       distracteurs: ["un", "bon"],
       instruction: {
         fr: "Tu es Bek. Tu veux savoir ce que Keb pense du sandwich. Comment le lui demandes-tu ?",
@@ -1935,9 +1986,9 @@
     },
     {
       id: "d2_e2",
-      image: "../../images/dialogues/d2/d2_e2_keb-repond.png",
+      image: "../../images/dialogues/d2/d2_e2_il-est-bon_02.webp",
       reponse: ["Il", "est", "bon", "."],
-      reponsesAlternatives: [["Il", "est", "délicieux", "."], ["Le", "sandwich", "est", "bon", "."], ["Le", "sandwich", "est", "délicieux", "."], ["Il", "est", "très", "bon", "."], ["Il", "est", "très", "délicieux", "."], ["Le", "sandwich", "est", "très", "bon", "."], ["Le", "sandwich", "est", "très", "délicieux", "."]],
+      reponsesAlternatives: [["Il", "est", "délicieux", "."], ["Le", "sandwich", "est", "bon", "."], ["Le", "sandwich", "est", "délicieux", "."], ["Il", "est", "très", "bon", "."], ["Il", "est", "très", "délicieux", "."], ["Le", "sandwich", "est", "très", "bon", "."], ["Le", "sandwich", "est", "très", "délicieux", "."], ["Il", "est", "succulent", "."], ["Le", "sandwich", "est", "succulent", "."], ["Il", "est", "très", "succulent", "."], ["Le", "sandwich", "est", "très", "succulent", "."], ["C'est", "bon", "."], ["C'est", "délicieux", "."], ["C'est", "succulent", "."], ["C'est", "très", "bon", "."], ["C'est", "très", "délicieux", "."], ["C'est", "très", "succulent", "."]],
       distracteurs: ["un", "euh"],
       instruction: {
         fr: "Tu es Keb. Tu aimes le sandwich. Tu réponds à sa question.",
@@ -1964,7 +2015,7 @@
     },
     {
       id: "d2_e3",
-      image: "../../images/dialogues/d2/d2_e3_premiere-fois.png",
+      image: "../../images/dialogues/d2/d2_e3_le-sandwich_01.webp",
       reponse: ["un", "sandwich"],
       distracteurs: ["le", "des"],
       instruction: {
@@ -1992,7 +2043,7 @@
     },
     {
       id: "d2_e4",
-      image: "../../images/dialogues/d2/d2_e4_deja-connu.png",
+      image: "../../images/dialogues/d2/d2_e4_le-sandwich_01.webp",
       reponse: ["le", "sandwich"],
       distracteurs: ["un", "des"],
       instruction: {
@@ -2165,7 +2216,8 @@
   }
 
   function motEstInformel(mot) {
-    return MOTS_INFORMELS.has(mot.toLowerCase());
+    const entree = VOCABULAIRE[mot.toLowerCase()];
+    return !!(entree && entree.informel);
   }
 
   // Même clé que sac-a-dos.js/menu-principal.js — un seul réglage de
@@ -2337,20 +2389,28 @@
     if (typeof window.ajouterAuSac !== 'function') return; // sac-a-dos.js absent : repli silencieux
     const cle = mot.toLowerCase();
     const type = natureDeMot(cle);
-    const item = { mot: cle, trad: traductionDeMot(mot) || '', informel: motEstInformel(mot), type: type };
+    const item = { mot: cle, trad: traductionDeMot(mot) || '', informel: motEstInformel(mot), type: type, source: 'd2' };
     // 🆕 (retour Raphaël, 15-08-2026) : genre/article pour les noms,
-    // infinitif/conjugaison pour les verbes — voir GENRE_NOMS/ARTICLE_NOMS/
-    // CONJUGAISON_VERBES ci-dessus. Champs simplement absents de l'item
-    // quand non applicables (ex. un nom sans article naturel comme
-    // "faim") : sac-a-dos.js gère déjà leur absence proprement.
-    if (type === 'nom') {
-      const genre = GENRE_NOMS[cle];
-      if (genre) item.genre = genre;
-      const article = ARTICLE_NOMS[cle];
-      if (article) item.article = article;
-    } else if (type === 'verbe') {
-      const conj = CONJUGAISON_VERBES[cle];
-      if (conj) { item.infinitif = conj.infinitif; item.conjugaison = conj.conjugaison; }
+    // infinitif/conjugaison pour les verbes — voir VOCABULAIRE ci-dessus.
+    // Champs simplement absents de l'item quand non applicables : sac-a-
+    // dos.js gère déjà leur absence proprement.
+    const entree = VOCABULAIRE[cle];
+    if (type === 'nom' && entree) {
+      if (entree.genre) item.genre = entree.genre;
+      if (entree.article) item.article = entree.article;
+    } else if (type === 'verbe' && entree) {
+      if (entree.infinitif) item.infinitif = entree.infinitif;
+      if (entree.conjugaison) item.conjugaison = entree.conjugaison;
+    }
+    // 🆕 (16-08-2026, chantier "contexte + grammaire dans le sac") : phrase
+    // d'exemple = la réplique affichée au moment du clic, et sa traduction
+    // complète (même fonction que celle déjà utilisée pour l'affichage de
+    // la traduction sous la bulle — pas de logique dupliquée).
+    const def = ETAPES[etape];
+    if (def && def.texte) {
+      item.exemple = def.texte;
+      const trad = traductionPhrase(def);
+      if (trad) item.exempleTrad = trad;
     }
     window.ajouterAuSac('mots', item);
     animerMotVersSac(span);
@@ -2504,6 +2564,15 @@
     requestAnimationFrame(() => requestAnimationFrame(() => div.classList.add('in')));
   }
 
+  // 🆕 (16-08-2026, chantier "contexte + grammaire dans le sac") :
+  // formaterMarkdownLeger() vient de sac-a-dos.js — un seul endroit où la
+  // règle "**gras** -> <strong>" est définie, partagée avec le rendu du
+  // sac. Corrige au passage un bug réel : `div.innerHTML =
+  // texteGrammaire(cle)` injectait le texte AVEC ses ** littéraux non
+  // convertis (ils s'affichaient tels quels au lieu d'un gras) — cette
+  // page utilisait innerHTML sans jamais convertir le Markdown. Chaque
+  // note gagne aussi un bouton "Ajouter au sac" (demande de Raphaël :
+  // "copier" les points de grammaire, pas seulement les mots).
   function ajouterNoteGrammaire(def) {
     if (!def.grammaire) return;
     // 🆕 (16-08-2026, demande de Raphaël) : "une ligne de dialogue peut
@@ -2515,12 +2584,52 @@
     const cles = Array.isArray(def.grammaire) ? def.grammaire : [def.grammaire];
     blocGrammaire.style.display = 'block';
     cles.forEach(function (cle) {
+      const texteBrut = texteGrammaire(cle);
+      if (!texteBrut) return;
       const div = document.createElement('div');
       div.className = 'grammaire-item';
-      div.innerHTML = texteGrammaire(cle);
+      const corps = document.createElement('div');
+      corps.className = 'grammaire-item-texte';
+      corps.innerHTML = (typeof formaterMarkdownLeger === 'function') ? formaterMarkdownLeger(texteBrut) : texteBrut;
+      div.appendChild(corps);
+
+      if (typeof window.ajouterAuSac === 'function') {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'grammaire-ajouter-sac';
+        btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg><span>' +
+          (typeof tSacOuDefaut === 'function' ? tSacOuDefaut('sacAjouterAuSac', 'Add to backpack') : 'Add to backpack') + '</span>';
+        btn.addEventListener('click', function () {
+          ajouterPointGrammaireAuSac(cle, texteBrut, def);
+          btn.classList.add('ajoute');
+          const svg = btn.querySelector('svg');
+          if (svg) svg.innerHTML = '<path d="M5 13l4 4L19 7"/>';
+          setTimeout(function () {
+            btn.classList.remove('ajoute');
+            if (svg) svg.innerHTML = '<path d="M12 5v14M5 12h14"/>';
+          }, 1100);
+        });
+        div.appendChild(btn);
+      }
+
       elPileGrammaire.appendChild(div);
       requestAnimationFrame(() => requestAnimationFrame(() => div.classList.add('in')));
     });
+  }
+
+  // 🆕 (16-08-2026) : "Ajouter au sac" pour un point de grammaire entier
+  // — voir dialogue-d1.html pour la même fonction, même logique. `cle`
+  // est préfixée par l'identifiant de la leçon ('d2_') pour rester
+  // unique même si une leçon future réutilise un nom de clé court.
+  function ajouterPointGrammaireAuSac(cle, texteBrut, def) {
+    if (typeof window.ajouterAuSac !== 'function') return;
+    const item = { cle: 'd2_' + cle, texte: texteBrut, source: 'd2' };
+    if (def && def.texte) {
+      item.exemple = def.texte;
+      const trad = traductionPhrase(def);
+      if (trad) item.exempleTrad = trad;
+    }
+    window.ajouterAuSac('grammaire', item);
   }
 
   function rendreEtape() {

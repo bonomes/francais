@@ -1220,6 +1220,17 @@
     color: var(--brun);
     text-align: center;
     line-height: 1.2;
+    /* 🆕 Filet de sécurité : un titre complet (ch.titre) peut être long —
+       ex1/h1 ont des libellés courts nativement, mais d1/d2 utilisent le
+       vrai titre du dialogue. La solution de fond est ch.etiquette (label
+       court, voir NIVEAUX et le rendu JS) ; ceci n'intervient que si un
+       futur chapitre en est dépourvu, pour éviter un débordement disgracieux
+       plutôt que de compter sur la longueur du texte pour rester sage. */
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .noeud-chapitre.complete {
@@ -1955,14 +1966,14 @@
             en: 'Keb is hungry and asks for help — Bek shares his sandwich. A simple, warm first exchange between Keb and Bek.'
           },
           image: 'images/dialogues/d1/d1_vignette_01.webp' },
-        { id: 'h1', type: 'histoire', titre: 'À venir *', etat: 'verrouille' },
-        { id: 'd2', type: 'dialogue', titre: 'C\u2019est bon\u00A0! Euh... C\u2019est délicieux.', etat: 'actuel', reel: true, page: 'dialogues/d2/',
+        { id: 'd2', type: 'dialogue', titre: 'C\u2019est bon\u00A0! Euh... C\u2019est délicieux.', etiquette: 'C\u2019est délicieux\u00A0!', etat: 'actuel', reel: true, page: 'dialogues/d2/',
           motsCles: ['comment', 'bon', 'délicieux', 'goût', 'adjectif', 'sandwich', 'how', 'good', 'delicious', 'taste', 'adjective'],
           resume: {
             fr: 'Bek insiste pour savoir ce que Keb pense vraiment du sandwich — et Keb finit par avouer qu\u2019il est carrément délicieux.',
             en: 'Bek pushes to find out what Keb really thinks of the sandwich — and Keb finally admits it\u2019s downright delicious.'
           },
           image: 'images/dialogues/d2/d2_vignette_01.webp' },
+        { id: 'h1', type: 'histoire', titre: 'À venir *', etat: 'verrouille' },
         { id: 'ex1', type: 'examen', titre: "L'examen *", etat: 'verrouille' }
     ]},
     { id: 'niveau-2', titre: 'Au parc *', etat: 'verrouille', chapitres: [
@@ -2021,8 +2032,13 @@
   // .bandeau-continuer) : le premier chapitre pas encore complété, pas
   // simplement le premier accessible (qui inclurait les chapitres déjà
   // faits) — c'est bien "la suite", pas "le début".
+  // 🐛 CORRIGÉ (retour Raphaël, 16-08-2026) : ne sautait pas les chapitres
+  // VERROUILLÉS. Avec d1 'complete' et h1 (histoire, encore "À venir *")
+  // verrouillé juste après, « Continuer » ouvrait h1 — un chapitre sans
+  // page réelle — plutôt que de sauter jusqu'à d2, le prochain chapitre
+  // RÉEL et accessible. Exige maintenant aussi estAccessible(c.etat).
   function premierChapitreNonComplete(niveau) {
-    const idx = niveau.chapitres.findIndex(c => c.etat !== 'complete');
+    const idx = niveau.chapitres.findIndex(c => c.etat !== 'complete' && estAccessible(c.etat));
     return idx === -1 ? 0 : idx;
   }
 
@@ -2210,7 +2226,7 @@
           (ch.etat !== 'verrouille' ? ' deverrouillable' : '') +
           (i === niveauOuvertIdx && j === curseurChapitre ? ' selection' : '') +
           (provisoireChapitre ? ' brouillon' : '');
-        nc.innerHTML = iconePourChapitre(ch) + '<div class="etiquette-mini">' + ch.titre + '</div>' +
+        nc.innerHTML = iconePourChapitre(ch) + '<div class="etiquette-mini">' + (ch.etiquette || ch.titre) + '</div>' +
           (provisoireChapitre ? badgeBrouillon() : (ch.parfait ? badgeParfait() : ''));
         if (vientDouvrirCeNiveau) {
           nc.classList.add('stagger-in');

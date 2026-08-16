@@ -1957,16 +1957,32 @@
   // chapitres restent du contenu provisoire tant que leurs vraies pages de
   // leçon n'existent pas — seul l'état affiché change ici, pas leur statut
   // de contenu réel/provisoire.
+  //
+  // 🐛 CORRIGÉ (retour Raphaël, 16-08-2026) : d1 et d2 avaient encore ici
+  // leurs états de démo d'une session de prototypage antérieure ('complete'
+  // / 'actuel' câblés en dur), restés en place même après que ch.reel:true
+  // les ait branchés sur la vraie progression — synchroniserChapitresReels()
+  // ci-dessous ne fait qu'ESCALADER un état vers l'avant quand la vraie
+  // progression le justifie, il ne le réinitialise jamais vers l'arrière.
+  // Résultat : n'importe quel compte (élève ou professeur, peu importe sa
+  // vraie progression) voyait d1 déjà coché et d2 déjà déverrouillé au tout
+  // premier chargement. Remis à l'état "rien de fait" décrit ci-dessus
+  // ('actuel' pour d1, 'verrouille' pour d2) — la vraie progression reprend
+  // la main normalement via synchroniserChapitresReels(). ⚠️ Piège à éviter
+  // pour tout futur chapitre marqué reel:true : son état de départ ici doit
+  // TOUJOURS être celui d'un élève qui n'a encore rien fait ('verrouille',
+  // sauf s'il s'agit du tout premier chapitre du parcours) — jamais un état
+  // de démo/aperçu, aussi tentant soit-il pour visualiser le rendu.
   const NIVEAUX = [
     { id: 'niveau-1', titre: 'Les salutations *', etat: 'actuel', chapitres: [
-        { id: 'd1', type: 'dialogue', titre: 'J\u2019ai faim', etat: 'complete', reel: true, page: 'dialogues/d1/',
+        { id: 'd1', type: 'dialogue', titre: 'J\u2019ai faim', etat: 'actuel', reel: true, page: 'dialogues/d1/',
           motsCles: ['manger', 'faim', 'sandwich', 'impératif', 'nourriture', 'eat', 'hungry', 'food', 'imperative'],
           resume: {
             fr: 'Keb a faim et demande de l\u2019aide — Bek partage son sandwich. Un tout premier échange, simple et chaleureux, entre Keb et Bek.',
             en: 'Keb is hungry and asks for help — Bek shares his sandwich. A simple, warm first exchange between Keb and Bek.'
           },
           image: 'images/dialogues/d1/d1_vignette_01.webp' },
-        { id: 'd2', type: 'dialogue', titre: 'C\u2019est bon\u00A0! Euh... C\u2019est délicieux.', etiquette: 'C\u2019est délicieux\u00A0!', etat: 'actuel', reel: true, page: 'dialogues/d2/',
+        { id: 'd2', type: 'dialogue', titre: 'C\u2019est bon\u00A0! Euh... C\u2019est délicieux.', etiquette: 'C\u2019est délicieux\u00A0!', etat: 'verrouille', reel: true, page: 'dialogues/d2/',
           motsCles: ['comment', 'bon', 'délicieux', 'goût', 'adjectif', 'sandwich', 'how', 'good', 'delicious', 'taste', 'adjective'],
           resume: {
             fr: 'Bek insiste pour savoir ce que Keb pense vraiment du sandwich — et Keb finit par avouer qu\u2019il est carrément délicieux.',
@@ -2004,7 +2020,7 @@
   function badgeParfait() { return '<span class="badge-parfait" aria-hidden="true" title="' + t('badge_parfait_titre') + '">' + iconeEtoile() + '</span>'; }
 
   function iconePourChapitre(ch) {
-    if (ch.etat === 'verrouille') {
+    if (verrouillePour(ch.etat)) {
       const iconeType = ch.type === 'examen' ? iconeEtoile() : (ch.type === 'dialogue' ? iconeDialogue() : iconeHistoire());
       return iconeType + badgeVerrou();
     }
@@ -2095,7 +2111,54 @@
   let idAAnimerDeverrouillage = null; // id d'un chapitre/niveau tout juste débloqué, à animer une seule fois
   let fermetureEnCours = false; // voir fermerNiveauAnime() : évite un rebuild DOM prématuré pendant l'anim
 
-  function estAccessible(etat) { return etat !== 'verrouille'; }
+  // 🆕 (16-08-2026, demande de Raphaël) : un compte professeur doit avoir
+  // accès à TOUTES les leçons, qu'il ait "complété" les précédentes ou
+  // non — le verrouillage séquentiel (voir principe permanent dans
+  // BONOMES_v47.md) ne s'applique qu'aux élèves. estProfesseurConfirme
+  // est réglé dans initProgressionReelle() ci-dessous, avec la même
+  // vérification serveur que dialogue-d2.html (essayerModeProfesseur —
+  // jamais une simple supposition côté client). Tant qu'elle n'a pas
+  // résolu, false par défaut : le premier rendu synchrone (avant tout
+  // appel réseau) reste verrouillé comme pour un élève, corrigé dès que
+  // la vraie réponse arrive (même principe que synchroniserChapitresReels
+  // plus bas, qui déclenche déjà un second rafraichir()).
+  // Principe permanent, précisé par Raphaël le 16-08-2026 (à copier tel
+  // quel dans BONOMES_v47.md) : le verrouillage séquentiel ("une section
+  // ne se déverrouille qu'en complétant la précédente, jamais
+  // automatiquement") reste la règle pour l'ÉLÈVE — mais avec deux
+  // nuances désormais actées :
+  //   1. Un compte PROFESSEUR n'est jamais soumis à ce verrouillage : il
+  //      voit et peut ouvrir toutes les leçons existantes, qu'il ait
+  //      "complété" les précédentes ou non (implémenté ci-dessous via
+  //      estProfesseurConfirme). Et si un professeur partage/pousse vers
+  //      un élève une leçon que CET élève n'a pas encore débloquée sur son
+  //      propre compte, l'élève peut quand même y participer — déjà vrai
+  //      aujourd'hui sans rien coder de plus, car les pages de leçon
+  //      elles-mêmes (ex. dialogues/d2/index.html) ne vérifient aucun état
+  //      de déverrouillage à l'ouverture ; seul parcours.html fait office
+  //      de porte pour la navigation libre, pas de contrôle d'accès.
+  //   2. 🕐 PAS ENCORE IMPLÉMENTÉ (mécanique future, actée mais pas
+  //      conçue) : un élève pourra dépenser des P$ pour "sauter" en avant
+  //      et commencer plus loin dans le parcours SANS avoir complété ce
+  //      qui précède — mais les leçons intermédiaires entre son ancien
+  //      point de déverrouillage naturel et le nouveau point sauté
+  //      resteront verrouillées (pas de déverrouillage rétroactif en
+  //      cascade). Contrainte à respecter le jour où cette mécanique sera
+  //      conçue : elle casse l'hypothèse actuelle "tout ce qui précède le
+  //      chapitre actuel est complete" implicite dans fractionNiveau() et
+  //      premierChapitreNonComplete() — à revoir à ce moment-là, pas avant.
+  let estProfesseurConfirme = false;
+
+  function estAccessible(etat) { return estProfesseurConfirme || etat !== 'verrouille'; }
+
+  // 🆕 (16-08-2026) : distinct de estAccessible() ci-dessus — celle-ci
+  // sert aux DÉCISIONS de navigation (peut-on cliquer / ouvrir ceci ?),
+  // celle-là à l'AFFICHAGE (faut-il montrer un cadenas, une case grisée,
+  // le bouton "Commencer" caché au profit de l'indice de verrouillage ?).
+  // Les deux doivent rester d'accord (un professeur ne doit jamais voir
+  // un cadenas sur une leçon qu'il peut pourtant ouvrir), d'où le même
+  // bypass estProfesseurConfirme des deux côtés.
+  function verrouillePour(etat) { return etat === 'verrouille' && !estProfesseurConfirme; }
 
   function construireDOM() {
     parcoursEl.querySelectorAll('.bloc-niveau').forEach(n => n.remove());
@@ -2115,7 +2178,7 @@
 
       let animerAnneauCeNiveau = false;
       let fractionCibleAnneau = 0;
-      if (niveau.etat === 'verrouille') {
+      if (verrouillePour(niveau.etat)) {
         noeud.innerHTML = '<svg class="verrou-icone" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="10.5" width="14" height="9" rx="2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg>' +
           (provisoireNiveau ? badgeBrouillon() : '');
       } else {
@@ -2222,8 +2285,8 @@
       niveau.chapitres.forEach((ch, j) => {
         const provisoireChapitre = estProvisoire(ch.titre);
         const nc = document.createElement('div');
-        nc.className = 'noeud-chapitre ' + ch.type + ' ' + (ch.etat === 'verrouille' ? 'verrouille' : ch.etat) +
-          (ch.etat !== 'verrouille' ? ' deverrouillable' : '') +
+        nc.className = 'noeud-chapitre ' + ch.type + ' ' + (verrouillePour(ch.etat) ? 'verrouille' : ch.etat) +
+          (!verrouillePour(ch.etat) ? ' deverrouillable' : '') +
           (i === niveauOuvertIdx && j === curseurChapitre ? ' selection' : '') +
           (provisoireChapitre ? ' brouillon' : '');
         nc.innerHTML = iconePourChapitre(ch) + '<div class="etiquette-mini">' + (ch.etiquette || ch.titre) + '</div>' +
@@ -2562,7 +2625,7 @@
 
       carteInfo.classList.add('visible');
       carteInfoFermer.classList.add('visible');
-      if (ch.etat === 'verrouille') {
+      if (verrouillePour(ch.etat)) {
         carteInfoBouton.style.display = 'none';
         carteInfoIndice.style.display = 'flex';
         carteInfoIndiceTexte.textContent = t('indice_chapitre_verrouille');
@@ -2943,10 +3006,20 @@
       window.KebBekWidgetSessionProf.initialiser();
     }
 
-    const [progression, recompenses] = await Promise.all([
+    // 🆕 (16-08-2026) : même détection que estProfesseurConfirme dans
+    // dialogue-d2.html — vérifiée côté serveur (essayerModeProfesseur),
+    // jamais une liste blanche côté client. Regroupée dans le même
+    // Promise.all que la lecture de la vraie progression, pour que le
+    // premier rafraichir() "réel" (juste en dessous) soit déjà le bon —
+    // pas de flash verrouillé→déverrouillé pour un compte professeur.
+    const [progression, recompenses, profilProfesseur] = await Promise.all([
       KebBekProgression.lireProgression(),
-      KebBekProgression.lireRecompensesAttribuees()
+      KebBekProgression.lireRecompensesAttribuees(),
+      (window.KebBekProgression && window.KebBekProgression.essayerModeProfesseur)
+        ? window.KebBekProgression.essayerModeProfesseur().catch(function () { return null; })
+        : Promise.resolve(null)
     ]);
+    estProfesseurConfirme = !!profilProfesseur;
     synchroniserChapitresReels(progression, recompenses);
     rafraichir(); // reflète l'état réel (d1 complété, h1 débloqué, etc.) dès le chargement
   }

@@ -1326,7 +1326,7 @@
     },
     {
       speaker: "keb", texte: "Il est bon.",
-      img: "../../images/dialogues/d2/d2_02_bonomes_keb_bek_il-est-bon.png", grammaire: "gBon",
+      img: "../../images/dialogues/d2/d2_02_bonomes_keb_bek_il-est-bon_01.webp", grammaire: "gBon",
       trad: {
         en: "It's good.",
         es: "Está bueno.",
@@ -1351,7 +1351,7 @@
     },
     {
       speaker: "bek", texte: "Bon ?",
-      img: "../../images/dialogues/d2/d2_03_bonomes_keb_bek_bon.png",
+      img: "../../images/dialogues/d2/d2_03_bonomes_keb_bek_bon_01.webp",
       trad: {
         en: "Good?",
         es: "¿Bueno?",
@@ -2280,6 +2280,48 @@
   // cliquables — même logique de fusion de la ponctuation isolée
   // ("Mange\u00A0!" → un seul mot cliquable, pas un "!" à part) que
   // afficherBulle() dans identite-eleve.js.
+  // 🆕 (15-08-2026) : correctif largeur de bulle trop large. Cause :
+  // `width: fit-content` calcule sa largeur d'après le texte SANS retour
+  // à la ligne (une seule ligne), puis `text-wrap: balance` ne fait que
+  // réparti le texte en plusieurs lignes COURTES à l'intérieur de cette
+  // largeur déjà figée — la bulle garde donc la largeur d'une ligne
+  // unique même quand le texte affiché tient sur deux lignes bien plus
+  // étroites (vérifié en isolant le cas dans un navigateur : la bulle
+  // NE RÉTRÉCIT PAS après le retour à la ligne équilibré). Solution :
+  // une fois le texte posé et équilibré, on mesure la largeur réelle de
+  // la ligne la plus longue via Range.getClientRects() (fonctionne même
+  // avec les <span class="iden-mot"> à l'intérieur) et on resserre la
+  // bulle sur cette valeur avec une largeur explicite en pixels.
+  function ajusterLargeurBulle(el) {
+    // 🔧 (correctif du correctif, même session) : le contenu de la bulle
+    // est fait de plusieurs <span class="iden-mot"> (un par mot, pour le
+    // clic/traduction) — Range.getClientRects() renvoie alors UN rect PAR
+    // <span>, pas un rect par LIGNE VISUELLE. Prendre le rect le plus
+    // large donnait donc la largeur du mot le plus large, pas celle de la
+    // ligne la plus large (bulle trop resserrée, ex-catastrophe : 4 lignes
+    // au lieu de 2). Il faut regrouper les rects par ligne (même position
+    // verticale) puis mesurer l'étendue horizontale totale de chaque
+    // ligne (bord gauche du 1er rect au bord droit du dernier).
+    const zone = document.createRange();
+    zone.selectNodeContents(el);
+    const rects = Array.from(zone.getClientRects()).filter(r => r.width > 0);
+    if (!rects.length) return; // bulle vide ou pas encore rendue
+    const lignes = [];
+    rects.forEach(r => {
+      let ligne = lignes.find(l => Math.abs(l.top - r.top) < 4);
+      if (!ligne) { ligne = { top: r.top, gauche: r.left, droite: r.right }; lignes.push(ligne); }
+      ligne.gauche = Math.min(ligne.gauche, r.left);
+      ligne.droite = Math.max(ligne.droite, r.right);
+    });
+    const largeurMax = Math.max(...lignes.map(l => l.droite - l.gauche));
+    const style = getComputedStyle(el);
+    const largeurTotale = Math.ceil(largeurMax)
+      + parseFloat(style.paddingLeft) + parseFloat(style.paddingRight)
+      + parseFloat(style.borderLeftWidth) + parseFloat(style.borderRightWidth)
+      + 1; // +1px de marge de sécurité contre l'arrondi sous-pixel
+    el.style.width = largeurTotale + 'px';
+  }
+
   const PONCTUATION_SEULE = /^[.,!?;:'"«»\u2026]+$/;
   function construireBulleMots(texteBrut) {
     elBulle.innerHTML = '';
@@ -2413,9 +2455,13 @@
     // construireBulleMots).
     elBulle.classList.remove('in');
     if (def.texte) {
+      elBulle.style.width = ''; // repart de fit-content avant de re-mesurer (voir ajusterLargeurBulle)
       elBulle.className = 'bulle-dialogue cote-' + def.speaker;
       construireBulleMots(def.texte);
-      requestAnimationFrame(() => requestAnimationFrame(() => elBulle.classList.add('in')));
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        elBulle.classList.add('in');
+        ajusterLargeurBulle(elBulle);
+      }));
     } else {
       elBulle.className = 'bulle-dialogue bulle-vide';
       elBulle.innerHTML = '';
@@ -3627,6 +3673,22 @@
   // Tap direct sur la scène = avancer seulement (reculer reste un geste
   // délibéré via le bouton, voir note en tête de fichier).
   elScene.addEventListener('click', suivant);
+
+  // 🆕 (15-08-2026) : la largeur de la bulle (voir ajusterLargeurBulle) est
+  // figée en pixels au moment de l'affichage — sur redimensionnement
+  // (rotation mobile, fenêtre redimensionnée), .zone-bulle change de
+  // largeur disponible (min(92vw,560px)) donc il faut relâcher puis
+  // re-mesurer, sinon la bulle garde une largeur fixe obsolète.
+  let redimensionnementBulleMinuteur = null;
+  window.addEventListener('resize', () => {
+    clearTimeout(redimensionnementBulleMinuteur);
+    redimensionnementBulleMinuteur = setTimeout(() => {
+      if (!elBulle.classList.contains('bulle-vide') && elBulle.textContent) {
+        elBulle.style.width = '';
+        ajusterLargeurBulle(elBulle);
+      }
+    }, 150);
+  });
 
   window.addEventListener('keydown', (e) => {
     // 🐛 CORRIGÉ (retour Raphaël) : ce raccourci global captait aussi la

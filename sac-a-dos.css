@@ -273,9 +273,22 @@
 
 .sac-item:last-child { border-bottom: none; }
 
+/* 🆕 (16-08-2026) : .sac-item-principal est devenu un conteneur COLONNE
+   (nom+détail d'abord, bloc exemple replié en dessous — voir
+   rendreBlocExemple dans le .js) — avant cette session il contenait
+   directement le nom et le détail en ligne ; ce rôle est maintenant celui
+   de .sac-item-ligne ci-dessous, pour laisser le bloc exemple s'étaler
+   sur toute la largeur plutôt que de se retrouver coincé comme un
+   troisième élément de la ligne nom/détail. */
 .sac-item-principal {
   flex: 1;
   min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sac-item-ligne {
   display: flex;
   /* 🐛 CORRIGÉ : était align-items: baseline, ce qui provoquait un
      chevauchement visuel dès qu'un nom de plusieurs mots (ex. "ça va")
@@ -332,6 +345,94 @@
   font-size: 0.66rem;
   color: var(--brun-clair, #8A7364);
   padding: 1px 0 1px 10px;
+}
+
+/* 🆕 (16-08-2026, chantier "contexte + grammaire dans le sac") : bloc
+   "exemple" — replié par défaut (retour Raphaël), un simple bouton-lien
+   discret qui déplie la phrase d'origine du dialogue et sa traduction.
+   Volontairement plus discret que .sac-item-detail (la traduction du
+   mot) : l'exemple est une précision annexe qu'on va chercher au
+   besoin, pas une information affichée d'office. Absent du flux tant
+   que rendreBlocExemple() ne reçoit rien (items ajoutés avant cette
+   session) — aucun espace vide résiduel dans ce cas. */
+.sac-exemple-toggle {
+  align-self: flex-start;
+  border: none;
+  background: none;
+  padding: 1px 0;
+  margin: 0;
+  font: inherit;
+  font-size: 0.68rem;
+  color: var(--peche-fonce, #C97A56);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+.sac-exemple-toggle:hover { text-decoration: underline; }
+.sac-exemple-chevron {
+  display: inline-block;
+  font-size: 0.6rem;
+  transition: transform 0.15s ease;
+}
+.sac-exemple-toggle.ouvert .sac-exemple-chevron { transform: rotate(90deg); }
+
+.sac-exemple {
+  display: none;
+  font-size: 0.74rem;
+  font-style: italic;
+  color: var(--brun, #665045);
+  background: var(--fond, #FBF4EE);
+  border-left: 2px solid var(--peche-fonce, #C97A56);
+  padding: 4px 8px;
+  margin-top: 2px;
+  border-radius: 0 6px 6px 0;
+  overflow-wrap: break-word;
+}
+.sac-exemple.ouvert { display: block; }
+.sac-exemple-trad {
+  font-style: normal;
+  color: var(--brun-clair, #8A7364);
+  margin-top: 2px;
+}
+
+/* 🆕 Catégorie "grammaire" — forme différente d'un .sac-item (un titre
+   court + un paragraphe, pas un mot + une traduction courte), donc sa
+   propre carte plutôt qu'une ligne compacte. Reprend les mêmes couleurs
+   et le même rythme vertical que .sac-item pour rester cohérente avec
+   le reste du panneau. */
+.sac-grammaire-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 6px 0;
+  border-bottom: 1px dotted rgba(102, 80, 69, 0.18);
+}
+.sac-grammaire-item:last-child { border-bottom: none; }
+.sac-grammaire-corps {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.sac-grammaire-titre {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--brun, #665045);
+}
+.sac-grammaire-texte {
+  font-size: 0.76rem;
+  color: var(--brun, #665045);
+  line-height: 1.4;
+  overflow-wrap: break-word;
+}
+.sac-grammaire-texte strong { color: var(--peche-fonce, #C97A56); }
+.sac-grammaire-actions {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
 .sac-item-retirer {

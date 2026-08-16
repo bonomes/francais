@@ -292,6 +292,7 @@
 
   .bulle-dialogue {
     position: relative;
+    width: fit-content;
     max-width: 82%;
     font-weight: 700;
     font-size: clamp(1.05rem, 3vw, 1.35rem);
@@ -303,6 +304,15 @@
     opacity: 0;
     transform: translateY(6px);
     transition: opacity 0.3s ease, transform 0.3s ease;
+    /* 🆕 (15-08-2026) : width: fit-content ci-dessus fait déjà que la bulle
+       épouse la ligne la plus longue plutôt que de s'étirer sur toute la
+       largeur disponible ; text-wrap: balance répartit en plus le texte
+       entre les lignes de façon plus équilibrée qu'un retour à la ligne
+       "au plus près", pour éviter une 2e ligne très courte perdue dans
+       une bulle large — demande explicite de Raphaël (bulle mal utilisée
+       par rapport au texte). Filet de sécurité pour navigateurs sans
+       support (rare) : le retour à la ligne standard reste correct. */
+    text-wrap: balance;
   }
   .bulle-dialogue.in { opacity: 1; transform: translateY(0); }
   /* 🆕 (15-08-2026) : étape silencieuse d'ouverture (ETAPES[0]) — pas de
@@ -336,6 +346,14 @@
     width: 100%;
     height: 100%;
     object-fit: contain;
+    /* 🆕 (15-08-2026) : explicite plutôt que la valeur par défaut du
+       navigateur — pour la transition automatique de ETAPES[0] (image
+       silencieuse → question de Bek), les deux images doivent s'ancrer au
+       même point pendant le fondu. Vérifié : les deux fichiers actuels
+       (d2_01_..._01/02.webp) sont déjà alignés ligne pour ligne (même
+       cadrage), donc rien à corriger sur ces deux-là — object-position
+       verrouille ce comportement pour la suite. */
+    object-position: center center;
     display: block;
     transform: none; /* 🆕 (6e échange) : le zoom coupait la queue de cheval de Bek — annulé, priorité à ne jamais rogner les personnages */
     -webkit-mask-image: radial-gradient(ellipse 94% 90% at center, #000 74%, transparent 100%);
@@ -1275,8 +1293,11 @@
       // Bek qui l’observe) avant que Bek pose sa question à l’étape
       // suivante. speaker/texte volontairement absents : voir rendreEtape()
       // (bulle cachée via .bulle-vide) et ajouterLigneDialogue() (ne pousse
-      // rien dans #pileDialogue quand def.texte est absent).
-      img: "../../images/dialogues/d2/d2_01_bonomes_keb_bek_comment-sandwich_01.webp"
+      // rien dans #pileDialogue quand def.texte est absent). avanceAuto :
+      // pas de clic nécessaire pour passer à l’image suivante (demande
+      // explicite de Raphaël, 15-08-2026) — voir rendreEtape() plus bas.
+      img: "../../images/dialogues/d2/d2_01_bonomes_keb_bek_comment-sandwich_01.webp",
+      avanceAuto: true, delaiAvanceAuto: 1600
     },
     {
       speaker: "bek", texte: "Alors, comment est le sandwich ?",
@@ -2103,6 +2124,10 @@
 
   // ---------- Image avec repli "pas encore prête" (même patron que
   // creerImage() dans intro-bonomes.html) ----------
+  // 🆕 (15-08-2026) : léger fondu à l'apparition — surtout utile pour la
+  // transition automatique de ETAPES[0] (image silencieuse → question de
+  // Bek), pour que ce ne soit pas un cut sec, mais s'applique à chaque
+  // changement d'étape par cohérence.
   function creerImage(cheminImage) {
     const wrapper = document.createElement('div');
     wrapper.style.position = 'absolute';
@@ -2111,6 +2136,11 @@
     img.className = 'image-scene';
     img.src = cheminImage;
     img.alt = 'Keb et Bek';
+    img.style.opacity = '0';
+    img.style.transition = 'opacity 0.5s ease';
+    img.onload = function () {
+      requestAnimationFrame(() => requestAnimationFrame(() => { img.style.opacity = '1'; }));
+    };
     img.onerror = function () {
       const repli = document.createElement('div');
       repli.className = 'repli-image-manquante';
@@ -2359,7 +2389,15 @@
 
   function rendreEtape() {
     const def = ETAPES[etape];
-    elCompteur.textContent = (etape + 1) + ' / ' + ETAPES.length;
+    // 🆕 (15-08-2026, demande explicite de Raphaël) : la toute première
+    // étape silencieuse (ETAPES[0]) ne compte pas comme un échange à part —
+    // elle affiche le même numéro que la question de Bek qui la suit
+    // (ETAPES[1]). D'où Math.max(1, etape) : étapes 0 et 1 affichent
+    // toutes deux "1", puis le compte suit normalement (étape 2 → "2",
+    // etc.). Total affiché = ETAPES.length - 1 pour la même raison (les 6
+    // vraies répliques, pas 7 entrées de tableau).
+    const numeroAffiche = Math.max(1, etape);
+    elCompteur.textContent = numeroAffiche + ' / ' + (ETAPES.length - 1);
 
     // 🔧 (7e échange) : remis à false ICI, inconditionnellement — dès qu'on
     // affiche une étape (par suivant() OU precedent()), sa séquence auto,
@@ -2397,6 +2435,26 @@
     btnSuivant.textContent = (etape === ETAPES.length - 1)
       ? texteInterface('terminer') + ' \u203a'
       : texteInterface('continuer') + ' \u203a';
+
+    // 🆕 (15-08-2026, demande explicite de Raphaël) : étape silencieuse
+    // (ETAPES[0]) → passage automatique à la suivante après une pause,
+    // SANS clic ni tap. Verrouille la navigation pendant l'attente (même
+    // drapeau animationEnCours que jouerSequenceAuto plus bas) pour éviter
+    // qu'un clic pile pendant la pause ne déclenche un double avancement.
+    // Le etapeActuelle capturé + la vérification dans le setTimeout
+    // protègent aussi contre le cas où l'état aurait changé entre-temps
+    // (ex. un prof qui pousse une autre étape via session-classe.js).
+    if (def.avanceAuto && etape < ETAPES.length - 1) {
+      const etapeActuelle = etape;
+      animationEnCours = true;
+      btnPrecedent.disabled = true;
+      btnSuivant.disabled = true;
+      setTimeout(() => {
+        animationEnCours = false;
+        btnSuivant.disabled = false;
+        if (etape === etapeActuelle) suivant();
+      }, def.delaiAvanceAuto || 1600);
+    }
 
     // 🆕 (14-08-2026, session-classe.js) : best-effort, ne fait rien si ce
     // navigateur ne fait pas tourner de session prof — voir plus bas.

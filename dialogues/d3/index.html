@@ -1360,7 +1360,9 @@
     const ETAPES = [
     {
       speaker: "bek", texte: "Keb mange un sandwich sur une chaise.",
-      img: "../../images/dialogues/d3/d3_01_bonomes_keb_bek_mange-chaise_01.webp", grammaire: ["gTroisiemePersonne", "gFeminin"],
+      img: "../../images/dialogues/d3/d3_01_keb-bek-keb-mange_01.webp",
+      imgAvant: "../../images/dialogues/d3/d3_keb-bek_image-intro_01.webp",
+      grammaire: ["gTroisiemePersonne", "gFeminin"],
       trad: {
         en: "Keb is eating a sandwich on a chair.",
         es: "Keb come un sándwich en una silla.",
@@ -1385,7 +1387,7 @@
     },
     {
       speaker: "bek", texte: "Eh, Keb ! Il est bon, le sandwich ?",
-      img: "../../images/dialogues/d3/d3_02_bonomes_keb_bek_il-est-bon_01.webp", grammaire: ["gInsistance", "gIl"],
+      img: "../../images/dialogues/d3/d3_02_keb-bek-keb-il-est-bon-question_01.webp", grammaire: ["gInsistance", "gIl"],
       trad: {
         en: "Hey, Keb! Is it good, the sandwich?",
         es: "¡Eh, Keb! ¿Está bueno, el sándwich?",
@@ -1410,7 +1412,9 @@
     },
     {
       speaker: "keb", texte: "Oui. Il est bon ... euh, non, il est délicieux !",
-      img: "../../images/dialogues/d3/d3_03_bonomes_keb_bek_delicieux_01.webp",
+      img: "../../images/dialogues/d3/d3_03_keb-bek-non-il-est-délicieux_01.webp",
+      texteAvant: "Oui. Il est bon ...",
+      imgAvant: "../../images/dialogues/d3/d3_03_keb-bek-oui-il-est-bon_01.webp",
       trad: {
         en: "Yes. It's good ... um, no, it's delicious!",
         es: "Sí. Está bueno... eh, no, ¡está delicioso!",
@@ -2756,50 +2760,83 @@
 
   function rendreEtape() {
     const def = ETAPES[etape];
-    // 🆕 (15-08-2026, demande explicite de Raphaël) : la toute première
-    // étape silencieuse (ETAPES[0]) ne compte pas comme un échange à part —
-    // elle affiche le même numéro que la question de Bek qui la suit
-    // (ETAPES[1]). D'où Math.max(1, etape) : étapes 0 et 1 affichent
-    // toutes deux "1", puis le compte suit normalement (étape 2 → "2",
-    // etc.). Total affiché = ETAPES.length - 1 pour la même raison (les 6
-    // vraies répliques, pas 7 entrées de tableau).
-    const numeroAffiche = Math.max(1, etape);
-    elCompteur.textContent = numeroAffiche + ' / ' + (ETAPES.length - 1);
+    // 🐛 CORRIGÉ (17-08-2026) : contrairement à d2, AUCUNE étape de d3
+    // n'est silencieuse (voir correction en tête de fichier — l'étape 1
+    // EST parlée par Bek). La numérotation spéciale héritée de d2
+    // (Math.max(1, etape) / ETAPES.length - 1, qui compensait une étape
+    // fantôme ETAPES[0] sans texte) n'a donc plus lieu d'être ici :
+    // chaque entrée de ETAPES est une vraie réplique, numérotée 1 à 1.
+    const numeroAffiche = etape + 1;
+    elCompteur.textContent = numeroAffiche + ' / ' + ETAPES.length;
 
     // 🔧 (7e échange) : remis à false ICI, inconditionnellement — dès qu'on
     // affiche une étape (par suivant() OU precedent()), sa séquence auto,
     // si elle en a une, n'a par définition pas encore joué "cette fois-ci".
     sequenceAJouePourEtapeActuelle.valeur = false;
 
-    // Bulle unique — remplacée, jamais empilée. Mots cliquables (voir
-    // construireBulleMots) : clic/tap = traduction, double-clic/double-tap
-    // = ajout au sac — même mécanisme que partout ailleurs sur le site.
-    // 🆕 (15-08-2026) : étape silencieuse (def.texte absent, voir ETAPES[0])
-    // → bulle cachée entièrement (.bulle-vide) plutôt que d'afficher une
-    // bulle avec un mot "undefined" (String(undefined) sinon construit par
-    // construireBulleMots).
-    elBulle.classList.remove('in');
-    if (def.texte) {
-      elBulle.style.width = ''; // repart de fit-content avant de re-mesurer (voir ajusterLargeurBulle)
-      elBulle.className = 'bulle-dialogue cote-' + def.speaker;
-      construireBulleMots(def.texte);
-      requestAnimationFrame(() => requestAnimationFrame(() => {
-        elBulle.classList.add('in');
-        ajusterLargeurBulle(elBulle);
-      }));
-    } else {
-      elBulle.className = 'bulle-dialogue bulle-vide';
-      elBulle.innerHTML = '';
+    // Bulle + scène. La plupart des étapes s'affichent d'un bloc (branche
+    // "else"). Certaines (voir def.imgAvant/def.texteAvant plus bas) se
+    // révèlent en DEUX temps, SANS changer de numéro ni d'étape — demande
+    // explicite de Raphaël (17-08-2026) pour deux moments précis de d3 :
+    //   1) Bek en position neutre → transition automatique vers la pose où
+    //      elle parle de Keb à la 3e personne (ETAPES[0]).
+    //   2) Keb "Oui. Il est bon..." → la bulle S'ALLONGE automatiquement
+    //      pour inclure la rétractation ("... euh, non, il est délicieux !"),
+    //      avec un changement de pose assorti (ETAPES[2]).
+    // Rejoue seulement au premier passage AVANT (sequenceAJouePourEtapeActuelle,
+    // remis à false en tête de rendreEtape) — un retour en arrière puis un
+    // nouveau passage (reconstructionEnCours) affiche directement l'état
+    // final, sans réanimer.
+    const aReveal = !!(def.imgAvant || def.texteAvant) && !reconstructionEnCours;
+
+    function afficherBulle(texte) {
+      elBulle.classList.remove('in');
+      if (texte) {
+        elBulle.style.width = ''; // repart de fit-content avant de re-mesurer (voir ajusterLargeurBulle)
+        elBulle.className = 'bulle-dialogue cote-' + def.speaker;
+        construireBulleMots(texte);
+        requestAnimationFrame(() => requestAnimationFrame(() => {
+          elBulle.classList.add('in');
+          ajusterLargeurBulle(elBulle);
+        }));
+      } else {
+        elBulle.className = 'bulle-dialogue bulle-vide';
+        elBulle.innerHTML = '';
+      }
     }
 
-    // Scène — une image par étape (repli gracieux tant que l'art n'existe
-    // pas encore, voir creerImage()).
-    elScene.innerHTML = '';
-    elScene.appendChild(creerImage(def.img));
+    function afficherScene(img) {
+      elScene.innerHTML = '';
+      elScene.appendChild(creerImage(img));
+    }
 
-    if (!reconstructionEnCours) {
-      ajouterLigneDialogue(def);
-      ajouterNoteGrammaire(def);
+    if (aReveal) {
+      afficherBulle(def.texteAvant);
+      afficherScene(def.imgAvant || def.img);
+
+      animationEnCours = true;
+      btnPrecedent.disabled = true;
+      btnSuivant.disabled = true;
+      const etapeActuelle = etape;
+      setTimeout(() => {
+        if (etape !== etapeActuelle) return; // navigation entre-temps (prof, flèches…) — on abandonne
+        afficherBulle(def.texte);
+        afficherScene(def.img);
+        if (!reconstructionEnCours) {
+          ajouterLigneDialogue(def);
+          ajouterNoteGrammaire(def);
+        }
+        animationEnCours = false;
+        btnPrecedent.disabled = (etape === 0);
+        btnSuivant.disabled = false;
+      }, def.delaiReveal || 1400);
+    } else {
+      afficherBulle(def.texte);
+      afficherScene(def.img);
+      if (!reconstructionEnCours) {
+        ajouterLigneDialogue(def);
+        ajouterNoteGrammaire(def);
+      }
     }
 
     btnPrecedent.disabled = (etape === 0);
@@ -2807,25 +2844,12 @@
       ? texteInterface('terminer') + ' \u203a'
       : texteInterface('continuer') + ' \u203a';
 
-    // 🆕 (15-08-2026, demande explicite de Raphaël) : étape silencieuse
-    // (ETAPES[0]) → passage automatique à la suivante après une pause,
-    // SANS clic ni tap. Verrouille la navigation pendant l'attente (même
-    // drapeau animationEnCours que jouerSequenceAuto plus bas) pour éviter
-    // qu'un clic pile pendant la pause ne déclenche un double avancement.
-    // Le etapeActuelle capturé + la vérification dans le setTimeout
-    // protègent aussi contre le cas où l'état aurait changé entre-temps
-    // (ex. un prof qui pousse une autre étape via session-classe.js).
-    if (def.avanceAuto && etape < ETAPES.length - 1) {
-      const etapeActuelle = etape;
-      animationEnCours = true;
-      btnPrecedent.disabled = true;
-      btnSuivant.disabled = true;
-      setTimeout(() => {
-        animationEnCours = false;
-        btnSuivant.disabled = false;
-        if (etape === etapeActuelle) suivant();
-      }, def.delaiAvanceAuto || 1600);
-    }
+    // 🐛 RETIRÉ (17-08-2026) : le bloc avanceAuto hérité de d2 (avance
+    // automatique sans clic depuis une étape silencieuse) n'a plus de
+    // raison d'être ici — aucune étape de d3 n'est silencieuse (voir
+    // correction en tête de fichier). La révélation en deux temps
+    // ci-dessus (def.imgAvant/def.texteAvant) couvre maintenant ce besoin,
+    // SANS avancer d'étape.
 
     // 🆕 (14-08-2026, session-classe.js) : best-effort, ne fait rien si ce
     // navigateur ne fait pas tourner de session prof — voir plus bas.

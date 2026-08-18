@@ -197,6 +197,7 @@
     align-items: center;
     justify-content: center;
     gap: clamp(16px, 4vw, 32px);
+    width: 100%;
   }
 
   /* ---------- Personnages centraux ---------- */
@@ -232,13 +233,51 @@
      à chaque taille de fenêtre).
      ================================================================== */
 
+  /* 🆕 (retour Raphaël) : en flex simple, .personnages-groupe centrait
+     la PAIRE {personnages + première-fois} sur la largeur disponible —
+     comme .personnages est bien plus large que .premiere-fois, le
+     milieu de la paire tombait à gauche du vrai centre de l'écran, et
+     Keb & Bek semblaient décalés/débalancés (la case "Première fois ?"
+     collée contre eux n'aidait pas). Passage à une grille à 3 colonnes
+     symétriques (1fr / auto / 1fr) : la colonne centrale (personnages)
+     est ainsi centrée sur la largeur RÉELLE de .scene-rangee, peu
+     importe la largeur de .premiere-fois — et la case peut être
+     poussée vers la droite (justify-self + margin-left, voir
+     .premiere-fois plus bas) sans jamais tirer les personnages de
+     travers. Repasse en pile simple (une seule colonne) sous
+     460px, voir media query plus bas — même comportement qu'avant
+     sur petit écran. */
   .personnages-groupe {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
     align-items: center;
     gap: clamp(10px, 2vw, 20px);
-    flex-shrink: 0;
+    width: 100%;
+    max-width: 900px;
+  }
+
+  .personnages-groupe .personnages {
+    grid-column: 2;
+    justify-self: center;
+  }
+
+  .personnages-groupe .premiere-fois {
+    grid-column: 3;
+    justify-self: start;
+    margin-left: clamp(4px, 3vw, 28px);
+  }
+
+  @media (max-width: 460px) {
+    .personnages-groupe {
+      grid-template-columns: 1fr;
+      justify-items: center;
+    }
+    .personnages-groupe .personnages,
+    .personnages-groupe .premiere-fois {
+      grid-column: 1;
+      justify-self: center;
+      margin-left: 0;
+    }
   }
 
   /* ==================================================================
@@ -255,15 +294,15 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
     flex-shrink: 0;
-    padding: 10px 16px;
-    border-radius: 20px;
-    background: rgba(255, 255, 255, 0.5);
+    padding: 16px 22px;
+    border-radius: 24px;
+    background: linear-gradient(155deg, rgba(255,255,255,0.65), var(--peche-pale) 130%);
     backdrop-filter: blur(9px) saturate(160%);
     -webkit-backdrop-filter: blur(9px) saturate(160%);
     border: 1.5px solid var(--peche);
-    box-shadow: 6px 6px 20px var(--ombre), inset -1px 0 0 rgba(255,255,255,0.5);
+    box-shadow: 6px 6px 20px var(--ombre), 0 0 0 5px var(--peche-pale), inset 0 1px 0 rgba(255,255,255,0.7);
     opacity: 0;
     transform: scale(0.75);
     pointer-events: none;
@@ -276,47 +315,56 @@
     pointer-events: auto;
   }
 
+  .premiere-fois.visible:hover {
+    box-shadow: 8px 8px 24px var(--ombre), 0 0 0 6px var(--peche-pale-vif), inset 0 1px 0 rgba(255,255,255,0.7);
+  }
+
   /* Libellé traduit via DICO_PREMIERE_FOIS (JS plus bas), même esprit
      que DICO_COURS_PRIVES — mis à jour au choix de langue par
-     rafraichirPremiereFois(). Contrairement aux boutons Oui/Non
-     ci-dessous, ce texte est un habillage d'interface, pas un mot de
-     vocabulaire français à retenir : il suit donc la langue choisie. */
+     rafraichirPremiereFois(). Comme les boutons Oui/Non ci-dessous
+     (voir DICO_OUI/DICO_NON), c'est un habillage d'interface, pas un
+     mot de vocabulaire français à retenir : il suit donc la langue
+     choisie. */
   .pf-question {
     margin: 0;
     font-family: 'Baloo 2', sans-serif;
     font-weight: 700;
-    font-size: 0.8rem;
-    color: var(--brun);
+    font-size: 0.88rem;
+    letter-spacing: 0.01em;
+    color: var(--brun-fonce);
     text-align: center;
     white-space: nowrap;
   }
 
   .pf-boutons {
     display: flex;
-    gap: 8px;
+    gap: 10px;
   }
 
-  /* Libellés "Oui" / "Non" volontairement laissés en français, jamais
-     traduits (comme la bulle "Bonjour !" plus haut) : ce sont eux-mêmes
-     des mots français que l'immersion expose dès cette première page. */
+  /* 🆕 (retour Raphaël) : libellés "Oui" / "Non" traduits dans la langue
+     de l'apprenant depuis cette session — CHANGEMENT de comportement,
+     voir DICO_OUI/DICO_NON en JS plus bas. Ils étaient jusqu'ici
+     volontairement laissés en français (comme la bulle "Bonjour !"),
+     dans une logique d'immersion ; Raphaël a demandé l'inverse. */
   .pf-bouton {
     font-family: 'Baloo 2', sans-serif;
     font-weight: 700;
-    font-size: 0.85rem;
-    padding: 6px 18px;
+    font-size: 0.9rem;
+    padding: 8px 22px;
     border-radius: 999px;
     border: 1.5px solid var(--peche);
-    background: rgba(255, 255, 255, 0.6);
+    background: rgba(255, 255, 255, 0.75);
     color: var(--brun);
     cursor: pointer;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.8);
     transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
   }
 
   .pf-bouton:hover,
   .pf-bouton:focus-visible {
-    background: var(--peche);
+    background: var(--peche-fonce);
     color: #fff;
-    transform: translateY(-1px);
+    transform: translateY(-1px) scale(1.04);
     box-shadow: 4px 4px 14px var(--ombre);
   }
 
@@ -1201,10 +1249,9 @@
   // l'ancien bouton "continuer" — même esprit et mêmes 19+1 langues que
   // DICO_COURS_PRIVES juste au-dessus (dictionnaire autonome, mis à
   // jour au choix de langue par rafraichirPremiereFois() plus bas).
-  // Contrairement aux libellés "Oui"/"Non" des boutons (volontairement
-  // laissés en français, voir HTML), ce texte est un habillage
-  // d'interface : il suit la langue choisie comme le lien vers les
-  // cours privés.
+  // Comme les libellés "Oui"/"Non" des boutons (voir DICO_OUI/DICO_NON
+  // plus bas), ce texte est un habillage d'interface : il suit la
+  // langue choisie comme le lien vers les cours privés.
   // ==================================================================
   const DICO_PREMIERE_FOIS = {
     fr: 'Première fois ?',
@@ -1259,6 +1306,29 @@
     sv: 'Logga in',
     no: 'Logg inn',
     ru: 'Войти'
+  };
+
+  // ==================================================================
+  // 🆕 (retour Raphaël) Libellés des boutons "Oui" / "Non" du bloc
+  // "First time?" — mêmes 19 langues + fr que les dictionnaires
+  // ci-dessus, mis à jour au choix de langue par rafraichirOuiNon()
+  // plus bas. Remplace le comportement précédent (Oui/Non toujours en
+  // français, voir note dans le CSS de .pf-bouton) : ce ne sont plus
+  // traités comme du vocabulaire français à exposer, mais comme un
+  // libellé d'interface à traduire, au même titre que "Première fois ?"
+  // ou "Se reconnecter".
+  // ==================================================================
+  const DICO_OUI = {
+    fr: 'Oui', en: 'Yes', es: 'Sí', it: 'Sì', pt: 'Sim', ca: 'Sí',
+    eo: 'Jes', zh: '是', ja: 'はい', ko: '네', vi: 'Có', ht: 'Wi',
+    tl: 'Oo', id: 'Ya', nl: 'Ja', de: 'Ja', fa: 'بله', sv: 'Ja',
+    no: 'Ja', ru: 'Да'
+  };
+  const DICO_NON = {
+    fr: 'Non', en: 'No', es: 'No', it: 'No', pt: 'Não', ca: 'No',
+    eo: 'Ne', zh: '否', ja: 'いいえ', ko: '아니요', vi: 'Không', ht: 'Non',
+    tl: 'Hindi', id: 'Tidak', nl: 'Nee', de: 'Nein', fa: 'نه', sv: 'Nej',
+    no: 'Nei', ru: 'Нет'
   };
 
 
@@ -1432,6 +1502,15 @@
     btnSeReconnecterIndex.textContent = DICO_SE_RECONNECTER[langueActuelle] || DICO_SE_RECONNECTER.en;
   }
   rafraichirSeReconnecter();
+
+  // 🆕 (retour Raphaël) Même principe, pour les boutons "Oui" / "Non"
+  // (DICO_OUI/DICO_NON, voir plus haut) — remplace leur ancien texte
+  // français fixe codé dans le HTML.
+  function rafraichirOuiNon() {
+    pfOui.textContent = DICO_OUI[langueActuelle] || DICO_OUI.en;
+    pfNon.textContent = DICO_NON[langueActuelle] || DICO_NON.en;
+  }
+  rafraichirOuiNon();
 
 
   // Visite de retour avec une langue déjà choisie précédemment : le
@@ -2004,6 +2083,7 @@
     rafraichirLienCoursPrives();
     rafraichirPremiereFois();
     rafraichirSeReconnecter();
+    rafraichirOuiNon();
     rafraichirEnteteSac();
     fermer();
   }

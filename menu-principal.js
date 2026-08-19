@@ -50,6 +50,7 @@ const DICO_MENU = {
     menuProfesseur: 'Mode professeur',
     menuPrives: 'Cours privés',
     menuContact: 'Contact',
+    retourAccueil: 'Retour à l\u2019accueil',
     ficheInvite: 'Tu explores en mode invité pour l\u2019instant.',
     ficheBtnCompte: 'Créer un compte',
     ficheBtnReconnexion: 'Se reconnecter',
@@ -67,6 +68,7 @@ const DICO_MENU = {
     menuProfesseur: 'Teacher mode',
     menuPrives: 'Private lessons',
     menuContact: 'Contact',
+    retourAccueil: 'Back to home',
     ficheInvite: 'You\u2019re exploring as a guest for now.',
     ficheBtnCompte: 'Create an account',
     ficheBtnReconnexion: 'Log in',
@@ -84,6 +86,7 @@ const DICO_MENU = {
     menuProfesseur: 'Modo profesor',
     menuPrives: 'Clases privadas',
     menuContact: 'Contacto',
+    retourAccueil: 'Volver al inicio',
     ficheInvite: 'Por ahora est\u00e1s explorando como invitado.',
     ficheBtnCompte: 'Crear una cuenta',
     ficheBtnReconnexion: 'Iniciar sesión',
@@ -101,6 +104,7 @@ const DICO_MENU = {
     menuProfesseur: 'Modalità insegnante',
     menuPrives: 'Lezioni private',
     menuContact: 'Contatto',
+    retourAccueil: 'Torna alla home',
     ficheInvite: 'Per ora stai esplorando come ospite.',
     ficheBtnCompte: 'Crea un account',
     ficheBtnReconnexion: 'Accedi',
@@ -118,6 +122,7 @@ const DICO_MENU = {
     menuProfesseur: 'Modo professor',
     menuPrives: 'Aulas particulares',
     menuContact: 'Contato',
+    retourAccueil: 'Voltar ao início',
     ficheInvite: 'Voc\u00ea est\u00e1 explorando como convidado por enquanto.',
     ficheBtnCompte: 'Criar uma conta',
     ficheBtnReconnexion: 'Entrar',
@@ -135,6 +140,7 @@ const DICO_MENU = {
     menuProfesseur: 'Mode professor',
     menuPrives: 'Classes privades',
     menuContact: 'Contacte',
+    retourAccueil: 'Torna a l\u2019inici',
     ficheInvite: 'Ara mateix estàs explorant com a convidat.',
     ficheBtnCompte: 'Crear un compte',
     ficheBtnReconnexion: 'Inicia sessió',
@@ -152,6 +158,7 @@ const DICO_MENU = {
     menuProfesseur: 'Instruista reĝimo',
     menuPrives: 'Privataj lecionoj',
     menuContact: 'Kontakto',
+    retourAccueil: 'Reen al la hejmo',
     ficheInvite: 'Vi nun esploras kiel gasto.',
     ficheBtnCompte: 'Krei konton',
     ficheBtnReconnexion: 'Ensaluti',
@@ -169,6 +176,7 @@ const DICO_MENU = {
     menuProfesseur: '教师模式',
     menuPrives: '\u79c1\u4eba\u8bfe\u7a0b',
     menuContact: '\u8054\u7cfb\u6211\u4eec',
+    retourAccueil: '返回首页',
     ficheInvite: '\u4f60\u76ee\u524d\u4ee5\u8bbf\u5ba2\u8eab\u4efd\u6d4f\u89c8\u3002',
     ficheBtnCompte: '\u521b\u5efa\u8d26\u53f7',
     ficheBtnReconnexion: '登录',
@@ -186,6 +194,7 @@ const DICO_MENU = {
     menuProfesseur: '先生モード',
     menuPrives: '\u30d7\u30e9\u30a4\u30d9\u30fc\u30c8\u30ec\u30c3\u30b9\u30f3',
     menuContact: '\u304a\u554f\u3044\u5408\u308f\u305b',
+    retourAccueil: 'ホームに戻る',
     ficheInvite: '\u4eca\u306f\u30b2\u30b9\u30c8\u3068\u3057\u3066\u5229\u7528\u3057\u3066\u3044\u307e\u3059\u3002',
     ficheBtnCompte: '\u30a2\u30ab\u30a6\u30f3\u30c8\u3092\u4f5c\u6210',
     ficheBtnReconnexion: 'ログイン',
@@ -203,6 +212,7 @@ const DICO_MENU = {
     menuProfesseur: '선생님 모드',
     menuPrives: '\uac1c\uc778 \uc218\uc5c5',
     menuContact: '\ubb38\uc758\ud558\uae30',
+    retourAccueil: '홈으로 돌아가기',
     ficheInvite: '\uc9c0\uae08\uc740 \uac8c\uc2a4\ud2b8\ub85c \ub458\ub7ec\ubcf4\uace0 \uc788\uc5b4\uc694.',
     ficheBtnCompte: '\uacc4\uc815 \ub9cc\ub4e4\uae30',
     ficheBtnReconnexion: '로그인',
@@ -220,6 +230,7 @@ const DICO_MENU = {
     menuProfesseur: 'Chế độ giáo viên',
     menuPrives: 'B\u00e0i h\u1ecdc ri\u00eang',
     menuContact: 'Li\u00ean h\u1ec7',
+    retourAccueil: 'Quay lại trang chủ',
     ficheInvite: 'B\u1ea1n \u0111ang kh\u00e1m ph\u00e1 v\u1edbi t\u01b0 c\u00e1ch kh\u00e1ch.',
     ficheBtnCompte: 'T\u1ea1o t\u00e0i kho\u1ea3n',
     ficheBtnReconnexion: 'Đăng nhập',
@@ -237,6 +248,7 @@ const DICO_MENU = {
     menuProfesseur: 'Mòd pwofèsè',
     menuPrives: 'Kou priv\u00e9',
     menuContact: 'Kontak',
+    retourAccueil: 'Retounen nan akèy',
     ficheInvite: 'Kounye a ou ap eksplore k\u00f2m envite.',
     ficheBtnCompte: 'Kreye yon kont',
     ficheBtnReconnexion: 'Konekte',
@@ -254,6 +266,7 @@ const DICO_MENU = {
     menuProfesseur: 'Mode ng guro',
     menuPrives: 'Pribadong aralin',
     menuContact: 'Makipag-ugnayan',
+    retourAccueil: 'Bumalik sa home',
     ficheInvite: 'Kasalukuyan kang naggagalugad bilang bisita.',
     ficheBtnCompte: 'Gumawa ng account',
     ficheBtnReconnexion: 'Mag-log in',
@@ -271,6 +284,7 @@ const DICO_MENU = {
     menuProfesseur: 'Mode guru',
     menuPrives: 'Les privat',
     menuContact: 'Kontak',
+    retourAccueil: 'Kembali ke beranda',
     ficheInvite: 'Kamu sedang menjelajah sebagai tamu.',
     ficheBtnCompte: 'Buat akun',
     ficheBtnReconnexion: 'Masuk',
@@ -288,6 +302,7 @@ const DICO_MENU = {
     menuProfesseur: 'Docentmodus',
     menuPrives: 'Priv\u00e9lessen',
     menuContact: 'Contact',
+    retourAccueil: 'Terug naar home',
     ficheInvite: 'Je verkent nu als gast.',
     ficheBtnCompte: 'Account aanmaken',
     ficheBtnReconnexion: 'Inloggen',
@@ -305,6 +320,7 @@ const DICO_MENU = {
     menuProfesseur: 'Lehrermodus',
     menuPrives: 'Privatunterricht',
     menuContact: 'Kontakt',
+    retourAccueil: 'Zurück zur Startseite',
     ficheInvite: 'Du erkundest gerade als Gast.',
     ficheBtnCompte: 'Konto erstellen',
     ficheBtnReconnexion: 'Anmelden',
@@ -322,6 +338,7 @@ const DICO_MENU = {
     menuProfesseur: 'حالت معلم',
     menuPrives: '\u06a9\u0644\u0627\u0633\u200c\u0647\u0627\u06cc \u062e\u0635\u0648\u0635\u06cc',
     menuContact: '\u062a\u0645\u0627\u0633',
+    retourAccueil: 'بازگشت به صفحه اصلی',
     ficheInvite: '\u0627\u0644\u0627\u0646 \u0628\u0647\u200c\u0635\u0648\u0631\u062a \u0645\u0647\u0645\u0627\u0646 \u062f\u0631 \u062d\u0627\u0644 \u06a9\u0627\u0648\u0634 \u0647\u0633\u062a\u06cc.',
     ficheBtnCompte: '\u0633\u0627\u062e\u062a \u062d\u0633\u0627\u0628 \u06a9\u0627\u0631\u0628\u0631\u06cc',
     ficheBtnReconnexion: 'ورود',
@@ -339,6 +356,7 @@ const DICO_MENU = {
     menuProfesseur: 'Lärarläge',
     menuPrives: 'Privatlektioner',
     menuContact: 'Kontakt',
+    retourAccueil: 'Tillbaka till start',
     ficheInvite: 'Du utforskar just nu som g\u00e4st.',
     ficheBtnCompte: 'Skapa ett konto',
     ficheBtnReconnexion: 'Logga in',
@@ -356,6 +374,7 @@ const DICO_MENU = {
     menuProfesseur: 'Lærermodus',
     menuPrives: 'Privattimer',
     menuContact: 'Kontakt',
+    retourAccueil: 'Tilbake til start',
     ficheInvite: 'Du utforsker n\u00e5 som gjest.',
     ficheBtnCompte: 'Opprett konto',
     ficheBtnReconnexion: 'Logg inn',
@@ -373,6 +392,7 @@ const DICO_MENU = {
     menuProfesseur: 'Режим учителя',
     menuPrives: '\u0427\u0430\u0441\u0442\u043d\u044b\u0435 \u0443\u0440\u043e\u043a\u0438',
     menuContact: '\u041a\u043e\u043d\u0442\u0430\u043a\u0442\u044b',
+    retourAccueil: 'Вернуться на главную',
     ficheInvite: '\u0421\u0435\u0439\u0447\u0430\u0441 \u0442\u044b \u0432 \u0433\u043e\u0441\u0442\u0435\u0432\u043e\u043c \u0440\u0435\u0436\u0438\u043c\u0435.',
     ficheBtnCompte: '\u0421\u043e\u0437\u0434\u0430\u0442\u044c \u0430\u043a\u043a\u0430\u0443\u043d\u0442',
     ficheBtnReconnexion: 'Войти',
@@ -408,11 +428,27 @@ const ICONES_MENU = {
   // 🆕 Mode professeur — un porte-bloc/écritoire, pour rester distinct
   // de "fiche" (silhouette élève) sans introduire un style d'icône
   // différent des autres (même trait, mêmes proportions viewBox 24).
-  professeur: '<rect x="3" y="4" width="18" height="14" rx="2"/><path d="M7 9h10M7 13h6"/><path d="M9 21h6"/>'
+  professeur: '<rect x="3" y="4" width="18" height="14" rx="2"/><path d="M7 9h10M7 13h6"/><path d="M9 21h6"/>',
+  // 🆕 Flèche de retour (voir .kbm-retour dans le CSS) — simple flèche
+  // gauche, même trait/viewBox 24 que le reste des icônes du menu.
+  retour: '<path d="M19 12H5"/><path d="M11 6l-6 6 6 6"/>'
 };
 
 function svgIconeMenu(id) {
   return '<svg class="kbm-icone" viewBox="0 0 24 24">' + ICONES_MENU[id] + '</svg>';
+}
+
+// 🆕 (demande de Raphaël, refonte visuelle du menu) Icône "en médaillon" —
+// pastille de couleur derrière l'icône, une par entrée (voir
+// .kbm-icone-chip-* dans le CSS), pour des boutons plus expressifs/mignons
+// qu'un simple trait sur fond uni. Utilisée pour les entrées de
+// .kbm-liste uniquement — la flèche de retour (svgIconeMenu ci-dessus,
+// sans médaillon) reste volontairement plus discrète, ce n'est pas une
+// entrée de menu.
+function svgIconeMenuChip(id) {
+  return '<span class="kbm-icone-chip kbm-icone-chip-' + id + '">' +
+    '<svg class="kbm-icone" viewBox="0 0 24 24">' + ICONES_MENU[id] + '</svg>' +
+  '</span>';
 }
 
 /**
@@ -420,8 +456,10 @@ function svgIconeMenu(id) {
  *
  * @param {string} idConteneur - id de l'élément hôte (vidé puis rempli).
  * @param {object} callbacks - { onHistoires, onPrives, onContact,
- *   onCreerCompte, onSeReconnecter, onModeProfesseur } — chacun
- *   optionnel ; non fourni = bouton inactif plutôt qu'une erreur.
+ *   onCreerCompte, onSeReconnecter, onModeProfesseur, onRetourAccueil } —
+ *   chacun optionnel ; non fourni = bouton inactif plutôt qu'une erreur
+ *   (onRetourAccueil non fourni : la flèche de retour n'est même pas
+ *   rendue, voir plus bas).
  *   onCreerCompte et onSeReconnecter sont tous deux appelés depuis
  *   "Ma fiche" en mode invité (destination — probablement relancer la
  *   séquence identité, à l'étape compte ou directement en mode
@@ -474,12 +512,27 @@ async function demarrerMenuPrincipal(idConteneur, callbacks) {
   const estProfesseur = !!profilProfesseur;
 
   conteneur.innerHTML =
-    // 🆕 Titre au-dessus du menu, demande de Raphaël — réutilise
-    // exactement l'image déjà chargée pour l'écran-titre du tout début
-    // du site (voir .ecran-titre-img dans index.html), pas une nouvelle
-    // image : même fichier, juste affiché plus petit et en continu ici
-    // (pas de "pop" ni de disparition, contrairement à l'écran-titre).
-    '<img class="kbm-titre-img" src="images/accueil/index_bonomes_titre_01.webp" width="509" height="489" alt="Le fran\u00e7ais avec les Bonomes">' +
+    // 🆕 (demande de Raphaël) Titre au-dessus du menu : réutilise
+    // désormais le logo "Les Bonomes" (page_titre_02, même fichier que
+    // l'en-tête permanent de l'écran d'accueil dans index.html — voir
+    // .titre-accueil-img) plutôt que l'ancienne image d'écran-titre.
+    // Nom simplifié, cohérent sur tout le site.
+    '<img class="kbm-titre-img" src="images/accueil/page_titre_02.webp" width="1376" height="768" alt="Les Bonomes">' +
+    // 🆕 (demande de Raphaël) Flèche discrète, coin supérieur droit du
+    // bloc menu — ramène à l'écran d'accueil (personnages Keb/Bek), pour
+    // qu'un élève puisse retourner y survoler/toucher les personnages
+    // plusieurs fois (succès secrets) sans devoir tout recharger la
+    // page. Rendue seulement si la page hôte fournit onRetourAccueil —
+    // même patron que le bouton "Mode professeur" plus bas (optionnel,
+    // jamais un bouton mort si le callback manque). Ne relance JAMAIS le
+    // choix de langue ni le bloc Connexion/Première leçon : c'est la
+    // page hôte (index.html) qui décide quoi réafficher, ce module ne
+    // fait qu'émettre le clic.
+    (typeof callbacks.onRetourAccueil === 'function' ?
+      '<button type="button" class="kbm-retour" data-menu="retourAccueil" aria-label="' + tMenuOuDefaut('retourAccueil', 'Back to home') + '" title="' + tMenuOuDefaut('retourAccueil', 'Back to home') + '">' +
+        svgIconeMenu('retour') +
+      '</button>'
+    : '') +
     '<div class="kbm-carte">' +
       '<div class="kbm-salutation">' +
         (identite.prenom
@@ -489,18 +542,18 @@ async function demarrerMenuPrincipal(idConteneur, callbacks) {
       '<div class="kbm-liste" id="kbmListe">' +
 
         '<button type="button" class="kbm-bouton kbm-entree-cachee" data-menu="histoires">' +
-          svgIconeMenu('histoires') +
+          svgIconeMenuChip('histoires') +
           '<span>' + tMenuOuDefaut('menuHistoires', 'Stories & lessons') + '</span>' +
         '</button>' +
 
         '<button type="button" class="kbm-bouton kbm-a-venir kbm-entree-cachee" data-menu="bravo" aria-disabled="true">' +
-          svgIconeMenu('bravo') +
+          svgIconeMenuChip('bravo') +
           '<span>' + tMenuOuDefaut('menuBravo', 'Bravo & rewards') + '</span>' +
           '<span class="kbm-badge">' + tMenuOuDefaut('badgeBientot', 'Soon') + '</span>' +
         '</button>' +
 
         '<button type="button" class="kbm-bouton kbm-ma-fiche kbm-entree-cachee" id="kbmBtnFiche" aria-expanded="false">' +
-          svgIconeMenu('fiche') +
+          svgIconeMenuChip('fiche') +
           '<span>' + tMenuOuDefaut('menuMaFiche', 'My profile') + '</span>' +
           '<span class="kbm-chevron">&#9660;</span>' +
         '</button>' +
@@ -508,18 +561,18 @@ async function demarrerMenuPrincipal(idConteneur, callbacks) {
 
         (estProfesseur ?
           '<button type="button" class="kbm-bouton kbm-entree-cachee" data-menu="professeur">' +
-            svgIconeMenu('professeur') +
+            svgIconeMenuChip('professeur') +
             '<span>' + tMenuOuDefaut('menuProfesseur', 'Teacher mode') + '</span>' +
           '</button>'
         : '') +
 
         '<button type="button" class="kbm-bouton kbm-entree-cachee" data-menu="prives">' +
-          svgIconeMenu('prives') +
+          svgIconeMenuChip('prives') +
           '<span>' + tMenuOuDefaut('menuPrives', 'Private lessons') + '</span>' +
         '</button>' +
 
         '<button type="button" class="kbm-bouton kbm-entree-cachee" data-menu="contact">' +
-          svgIconeMenu('contact') +
+          svgIconeMenuChip('contact') +
           '<span>' + tMenuOuDefaut('menuContact', 'Contact') + '</span>' +
         '</button>' +
 
@@ -544,6 +597,7 @@ async function demarrerMenuPrincipal(idConteneur, callbacks) {
   brancher('[data-menu="professeur"]', callbacks.onModeProfesseur);
   brancher('[data-menu="prives"]', callbacks.onPrives);
   brancher('[data-menu="contact"]', callbacks.onContact);
+  brancher('[data-menu="retourAccueil"]', callbacks.onRetourAccueil);
 
   // ---------- "Ma fiche" ----------
   const btnFiche = document.getElementById('kbmBtnFiche');

@@ -518,11 +518,12 @@ async function demarrerMenuPrincipal(idConteneur, callbacks) {
     // .titre-accueil-img) plutôt que l'ancienne image d'écran-titre.
     // Nom simplifié, cohérent sur tout le site.
     '<img class="kbm-titre-img" src="images/accueil/page_titre_02.webp" width="1376" height="768" alt="Les Bonomes">' +
-    // 🆕 (demande de Raphaël) Flèche discrète, coin supérieur droit du
-    // bloc menu — ramène à l'écran d'accueil (personnages Keb/Bek), pour
-    // qu'un élève puisse retourner y survoler/toucher les personnages
-    // plusieurs fois (succès secrets) sans devoir tout recharger la
-    // page. Rendue seulement si la page hôte fournit onRetourAccueil —
+    // 🆕 (demande de Raphaël) Flèche discrète, coin supérieur GAUCHE de
+    // l'écran entier (position: fixed, voir .kbm-retour dans le CSS) —
+    // ramène à l'écran d'accueil (personnages Keb/Bek), pour qu'un élève
+    // puisse retourner y survoler/toucher les personnages plusieurs fois
+    // (succès secrets) sans devoir tout recharger la page. Rendue
+    // seulement si la page hôte fournit onRetourAccueil —
     // même patron que le bouton "Mode professeur" plus bas (optionnel,
     // jamais un bouton mort si le callback manque). Ne relance JAMAIS le
     // choix de langue ni le bloc Connexion/Première leçon : c'est la

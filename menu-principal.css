@@ -12,25 +12,60 @@
 /* 🆕 #menuPrincipal (le conteneur passé à demarrerMenuPrincipal) est un
    simple <div> dans index.html, sans layout propre — .scene le centre
    comme item flex, mais le titre + .kbm-carte à l'intérieur de LUI ont
-   besoin de leur propre empilement vertical centré. */
+   besoin de leur propre empilement vertical centré. position: relative
+   sert d'ancre à .kbm-retour (coin supérieur droit, voir plus bas). */
 #menuPrincipal {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 18px;
 }
 
+/* 🆕 (demande de Raphaël) Logo "Les Bonomes" — même fichier que l'en-tête
+   permanent de l'écran d'accueil (page_titre_02, voir .titre-accueil-img
+   dans index.html), remplace l'ancienne image d'écran-titre carrée.
+   Canevas 1376×768 (large) : largeur adaptée en conséquence, plus grande
+   en px qu'avant pour garder un poids visuel comparable. */
 .kbm-titre-img {
-  /* 🆕 Même compensation que .ecran-titre-img dans index.html : le
-     fichier recadré plus serré n'a presque plus de marge interne, donc
-     la largeur déclarée diminue légèrement pour garder le même poids
-     visuel relatif au-dessus de la carte du menu. */
-  width: min(38vw, 175px);
+  width: min(55vw, 230px);
   height: auto;
 }
 
 @media (max-width: 460px) {
-  .kbm-titre-img { width: min(48vw, 145px); }
+  .kbm-titre-img { width: min(65vw, 190px); }
+}
+
+/* 🆕 (demande de Raphaël) Flèche "retour à l'accueil" — coin supérieur
+   droit du bloc menu, volontairement discrète (verre dépoli, pas de
+   couleur de marque) pour ne jamais concurrencer "Ma fiche"/"Histoires
+   et leçons". Position absolute ancrée sur #menuPrincipal (voir plus
+   haut) plutôt que sur .kbm-carte : reste alignée sur le logo, au-dessus
+   de la carte, jamais collée dans un coin de la carte elle-même. */
+.kbm-retour {
+  position: absolute;
+  top: 2px;
+  right: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 1.5px solid var(--peche);
+  background: rgba(255, 255, 255, 0.6);
+  color: var(--peche-fonce);
+  cursor: pointer;
+  box-shadow: 2px 2px 8px var(--ombre);
+  transition: transform 0.2s cubic-bezier(.34,1.6,.4,1), background 0.15s ease;
+}
+.kbm-retour .kbm-icone { width: 17px; height: 17px; stroke: var(--peche-fonce); }
+.kbm-retour:hover { background: #FFFFFF; transform: translateX(-2px); }
+.kbm-retour:active { transform: translateX(-2px) scale(0.92); }
+
+@media (max-width: 460px) {
+  .kbm-retour { top: 0; right: 6px; width: 34px; height: 34px; }
+  .kbm-retour .kbm-icone { width: 15px; height: 15px; }
 }
 
 .kbm-carte {
@@ -70,6 +105,23 @@
   transform: translateY(8px);
 }
 
+/* ==================================================================
+   🆕 (demande de Raphaël) Boutons du menu, refonte "plus mignons, plus
+   interactifs, en 3D" :
+     1. Chaque bouton porte un "rebord" plein en bas (box-shadow décalée
+        SANS flou) qui lui donne un vrai relief — au clic, le bouton
+        s'enfonce visuellement (translateY + le rebord disparaît sous
+        lui), comme un vrai bouton qu'on presse, pas juste un
+        changement de fond au survol.
+     2. Chaque icône vit maintenant dans un médaillon rond (voir
+        .kbm-icone-chip plus bas) plutôt que seule sur fond uni — plus
+        de caractère, plus facile à repérer d'un coup d'œil.
+     3. Le survol fait légèrement pivoter/glisser l'icône dans son
+        médaillon (micro-interaction), en plus du bouton qui se
+        soulève.
+   Reste dans la même famille de couleurs (beige/brun/pêche) que le
+   reste du site — "mieux intégré" prime sur "plus de couleurs".
+   ================================================================== */
 .kbm-bouton {
   position: relative;
   display: flex;
@@ -81,40 +133,74 @@
   font-size: 0.92rem;
   border: 1.5px solid var(--peche);
   border-radius: 999px;
-  padding: 12px 16px;
+  padding: 11px 16px 11px 9px;
   background: var(--fond);
   color: var(--brun-fonce, var(--brun));
   cursor: pointer;
   text-align: left;
+  box-shadow: 0 3px 0 0 var(--peche), 2px 4px 10px var(--ombre);
 }
 
-.kbm-bouton:hover { background: var(--peche-pale, rgba(240, 169, 139, 0.16)); }
-.kbm-bouton:active { transform: scale(0.97); }
+.kbm-bouton:hover {
+  background: var(--peche-pale, rgba(240, 169, 139, 0.16));
+  transform: translateY(-1px);
+  box-shadow: 0 4px 0 0 var(--peche), 3px 5px 12px var(--ombre);
+}
+
+.kbm-bouton:active {
+  transform: translateY(3px);
+  box-shadow: 0 0 0 0 var(--peche), 1px 1px 4px var(--ombre);
+}
+
+/* Médaillon rond derrière l'icône — pêche pâle "vif" (plus saturé que
+   .kbm-icone-chip au repos partout ailleurs sur le site, pour que
+   l'icône se détache bien du fond blanc de la carte). Une légère ombre
+   intérieure lui donne un soupçon de profondeur, cohérent avec le reste
+   "3D" de cette refonte sans devenir un effet lourd. */
+.kbm-icone-chip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--peche-pale-vif, rgba(240, 169, 139, 0.30));
+  box-shadow: inset 0 1px 2px rgba(74, 59, 51, 0.12);
+  transition: transform 0.18s cubic-bezier(.34,1.6,.4,1), background 0.15s ease;
+}
+
+.kbm-bouton:hover .kbm-icone-chip { transform: rotate(-8deg) scale(1.06); }
+.kbm-bouton:active .kbm-icone-chip { transform: rotate(0) scale(0.94); }
 
 .kbm-icone {
-  width: 22px;
-  height: 22px;
+  width: 18px;
+  height: 18px;
   flex-shrink: 0;
   stroke: var(--peche-fonce);
   fill: none;
   stroke-width: 2;
   stroke-linecap: round;
   stroke-linejoin: round;
-  transition: transform 0.16s ease;
 }
-
-.kbm-bouton:hover .kbm-icone { transform: translateX(1.5px); }
 
 /* "Bravo & récompenses" — pas encore prêt : en retrait, jamais un bouton
    pleinement actif (évite l'effet "je clique, rien de crédible ne se
-   passe") — même intention que .a-venir dans l'ancien menu. */
+   passe") — même intention que .a-venir dans l'ancien menu. Pas de
+   rebord/relief ici (voir .kbm-bouton plus haut) : un bouton à plat,
+   sans 3D, lit tout de suite comme "pas encore cliquable". */
 .kbm-a-venir {
   opacity: 0.55;
   cursor: default;
+  box-shadow: none;
 }
-.kbm-a-venir:hover { background: var(--fond); }
-.kbm-a-venir:hover .kbm-icone { transform: none; }
-.kbm-a-venir:active { transform: none; }
+.kbm-a-venir:hover {
+  background: var(--fond);
+  transform: none;
+  box-shadow: none;
+}
+.kbm-a-venir:hover .kbm-icone-chip { transform: none; }
+.kbm-a-venir:active { transform: none; box-shadow: none; }
 
 .kbm-badge {
   margin-left: auto;
@@ -131,15 +217,27 @@
 }
 
 /* "Ma fiche" — bouton pêche plein, se distingue des autres entrées
-   (même intention que .ma-fiche dans l'ancien menu, ombre adoucie). */
+   (même intention que .ma-fiche dans l'ancien menu). Même relief 3D que
+   les autres boutons (voir .kbm-bouton), mais avec un rebord plus foncé
+   (var(--brun-fonce) en dessous d'un fond pêche foncé, plutôt que
+   pêche-sur-pêche qui aurait manqué de contraste) et un médaillon
+   d'icône blanc translucide plutôt que pêche pâle, pour bien se
+   détacher du fond déjà saturé du bouton. */
 .kbm-ma-fiche {
   background: var(--peche-fonce);
   color: #FFFFFF;
   border-color: var(--peche-fonce);
-  box-shadow: 4px 4px 14px var(--ombre, rgba(102, 80, 69, 0.16));
+  box-shadow: 0 3px 0 0 var(--brun-fonce, #4A3B33), 4px 4px 14px var(--ombre, rgba(102, 80, 69, 0.16));
 }
+.kbm-ma-fiche:hover {
+  background: #d97c5c;
+  box-shadow: 0 4px 0 0 var(--brun-fonce, #4A3B33), 5px 5px 16px var(--ombre, rgba(102, 80, 69, 0.16));
+}
+.kbm-ma-fiche:active {
+  box-shadow: 0 0 0 0 var(--brun-fonce, #4A3B33), 1px 1px 4px var(--ombre, rgba(102, 80, 69, 0.16));
+}
+.kbm-ma-fiche .kbm-icone-chip { background: rgba(255, 255, 255, 0.24); box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1); }
 .kbm-ma-fiche .kbm-icone { stroke: #FFFFFF; }
-.kbm-ma-fiche:hover { background: #d97c5c; }
 
 .kbm-chevron {
   margin-left: auto;
@@ -210,5 +308,7 @@
 @media (max-width: 460px) {
   .kbm-carte { padding: 16px 14px 14px; border-radius: 22px; }
   .kbm-salutation { font-size: 1.05rem; }
-  .kbm-bouton { font-size: 0.86rem; padding: 11px 14px; }
+  .kbm-bouton { font-size: 0.86rem; padding: 10px 14px 10px 8px; }
+  .kbm-icone-chip { width: 30px; height: 30px; }
+  .kbm-icone { width: 16px; height: 16px; }
 }

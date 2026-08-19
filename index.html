@@ -1773,18 +1773,22 @@
       // affichage).
       onModeProfesseur: function () { allerAuModeProfesseur(); },
       // 🆕 (demande de Raphaël) Flèche "retour à l'accueil" du menu —
-      // ramène aux personnages Keb/Bek sans relancer le choix de langue
-      // ni le bloc Connexion/Première leçon (afficherConnexionChoix()
-      // n'est PAS appelée ici) : un élève déjà connecté ne doit jamais
-      // revoir cet écran, seulement pouvoir survoler/toucher Keb et Bek
-      // (succès secrets). Chemin inverse exact de allerAuMenuPrincipal
-      // ci-dessus, en plus léger (pas de restauration de session à
-      // refaire, l'élève ne quitte jamais réellement le menu au sens
-      // Supabase, juste son affichage).
+      // ramène aux personnages Keb/Bek. Ne relance PAS le choix de
+      // langue (ouvrirChoixLangueForce() n'est pas appelée), mais DOIT
+      // réafficher le bloc Connexion/Première leçon via
+      // afficherConnexionChoix() : sans lui, le bloc reste invisible
+      // (classe "visible" jamais réajoutée) et l'élève se retrouve
+      // coincé sur l'écran Keb/Bek sans aucun bouton pour repartir.
+      // 🐛 CORRIGÉ (bug remonté par Raphaël) : le premier jet de ce
+      // callback omettait cet appel — même correctif que les deux
+      // autres retours vers sceneRangee plus bas dans ce fichier
+      // (allerAuMenuPrincipal → onQuitter, demarrerIdentiteSiPremiereFois
+      // → onQuitter), qui, eux, l'appelaient déjà correctement.
       onRetourAccueil: function () {
         document.getElementById('menuPrincipal').style.display = 'none';
         sceneRangee.style.display = '';
         lienCoursPrives.style.display = '';
+        afficherConnexionChoix();
       }
     });
   }

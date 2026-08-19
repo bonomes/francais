@@ -12,8 +12,9 @@
 /* 🆕 #menuPrincipal (le conteneur passé à demarrerMenuPrincipal) est un
    simple <div> dans index.html, sans layout propre — .scene le centre
    comme item flex, mais le titre + .kbm-carte à l'intérieur de LUI ont
-   besoin de leur propre empilement vertical centré. position: relative
-   sert d'ancre à .kbm-retour (coin supérieur droit, voir plus bas). */
+   besoin de leur propre empilement vertical centré. (position: relative
+   n'est plus nécessaire pour .kbm-retour, désormais position: fixed sur
+   l'écran entier — voir plus bas — mais reste inoffensif ici.) */
 #menuPrincipal {
   position: relative;
   display: flex;
@@ -50,10 +51,17 @@
    et leçons". Position absolute ancrée sur #menuPrincipal (voir plus
    haut) plutôt que sur .kbm-carte : reste alignée sur le logo, au-dessus
    de la carte, jamais collée dans un coin de la carte elle-même. */
+/* 🆕 (retour Raphaël, 2ᵉ passe) : ancrée sur #menuPrincipal, la flèche
+   suivait le bloc menu et atterrissait à côté du logo — bizarre, et pas
+   le repère habituel du site. Repositionnée en position: fixed, coin
+   supérieur gauche de l'ÉCRAN ENTIER, même patron que .iden-btn-quitter
+   (identite-eleve.css) : un "retour"/"quitter" se cherche toujours dans
+   ce coin sur le reste du site, jamais à côté d'un titre. */
 .kbm-retour {
-  position: absolute;
-  top: 2px;
-  right: 4px;
+  position: fixed;
+  top: 14px;
+  left: 14px;
+  z-index: 30;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -72,7 +80,7 @@
 .kbm-retour:active { transform: translateX(-2px) scale(0.92); }
 
 @media (max-width: 460px) {
-  .kbm-retour { top: 0; right: 6px; width: 34px; height: 34px; }
+  .kbm-retour { top: 12px; left: 12px; width: 34px; height: 34px; }
   .kbm-retour .kbm-icone { width: 15px; height: 15px; }
 }
 

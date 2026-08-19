@@ -94,31 +94,40 @@
   }
 
   html {
-    /* 🆕 (retour Raphaël, suggestion inspirée d'une maquette Gemini) Le
-       fond se limitait jusqu'ici à quelques pastilles pêche (règle
-       "5–10% du vide" — commentaire ci-dessous) ; jugé trop vide une
-       fois le menu principal vu en vrai. Ajout d'une texture de doodles
-       (crayon, livre ouvert, globe, feuille — vocabulaire "apprendre
-       les langues") en display: repeat, MÊME esprit très discret que
-       les pastilles (trait fin, brun à 6.5% d'opacité, aucune couleur
-       de marque) plutôt qu'un fond illustré chargé façon maquette de
-       référence — qui aurait fait concurrence aux vraies illustrations
-       de Keb/Bek. SVG en base64 (pas de fichier à charger séparément,
-       cohérent avec les radial-gradient déjà en pur CSS ci-dessous).
-       Les deux motifs (doodles + pastilles) cohabitent en couches
-       background-image successives sur le même élément. */
+    /* 🆕 (retour Raphaël) Fond texturé — remplace les deux tentatives
+       SVG faites à la main (doodles en mosaïque + fleur-de-lys) par
+       l'image fournie par Raphaël (images/fond/filigrane-fond.webp,
+       fond transparent) : doodles ET fleur-de-lys y sont déjà composés
+       ensemble, bien dessinés, pas besoin de les recréer en CSS. Une
+       seule couche, ancrée en bas à droite (comme la fleur-de-lys
+       maison avant elle), non répétée — la composition entière (doodles
+       à gauche, fleur-de-lys à droite) est pensée comme un seul bloc,
+       pas un motif à semer. Couleurs déjà très pâles DANS le fichier
+       lui-même (pas de transparence CSS à ajouter par-dessus). Les
+       pastilles pêche (radial-gradient) sont conservées en dessous,
+       elles occupent le reste de l'écran que l'image ne couvre pas. */
     background-color: var(--fond);
     background-image:
-      url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPSczODAnIGhlaWdodD0nMzgwJyB2aWV3Qm94PScwIDAgMzgwIDM4MCc+CjxnIGZpbGw9J25vbmUnIHN0cm9rZT0ncmdiYSg3NCw1OSw1MSwwLjA2NSknIHN0cm9rZS13aWR0aD0nMicgc3Ryb2tlLWxpbmVjYXA9J3JvdW5kJyBzdHJva2UtbGluZWpvaW49J3JvdW5kJz4KICA8ZyB0cmFuc2Zvcm09J3RyYW5zbGF0ZSg0Niw1NCkgcm90YXRlKDQ1KSc+CiAgICA8cmVjdCB4PSctNicgeT0nLTQwJyB3aWR0aD0nMTInIGhlaWdodD0nNTInIHJ4PSczJy8+CiAgICA8cG9seWdvbiBwb2ludHM9Jy02LDEyIDYsMTIgMCwyNycvPgogICAgPGxpbmUgeDE9Jy02JyB5MT0nLTYnIHgyPSc2JyB5Mj0nLTYnLz4KICA8L2c+CiAgPGcgdHJhbnNmb3JtPSd0cmFuc2xhdGUoODQsMjgyKSc+CiAgICA8cGF0aCBkPSdNMCwwIFEyMSwtMTEgNDIsMCBMNDIsMjUgUTIxLDE0IDAsMjUgWicvPgogICAgPHBhdGggZD0nTTQyLDAgUTYzLC0xMSA4NCwwIEw4NCwyNSBRNjMsMTQgNDIsMjUgWicvPgogICAgPGxpbmUgeDE9JzQyJyB5MT0nMicgeDI9JzQyJyB5Mj0nMjMnLz4KICA8L2c+CiAgPGcgdHJhbnNmb3JtPSd0cmFuc2xhdGUoMzAyLDY2KSc+CiAgICA8Y2lyY2xlIHI9JzIzJy8+CiAgICA8ZWxsaXBzZSByeD0nOS41JyByeT0nMjMnLz4KICAgIDxsaW5lIHgxPSctMjMnIHkxPScwJyB4Mj0nMjMnIHkyPScwJy8+CiAgICA8bGluZSB4MT0nLTE5JyB5MT0nLTExJyB4Mj0nMTknIHkyPSctMTEnLz4KICAgIDxsaW5lIHgxPSctMTknIHkxPScxMScgeDI9JzE5JyB5Mj0nMTEnLz4KICA8L2c+CiAgPGcgdHJhbnNmb3JtPSd0cmFuc2xhdGUoMzEyLDMwOCkgcm90YXRlKDEyKSc+CiAgICA8cGF0aCBkPSdNMCw0IFExNiwtMjQgMzgsLTEzIFEyMiw3IDAsNCBaJy8+CiAgICA8bGluZSB4MT0nMicgeTE9JzInIHgyPSczNCcgeTI9Jy0xMicvPgogIDwvZz4KICA8ZyB0cmFuc2Zvcm09J3RyYW5zbGF0ZSgxOTAsMTkwKSByb3RhdGUoLTE4KSc+CiAgICA8cmVjdCB4PSctNScgeT0nLTMwJyB3aWR0aD0nMTAnIGhlaWdodD0nNDAnIHJ4PSczJy8+CiAgICA8cG9seWdvbiBwb2ludHM9Jy01LDEwIDUsMTAgMCwyMicvPgogIDwvZz4KPC9nPgo8L3N2Zz4="),
+      url("images/fond/filigrane-fond.webp"),
       radial-gradient(circle at 8% 14%, rgba(224,136,103,0.12) 0 3px, transparent 3px),
       radial-gradient(circle at 88% 18%, rgba(224,136,103,0.10) 0 4px, transparent 4px),
       radial-gradient(circle at 16% 82%, rgba(224,136,103,0.10) 0 3px, transparent 3px),
       radial-gradient(circle at 93% 78%, rgba(224,136,103,0.11) 0 3px, transparent 3px),
       radial-gradient(circle at 50% 94%, rgba(224,136,103,0.08) 0 3px, transparent 3px),
       radial-gradient(circle at 60% 6%, rgba(224,136,103,0.08) 0 3px, transparent 3px);
-    background-repeat: repeat, no-repeat, no-repeat, no-repeat, no-repeat, no-repeat, no-repeat;
-    background-size: 340px 340px, auto, auto, auto, auto, auto, auto;
+    background-repeat: no-repeat, no-repeat, no-repeat, no-repeat, no-repeat, no-repeat, no-repeat;
+    background-position: right bottom, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0;
+    background-size: min(1326px, 92vw) auto, auto, auto, auto, auto, auto, auto;
     background-attachment: fixed;
+  }
+
+  @media (max-width: 700px) {
+    /* 🆕 Sous 700px, l'image (pensée pour un écran large : doodles à
+       gauche + fleur-de-lys à droite) n'a plus la place de se déployer
+       sans recouvrir le contenu central — réduite, seule la pointe de
+       la fleur-de-lys reste visible en bas à droite, dans le même
+       esprit que l'ancienne version SVG sur mobile. */
+    html { background-size: 620px auto, auto, auto, auto, auto, auto, auto; }
   }
 
   body {

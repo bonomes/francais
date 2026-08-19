@@ -27,13 +27,21 @@
    dans index.html), remplace l'ancienne image d'écran-titre carrée.
    Canevas 1376×768 (large) : largeur adaptée en conséquence, plus grande
    en px qu'avant pour garder un poids visuel comparable. */
+/* 🆕 (retour Raphaël) Logo agrandi — l'ancienne taille (230px) semblait
+   trop petite alors qu'il restait beaucoup d'espace vide au-dessus,
+   #menuPrincipal étant centré verticalement dans .scene. Le
+   margin-bottom négatif compense l'accroissement de hauteur de l'image
+   (environ +50px à cette nouvelle taille) : la carte en dessous garde
+   exactement la même position qu'avant, seul le logo grandit visuellement
+   vers le haut, dans l'espace déjà disponible. */
 .kbm-titre-img {
-  width: min(55vw, 230px);
+  width: min(72vw, 320px);
   height: auto;
+  margin-bottom: -46px;
 }
 
 @media (max-width: 460px) {
-  .kbm-titre-img { width: min(65vw, 190px); }
+  .kbm-titre-img { width: min(80vw, 250px); margin-bottom: -34px; }
 }
 
 /* 🆕 (demande de Raphaël) Flèche "retour à l'accueil" — coin supérieur

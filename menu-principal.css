@@ -35,14 +35,22 @@
    (environ +50px à cette nouvelle taille) : la carte en dessous garde
    exactement la même position qu'avant, seul le logo grandit visuellement
    vers le haut, dans l'espace déjà disponible. */
+/* 🆕 (retour Raphaël, 2ᵉ passe) Logo encore agrandi — la première passe
+   (320px, entièrement compensée par margin-bottom) corrigeait juste une
+   taille "trop petite", mais Raphaël veut maintenant que le logo occupe
+   franchement plus de place en haut, pas seulement combler le vide en
+   gardant la carte parfaitement immobile. margin-bottom reste négatif
+   mais NE compense plus qu'en partie l'accroissement de hauteur : la
+   carte descend donc un peu (normal, voulu), tout en restant visible
+   sans défilement sur un écran standard. */
 .kbm-titre-img {
-  width: min(72vw, 320px);
+  width: min(88vw, 420px);
   height: auto;
-  margin-bottom: -46px;
+  margin-bottom: -30px;
 }
 
 @media (max-width: 460px) {
-  .kbm-titre-img { width: min(80vw, 250px); margin-bottom: -34px; }
+  .kbm-titre-img { width: min(88vw, 300px); margin-bottom: -20px; }
 }
 
 /* 🆕 (demande de Raphaël) Flèche "retour à l'accueil" — coin supérieur

@@ -92,22 +92,33 @@
   .kbm-retour .kbm-icone { width: 15px; height: 15px; }
 }
 
+/* 🆕 (retour Raphaël, 3ᵉ passe) Encadré blanc supprimé — la carte n'est
+   plus qu'un conteneur invisible (mise en page seulement), le fond
+   texturé de la page (doodles + pastilles, voir index.html) devient la
+   seule toile de fond du menu, comme sur la maquette Gemini. Le padding
+   est conservé : il continue à donner de l'air autour des boutons même
+   sans bordure visible, pour ne pas qu'ils touchent le bord de l'écran.
+   ⚠️ Contrepartie gérée plus bas : les boutons passaient de var(--fond)
+   (identique au fond de la carte blanche, donc invisibles sur eux-mêmes
+   mais bien visibles PAR CONTRASTE avec le blanc de la carte) à un fond
+   blanc/quasi-blanc — sinon, sans la carte blanche derrière eux, ils se
+   fondraient presque dans le fond beige de la page. */
 .kbm-carte {
   width: min(90vw, 340px);
-  background: #FFFFFF;
-  border-radius: 26px;
-  border: 2px solid var(--peche);
   padding: 20px 18px 16px;
-  box-shadow: 8px 8px 26px var(--ombre, rgba(102, 80, 69, 0.16));
   display: flex;
   flex-direction: column;
   gap: 14px;
   font-family: 'Baloo 2', sans-serif;
 }
 
+/* 🆕 (retour Raphaël) "Bienvenue !" agrandi — sans l'encadré blanc pour
+   le contenir, un texte de la même taille qu'avant se perdait un peu
+   dans le fond texturé ; en plus gros, il fait vraiment office de titre
+   de section, à l'image de la maquette de référence. */
 .kbm-salutation {
   font-weight: 700;
-  font-size: 1.15rem;
+  font-size: 1.55rem;
   color: var(--brun-fonce, var(--brun));
   text-align: center;
   padding: 0 4px;
@@ -158,7 +169,11 @@
   border: 1.5px solid var(--peche);
   border-radius: 999px;
   padding: 11px 16px 11px 9px;
-  background: var(--fond);
+  /* 🆕 var(--fond) → #FFFFFF : sur l'ancienne carte blanche, un bouton
+     de la couleur du fond de PAGE se détachait déjà par contraste avec
+     le blanc de la carte. Sans carte, il lui faut son propre contraste
+     contre le fond texturé de la page — d'où le blanc. */
+  background: #FFFFFF;
   color: var(--brun-fonce, var(--brun));
   cursor: pointer;
   text-align: left;
@@ -219,7 +234,10 @@
   box-shadow: none;
 }
 .kbm-a-venir:hover {
-  background: var(--fond);
+  /* 🆕 var(--fond) → #FFFFFF : reste identique au repos (voir .kbm-bouton
+     ci-dessus), pour que ce bouton continue à ne RIEN faire au survol —
+     c'est justement le message voulu ("pas encore cliquable"). */
+  background: #FFFFFF;
   transform: none;
   box-shadow: none;
 }
@@ -330,8 +348,8 @@
 .kbm-fiche-btn-discret { border: 1.5px solid var(--brun-clair, #8A7364); background: none; color: var(--brun-clair, #8A7364); }
 
 @media (max-width: 460px) {
-  .kbm-carte { padding: 16px 14px 14px; border-radius: 22px; }
-  .kbm-salutation { font-size: 1.05rem; }
+  .kbm-carte { padding: 16px 14px 14px; }
+  .kbm-salutation { font-size: 1.3rem; }
   .kbm-bouton { font-size: 0.86rem; padding: 10px 14px 10px 8px; }
   .kbm-icone-chip { width: 30px; height: 30px; }
   .kbm-icone { width: 16px; height: 16px; }

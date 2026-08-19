@@ -159,12 +159,12 @@
   }
 
   .ecran-titre-img {
-    /* 🆕 (demande de Raphaël) Nouvelle image page_titre_01 : canevas
-       1376×768, bien plus large que haut (l'ancien 509×489 était quasi
-       carré). Largeur augmentée en conséquence pour garder un poids
-       visuel/une hauteur affichée comparable à l'ancienne bulle, plutôt
-       que de soudain paraître écrasée. */
-    width: min(80vw, 420px);
+    /* 🆕 (retour Raphaël) Trop petite à min(80vw, 420px) sur ordinateur —
+       l'image doit occuper l'essentiel de l'écran à ce moment précis
+       (c'est tout ce qu'il y a à voir). Plafond très relevé sur grand
+       écran ; vw reste le frein naturel sur petit écran (voir media
+       query plus bas pour le plafond mobile, inchangé). */
+    width: min(70vw, 900px);
     height: auto;
     transition: transform 0.5s cubic-bezier(.25, .8, .3, 1.6), opacity 0.4s ease;
   }
@@ -394,24 +394,29 @@
     gap: 10px;
   }
 
-  /* Boutons pilules "engageants" : icône + libellé traduit (voir
-     DICO_PREMIERE_LECON/DICO_SE_RECONNECTER en JS plus bas, mis à jour
-     au choix de langue par rafraichirConnexionBoutons()). Comme les
-     anciens boutons Oui/Non, c'est un habillage d'interface à traduire,
-     pas du vocabulaire français à exposer. */
+  /* Boutons pilules "engageants" : libellé traduit seul, sans icône
+     (voir DICO_PREMIERE_LECON/DICO_SE_RECONNECTER en JS plus bas, mis à
+     jour au choix de langue par rafraichirConnexionBoutons()) — retour
+     de Raphaël : pas d'émoticônes. white-space: nowrap + flex-shrink: 0
+     empêchent le libellé de retomber sur deux lignes quand le texte
+     traduit est plus long (ex. "Première leçon") : le bouton s'élargit
+     plutôt que de casser le texte. Comme les anciens boutons Oui/Non,
+     c'est un habillage d'interface à traduire, pas du vocabulaire
+     français à exposer. */
   .cc-bouton {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 10px;
     font-family: 'Baloo 2', sans-serif;
     font-weight: 700;
     font-size: 1.02rem;
     letter-spacing: 0.01em;
-    padding: 14px 28px;
+    padding: 14px 32px;
     border-radius: 999px;
     border: none;
     cursor: pointer;
+    white-space: nowrap;
+    flex-shrink: 0;
     box-shadow: 4px 4px 14px var(--ombre), inset 0 1px 0 rgba(255,255,255,0.5);
     transition: transform 0.2s cubic-bezier(.34,1.6,.4,1), box-shadow 0.2s ease, filter 0.2s ease;
   }
@@ -421,11 +426,6 @@
     transform: translateY(-2px) scale(1.03);
     box-shadow: 6px 6px 20px var(--ombre), inset 0 1px 0 rgba(255,255,255,0.6);
     filter: brightness(1.05);
-  }
-
-  .cc-icone {
-    font-size: 1.15em;
-    line-height: 1;
   }
 
   /* "Première leçon" — appel à l'action principal, couleur de marque
@@ -915,7 +915,7 @@
       <h1 class="titre-accueil" aria-label="Les Bonomes">
         <img class="titre-accueil-img" src="images/accueil/page_titre_02.webp" width="1376" height="768" alt="">
       </h1>
-      <p class="signature-accueil">Parler • jouer • découvrir</p>
+      <p class="signature-accueil">Cours de français</p>
     </div>
     <div class="personnages-groupe">
       <div class="personnages" id="personnages">
@@ -972,11 +972,9 @@
       <div class="connexion-choix" id="connexionChoix">
         <div class="cc-boutons">
           <button class="cc-bouton cc-premiere-lecon" id="btnPremiereLeconIndex" type="button" data-cible="lecon">
-            <span class="cc-icone" aria-hidden="true">🚀</span>
             <span id="ccPremiereLeconTexte">First lesson</span>
           </button>
           <button class="cc-bouton cc-connexion" id="btnConnexionIndex" type="button" data-cible="connexion">
-            <span class="cc-icone" aria-hidden="true">🔑</span>
             <span id="ccConnexionTexte">Log in</span>
           </button>
         </div>

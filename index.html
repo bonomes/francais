@@ -134,6 +134,12 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    background: transparent; /* 🐛 CORRIGÉ : body héritait d'un fond opaque
+       (var(--fond)) via la règle groupée "html, body" plus haut, et
+       recouvrait entièrement le fond texturé (filigrane_fond.webp)
+       posé sur html juste en dessous. L'image se chargeait bien
+       (visible sur GitHub) mais restait invisible à l'écran, cachée
+       par ce fond plein. */
   }
 
   /* ==================================================================

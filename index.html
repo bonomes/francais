@@ -118,7 +118,7 @@
   }
 
   /* ==================================================================
-     🆕 Écran-titre ("Le français avec les Bonomes") — demande de
+     Écran-titre ("Les Bonomes") — demande de
      Raphaël : la toute première chose vue en arrivant sur le site,
      avant même Keb/Bek. Superposé en position: fixed plutôt qu'inséré
      dans .scene : la scène en dessous se construit normalement, EN
@@ -159,13 +159,12 @@
   }
 
   .ecran-titre-img {
-    /* 🆕 Largeur réduite pour compenser le recadrage plus serré du
-       fichier (canevas 509×489, contenu à ~97% du canevas — avant, une
-       marge interne dans l'image elle-même donnait de facto une taille
-       affichée plus petite que la largeur déclarée ; cette marge n'existe
-       plus, donc la largeur déclarée doit diminuer pour garder le même
-       poids visuel qu'avant, plutôt que de soudain paraître plus gros). */
-    width: min(50vw, 260px);
+    /* 🆕 (demande de Raphaël) Nouvelle image page_titre_01 : canevas
+       1376×768, bien plus large que haut (l'ancien 509×489 était quasi
+       carré). Largeur augmentée en conséquence pour garder un poids
+       visuel/une hauteur affichée comparable à l'ancienne bulle, plutôt
+       que de soudain paraître écrasée. */
+    width: min(80vw, 420px);
     height: auto;
     transition: transform 0.5s cubic-bezier(.25, .8, .3, 1.6), opacity 0.4s ease;
   }
@@ -176,7 +175,7 @@
   }
 
   @media (max-width: 460px) {
-    .ecran-titre-img { width: min(60vw, 210px); }
+    .ecran-titre-img { width: min(85vw, 320px); }
   }
 
   .scene {
@@ -220,19 +219,20 @@
   }
 
   /* ==================================================================
-     🆕 En-tête de l'écran d'accueil (titre + signature pédagogique) —
-     conseil design : l'ancien #ecranTitre (voir plus haut) n'affiche
-     "Le français avec les Bonomes" que ~1600ms au tout premier chargement
-     puis "éclate" pour de bon — une fois disparu, plus aucune trace du
-     nom du cours sur la page elle-même, qui montrait alors directement
-     Keb/Bek sans contexte. Ce bloc-ci reste affiché en PERMANENCE sur
-     l'écran d'accueil (vit dans #sceneRangee, donc masqué/réaffiché avec
-     le reste de cet écran — jamais visible pendant la séquence identité
-     ou le menu principal, exactement comme .personnages-groupe).
-     Deux polices seulement (déjà chargées en tête de fichier, aucun
-     import ajouté) : Baloo 2 pour "Le français" (propre, lisible),
-     Chewy pour "avec les Bonomes" (ronde, enfantine) — même esprit que
-     la bulle "Bonjour !" plus bas, qui utilise déjà Chewy.
+     En-tête de l'écran d'accueil (titre + signature pédagogique) —
+     conseil design : l'ancien #ecranTitre (voir plus haut) n'affiche son
+     image que ~1600ms au tout premier chargement puis "éclate" pour de
+     bon — une fois disparu, plus aucune trace du nom du cours sur la
+     page elle-même, qui montrait alors directement Keb/Bek sans
+     contexte. Ce bloc-ci reste affiché en PERMANENCE sur l'écran
+     d'accueil (vit dans #sceneRangee, donc masqué/réaffiché avec le
+     reste de cet écran — jamais visible pendant la séquence identité ou
+     le menu principal, exactement comme .personnages-groupe).
+     🆕 (demande de Raphaël) .titre-accueil est maintenant l'image logo
+     "Les Bonomes" (page_titre_02, voir HTML) plutôt qu'un h1 en texte —
+     nom simplifié, jugé plus clair sans "avec les". Les deux polices
+     Baloo 2/Chewy restent chargées en tête de fichier pour la bulle
+     "Bonjour !" plus bas, qui les utilise toujours.
      ================================================================== */
   .entete-accueil {
     display: flex;
@@ -244,22 +244,16 @@
 
   .titre-accueil {
     margin: 0;
-    font-family: 'Baloo 2', sans-serif;
-    font-weight: 700;
-    font-size: clamp(1.5rem, 4.6vw, 2.5rem);
-    line-height: 1.1;
-    color: var(--brun-fonce);
-    letter-spacing: 0.01em;
+    line-height: 0; /* évite l'espace fantôme sous l'image inline par défaut */
   }
 
-  .titre-accueil-nom {
-    display: block;
-    margin-top: 2px;
-    font-family: 'Chewy', 'Baloo 2', sans-serif;
-    font-weight: 400;
-    font-size: clamp(1.45rem, 5.4vw, 2.4rem);
-    color: var(--peche-fonce);
-    letter-spacing: 0.01em;
+  .titre-accueil-img {
+    width: min(78vw, 380px);
+    height: auto;
+  }
+
+  @media (max-width: 460px) {
+    .titre-accueil-img { width: min(85vw, 300px); }
   }
 
   .signature-accueil {
@@ -280,7 +274,7 @@
        paraissaient un peu perdus dans l'espace disponible) — augmentation
        mesurée plutôt que les 20–30% suggérés, pour ne pas déséquilibrer
        la grille 1fr/auto/1fr de .personnages-groupe (qui doit encore
-       laisser assez de place à .premiere-fois à droite, voir plus bas) :
+       laisser assez de place à .connexion-choix à droite, voir plus bas) :
        à ajuster encore si Raphaël en veut davantage une fois vu en place. */
     width: min(64vw, 490px);
     aspect-ratio: 1 / 1;
@@ -303,25 +297,25 @@
   .personnages img.actif { opacity: 1; }
 
   /* ==================================================================
-     Groupe personnages + bloc "First time?" — voir la note sur
-     #premiereFois plus haut dans le HTML. Un simple conteneur flex pour
-     que le bloc reste toujours collé au bord droit des personnages, à
-     n'importe quelle largeur d'écran (plutôt qu'un positionnement
-     absolu qui aurait dû recalculer le bord droit réel de .personnages
-     à chaque taille de fenêtre).
+     Groupe personnages + bloc "Connexion / Première leçon" — voir la
+     note sur #connexionChoix plus haut dans le HTML. Un simple
+     conteneur flex pour que le bloc reste toujours collé au bord droit
+     des personnages, à n'importe quelle largeur d'écran (plutôt qu'un
+     positionnement absolu qui aurait dû recalculer le bord droit réel
+     de .personnages à chaque taille de fenêtre).
      ================================================================== */
 
   /* 🆕 (retour Raphaël) : en flex simple, .personnages-groupe centrait
-     la PAIRE {personnages + première-fois} sur la largeur disponible —
-     comme .personnages est bien plus large que .premiere-fois, le
+     la PAIRE {personnages + connexion-choix} sur la largeur disponible —
+     comme .personnages est bien plus large que .connexion-choix, le
      milieu de la paire tombait à gauche du vrai centre de l'écran, et
-     Keb & Bek semblaient décalés/débalancés (la case "Première fois ?"
-     collée contre eux n'aidait pas). Passage à une grille à 3 colonnes
+     Keb & Bek semblaient décalés/débalancés (le bloc collé contre eux
+     n'aidait pas). Passage à une grille à 3 colonnes
      symétriques (1fr / auto / 1fr) : la colonne centrale (personnages)
      est ainsi centrée sur la largeur RÉELLE de .scene-rangee, peu
-     importe la largeur de .premiere-fois — et la case peut être
-     poussée vers la droite (justify-self + margin-left, voir
-     .premiere-fois plus bas) sans jamais tirer les personnages de
+     importe la largeur de .connexion-choix — et le bloc peut être
+     poussé vers la droite (justify-self + margin-left, voir
+     .connexion-choix plus bas) sans jamais tirer les personnages de
      travers. Repasse en pile simple (une seule colonne) sous
      460px, voir media query plus bas — même comportement qu'avant
      sur petit écran. */
@@ -339,7 +333,7 @@
     justify-self: center;
   }
 
-  .personnages-groupe .premiere-fois {
+  .personnages-groupe .connexion-choix {
     grid-column: 3;
     justify-self: start;
     margin-left: clamp(4px, 3vw, 28px);
@@ -351,7 +345,7 @@
       justify-items: center;
     }
     .personnages-groupe .personnages,
-    .personnages-groupe .premiere-fois {
+    .personnages-groupe .connexion-choix {
       grid-column: 1;
       justify-self: center;
       margin-left: 0;
@@ -359,120 +353,97 @@
   }
 
   /* ==================================================================
-     Bloc "First time?" — remplace l'ancienne flèche "continuer" (v61).
-     Sur demande de Raphaël : au lieu d'un simple bouton neutre, on
-     demande explicitement si c'est la première visite, avec deux
-     réponses oui/non qui mènent chacune au menu principal (destination
-     encore à définir, voir JS). Même apparition différée/au choix de
-     langue que l'ancien bouton (classe .visible, voir JS
-     afficherPremiereFois()), même habillage visuel (verre dépoli,
-     bordure pêche) que le reste des contrôles de cette page.
+     🆕 Bloc "Connexion / Première leçon" — remplace l'ancien bloc
+     "First time? Oui/Non" (demande de Raphaël, session du 18-08-2026) :
+     au lieu de poser une question binaire, deux beaux boutons pilules,
+     mignons et engageants, disent directement ce qu'ils font. Apparaît
+     juste après le choix de langue (voir afficherConnexionChoix() en
+     JS) — pour un premier passage, ce choix vient d'être forcé en plein
+     écran (voir #selecteurLangue.forme-obligatoire) ; pour un retour,
+     ce bloc n'apparaît jamais, l'élève est envoyé direct au menu
+     principal (voir logique de démarrage tout en bas du script).
+     Même apparition en douceur (opacity/scale, classe .visible) que
+     l'ancien bloc, même esprit "verre dépoli" que le reste des
+     contrôles de cette page — mais chaque bouton porte maintenant sa
+     propre couleur (pêche pour "Première leçon", l'appel à l'action
+     principal ; vert doux pour "Connexion", l'option secondaire d'un
+     élève qui a déjà un compte), à la manière des deux pilules bien
+     distinctes demandées par Raphaël (voir capture d'écran fournie).
      ================================================================== */
-  .premiere-fois {
+  .connexion-choix {
     display: flex;
     flex-direction: column;
-    align-items: center;
-    gap: 10px;
+    align-items: stretch;
+    gap: 12px;
     flex-shrink: 0;
-    padding: 13px 20px;
-    border-radius: 20px;
-    /* 🆕 Habillage un peu plus discret (conseil design : ce bloc attirait
-       l'œil davantage que l'identité du cours elle-même) — même recette
-       visuelle (verre dépoli, bordure pêche) mais moins appuyée : bordure
-       plus fine/translucide et ombre réduite, pour rester au second plan
-       derrière le nouveau titre (.entete-accueil) et les personnages. */
-    background: linear-gradient(155deg, rgba(255,255,255,0.55), var(--peche-pale) 130%);
-    backdrop-filter: blur(9px) saturate(160%);
-    -webkit-backdrop-filter: blur(9px) saturate(160%);
-    border: 1.5px solid rgba(240, 169, 139, 0.65);
-    box-shadow: 4px 4px 14px var(--ombre), 0 0 0 3px var(--peche-pale), inset 0 1px 0 rgba(255,255,255,0.6);
     opacity: 0;
     transform: scale(0.75);
     pointer-events: none;
-    transition: opacity 0.35s ease, transform 0.4s cubic-bezier(.34,1.6,.4,1), box-shadow 0.25s ease;
+    transition: opacity 0.35s ease, transform 0.4s cubic-bezier(.34,1.6,.4,1);
   }
 
-  .premiere-fois.visible {
+  .connexion-choix.visible {
     opacity: 1;
     transform: scale(1);
     pointer-events: auto;
   }
 
-  .premiere-fois.visible:hover {
-    box-shadow: 6px 6px 18px var(--ombre), 0 0 0 5px var(--peche-pale-vif), inset 0 1px 0 rgba(255,255,255,0.7);
-  }
-
-  /* Libellé traduit via DICO_PREMIERE_FOIS (JS plus bas), même esprit
-     que DICO_COURS_PRIVES — mis à jour au choix de langue par
-     rafraichirPremiereFois(). Comme les boutons Oui/Non ci-dessous
-     (voir DICO_OUI/DICO_NON), c'est un habillage d'interface, pas un
-     mot de vocabulaire français à retenir : il suit donc la langue
-     choisie. */
-  .pf-question {
-    margin: 0;
-    font-family: 'Baloo 2', sans-serif;
-    font-weight: 700;
-    font-size: 0.88rem;
-    letter-spacing: 0.01em;
-    color: var(--brun-fonce);
-    text-align: center;
-    white-space: nowrap;
-  }
-
-  .pf-boutons {
+  .cc-boutons {
     display: flex;
+    flex-direction: column;
     gap: 10px;
   }
 
-  /* 🆕 (retour Raphaël) : libellés "Oui" / "Non" traduits dans la langue
-     de l'apprenant depuis cette session — CHANGEMENT de comportement,
-     voir DICO_OUI/DICO_NON en JS plus bas. Ils étaient jusqu'ici
-     volontairement laissés en français (comme la bulle "Bonjour !"),
-     dans une logique d'immersion ; Raphaël a demandé l'inverse. */
-  .pf-bouton {
+  /* Boutons pilules "engageants" : icône + libellé traduit (voir
+     DICO_PREMIERE_LECON/DICO_SE_RECONNECTER en JS plus bas, mis à jour
+     au choix de langue par rafraichirConnexionBoutons()). Comme les
+     anciens boutons Oui/Non, c'est un habillage d'interface à traduire,
+     pas du vocabulaire français à exposer. */
+  .cc-bouton {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
     font-family: 'Baloo 2', sans-serif;
     font-weight: 700;
-    font-size: 0.9rem;
-    padding: 8px 22px;
+    font-size: 1.02rem;
+    letter-spacing: 0.01em;
+    padding: 14px 28px;
     border-radius: 999px;
-    border: 1.5px solid var(--peche);
-    background: rgba(255, 255, 255, 0.75);
-    color: var(--brun);
-    cursor: pointer;
-    box-shadow: inset 0 1px 0 rgba(255,255,255,0.8);
-    transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
-  }
-
-  .pf-bouton:hover,
-  .pf-bouton:focus-visible {
-    background: var(--peche-fonce);
-    color: #fff;
-    transform: translateY(-1px) scale(1.04);
-    box-shadow: 4px 4px 14px var(--ombre);
-  }
-
-  /* 🆕 "Se reconnecter" — simple lien texte sous Oui/Non, jamais une
-     pilule pleine comme .pf-bouton (ne doit pas concurrencer la
-     question "First time?"). Même logique que .iden-lien-invite dans
-     identite-eleve.css. */
-  .lien-se-reconnecter {
-    display: block;
-    margin: 6px auto 0;
     border: none;
-    background: transparent;
-    font-family: 'Nunito', sans-serif;
-    font-weight: 700;
-    font-size: 0.72rem;
-    color: var(--brun);
-    text-decoration: underline;
-    text-underline-offset: 2px;
     cursor: pointer;
-    opacity: 0.75;
+    box-shadow: 4px 4px 14px var(--ombre), inset 0 1px 0 rgba(255,255,255,0.5);
+    transition: transform 0.2s cubic-bezier(.34,1.6,.4,1), box-shadow 0.2s ease, filter 0.2s ease;
   }
-  .lien-se-reconnecter:hover,
-  .lien-se-reconnecter:focus-visible {
-    opacity: 1;
-    color: var(--peche);
+
+  .cc-bouton:hover,
+  .cc-bouton:focus-visible {
+    transform: translateY(-2px) scale(1.03);
+    box-shadow: 6px 6px 20px var(--ombre), inset 0 1px 0 rgba(255,255,255,0.6);
+    filter: brightness(1.05);
+  }
+
+  .cc-icone {
+    font-size: 1.15em;
+    line-height: 1;
+  }
+
+  /* "Première leçon" — appel à l'action principal, couleur de marque
+     (--peche-fonce) pour rester dans la palette existante du site tout
+     en se détachant nettement de "Connexion". */
+  .cc-premiere-lecon {
+    background: linear-gradient(155deg, var(--peche-fonce), var(--peche));
+    color: #fff;
+  }
+
+  /* "Connexion" — option secondaire, verre dépoli + bordure pêche
+     (même recette que le reste des contrôles de cette page), pour ne
+     jamais concurrencer visuellement "Première leçon". */
+  .cc-connexion {
+    background: rgba(255, 255, 255, 0.72);
+    color: var(--brun-fonce);
+    border: 1.5px solid var(--peche);
+    box-shadow: 3px 3px 10px var(--ombre), inset 0 1px 0 rgba(255,255,255,0.7);
   }
 
   /* ==================================================================
@@ -702,22 +673,13 @@
     transform: translateY(-1px);
   }
 
-  /* ==================================================================
-     Radiance d'invitation — attire l'œil vers le sélecteur de langue
-     tant qu'aucun choix actif n'a été fait (classe .invite, retirée par
-     choisir() au premier vrai choix, voir JS). Anneau qui s'étend et
-     s'efface en boucle, superposé au box-shadow existant plutôt qu'à sa
-     place (d'où la 3ᵉ valeur ajoutée dans chaque état des keyframes).
-     ================================================================== */
-  .selecteur-langue.invite .sl-declencheur {
-    animation: radianceInvite 2s ease-out infinite;
-  }
-
-  @keyframes radianceInvite {
-    0%   { box-shadow: 6px 6px 20px var(--ombre), inset -1px 0 0 rgba(255,255,255,0.5), 0 0 0 0 rgba(240, 169, 139, 0.55); }
-    70%  { box-shadow: 6px 6px 20px var(--ombre), inset -1px 0 0 rgba(255,255,255,0.5), 0 0 0 14px rgba(240, 169, 139, 0); }
-    100% { box-shadow: 6px 6px 20px var(--ombre), inset -1px 0 0 rgba(255,255,255,0.5), 0 0 0 0 rgba(240, 169, 139, 0); }
-  }
+  /* 🗑️ (18-08-2026) Ex-radiance d'invitation (.invite/@keyframes
+     radianceInvite) retirée : elle attirait l'œil vers le sélecteur de
+     langue tant qu'aucun choix n'était fait, un besoin qui n'existe
+     plus — le choix de langue est désormais forcé en plein écran dès
+     la première visite (voir ouvrirChoixLangueForce() en JS), donc
+     personne ne voit jamais plus le déclencheur discret sans avoir
+     déjà choisi une langue. */
 
   .selecteur-langue.ouvert .sl-declencheur {
     background: var(--peche);
@@ -872,6 +834,44 @@
     pointer-events: auto;
   }
 
+  /* ==================================================================
+     🆕 Mode "choix de langue obligatoire" — première visite (aucune
+     langue enregistrée, voir la logique de démarrage tout en bas du
+     script). Le
+     panneau (déjà, à toutes les largeurs, un recouvrement centré plein
+     écran — voir .sl-panneau plus haut) est ouvert dès le chargement,
+     AVANT même que l'écran-titre "Les Bonomes" ne se
+     retire (z-index 500 pour l'écran-titre contre 20 pour ce panneau :
+     rien à séquencer en JS, le panneau attend simplement, déjà prêt,
+     sous l'écran-titre). Le déclencheur discret et son anneau de survol
+     élargi (utiles seulement APRÈS un premier choix, pour changer de
+     langue plus tard) sont masqués tant que ce choix n'a pas été fait —
+     rien d'autre à cliquer que les pastilles de langue elles-mêmes.
+     Se referme normalement (redevient un simple sélecteur discret,
+     recherche/Échap/clic extérieur compris) dès qu'un choix est posé,
+     voir choisir() en JS. */
+  .selecteur-langue.forme-obligatoire .sl-declencheur {
+    visibility: hidden;
+    pointer-events: none;
+  }
+
+  body:has(.selecteur-langue.forme-obligatoire) .zone-apercu-gauche {
+    display: none;
+  }
+
+  .selecteur-langue.forme-obligatoire .sl-panneau {
+    width: min(90vw, 380px);
+  }
+
+  .sl-titre-force {
+    margin: 2px 0 12px;
+    font-family: 'Chewy', 'Baloo 2', sans-serif;
+    font-weight: 400;
+    font-size: clamp(1.3rem, 5vw, 1.7rem);
+    color: var(--peche-fonce);
+    text-align: center;
+  }
+
   @media (max-width: 460px) {
     .personnages { width: min(70vw, 320px); }
   }
@@ -888,8 +888,14 @@
        #idenPersonnages dans identite-eleve.js). aria-hidden basculé à
        "true" au moment de la sortie (voir JS) : un lecteur d'écran ne
        doit plus s'y arrêter une fois qu'il a commencé à disparaître. -->
-  <div id="ecranTitre" role="button" tabindex="0" aria-label="Le français avec les Bonomes">
-    <img class="ecran-titre-img" src="images/accueil/index_bonomes_titre_01.webp" width="509" height="489" alt="Le français avec les Bonomes">
+  <div id="ecranTitre" role="button" tabindex="0" aria-label="Les Bonomes">
+    <!-- 🆕 (demande de Raphaël) Nouvelle image de la bulle d'accueil —
+         remplace l'ancienne composition "Le français avec les Bonomes"
+         (texte intégré à l'image) par le nouveau logo "Les Bonomes" tout
+         court, jugé plus clair. Canevas 1376×768 (rapport large, contenu
+         ~92%×84% du canevas) — voir .ecran-titre-img plus bas pour la
+         largeur ajustée en conséquence. -->
+    <img class="ecran-titre-img" src="images/accueil/page_titre_01.webp" width="1376" height="768" alt="Les Bonomes">
   </div>
 
   <div class="scene">
@@ -900,7 +906,15 @@
          le nom "Bonomes" évite une double lecture par un lecteur d'écran
          (le <h1> entier est déjà annoncé une fois). -->
     <div class="entete-accueil">
-      <h1 class="titre-accueil">Le français<span class="titre-accueil-nom">avec les Bonomes</span></h1>
+      <!-- 🆕 (demande de Raphaël) Remplace le h1 texte "Le français avec
+           les Bonomes" par le logo image "Les Bonomes" (page_titre_02) —
+           nom simplifié, jugé plus clair sans "avec les". Reste un <h1>
+           via aria-label pour ne rien perdre côté lecteur d'écran/SEO
+           (l'image seule, elle, garde un alt vide car décorative une fois
+           le titre porté par aria-label sur le conteneur). -->
+      <h1 class="titre-accueil" aria-label="Les Bonomes">
+        <img class="titre-accueil-img" src="images/accueil/page_titre_02.webp" width="1376" height="768" alt="">
+      </h1>
       <p class="signature-accueil">Parler • jouer • découvrir</p>
     </div>
     <div class="personnages-groupe">
@@ -909,64 +923,63 @@
         <img id="imgGauche" src="images/accueil/index_bonomes_keb_bek_presentent-gauche_01.webp" alt="Keb et Bek regardant vers le sélecteur de langue">
         <img id="imgSaluent" src="images/accueil/index_bonomes_keb_bek_saluent_01.webp" alt="Keb et Bek qui saluent en disant Bonjour">
         <img id="imgClique" src="images/accueil/index_bonomes_keb_bek_clique-ici_01.webp" alt="Keb et Bek qui montrent une case précise à cliquer">
-        <!-- 🆕 Images du bloc "First time?" (voir plus bas) : Keb & Bek qui
-             souhaitent la bienvenue (survol du bouton "Oui") et Keb & Bek
-             déjà équipés — vêtements colorés, casque, sac à dos — pour
-             suggérer dès le départ qu'il existe un système de progression,
-             sans un mot d'explication (survol du bouton "Non"). Même
+        <!-- 🆕 Images du bloc "Connexion / Première leçon" (voir plus
+             bas) : Keb & Bek qui souhaitent la bienvenue (survol du
+             bouton "Première leçon") et Keb & Bek déjà équipés —
+             vêtements colorés, casque, sac à dos — pour suggérer dès le
+             départ qu'il existe un système de progression, sans un mot
+             d'explication (survol du bouton "Connexion"). Même
              mécanisme d'affichage que les 4 images ci-dessus, voir
              afficherImage() en JS. -->
         <img id="imgBienvenue" src="images/accueil/index_bonomes_keb_bek_bienvenue_01.webp" alt="Keb et Bek qui souhaitent la bienvenue">
         <img id="imgEquipes" src="images/accueil/index_bonomes_keb_bek_equipes_01.webp" alt="Keb et Bek déjà équipés pour le parcours, avec vêtements colorés, casque et sac à dos">
         <!-- 🆕 Deuxième pose "équipés", bras levé façon salut — utilisée
-             uniquement le temps d'un battement au survol de "Non", voir
-             jouerSequenceEquipes() en JS : 01 (posture normale) → 02 (ce
-             salut) → retour à 01, pour imiter un mouvement de salutation
-             plutôt qu'un simple changement d'image figé. -->
+             uniquement le temps d'un battement au survol de "Connexion",
+             voir jouerSequenceEquipes() en JS : 01 (posture normale) →
+             02 (ce salut) → retour à 01, pour imiter un mouvement de
+             salutation plutôt qu'un simple changement d'image figé. -->
         <img id="imgEquipesSalut" src="images/accueil/index_bonomes_keb_bek_equipes_02.webp" alt="Keb et Bek équipés qui font un salut de la main">
         <p class="bulle-bonjour" id="bulleBonjour" aria-hidden="true">Bonjour !</p>
         <!-- 🆕 Bulle "Bienvenue !" — même classe .bulle-bonjour (voir CSS),
-             affichée au survol/tap du bouton "Oui" du bloc First time?
-             plus bas. Texte volontairement toujours en français, comme
-             "Bonjour !" ci-dessus : c'est un mot de vocabulaire exposé par
-             immersion, pas un libellé d'interface à traduire. -->
+             affichée au survol/tap du bouton "Première leçon" du bloc
+             Connexion/Première leçon plus bas. Texte volontairement
+             toujours en français, comme "Bonjour !" ci-dessus : c'est un
+             mot de vocabulaire exposé par immersion, pas un libellé
+             d'interface à traduire. -->
         <p class="bulle-bonjour" id="bulleBienvenue" aria-hidden="true">Bienvenue !</p>
         <div class="zone-case" id="zoneCaseSecrete" aria-hidden="true" title="Case secrète — clique ici"></div>
       </div>
 
-      <!-- 🆕 Bloc "First time?" : remplace l'ancien bouton "continuer" (une
-           simple flèche, v61) sur demande de Raphaël. Apparaît soit dès
-           qu'un choix de langue actif est fait (voir choisir() plus bas),
-           soit automatiquement après 15s sur la page si aucun choix n'a
-           encore été fait — les deux chemins mènent à
-           afficherPremiereFois(), idempotente. Espace réservé dès le
-           départ (opacity/scale animés, pas de display:none) pour que son
-           apparition ne déplace rien autour de lui.
+      <!-- 🆕 Bloc "Connexion / Première leçon" (demande de Raphaël,
+           session du 18-08-2026) : remplace l'ancien bloc "First time?
+           Oui/Non". N'apparaît QUE juste après un premier choix de
+           langue (voir afficherConnexionChoix(), appelée depuis
+           choisir() en JS) — un élève qui revient avec une langue déjà
+           enregistrée ne voit jamais cet écran, il file direct au menu
+           principal (voir logique de démarrage tout en bas du script).
+           Espace réservé dès le départ (opacity/scale animés, pas de
+           display:none) pour que son apparition ne déplace rien autour
+           de lui.
 
-           "Oui"/"Non" mènent tous les deux au menu principal pour
-           l'instant (destination encore à définir côté contenu, voir JS)
-           — à la souris, survoler l'un des deux boutons change l'image
-           des personnages en aperçu avant même de cliquer, comme le
-           reste des interactions "Bonjour !"/sélecteur de langue de
-           cette page. Au tactile, pas de survol distinct : le tap
-           déclenche directement clic + navigation (pas besoin d'un
-           aperçu séparé façon essai_cava_reactions_v3.html, puisque les
-           deux réponses mènent pour l'instant à la même destination). -->
-      <div class="premiere-fois" id="premiereFois">
-        <p class="pf-question" id="pfQuestion">First time?</p>
-        <div class="pf-boutons">
-          <button class="pf-bouton pf-oui" id="pfOui" type="button" data-cible="oui">Oui</button>
-          <button class="pf-bouton pf-non" id="pfNon" type="button" data-cible="non">Non</button>
+           "Première leçon" démarre la séquence identité (prénom/genre/
+           tranche d'âge) puis la première leçon, pour un nouvel élève ;
+           "Connexion" ouvre directement l'écran courriel+code (voir
+           demarrerReconnexionDepuisIndex plus bas), pour un élève qui a
+           déjà un compte créé sur un autre appareil. À la souris,
+           survoler l'un des deux boutons change l'image des personnages
+           en aperçu avant même de cliquer, comme le reste des
+           interactions "Bonjour !"/sélecteur de langue de cette page. -->
+      <div class="connexion-choix" id="connexionChoix">
+        <div class="cc-boutons">
+          <button class="cc-bouton cc-premiere-lecon" id="btnPremiereLeconIndex" type="button" data-cible="lecon">
+            <span class="cc-icone" aria-hidden="true">🚀</span>
+            <span id="ccPremiereLeconTexte">First lesson</span>
+          </button>
+          <button class="cc-bouton cc-connexion" id="btnConnexionIndex" type="button" data-cible="connexion">
+            <span class="cc-icone" aria-hidden="true">🔑</span>
+            <span id="ccConnexionTexte">Log in</span>
+          </button>
         </div>
-        <!-- 🆕 "Se reconnecter" (demande de Raphaël, session du
-             13-08-2026) — pour un élève qui a déjà un compte et revient
-             sur un nouvel appareil/fureteur. Volontairement discret
-             (lien texte, pas une pilule pf-bouton) pour ne jamais
-             concurrencer visuellement Oui/Non, qui restent la première
-             question posée à tout le monde. Ouvre directement l'écran
-             courriel+code (voir demarrerReconnexionDepuisIndex plus
-             bas), sans repasser par prénom/genre/silhouette. -->
-        <button class="lien-se-reconnecter" id="btnSeReconnecterIndex" type="button">Se reconnecter</button>
       </div>
     </div>
 
@@ -983,7 +996,7 @@
          (voir le long commentaire CSS sur .selecteur-langue) — il est
          maintenant en `position: fixed` dans le coin supérieur gauche
          de l'écran, indépendant du flex de .scene. -->
-    <div class="selecteur-langue invite" id="selecteurLangue">
+    <div class="selecteur-langue" id="selecteurLangue">
       <div class="sl-fond" id="slFond"></div>
 
       <button class="sl-declencheur" id="slDeclencheur" aria-haspopup="listbox" aria-expanded="false">
@@ -994,6 +1007,7 @@
       </button>
 
       <div class="sl-panneau" id="slPanneau">
+        <p class="sl-titre-force" id="slTitreForce" hidden>Choisis ta langue !</p>
         <input type="text" class="sl-recherche" id="slRecherche" placeholder="Chercher une langue…" autocomplete="off">
         <div class="sl-grille" id="slGrille" role="listbox"></div>
         <p class="sl-vide" id="slVide" hidden>Aucune langue trouvée</p>
@@ -1284,8 +1298,8 @@
 
   // Reprend le choix déjà fait lors d'une visite précédente s'il existe
   // — sinon 'en' comme avant. La distinction avec un choix "jamais
-  // fait" (voir .invite / afficherPremiereFois plus bas) se base
-  // sur la présence même de la clé, pas sur sa valeur.
+  // fait" (voir ouvrirChoixLangueForce() et la logique de démarrage
+  // tout en bas du script) se base sur la présence même de la clé, pas sur sa valeur.
   let langueActuelle = langueSauvegardee() || 'en';
 
   // 🆕 Direction RTL — demande de Raphaël : le farsi (fa) s'écrit de
@@ -1337,48 +1351,45 @@
   };
 
   // ==================================================================
-  // 🆕 Libellé de la question "First time?" du bloc qui remplace
-  // l'ancien bouton "continuer" — même esprit et mêmes 19+1 langues que
-  // DICO_COURS_PRIVES juste au-dessus (dictionnaire autonome, mis à
-  // jour au choix de langue par rafraichirPremiereFois() plus bas).
-  // Comme les libellés "Oui"/"Non" des boutons (voir DICO_OUI/DICO_NON
-  // plus bas), ce texte est un habillage d'interface : il suit la
-  // langue choisie comme le lien vers les cours privés.
+  // 🆕 (18-08-2026) Libellé du bouton "Première leçon" du nouveau bloc
+  // Connexion/Première leçon — même esprit et mêmes 19+1 langues que
+  // DICO_COURS_PRIVES plus haut (dictionnaire autonome, mis à jour au
+  // choix de langue par rafraichirConnexionBoutons() plus bas). Comme
+  // le reste des libellés d'interface de cette page, ce texte suit la
+  // langue choisie, contrairement au vocabulaire français exposé par
+  // immersion (bulles "Bonjour !"/"Bienvenue !").
   // ==================================================================
-  const DICO_PREMIERE_FOIS = {
-    fr: 'Première fois ?',
-    en: 'First time?',
-    es: '¿Primera vez?',
-    it: 'Prima volta?',
-    pt: 'Primeira vez?',
-    ca: 'Primera vegada?',
-    eo: 'Unuafoje?',
-    zh: '第一次来吗？',
-    ja: '初めてですか？',
-    ko: '처음이신가요?',
-    vi: 'Lần đầu tiên?',
-    ht: 'Premye fwa?',
-    tl: 'Unang beses?',
-    id: 'Pertama kali?',
-    nl: 'Eerste keer?',
-    de: 'Zum ersten Mal?',
-    fa: 'اولین باره؟',
-    sv: 'Första gången?',
-    no: 'Første gang?',
-    ru: 'Первый раз?'
+  const DICO_PREMIERE_LECON = {
+    fr: 'Première leçon',
+    en: 'First lesson',
+    es: 'Primera lección',
+    it: 'Prima lezione',
+    pt: 'Primeira lição',
+    ca: 'Primera lliçó',
+    eo: 'Unua leciono',
+    zh: '第一课',
+    ja: '最初のレッスン',
+    ko: '첫 번째 수업',
+    vi: 'Bài học đầu tiên',
+    ht: 'Premye leson',
+    tl: 'Unang aralin',
+    id: 'Pelajaran pertama',
+    nl: 'Eerste les',
+    de: 'Erste Lektion',
+    fa: 'اولین درس',
+    sv: 'Första lektionen',
+    no: 'Første leksjon',
+    ru: 'Первый урок'
   };
 
   // ==================================================================
-  // 🆕 (13-08-2026) Libellé du lien "Se reconnecter" sous Oui/Non — même
-  // principe et mêmes 19 langues que DICO_PREMIERE_FOIS juste au-dessus.
-  // Corrige la limite signalée par Raphaël : ce lien était resté du texte
-  // français codé en dur dans le HTML depuis son ajout, contrairement au
-  // reste de l'interface (y compris le bouton "Se reconnecter" équivalent
-  // ajouté depuis dans menu-principal.js, lui déjà traduit dès sa
-  // livraison).
+  // 🆕 (13-08-2026, réutilisé le 18-08-2026 pour le bouton "Connexion" —
+  // voir #btnConnexionIndex) — même principe que DICO_PREMIERE_LECON
+  // ci-dessus. Ex-libellé du lien "Se reconnecter" sous Oui/Non,
+  // maintenant le texte du bouton "Connexion" du nouveau bloc.
   // ==================================================================
   const DICO_SE_RECONNECTER = {
-    fr: 'Se reconnecter',
+    fr: 'Connexion',
     en: 'Log in',
     es: 'Iniciar sesión',
     it: 'Accedi',
@@ -1398,29 +1409,6 @@
     sv: 'Logga in',
     no: 'Logg inn',
     ru: 'Войти'
-  };
-
-  // ==================================================================
-  // 🆕 (retour Raphaël) Libellés des boutons "Oui" / "Non" du bloc
-  // "First time?" — mêmes 19 langues + fr que les dictionnaires
-  // ci-dessus, mis à jour au choix de langue par rafraichirOuiNon()
-  // plus bas. Remplace le comportement précédent (Oui/Non toujours en
-  // français, voir note dans le CSS de .pf-bouton) : ce ne sont plus
-  // traités comme du vocabulaire français à exposer, mais comme un
-  // libellé d'interface à traduire, au même titre que "Première fois ?"
-  // ou "Se reconnecter".
-  // ==================================================================
-  const DICO_OUI = {
-    fr: 'Oui', en: 'Yes', es: 'Sí', it: 'Sì', pt: 'Sim', ca: 'Sí',
-    eo: 'Jes', zh: '是', ja: 'はい', ko: '네', vi: 'Có', ht: 'Wi',
-    tl: 'Oo', id: 'Ya', nl: 'Ja', de: 'Ja', fa: 'بله', sv: 'Ja',
-    no: 'Ja', ru: 'Да'
-  };
-  const DICO_NON = {
-    fr: 'Non', en: 'No', es: 'No', it: 'No', pt: 'Não', ca: 'No',
-    eo: 'Ne', zh: '否', ja: 'いいえ', ko: '아니요', vi: 'Không', ht: 'Non',
-    tl: 'Hindi', id: 'Tidak', nl: 'Nee', de: 'Nein', fa: 'نه', sv: 'Nej',
-    no: 'Nei', ru: 'Нет'
   };
 
 
@@ -1541,27 +1529,29 @@
   const bulleBonjour = document.getElementById('bulleBonjour');
   const bulleBienvenue = document.getElementById('bulleBienvenue');
   const zoneCaseSecrete = document.getElementById('zoneCaseSecrete');
-  const premiereFois = document.getElementById('premiereFois');
-  const pfQuestion = document.getElementById('pfQuestion');
-  // 🆕 (13-08-2026) — voir rafraichirSeReconnecter() plus bas.
-  const btnSeReconnecterIndex = document.getElementById('btnSeReconnecterIndex');
-  const pfOui = document.getElementById('pfOui');
-  const pfNon = document.getElementById('pfNon');
+  // 🆕 (18-08-2026) — voir rafraichirConnexionBoutons() plus bas.
+  const connexionChoix = document.getElementById('connexionChoix');
+  const btnPremiereLeconIndex = document.getElementById('btnPremiereLeconIndex');
+  const btnConnexionIndex = document.getElementById('btnConnexionIndex');
+  const ccPremiereLeconTexte = document.getElementById('ccPremiereLeconTexte');
+  const ccConnexionTexte = document.getElementById('ccConnexionTexte');
   const lienCoursPrives = document.getElementById('lienCoursPrives');
   const sacEnteteTitre = document.getElementById('sacEnteteTitre');
 
   // ==================================================================
-  // Bloc "First time?" — apparaît par le premier de ces deux
-  // déclencheurs à se produire : un vrai choix de langue (voir
-  // choisir() plus bas) ou 15s passées sur la page sans choix. Les deux
-  // chemins appellent cette même fonction, idempotente (classList.add
-  // ne fait rien si "visible" y est déjà) — pas besoin de coordonner
-  // qui a "gagné".
+  // 🆕 (18-08-2026) Bloc "Connexion / Première leçon" — n'apparaît plus
+  // qu'après un vrai choix de langue (voir choisir() plus bas), puisque
+  // ce choix est désormais forcé dès la première visite (voir
+  // ouvrirChoixLangueForce(), voir la logique de démarrage tout en bas
+  // du script) : plus
+  // besoin de la minuterie de 15s de l'ancien afficherPremiereFois(),
+  // qui existait pour couvrir le cas d'un élève n'ayant jamais cliqué
+  // sur une pastille de langue — ce cas n'existe plus. Reste idempotente
+  // (classList.add ne fait rien si "visible" y est déjà).
   // ==================================================================
-  function afficherPremiereFois() {
-    premiereFois.classList.add('visible');
+  function afficherConnexionChoix() {
+    connexionChoix.classList.add('visible');
   }
-  setTimeout(afficherPremiereFois, 15000);
 
   function rafraichirLienCoursPrives() {
     lienCoursPrives.textContent = DICO_COURS_PRIVES[langueActuelle] || DICO_COURS_PRIVES.en;
@@ -1581,38 +1571,18 @@
   }
   rafraichirEnteteSac();
 
-  // Même principe que rafraichirLienCoursPrives() ci-dessus, pour la
-  // question "First time?" — voir DICO_PREMIERE_FOIS plus haut.
-  function rafraichirPremiereFois() {
-    pfQuestion.textContent = DICO_PREMIERE_FOIS[langueActuelle] || DICO_PREMIERE_FOIS.en;
+  // 🆕 (18-08-2026) Même principe que rafraichirLienCoursPrives()
+  // ci-dessus, pour les deux boutons du bloc "Connexion / Première
+  // leçon" (DICO_PREMIERE_LECON/DICO_SE_RECONNECTER, voir plus haut) —
+  // remplace les trois fonctions séparées de l'ancien bloc "First
+  // time?" (rafraichirPremiereFois/rafraichirSeReconnecter/
+  // rafraichirOuiNon), plus nécessaires vu qu'il n'y a plus que deux
+  // libellés à traduire.
+  function rafraichirConnexionBoutons() {
+    ccPremiereLeconTexte.textContent = DICO_PREMIERE_LECON[langueActuelle] || DICO_PREMIERE_LECON.en;
+    ccConnexionTexte.textContent = DICO_SE_RECONNECTER[langueActuelle] || DICO_SE_RECONNECTER.en;
   }
-  rafraichirPremiereFois();
-
-  // 🆕 (13-08-2026) Même principe que rafraichirPremiereFois() ci-dessus,
-  // pour le lien "Se reconnecter" (DICO_SE_RECONNECTER, voir plus haut).
-  function rafraichirSeReconnecter() {
-    btnSeReconnecterIndex.textContent = DICO_SE_RECONNECTER[langueActuelle] || DICO_SE_RECONNECTER.en;
-  }
-  rafraichirSeReconnecter();
-
-  // 🆕 (retour Raphaël) Même principe, pour les boutons "Oui" / "Non"
-  // (DICO_OUI/DICO_NON, voir plus haut) — remplace leur ancien texte
-  // français fixe codé dans le HTML.
-  function rafraichirOuiNon() {
-    pfOui.textContent = DICO_OUI[langueActuelle] || DICO_OUI.en;
-    pfNon.textContent = DICO_NON[langueActuelle] || DICO_NON.en;
-  }
-  rafraichirOuiNon();
-
-
-  // Visite de retour avec une langue déjà choisie précédemment : le
-  // choix est déjà fait, donc la radiance d'invitation n'a plus lieu
-  // d'être et le bloc "First time?" peut apparaître tout de suite, sans
-  // attendre les 15s ni un nouveau clic sur une pastille.
-  if (langueSauvegardee()) {
-    zone.classList.remove('invite');
-    afficherPremiereFois();
-  }
+  rafraichirConnexionBoutons();
 
   // 🆕 allerAuMenuPrincipal() n'est plus un stub — branché sur le
   // nouveau module menu-principal.js. sequenceIdentite (ou sceneRangee,
@@ -1828,13 +1798,13 @@
         } else {
           sceneRangee.style.display = '';
           lienCoursPrives.style.display = '';
-          afficherPremiereFois();
+          afficherConnexionChoix();
         }
       }
     });
   }
 
-  // 🆕 "Se reconnecter" (demande de Raphaël) — même repli visuel que
+  // 🆕 "Connexion" (demande de Raphaël) — même repli visuel que
   // demarrerIdentiteSiPremiereFois() (cache sceneRangee/lienCoursPrives/
   // menuPrincipal, affiche #sequenceIdentite), mais avec
   // etapeDepart:'reconnexion' pour sauter directement à l'écran
@@ -1873,12 +1843,11 @@
         } else {
           sceneRangee.style.display = '';
           lienCoursPrives.style.display = '';
-          afficherPremiereFois();
+          afficherConnexionChoix();
         }
       }
     });
   }
-  btnSeReconnecterIndex.addEventListener('click', function () { demarrerReconnexionDepuisIndex('accueil'); });
 
   // 🆕 Petite séquence animée au survol de "Non" : posture normale (01)
   // → bras levé façon salut (02) pendant un court instant → retour à la
@@ -1907,16 +1876,18 @@
     clearTimeout(minuterieSalutFin);
   }
 
-  // 🆕 Aperçu au survol (souris) / tap (tactile) des boutons Oui/Non,
-  // même esprit que le reste des interactions de cette page (sélecteur
-  // de langue, "Bonjour !") : on prévisualise avant même de cliquer.
-  // "Oui" fait apparaître la bulle "Bienvenue !" en plus du changement
-  // d'image ; "Non" déclenche la petite séquence de salut ci-dessus, pas
-  // de bulle, l'image étant pensée pour se suffire à elle-même (HTML).
-  function apercuPremiereFois(cible) {
+  // 🆕 (18-08-2026) Aperçu au survol (souris) / tap (tactile) des
+  // boutons "Première leçon" / "Connexion" — même esprit que le reste
+  // des interactions de cette page (sélecteur de langue, "Bonjour !") :
+  // on prévisualise avant même de cliquer. "Première leçon" (nouvel
+  // élève) fait apparaître la bulle "Bienvenue !" en plus du changement
+  // d'image, comme l'ancien "Oui" ; "Connexion" (élève qui revient
+  // récupérer son compte) déclenche la petite séquence de salut
+  // ci-dessus, pas de bulle, comme l'ancien "Non".
+  function apercuConnexionChoix(cible) {
     if (modeSecretActif()) return; // case secrète prioritaire sur tout le reste
     bulleBonjour.classList.remove('visible'); // un seul mot à la fois au-dessus des personnages
-    if (cible === 'oui') {
+    if (cible === 'lecon') {
       arreterSequenceEquipes();
       afficherImage(imgBienvenue);
       bulleBienvenue.classList.add('visible');
@@ -1926,20 +1897,21 @@
     }
   }
 
-  function masquerApercuPremiereFois() {
+  function masquerApercuConnexionChoix() {
     arreterSequenceEquipes();
     bulleBienvenue.classList.remove('visible');
     if (!modeSecretActif() && !hoverBonjourActif && !estOuvert()) afficherImage(imgNeutre);
   }
 
-  [pfOui, pfNon].forEach(bouton => {
-    bouton.addEventListener('mouseenter', () => apercuPremiereFois(bouton.dataset.cible));
-    bouton.addEventListener('mouseleave', masquerApercuPremiereFois);
+  [btnPremiereLeconIndex, btnConnexionIndex].forEach(bouton => {
+    bouton.addEventListener('mouseenter', () => apercuConnexionChoix(bouton.dataset.cible));
+    bouton.addEventListener('mouseleave', masquerApercuConnexionChoix);
   });
-  pfOui.addEventListener('click', demarrerIdentiteSiPremiereFois);
-  pfNon.addEventListener('click', () => allerAuMenuPrincipal('non'));
+  btnPremiereLeconIndex.addEventListener('click', () => demarrerIdentiteSiPremiereFois('accueil'));
+  btnConnexionIndex.addEventListener('click', () => demarrerReconnexionDepuisIndex('accueil'));
 
   const panneau = document.getElementById('slPanneau');
+  const slTitreForce = document.getElementById('slTitreForce');
   const recherche = document.getElementById('slRecherche');
   const grilleConteneur = document.getElementById('slGrille');
   const grilleVide = document.getElementById('slVide');
@@ -2161,6 +2133,14 @@
   }
 
   function fermer() {
+    // 🆕 (18-08-2026) Tant que le choix de langue est obligatoire
+    // (première visite, voir ouvrirChoixLangueForce() plus bas), aucun
+    // des déclencheurs habituels de fermeture (fond, clic extérieur,
+    // Échap, sortie de survol) ne doit pouvoir refermer le panneau sans
+    // qu'une pastille ait été choisie — choisir() est le seul chemin
+    // qui retire .forme-obligatoire, et donc le seul à pouvoir fermer
+    // le panneau dans ce cas précis.
+    if (zone.classList.contains('forme-obligatoire')) return;
     clearTimeout(minuteurFermeture);
     zone.classList.remove('ouvert');
     declencheur.setAttribute('aria-expanded', 'false');
@@ -2181,6 +2161,21 @@
     }, DELAI_FERMETURE);
   }
 
+  // 🆕 (18-08-2026) Choix de langue obligatoire — première visite (voir
+  // la logique de démarrage tout en bas du script). Ajoute
+  // .forme-obligatoire
+  // (masque le déclencheur discret, voir CSS) PUIS ouvre normalement
+  // via ouvrir() — le panneau, déjà un recouvrement centré plein écran
+  // à toutes les largeurs, se retrouve donc grand ouvert dès le
+  // chargement, simplement caché sous l'écran-titre (#ecranTitre,
+  // z-index 500 contre 20 ici) jusqu'à ce que celui-ci se retire tout
+  // seul — rien à séquencer en plus ici, l'ordre des z-index suffit.
+  function ouvrirChoixLangueForce() {
+    zone.classList.add('forme-obligatoire');
+    slTitreForce.hidden = false;
+    ouvrir();
+  }
+
   function choisir(codeLangue) {
     langueActuelle = codeLangue;
     sauvegarderLangue(codeLangue);
@@ -2191,12 +2186,21 @@
       code.style.transition = 'transform 0.28s cubic-bezier(.34,1.6,.4,1)';
       code.style.transform = 'scale(1)';
     });
-    zone.classList.remove('invite');
-    afficherPremiereFois();
+    // 🆕 (18-08-2026) Premier choix forcé (voir ouvrirChoixLangueForce()
+    // plus bas) : referme le mode obligatoire et révèle le bloc
+    // Connexion/Première leçon — c'est LE moment où ce bloc apparaît
+    // pour la toute première fois, plus jamais ensuite (une langue
+    // enregistrée envoie directement au menu principal, voir la
+    // logique de démarrage tout en bas du script). Un changement de
+    // langue fait ailleurs (déjà au menu, etc.) ne rouvre jamais ce
+    // bloc, puisque .forme-obligatoire n'est alors pas présente.
+    if (zone.classList.contains('forme-obligatoire')) {
+      zone.classList.remove('forme-obligatoire');
+      slTitreForce.hidden = true;
+      afficherConnexionChoix();
+    }
     rafraichirLienCoursPrives();
-    rafraichirPremiereFois();
-    rafraichirSeReconnecter();
-    rafraichirOuiNon();
+    rafraichirConnexionBoutons();
     rafraichirEnteteSac();
     fermer();
   }
@@ -2291,17 +2295,36 @@
     if (e.key === 'Escape' && estOuvert()) fermer();
   });
 
-  // 🆕 (retour Raphaël) : quitter parcours.html renvoyait toujours à
-  // l'écran d'accueil (Keb et Bek, "Bonjour"), jamais au menu — le lien
-  // de retour pointe bien vers index.html#menu-principal (voir
-  // parcours.html), mais rien ici ne lisait ce fragment. On saute
-  // directement au menu si une langue est déjà enregistrée (le cas
-  // normal en sortant du parcours, puisqu'il faut être passé par
-  // l'accueil pour y arriver) ; sinon on laisse le parcours d'accueil
-  // habituel se dérouler, plutôt que de risquer d'amener un nouvel
-  // élève droit au menu sans être passé par le choix de langue.
-  if (location.hash === '#menu-principal' && langueSauvegardee()) {
+  // ==================================================================
+  // 🆕 (18-08-2026, demande de Raphaël) Logique de démarrage de
+  // l'accueil — remplace l'ancien déclencheur ponctuel (qui ne sautait
+  // au menu que sur le fragment #menu-principal, cas du retour depuis
+  // parcours.html) par une règle générale, appliquée à CHAQUE
+  // chargement de index.html :
+  //
+  //   - Une langue est déjà enregistrée (kebbek_langue, voir
+  //     langueSauvegardee()) → l'élève est déjà venu au moins une fois,
+  //     peu importe la page de départ (accueil, #menu-principal, ou
+  //     toute autre) : direct au menu principal, sans repasser par
+  //     l'écran de bienvenue Keb/Bek ni par le bloc Connexion/Première
+  //     leçon. Recoupe et généralise l'ancien cas #menu-principal
+  //     (toujours couvert, puisque langueSauvegardee() y est vraie),
+  //     et complète verifierReconnexionAutomatique() tout en haut de ce
+  //     script (qui ne couvre que les VRAIS comptes Supabase — celle-ci
+  //     couvre aussi le mode invité, dès qu'une langue est enregistrée).
+  //
+  //   - Aucune langue enregistrée → toute première visite : force le
+  //     sélecteur de langue plein écran (voir ouvrirChoixLangueForce())
+  //     immédiatement après l'écran-titre "Le français avec les
+  //     Bonomes" (superposé au-dessus le temps de son propre timing,
+  //     rien à coordonner ici, voir le commentaire de la fonction). Le
+  //     bloc Connexion/Première leçon n'apparaît qu'ensuite, une fois
+  //     la langue choisie (voir choisir()).
+  // ==================================================================
+  if (langueSauvegardee()) {
     allerAuMenuPrincipal('retour');
+  } else {
+    ouvrirChoixLangueForce();
   }
 </script>
 

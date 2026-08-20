@@ -1,0 +1,204 @@
+/* ==================================================================
+   mot-tooltip.css — fiche de mot enrichie (clic sur un mot dans une
+   bulle de dialogue). Remplace l'ancien .iden-tooltip-mot de
+   dialogue-d1.html : traduction littérale ET naturelle, phrase
+   d'exemple traduite, et pour un verbe conjugué, un détail dépliable
+   (infinitif + mode/temps/personne). Demande de Raphaël : que ce soit
+   "digne des meilleurs sites du monde" — carte propre, discrète, pas
+   la petite bulle triste d'avant.
+
+   Même langage visuel que le reste du site (Baloo 2, palette
+   beige/brun/pêche, var(--x, repli) partout pour fonctionner même sur
+   une page qui ne définit que le strict minimum) — voir sac-a-dos.css
+   et exercices.css pour le même patron.
+   ================================================================== */
+
+/* ---------- Mot cliquable dans la bulle ---------- */
+/* 🆕 Remplace .iden-mot (dialogue-d1.html) : plus de lueur pulsée en
+   continu ni de vol vers le sac au double-clic (obsolète — le sac se
+   remplit maintenant tout seul via la progression, voir mots_occurrences
+   côté Supabase). Un simple soulignement pointillé au survol suffit à
+   signaler "cliquable", sans distraire de la lecture. */
+.mtt-mot {
+  cursor: pointer;
+  position: relative;
+  display: inline-block;
+  color: inherit;
+  text-underline-offset: 3px;
+  text-decoration: underline dotted 1.5px transparent;
+  transition: color 0.15s ease, text-decoration-color 0.15s ease;
+  touch-action: manipulation;
+}
+.mtt-mot:hover,
+.mtt-mot:focus-visible,
+.mtt-mot.mtt-mot-ouvert {
+  color: var(--peche-fonce);
+  text-decoration-color: var(--peche-fonce);
+}
+.mtt-mot:focus-visible { outline: none; }
+
+/* ---------- Carte ---------- */
+.mtt-carte {
+  position: fixed;
+  z-index: 500;
+  width: min(88vw, 320px);
+  max-height: min(70vh, 420px);
+  overflow-y: auto;
+  background: #FFFFFF;
+  border-radius: 18px;
+  border: 1.5px solid var(--peche);
+  box-shadow: 0 10px 32px rgba(74, 59, 51, 0.22);
+  font-family: 'Baloo 2', sans-serif;
+  color: var(--brun-fonce, var(--brun));
+  padding: 16px 18px 14px;
+  opacity: 0;
+  transform: translateY(6px) scale(0.98);
+  transform-origin: top center;
+  transition: opacity 0.16s ease, transform 0.16s cubic-bezier(.2,.8,.3,1.2);
+  pointer-events: none;
+}
+.mtt-carte.mtt-carte-visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+}
+/* Repli quand la carte s'ouvre au-dessus du mot plutôt qu'en dessous
+   (voir positionnerCarte() dans mot-tooltip.js) — l'origine de la mise
+   à l'échelle/du léger glissement s'inverse pour rester cohérente avec
+   le sens réel d'apparition. */
+.mtt-carte.mtt-carte-au-dessus { transform-origin: bottom center; }
+.mtt-carte.mtt-carte-au-dessus:not(.mtt-carte-visible) { transform: translateY(-6px) scale(0.98); }
+
+.mtt-fermer {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: none;
+  background: var(--fond);
+  color: var(--brun-clair, #8A7364);
+  font-size: 0.95rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.mtt-fermer:hover { background: var(--peche-pale, rgba(240, 169, 139, 0.16)); color: var(--peche-fonce); }
+
+.mtt-entete {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding-right: 24px;
+  margin-bottom: 10px;
+}
+
+.mtt-mot-titre {
+  font-weight: 700;
+  font-size: 1.15rem;
+  color: var(--brun-fonce, var(--brun));
+}
+
+.mtt-categorie {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--peche-fonce);
+  background: var(--peche-pale, rgba(240, 169, 139, 0.16));
+  border-radius: 999px;
+  padding: 2px 9px;
+}
+
+.mtt-corps {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.mtt-ligne-trad {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.mtt-ligne-trad-valeur {
+  font-size: 1rem;
+  font-weight: 700;
+}
+.mtt-ligne-trad-etiquette {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--brun-clair, #8A7364);
+}
+/* La traduction naturelle se distingue visuellement de la littérale
+   (couleur de marque) SANS jamais dépendre uniquement de la couleur :
+   son étiquette porte aussi le mot "naturel" traduit, pas juste une
+   teinte différente (accessibilité). */
+.mtt-trad-naturelle .mtt-ligne-trad-valeur { color: var(--peche-fonce); }
+
+.mtt-exemple {
+  border-top: 1px solid var(--peche-pale, rgba(240, 169, 139, 0.3));
+  padding-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.mtt-exemple-fr {
+  font-style: italic;
+  font-size: 0.9rem;
+  color: var(--brun-fonce, var(--brun));
+}
+.mtt-exemple-trad {
+  font-size: 0.84rem;
+  color: var(--brun-clair, #8A7364);
+}
+
+/* ---------- Détails dépliables (verbe conjugué uniquement) ---------- */
+.mtt-details-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  align-self: flex-start;
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 0.78rem;
+  color: var(--peche-fonce);
+  background: none;
+  border: none;
+  padding: 2px 0;
+  cursor: pointer;
+}
+.mtt-details-chevron { transition: transform 0.18s ease; font-size: 0.7rem; }
+.mtt-details-toggle[aria-expanded="true"] .mtt-details-chevron { transform: rotate(90deg); }
+
+.mtt-details-panneau {
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  transition: max-height 0.22s ease, opacity 0.18s ease;
+}
+.mtt-details-panneau.mtt-details-ouvert {
+  max-height: 200px;
+  opacity: 1;
+}
+.mtt-details-grille {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 4px 10px;
+  padding: 8px 2px 2px;
+  font-size: 0.82rem;
+}
+.mtt-details-grille dt { color: var(--brun-clair, #8A7364); font-weight: 700; }
+.mtt-details-grille dd { margin: 0; }
+
+@media (max-width: 460px) {
+  .mtt-carte { width: min(92vw, 300px); padding: 14px 16px 12px; }
+  .mtt-mot-titre { font-size: 1.05rem; }
+}

@@ -94,56 +94,31 @@
   }
 
   html {
-    /* 🆕 (retour Raphaël) Fond texturé — remplace les deux tentatives
-       SVG faites à la main (doodles en mosaïque + fleur-de-lys) par
-       l'image fournie par Raphaël (images/fond/filigrane_fond.webp,
-       fond transparent) : doodles ET fleur-de-lys y sont déjà composés
-       ensemble, bien dessinés, pas besoin de les recréer en CSS. Une
-       seule couche, ancrée en bas à droite (comme la fleur-de-lys
-       maison avant elle), non répétée — la composition entière (doodles
-       à gauche, fleur-de-lys à droite) est pensée comme un seul bloc,
-       pas un motif à semer. Couleurs déjà très pâles DANS le fichier
-       lui-même (pas de transparence CSS à ajouter par-dessus). Les
-       pastilles pêche (radial-gradient) sont conservées en dessous,
-       elles occupent le reste de l'écran que l'image ne couvre pas. */
-    background-color: var(--fond);
-    background-image:
-      url("images/fond/filigrane_fond.webp"),
+    /* 🆕 Texture de fond très discrète (conseil design : "remplir 5–10%
+       du vide, pas davantage") — quelques pastilles pêche très pâles,
+       en radial-gradient pur (aucune image à charger). Sur <html> plutôt
+       que <body> pour rester fixe même si .scene devient défilable
+       (voir overflow-y: auto ci-dessus) : on ne veut pas que le motif
+       défile avec le contenu, juste qu'il habille l'écran. */
+    background:
       radial-gradient(circle at 8% 14%, rgba(224,136,103,0.12) 0 3px, transparent 3px),
       radial-gradient(circle at 88% 18%, rgba(224,136,103,0.10) 0 4px, transparent 4px),
       radial-gradient(circle at 16% 82%, rgba(224,136,103,0.10) 0 3px, transparent 3px),
       radial-gradient(circle at 93% 78%, rgba(224,136,103,0.11) 0 3px, transparent 3px),
       radial-gradient(circle at 50% 94%, rgba(224,136,103,0.08) 0 3px, transparent 3px),
-      radial-gradient(circle at 60% 6%, rgba(224,136,103,0.08) 0 3px, transparent 3px);
-    background-repeat: no-repeat, no-repeat, no-repeat, no-repeat, no-repeat, no-repeat, no-repeat;
-    background-position: right bottom, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0;
-    background-size: min(1326px, 92vw) auto, auto, auto, auto, auto, auto, auto;
+      radial-gradient(circle at 60% 6%, rgba(224,136,103,0.08) 0 3px, transparent 3px),
+      var(--fond);
     background-attachment: fixed;
-  }
-
-  @media (max-width: 700px) {
-    /* 🆕 Sous 700px, l'image (pensée pour un écran large : doodles à
-       gauche + fleur-de-lys à droite) n'a plus la place de se déployer
-       sans recouvrir le contenu central — réduite, seule la pointe de
-       la fleur-de-lys reste visible en bas à droite, dans le même
-       esprit que l'ancienne version SVG sur mobile. */
-    html { background-size: 620px auto, auto, auto, auto, auto, auto, auto; }
   }
 
   body {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: transparent; /* 🐛 CORRIGÉ : body héritait d'un fond opaque
-       (var(--fond)) via la règle groupée "html, body" plus haut, et
-       recouvrait entièrement le fond texturé (filigrane_fond.webp)
-       posé sur html juste en dessous. L'image se chargeait bien
-       (visible sur GitHub) mais restait invisible à l'écran, cachée
-       par ce fond plein. */
   }
 
   /* ==================================================================
-     Écran-titre ("Les Bonomes") — demande de
+     🆕 Écran-titre ("Le français avec les Bonomes") — demande de
      Raphaël : la toute première chose vue en arrivant sur le site,
      avant même Keb/Bek. Superposé en position: fixed plutôt qu'inséré
      dans .scene : la scène en dessous se construit normalement, EN
@@ -184,12 +159,13 @@
   }
 
   .ecran-titre-img {
-    /* 🆕 (retour Raphaël) Trop petite à min(80vw, 420px) sur ordinateur —
-       l'image doit occuper l'essentiel de l'écran à ce moment précis
-       (c'est tout ce qu'il y a à voir). Plafond très relevé sur grand
-       écran ; vw reste le frein naturel sur petit écran (voir media
-       query plus bas pour le plafond mobile, inchangé). */
-    width: min(70vw, 900px);
+    /* 🆕 Largeur réduite pour compenser le recadrage plus serré du
+       fichier (canevas 509×489, contenu à ~97% du canevas — avant, une
+       marge interne dans l'image elle-même donnait de facto une taille
+       affichée plus petite que la largeur déclarée ; cette marge n'existe
+       plus, donc la largeur déclarée doit diminuer pour garder le même
+       poids visuel qu'avant, plutôt que de soudain paraître plus gros). */
+    width: min(50vw, 260px);
     height: auto;
     transition: transform 0.5s cubic-bezier(.25, .8, .3, 1.6), opacity 0.4s ease;
   }
@@ -200,7 +176,7 @@
   }
 
   @media (max-width: 460px) {
-    .ecran-titre-img { width: min(85vw, 320px); }
+    .ecran-titre-img { width: min(60vw, 210px); }
   }
 
   .scene {
@@ -244,20 +220,19 @@
   }
 
   /* ==================================================================
-     En-tête de l'écran d'accueil (titre + signature pédagogique) —
-     conseil design : l'ancien #ecranTitre (voir plus haut) n'affiche son
-     image que ~1600ms au tout premier chargement puis "éclate" pour de
-     bon — une fois disparu, plus aucune trace du nom du cours sur la
-     page elle-même, qui montrait alors directement Keb/Bek sans
-     contexte. Ce bloc-ci reste affiché en PERMANENCE sur l'écran
-     d'accueil (vit dans #sceneRangee, donc masqué/réaffiché avec le
-     reste de cet écran — jamais visible pendant la séquence identité ou
-     le menu principal, exactement comme .personnages-groupe).
-     🆕 (demande de Raphaël) .titre-accueil est maintenant l'image logo
-     "Les Bonomes" (page_titre_02, voir HTML) plutôt qu'un h1 en texte —
-     nom simplifié, jugé plus clair sans "avec les". Les deux polices
-     Baloo 2/Chewy restent chargées en tête de fichier pour la bulle
-     "Bonjour !" plus bas, qui les utilise toujours.
+     🆕 En-tête de l'écran d'accueil (titre + signature pédagogique) —
+     conseil design : l'ancien #ecranTitre (voir plus haut) n'affiche
+     "Le français avec les Bonomes" que ~1600ms au tout premier chargement
+     puis "éclate" pour de bon — une fois disparu, plus aucune trace du
+     nom du cours sur la page elle-même, qui montrait alors directement
+     Keb/Bek sans contexte. Ce bloc-ci reste affiché en PERMANENCE sur
+     l'écran d'accueil (vit dans #sceneRangee, donc masqué/réaffiché avec
+     le reste de cet écran — jamais visible pendant la séquence identité
+     ou le menu principal, exactement comme .personnages-groupe).
+     Deux polices seulement (déjà chargées en tête de fichier, aucun
+     import ajouté) : Baloo 2 pour "Le français" (propre, lisible),
+     Chewy pour "avec les Bonomes" (ronde, enfantine) — même esprit que
+     la bulle "Bonjour !" plus bas, qui utilise déjà Chewy.
      ================================================================== */
   .entete-accueil {
     display: flex;
@@ -269,16 +244,22 @@
 
   .titre-accueil {
     margin: 0;
-    line-height: 0; /* évite l'espace fantôme sous l'image inline par défaut */
+    font-family: 'Baloo 2', sans-serif;
+    font-weight: 700;
+    font-size: clamp(1.5rem, 4.6vw, 2.5rem);
+    line-height: 1.1;
+    color: var(--brun-fonce);
+    letter-spacing: 0.01em;
   }
 
-  .titre-accueil-img {
-    width: min(78vw, 380px);
-    height: auto;
-  }
-
-  @media (max-width: 460px) {
-    .titre-accueil-img { width: min(85vw, 300px); }
+  .titre-accueil-nom {
+    display: block;
+    margin-top: 2px;
+    font-family: 'Chewy', 'Baloo 2', sans-serif;
+    font-weight: 400;
+    font-size: clamp(1.45rem, 5.4vw, 2.4rem);
+    color: var(--peche-fonce);
+    letter-spacing: 0.01em;
   }
 
   .signature-accueil {
@@ -419,29 +400,24 @@
     gap: 10px;
   }
 
-  /* Boutons pilules "engageants" : libellé traduit seul, sans icône
-     (voir DICO_PREMIERE_LECON/DICO_SE_RECONNECTER en JS plus bas, mis à
-     jour au choix de langue par rafraichirConnexionBoutons()) — retour
-     de Raphaël : pas d'émoticônes. white-space: nowrap + flex-shrink: 0
-     empêchent le libellé de retomber sur deux lignes quand le texte
-     traduit est plus long (ex. "Première leçon") : le bouton s'élargit
-     plutôt que de casser le texte. Comme les anciens boutons Oui/Non,
-     c'est un habillage d'interface à traduire, pas du vocabulaire
-     français à exposer. */
+  /* Boutons pilules "engageants" : icône + libellé traduit (voir
+     DICO_PREMIERE_LECON/DICO_SE_RECONNECTER en JS plus bas, mis à jour
+     au choix de langue par rafraichirConnexionBoutons()). Comme les
+     anciens boutons Oui/Non, c'est un habillage d'interface à traduire,
+     pas du vocabulaire français à exposer. */
   .cc-bouton {
     display: flex;
     align-items: center;
     justify-content: center;
+    gap: 10px;
     font-family: 'Baloo 2', sans-serif;
     font-weight: 700;
     font-size: 1.02rem;
     letter-spacing: 0.01em;
-    padding: 14px 32px;
+    padding: 14px 28px;
     border-radius: 999px;
     border: none;
     cursor: pointer;
-    white-space: nowrap;
-    flex-shrink: 0;
     box-shadow: 4px 4px 14px var(--ombre), inset 0 1px 0 rgba(255,255,255,0.5);
     transition: transform 0.2s cubic-bezier(.34,1.6,.4,1), box-shadow 0.2s ease, filter 0.2s ease;
   }
@@ -451,6 +427,11 @@
     transform: translateY(-2px) scale(1.03);
     box-shadow: 6px 6px 20px var(--ombre), inset 0 1px 0 rgba(255,255,255,0.6);
     filter: brightness(1.05);
+  }
+
+  .cc-icone {
+    font-size: 1.15em;
+    line-height: 1;
   }
 
   /* "Première leçon" — appel à l'action principal, couleur de marque
@@ -739,7 +720,7 @@
     border: 1.5px solid var(--peche);
     border-radius: 22px;
     box-shadow: 14px 14px 38px var(--ombre), inset 0 1px 0 rgba(255,255,255,0.6);
-    padding: 34px 12px 16px;
+    padding: 12px;
     opacity: 0;
     pointer-events: none;
     z-index: 20;
@@ -752,77 +733,22 @@
     transform: translate(-50%, -50%) scale(1);
   }
 
-  /* 🆕 Enrobage de la recherche : icône loupe positionnée en absolu à
-     gauche du champ, teinte pêche pour rester cohérente avec le reste
-     de l'identité visuelle plutôt qu'un gris neutre. */
-  .sl-recherche-wrap {
-    position: relative;
-    flex-shrink: 0;
-    margin-bottom: 10px;
-  }
-
-  .sl-recherche-icone {
-    position: absolute;
-    top: 50%;
-    left: 13px;
-    transform: translateY(-50%);
-    color: var(--peche-fonce);
-    opacity: 0.65;
-    pointer-events: none;
-  }
-
   .sl-recherche {
-    width: 100%;
     font-family: 'Baloo 2', sans-serif;
     font-size: 0.86rem;
     color: var(--brun-fonce);
     background: #fff;
     border: 1.5px solid var(--peche-pale-vif);
     border-radius: 999px;
-    padding: 9px 14px 9px 36px;
+    padding: 9px 14px;
     outline: none;
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    margin-bottom: 10px;
+    flex-shrink: 0;
+    transition: border-color 0.2s ease;
   }
 
   .sl-recherche::placeholder { color: var(--brun); opacity: 0.5; }
-  .sl-recherche:focus {
-    border-color: var(--peche-fonce);
-    box-shadow: 0 0 0 3px var(--peche-pale);
-  }
-
-  /* 🆕 Bouton de fermeture "×" du panneau — ancré en haut à droite,
-     inerte pendant le choix obligatoire (voir règle .forme-obligatoire
-     plus bas) puisque fermer() elle-même refuse de fermer tant que ce
-     choix n'a pas été fait ; masqué visuellement pour ne pas laisser
-     croire qu'il fonctionne dans ce cas précis. */
-  .sl-fermer {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 26px;
-    height: 26px;
-    padding: 0;
-    border: none;
-    border-radius: 50%;
-    background: rgba(102, 80, 69, 0.08);
-    color: var(--brun);
-    cursor: pointer;
-    transition: background 0.15s ease, color 0.15s ease, transform 0.15s ease;
-  }
-
-  .sl-fermer:hover {
-    background: var(--peche);
-    color: #fff;
-    transform: rotate(90deg);
-  }
-
-  .selecteur-langue.forme-obligatoire .sl-fermer {
-    visibility: hidden;
-    pointer-events: none;
-  }
+  .sl-recherche:focus { border-color: var(--peche-fonce); }
 
   .sl-vide {
     font-size: 0.8rem;
@@ -834,95 +760,40 @@
 
   .sl-grille {
     overflow-y: auto;
-    overflow-x: hidden;
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 8px;
-    /* 🆕 padding-right : décolle le contenu du bord droit pour que la
-       scrollbar ne soit plus collée aux cartes ; padding-bottom : évite
-       que la dernière rangée touche directement le bas du cadre
-       arrondi une fois défilée jusqu'en bas (cf. retour "Deutsch/Farsi
-       coupés"). */
-    padding: 2px 8px 8px 2px;
+    gap: 6px;
     scrollbar-width: thin;
     scrollbar-color: var(--peche) transparent;
   }
 
-  .sl-grille::-webkit-scrollbar { width: 7px; }
-  .sl-grille::-webkit-scrollbar-thumb {
-    background: var(--peche);
-    border-radius: 999px;
-    border: 2px solid transparent;
-    background-clip: padding-box;
-  }
-  .sl-grille::-webkit-scrollbar-track { background: transparent; margin: 4px 0; }
+  .sl-grille::-webkit-scrollbar { width: 6px; }
+  .sl-grille::-webkit-scrollbar-thumb { background: var(--peche); border-radius: 999px; }
+  .sl-grille::-webkit-scrollbar-track { background: transparent; }
 
-  /* 🆕 Petite palette pastel qui tourne carte par carte (5 teintes),
-     pour un survol vivant et une identité visuelle par pastille sans
-     recourir à des drapeaux nationaux : plusieurs langues du sélecteur
-     (catalan, espéranto, créole haïtien...) ne correspondent à aucun
-     drapeau unique et non ambigu, donc un badge coloré + code plutôt
-     qu'un drapeau évite tout raccourci trompeur tout en gardant le
-     repérage rapide et coloré demandé. */
   .sl-chip {
-    position: relative;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     text-align: center;
-    gap: 4px;
-    padding: 12px 6px 10px;
+    gap: 2px;
+    padding: 10px 6px;
     border-radius: 14px;
     border: 1.5px solid transparent;
-    background: rgba(255,255,255,0.68);
-    box-shadow: 0 2px 8px rgba(102, 80, 69, 0.10);
+    background: rgba(255,255,255,0.55);
     cursor: pointer;
-    transition: background 0.15s ease, border-color 0.15s ease, box-shadow 0.2s ease, transform 0.15s ease;
+    transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
   }
-
-  .sl-chip-badge {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 26px;
-    height: 26px;
-    border-radius: 50%;
-    font-family: 'Baloo 2', sans-serif;
-    font-weight: 700;
-    font-size: 0.62rem;
-    letter-spacing: 0.02em;
-    background: var(--peche-pale-vif);
-    color: var(--peche-fonce);
-  }
-
-  .sl-chip:nth-child(5n+1) .sl-chip-badge { background: #FBD8D2; color: #A4463A; }
-  .sl-chip:nth-child(5n+2) .sl-chip-badge { background: #CFE6F2; color: #2C6684; }
-  .sl-chip:nth-child(5n+3) .sl-chip-badge { background: #D6EDCB; color: #3F6E2E; }
-  .sl-chip:nth-child(5n+4) .sl-chip-badge { background: #F5E5B8; color: #8A6413; }
-  .sl-chip:nth-child(5n+5) .sl-chip-badge { background: #E1D3F0; color: #6B4696; }
 
   .sl-chip:hover {
     background: var(--peche-pale);
-    box-shadow: 0 5px 14px rgba(102, 80, 69, 0.16);
-    transform: translateY(-2px);
+    transform: translateY(-1px);
   }
-
-  .sl-chip:nth-child(5n+1):hover:not(.selectionne) { background: rgba(251, 216, 210, 0.55); }
-  .sl-chip:nth-child(5n+2):hover:not(.selectionne) { background: rgba(207, 230, 242, 0.55); }
-  .sl-chip:nth-child(5n+3):hover:not(.selectionne) { background: rgba(214, 237, 203, 0.55); }
-  .sl-chip:nth-child(5n+4):hover:not(.selectionne) { background: rgba(245, 229, 184, 0.55); }
-  .sl-chip:nth-child(5n+5):hover:not(.selectionne) { background: rgba(225, 211, 240, 0.55); }
 
   .sl-chip.selectionne {
     background: var(--peche-pale-vif);
     border-color: var(--peche-fonce);
-    box-shadow: 0 4px 12px rgba(224, 136, 103, 0.30);
-  }
-
-  .sl-chip.selectionne .sl-chip-badge {
-    background: var(--peche-fonce);
-    color: #fff;
   }
 
   .sl-chip-natif {
@@ -975,7 +846,7 @@
      script). Le
      panneau (déjà, à toutes les largeurs, un recouvrement centré plein
      écran — voir .sl-panneau plus haut) est ouvert dès le chargement,
-     AVANT même que l'écran-titre "Les Bonomes" ne se
+     AVANT même que l'écran-titre "Le français avec les Bonomes" ne se
      retire (z-index 500 pour l'écran-titre contre 20 pour ce panneau :
      rien à séquencer en JS, le panneau attend simplement, déjà prêt,
      sous l'écran-titre). Le déclencheur discret et son anneau de survol
@@ -999,12 +870,40 @@
   }
 
   .sl-titre-force {
-    margin: 0 0 12px;
+    margin: 2px 0 12px;
     font-family: 'Chewy', 'Baloo 2', sans-serif;
     font-weight: 400;
     font-size: clamp(1.3rem, 5vw, 1.7rem);
     color: var(--peche-fonce);
     text-align: center;
+  }
+
+  /* 🆕 (18-08-2026) Span interne rotatif — voir le commentaire HTML sur
+     #slTitreForce et rotationTitreForce() en JS. Un léger fondu (pas de
+     changement brusque de texte) marque chaque passage à la langue
+     suivante ; la transition est volontairement plus courte que
+     l'intervalle de rotation pour ne jamais chevaucher deux mots. */
+  #slTitreForceTexte {
+    display: inline-block;
+    transition: opacity 0.22s ease;
+  }
+
+  #slTitreForceTexte.sl-titre-force-fondu {
+    opacity: 0;
+  }
+
+  /* Réutilisable ailleurs au besoin : contenu présent pour les
+     lecteurs d'écran, invisible et sans emprise sur la mise en page. */
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
   }
 
   @media (max-width: 460px) {
@@ -1023,14 +922,8 @@
        #idenPersonnages dans identite-eleve.js). aria-hidden basculé à
        "true" au moment de la sortie (voir JS) : un lecteur d'écran ne
        doit plus s'y arrêter une fois qu'il a commencé à disparaître. -->
-  <div id="ecranTitre" role="button" tabindex="0" aria-label="Les Bonomes">
-    <!-- 🆕 (demande de Raphaël) Nouvelle image de la bulle d'accueil —
-         remplace l'ancienne composition "Le français avec les Bonomes"
-         (texte intégré à l'image) par le nouveau logo "Les Bonomes" tout
-         court, jugé plus clair. Canevas 1376×768 (rapport large, contenu
-         ~92%×84% du canevas) — voir .ecran-titre-img plus bas pour la
-         largeur ajustée en conséquence. -->
-    <img class="ecran-titre-img" src="images/accueil/page_titre_01.webp" width="1376" height="768" alt="Les Bonomes">
+  <div id="ecranTitre" role="button" tabindex="0" aria-label="Le français avec les Bonomes">
+    <img class="ecran-titre-img" src="images/accueil/index_bonomes_titre_01.webp" width="509" height="489" alt="Le français avec les Bonomes">
   </div>
 
   <div class="scene">
@@ -1041,16 +934,15 @@
          le nom "Bonomes" évite une double lecture par un lecteur d'écran
          (le <h1> entier est déjà annoncé une fois). -->
     <div class="entete-accueil">
-      <!-- 🆕 (demande de Raphaël) Remplace le h1 texte "Le français avec
-           les Bonomes" par le logo image "Les Bonomes" (page_titre_02) —
-           nom simplifié, jugé plus clair sans "avec les". Reste un <h1>
-           via aria-label pour ne rien perdre côté lecteur d'écran/SEO
-           (l'image seule, elle, garde un alt vide car décorative une fois
-           le titre porté par aria-label sur le conteneur). -->
-      <h1 class="titre-accueil" aria-label="Les Bonomes">
-        <img class="titre-accueil-img" src="images/accueil/page_titre_02.webp" width="1376" height="768" alt="">
-      </h1>
-      <p class="signature-accueil">Cours de français</p>
+      <h1 class="titre-accueil">Le français<span class="titre-accueil-nom">avec les Bonomes</span></h1>
+      <!-- 🆕 (18-08-2026, demande de Raphaël) : remplace l'ancienne
+           signature "Parler • jouer • découvrir" — nomme explicitement
+           Keb & Bek dès la page d'accueil, avant même le premier clic,
+           plutôt qu'une accroche générique. Toujours en français
+           (comme le reste de l'en-tête .entete-accueil) : "Keb et Bek"
+           sont des noms propres, reconnaissables tels quels peu importe
+           la langue maternelle de l'élève. -->
+      <p class="signature-accueil">Cours de français avec Keb et Bek</p>
     </div>
     <div class="personnages-groupe">
       <div class="personnages" id="personnages">
@@ -1107,9 +999,11 @@
       <div class="connexion-choix" id="connexionChoix">
         <div class="cc-boutons">
           <button class="cc-bouton cc-premiere-lecon" id="btnPremiereLeconIndex" type="button" data-cible="lecon">
+            <span class="cc-icone" aria-hidden="true">🚀</span>
             <span id="ccPremiereLeconTexte">First lesson</span>
           </button>
           <button class="cc-bouton cc-connexion" id="btnConnexionIndex" type="button" data-cible="connexion">
+            <span class="cc-icone" aria-hidden="true">🔑</span>
             <span id="ccConnexionTexte">Log in</span>
           </button>
         </div>
@@ -1140,17 +1034,27 @@
       </button>
 
       <div class="sl-panneau" id="slPanneau">
-        <button class="sl-fermer" id="slFermer" type="button" aria-label="Fermer">
-          <svg viewBox="0 0 20 20" width="14" height="14"><path d="M4 4l12 12M16 4L4 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
-        </button>
-        <p class="sl-titre-force" id="slTitreForce" hidden>Choisis ta langue !</p>
-        <div class="sl-recherche-wrap">
-          <svg class="sl-recherche-icone" viewBox="0 0 20 20" width="15" height="15" aria-hidden="true">
-            <circle cx="8.5" cy="8.5" r="6" fill="none" stroke="currentColor" stroke-width="2"/>
-            <path d="M13 13l5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-          </svg>
-          <input type="text" class="sl-recherche" id="slRecherche" placeholder="Cherche ta langue (ex : English, Español)…" autocomplete="off">
-        </div>
+        <!-- 🆕 (18-08-2026, demande de Raphaël) : remplace le titre fixe
+             "Choisis ta langue !" par une question qui tourne à travers
+             les 19 langues du site — "Quelle langue parles-tu ?"
+             plutôt que "Choisis ta langue !", pour lever une ambiguïté
+             réelle (choisir la langue qu'on apprend vs celle qu'on
+             parle). L'effet recherché n'est pas que l'élève LISE chaque
+             langue qui passe, mais qu'il RECONNAISSE la sienne au
+             passage — d'où un rythme rapide (1s/langue, voir JS
+             DELAI_ROTATION_TITRE_FORCE) plutôt qu'un rythme de lecture.
+             Span interne rotatif marqué aria-hidden (annoncer 19 fois la
+             même question par un lecteur d'écran serait absurde) ;
+             version fixe .sr-only juste après pour l'accessibilité,
+             annoncée une seule fois. Pause au survol/focus du panneau
+             et repli figé si prefers-reduced-motion (voir JS) — un
+             élève qui prend son temps ou qui est sensible au mouvement
+             ne doit jamais être pénalisé par ce rythme. -->
+        <p class="sl-titre-force" id="slTitreForce" hidden>
+          <span id="slTitreForceTexte" aria-hidden="true">Quelle langue parles-tu ?</span>
+          <span class="sr-only">What language do you speak?</span>
+        </p>
+        <input type="text" class="sl-recherche" id="slRecherche" placeholder="Chercher une langue…" autocomplete="off">
         <div class="sl-grille" id="slGrille" role="listbox"></div>
         <p class="sl-vide" id="slVide" hidden>Aucune langue trouvée</p>
       </div>
@@ -1420,6 +1324,42 @@
     { code: 'ru', natif: 'Русский',           fr: 'Russe' },
   ];
 
+  // ==================================================================
+  // 🆕 (18-08-2026) "Quelle langue parles-tu ?" traduit dans les mêmes
+  // 19 langues que LANGUES ci-dessus + le français lui-même (déjà
+  // affiché par défaut dans le HTML) — voir rotationTitreForce() plus
+  // bas. Même esprit que DICO_PREMIERE_LECON/DICO_SE_RECONNECTER :
+  // dictionnaire autonome, habillage d'interface plutôt que vocabulaire
+  // français à exposer.
+  // ==================================================================
+  const DICO_QUELLE_LANGUE = {
+    fr: 'Quelle langue parles-tu ?',
+    en: 'What language do you speak?',
+    es: '¿Qué idioma hablas?',
+    it: 'Che lingua parli?',
+    pt: 'Que língua falas?',
+    ca: 'Quina llengua parles?',
+    eo: 'Kiun lingvon vi parolas?',
+    zh: '你说什么语言？',
+    ja: '何語を話しますか？',
+    ko: '어떤 언어를 하세요?',
+    vi: 'Bạn nói ngôn ngữ gì?',
+    ht: 'Ki lang ou pale?',
+    tl: 'Anong wika ang sinasalita mo?',
+    id: 'Bahasa apa yang kamu bicarakan?',
+    nl: 'Welke taal spreek je?',
+    de: 'Welche Sprache sprichst du?',
+    fa: 'به چه زبانی صحبت می\u200cکنی؟',
+    sv: 'Vilket språk talar du?',
+    no: 'Hvilket språk snakker du?',
+    ru: 'На каком языке ты говоришь?'
+  };
+  // Ordre de rotation : le français d'abord (déjà affiché par défaut,
+  // pas de saut visuel au tout premier instant), puis les 19 autres
+  // dans l'ordre de LANGUES, pour rester cohérent avec la grille de
+  // pastilles juste en dessous.
+  const ORDRE_ROTATION_TITRE_FORCE = ['fr', ...LANGUES.map(l => l.code)];
+
   // Clé PARTAGÉE avec tout le reste du site (sac-a-dos.js — voir
   // CLE_LANGUE_SAC/langueActuelleSac — ainsi que cours-prives/index.html,
   // methode.html, tarifs.html, qui lisent tous ce même
@@ -1659,7 +1599,6 @@
   const declencheur = document.getElementById('slDeclencheur');
   const code = document.getElementById('slCode');
   const fond = document.getElementById('slFond');
-  const boutonFermer = document.getElementById('slFermer');
   const zoneApercuGauche = document.getElementById('zoneApercuGauche');
   const personnages = document.getElementById('personnages');
   const imgNeutre = document.getElementById('imgNeutre');
@@ -1796,25 +1735,7 @@
       // allerAuMenuPrincipal() au complet (pas de restauration de session
       // à refaire, on ne quitte jamais réellement le menu, juste son
       // affichage).
-      onModeProfesseur: function () { allerAuModeProfesseur(); },
-      // 🆕 (demande de Raphaël) Flèche "retour à l'accueil" du menu —
-      // ramène aux personnages Keb/Bek. Ne relance PAS le choix de
-      // langue (ouvrirChoixLangueForce() n'est pas appelée), mais DOIT
-      // réafficher le bloc Connexion/Première leçon via
-      // afficherConnexionChoix() : sans lui, le bloc reste invisible
-      // (classe "visible" jamais réajoutée) et l'élève se retrouve
-      // coincé sur l'écran Keb/Bek sans aucun bouton pour repartir.
-      // 🐛 CORRIGÉ (bug remonté par Raphaël) : le premier jet de ce
-      // callback omettait cet appel — même correctif que les deux
-      // autres retours vers sceneRangee plus bas dans ce fichier
-      // (allerAuMenuPrincipal → onQuitter, demarrerIdentiteSiPremiereFois
-      // → onQuitter), qui, eux, l'appelaient déjà correctement.
-      onRetourAccueil: function () {
-        document.getElementById('menuPrincipal').style.display = 'none';
-        sceneRangee.style.display = '';
-        lienCoursPrives.style.display = '';
-        afficherConnexionChoix();
-      }
+      onModeProfesseur: function () { allerAuModeProfesseur(); }
     });
   }
 
@@ -2073,6 +1994,7 @@
 
   const panneau = document.getElementById('slPanneau');
   const slTitreForce = document.getElementById('slTitreForce');
+  const slTitreForceTexte = document.getElementById('slTitreForceTexte');
   const recherche = document.getElementById('slRecherche');
   const grilleConteneur = document.getElementById('slGrille');
   const grilleVide = document.getElementById('slVide');
@@ -2089,7 +2011,6 @@
     el.dataset.code = langue.code;
     el.setAttribute('role', 'option');
     el.innerHTML = `
-      <span class="sl-chip-badge" aria-hidden="true">${langue.code.toUpperCase()}</span>
       <span class="sl-chip-natif">${langue.natif}</span>
       <span class="sl-chip-code">${langue.fr}</span>`;
     el.addEventListener('click', () => choisir(langue.code));
@@ -2336,7 +2257,57 @@
     zone.classList.add('forme-obligatoire');
     slTitreForce.hidden = false;
     ouvrir();
+    demarrerRotationTitreForce();
   }
+
+  // ==================================================================
+  // 🆕 (18-08-2026) Rotation de "Quelle langue parles-tu ?" à travers
+  // DICO_QUELLE_LANGUE (voir plus haut) — voir le commentaire HTML sur
+  // #slTitreForce pour le raisonnement (reconnaissance visuelle plutôt
+  // que lecture, d'où le rythme rapide plutôt qu'un rythme de lecture).
+  // ==================================================================
+  const DELAI_ROTATION_TITRE_FORCE = 1000; // 1s/langue, demande de Raphaël
+  const REDUIRE_MOUVEMENT = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  let minuteurRotationTitreForce = null;
+  let indexRotationTitreForce = 0;
+  let rotationTitreForceEnPause = false;
+
+  function rotationTitreForce() {
+    if (rotationTitreForceEnPause) return;
+    // Léger fondu avant de changer le mot (voir .sl-titre-force-fondu en
+    // CSS), pour ne jamais remplacer le texte à la dure sous les yeux
+    // de l'élève.
+    slTitreForceTexte.classList.add('sl-titre-force-fondu');
+    setTimeout(() => {
+      indexRotationTitreForce = (indexRotationTitreForce + 1) % ORDRE_ROTATION_TITRE_FORCE.length;
+      const code = ORDRE_ROTATION_TITRE_FORCE[indexRotationTitreForce];
+      slTitreForceTexte.textContent = DICO_QUELLE_LANGUE[code] || DICO_QUELLE_LANGUE.fr;
+      slTitreForceTexte.classList.remove('sl-titre-force-fondu');
+    }, 220);
+  }
+
+  function demarrerRotationTitreForce() {
+    // 🆕 prefers-reduced-motion : reste figé sur le français déjà écrit
+    // dans le HTML, aucune rotation ne démarre — un élève sensible au
+    // mouvement ne doit jamais y être exposé.
+    if (REDUIRE_MOUVEMENT) return;
+    arreterRotationTitreForce();
+    indexRotationTitreForce = 0;
+    minuteurRotationTitreForce = setInterval(rotationTitreForce, DELAI_ROTATION_TITRE_FORCE);
+  }
+
+  function arreterRotationTitreForce() {
+    clearInterval(minuteurRotationTitreForce);
+    minuteurRotationTitreForce = null;
+  }
+
+  // Pause au survol ou au focus clavier (recherche, pastilles) : un
+  // élève qui prend son temps pour lire ou naviguer au clavier ne doit
+  // jamais avoir le mot sous les yeux qui change pendant qu'il regarde.
+  panneau.addEventListener('mouseenter', () => { rotationTitreForceEnPause = true; });
+  panneau.addEventListener('mouseleave', () => { rotationTitreForceEnPause = false; });
+  panneau.addEventListener('focusin', () => { rotationTitreForceEnPause = true; });
+  panneau.addEventListener('focusout', () => { rotationTitreForceEnPause = false; });
 
   function choisir(codeLangue) {
     langueActuelle = codeLangue;
@@ -2359,6 +2330,7 @@
     if (zone.classList.contains('forme-obligatoire')) {
       zone.classList.remove('forme-obligatoire');
       slTitreForce.hidden = true;
+      arreterRotationTitreForce();
       afficherConnexionChoix();
     }
     rafraichirLienCoursPrives();
@@ -2448,7 +2420,6 @@
   });
 
   fond.addEventListener('click', fermer);
-  boutonFermer.addEventListener('click', fermer);
 
   document.addEventListener('click', (e) => {
     if (!zone.contains(e.target) && estOuvert()) fermer();

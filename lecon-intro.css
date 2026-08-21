@@ -1,0 +1,62 @@
+/* ==================================================================
+   lecon-intro.css — carte titre plein écran au début d'une leçon
+   ("Leçon 1", "Leçon 2", etc.). Demande de Raphaël (session du
+   20-08-2026) : une image en gros format, qui apparaît avec une
+   animation et disparaît avec une belle animation, laissant place au
+   dialogue.
+
+   Entrée : léger rebond (même cubic-bezier "engageant" que les boutons
+   Connexion/Première leçon de index.html) — signature de mouvement du
+   site. Sortie : repli EXACTEMENT sur l'animation de sortie de
+   #ecranTitre dans index.html (scale 1.35 + fade) — la même façon dont
+   "Le français"/le logo se dissout à l'accueil, réutilisée ici pour que
+   l'arrivée dans une leçon se sente comme la continuité du même monde,
+   pas un effet différent inventé au hasard.
+
+   Même langage visuel que le reste du site (var(--x, repli) partout).
+   ================================================================== */
+
+.li-recouvrement {
+  position: fixed;
+  inset: 0;
+  z-index: 400;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--fond, #F2EDE3);
+  cursor: pointer; /* toute la zone est "tap pour passer" — voir li-passer dans le JS */
+}
+
+.li-image {
+  width: min(85vw, 780px);
+  height: auto;
+  opacity: 0;
+  transform: scale(0.82);
+  transition: transform 0.55s cubic-bezier(.34, 1.6, .4, 1), opacity 0.4s ease;
+}
+.li-recouvrement.li-visible .li-image {
+  opacity: 1;
+  transform: scale(1);
+}
+/* 🆕 Sortie — identique à #ecranTitre.ecran-titre-sortie .ecran-titre-img
+   dans index.html (même grandissement, même disparition) : signature de
+   mouvement commune à toute "annonce" du site (l'accueil, puis chaque
+   leçon), plutôt qu'une animation de sortie propre à chaque instance. */
+.li-recouvrement.li-sortie .li-image {
+  transition: transform 0.5s cubic-bezier(.25, .8, .3, 1.6), opacity 0.4s ease;
+  transform: scale(1.35);
+  opacity: 0;
+}
+.li-recouvrement.li-sortie { pointer-events: none; }
+
+@media (max-width: 460px) {
+  .li-image { width: min(90vw, 380px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .li-image,
+  .li-recouvrement.li-sortie .li-image {
+    transition-duration: 0.15s;
+    transform: none !important;
+  }
+}

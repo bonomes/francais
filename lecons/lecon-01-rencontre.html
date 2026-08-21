@@ -11,9 +11,83 @@
      NIVEAUX). Vit À LA RACINE de lecons/ (un seul niveau sous la racine du
      site, PAS deux comme dialogues/d1/) — donc chemins relatifs en ../
      partout ci-dessous, jamais ../../. -->
+<!-- ==================================================================
+     🆕 (retour Raphaël, 21-08-2026) GUIDE DE RÉUTILISATION — pense-bête
+     pour quiconque reprend CE fichier comme point de départ de
+     lecon-02-*.html, lecon-03-*.html, etc. Trois catégories ci-dessous.
+     Rien de tout ça n'est appliqué automatiquement — c'est un guide,
+     pas un mécanisme : à chaque nouvelle leçon, relire cette liste et
+     ajuster/retirer à la main ce qui ne s'applique pas.
+
+     ✅ RÉUTILISABLE TEL QUEL (copier sans réfléchir) :
+       - Les deux <link> ci-dessous (sac-a-dos.css, mot-tooltip.css) et
+         les <script> en bas de page (progression.js, mot-tooltip.js) —
+         infrastructure commune à toute leçon.
+       - Le bouton .retour (coin supérieur gauche, mène à ../parcours.html).
+       - Le patron .cadre-scene / .scene-image / .zone-bulle-overlay /
+         .bulle-dialogue — bulle EN SUPERPOSITION sur l'image (jamais
+         poussée), voir commentaire détaillé plus bas sur .cadre-scene.
+       - Le patron .nav-bas / .nav-bouton (Précédent/Suivant + compteur).
+       - langueActuelle() et la fonction creerImage() (repli gracieux
+         "image pas encore prête" — le repli reste TOUJOURS silencieux/
+         invisible dans une séquence plein écran type genèse, voir plus
+         bas, mais s'affiche normalement dans le dialogue courant).
+       - L'intégration mot-tooltip : window.KebBekMotTooltip.creerMotCliquable(texte, CHAPITRE_ID)
+         pour chaque bulle de dialogue.
+       - La convention de dossier images/lecons/ (UN SEUL dossier
+         partagé pour toutes les leçons, PAS un sous-dossier par leçon —
+         les noms de fichiers se préfixent par identifiant de leçon pour
+         éviter les collisions, ex. lecon-01-rencontre_e1.webp).
+       - #sceneLecon cité (visibility:hidden) tant qu'une intro n'est pas
+         terminée, révélé ensuite via .revele — évite tout saut de mise
+         en page au moment de la révélation.
+
+     🔁 RÉUTILISABLE COMME PATRON, MAIS À RÉÉCRIRE LE CONTENU :
+       - CHAPITRE_ID (ici 'r1') — un identifiant unique par leçon,
+         doit correspondre à l'entrée du chapitre dans parcours.html.
+       - ETAPES / INTERFACE — structure de données réutilisable (tableau
+         d'étapes avec speaker/texte/img/trad, dictionnaire de textes
+         d'interface par langue), mais CONTENU entièrement propre à
+         chaque leçon.
+       - La carte titre plein écran EN GÉNÉRAL (voir catégorie suivante
+         pour le choix du mécanisme).
+
+     🚫 SPÉCIFIQUE À CETTE LEÇON (r1), NE PAS COPIER TEL QUEL :
+       - #introPleinEcran / GENESE / jouerGenese() — la séquence
+         MUETTE, plein écran, fond NOIR (noir → illumination → Keb seul
+         → Bek apparaît → ils se remarquent) est la genèse DE L'UNIVERS
+         DES BONOMES lui-même, propre à la toute première rencontre de
+         Keb et Bek. Aucune autre leçon n'a de raison de la rejouer.
+         → Pour une future leçon qui a simplement besoin d'une carte
+         titre (SANS narration muette avant), utiliser plutôt le module
+         partagé window.KebBekLeconIntro (voir ../lecon-intro.js/.css,
+         volontairement NON chargés ici — voir juste en dessous). Il
+         gère déjà tout seul : plein écran, entrée/sortie animées,
+         tap-pour-passer. Fond actuellement beige (var(--fond)), pas
+         noir — la version noire pleine écran ci-dessus reste propre à
+         r1 tant qu'aucune autre leçon n'a besoin du même traitement.
+       - Si une future leçon a SA PROPRE narration spéciale (différente
+         de la genèse), le patron #introPleinEcran ci-dessous peut
+         servir de modèle technique (calque fixed/inset:0/fond noir,
+         tableau d'étapes avec durées, tap-pour-passer) — mais son
+         CONTENU (le tableau GENESE) doit être entièrement réécrit, ce
+         n'est jamais un simple copier-coller.
+       - #etapePrenom / soumettrePrenom() — capture du PRÉNOM
+         uniquement, spécifique à cette toute première leçon (le reste
+         de l'identité — genre, âge, nationalité — est capté plus tard
+         par d'autres leçons via exercices.js "choix_identite", pas par
+         ce mécanisme ad hoc).
+     ================================================================== -->
 <link rel="stylesheet" href="../sac-a-dos.css">
 <link rel="stylesheet" href="../mot-tooltip.css">
-<link rel="stylesheet" href="../lecon-intro.css">
+<!-- 🆕 lecon-intro.css / .js volontairement NON chargés ici — cette
+     leçon a sa propre séquence d'ouverture plein écran auto-suffisante
+     (voir #introPleinEcran, GENESE, jouerGenese() plus bas), fond noir,
+     pensée spécifiquement pour la genèse de Keb et Bek. Le module
+     partagé KebBekLeconIntro (voir guide de réutilisation ci-dessus)
+     n'est PAS utilisé nulle part sur le site pour l'instant — construit
+     en prévision de futures leçons plus simples, il reste disponible
+     tel quel pour elles, à charger ici SI une future leçon en a besoin. -->
 <style>
   :root {
     --fond: #F2EDE3;
@@ -63,11 +137,16 @@
   /* ==================================================================
      Scène — contenu masqué (visibility:hidden, pas display:none : garde
      sa place dans la mise en page pour que rien ne saute une fois révélé)
-     tant que la carte titre (lecon-intro.js) n'a pas fini de disparaître.
+     tant que la séquence plein écran (#introPleinEcran, carte titre +
+     genèse) n'est pas terminée — voir demarrerLecon() en JS.
      ================================================================== */
   #sceneLecon {
     visibility: hidden;
-    width: min(94vw, 640px);
+    /* 🆕 (retour Raphaël, 21-08-2026) 640px → 1100px : le cadre restait
+       petit même sur un grand écran d'ordinateur, où il y avait
+       largement la place d'en profiter. 94vw inchangé pour le mobile
+       (déjà fluide, pas concerné par ce plafond). */
+    width: min(94vw, 1100px);
     margin: 64px auto 32px;
     display: flex;
     flex-direction: column;
@@ -85,6 +164,52 @@
      jamais déplacé par la bulle, qui peut chevaucher son bas sans
      jamais rien pousser. Images aussi plus grandes qu'avant (voir
      largeur du conteneur, min(94vw, 640px) contre ~500px sur d1). */
+  /* ==================================================================
+     🆕 (retour Raphaël, session du 21-08-2026) Intro PLEIN ÉCRAN — carte
+     titre + genèse muette ne jouent PLUS dans .cadre-scene (le petit
+     cadre boxé du dialogue, largeur min(94vw,640px)) : c'était le bug
+     signalé — seul cet encadré passait au noir, jamais l'écran entier,
+     et ça restait visuellement "encastré" dans la structure habituelle
+     d'une leçon (boutons, compteur...) au lieu d'être une séquence à
+     part. #introPleinEcran est un calque fixed, inset:0, indépendant de
+     tout le reste de la page (#sceneLecon reste caché — visibility:
+     hidden, voir plus haut — tant que cette séquence n'est pas
+     terminée). z-index sous .retour (300) : la flèche de sortie reste
+     cliquable même pendant la genèse, un enfant doit toujours pouvoir
+     quitter. object-fit: contain (pas cover) : les scènes de la genèse
+     ne sont pas forcément pensées pour un cadrage bord-à-bord sur
+     n'importe quel écran ; le "letterboxing" naturel sur fond noir sert
+     justement l'effet recherché ("tout l'écran passe au noir"),
+     jamais un rognage imprévisible des personnages. */
+  .intro-plein-ecran {
+    position: fixed;
+    inset: 0;
+    z-index: 200;
+    background: #000000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: opacity 0.6s ease;
+  }
+  .intro-plein-ecran.intro-cachee {
+    opacity: 0;
+    pointer-events: none;
+  }
+  .intro-image {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.6s ease;
+  }
+  .intro-image img { width: 100%; height: 100%; object-fit: contain; }
+  /* Même intention que l'ancien .scene-image-genese : une image pas
+     encore prête doit rester un noir sobre, jamais un message d'erreur
+     qui casserait l'ambiance de la genèse. */
+  .intro-image .scene-image-repli { display: none; }
+
   .cadre-scene {
     position: relative;
     width: 100%;
@@ -101,7 +226,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: #000000; /* 🆕 noir par défaut — la genèse (voir GENESE plus bas) commence dans le noir avant toute image */
+    background: #000000; /* fond neutre le temps qu'une image de dialogue se charge (la genèse, elle, joue désormais dans #introPleinEcran, plus haut) */
     transition: opacity 0.6s ease;
   }
   .scene-image img { width: 100%; height: 100%; object-fit: cover; }
@@ -111,10 +236,6 @@
     text-align: center;
     padding: 0 24px;
   }
-  /* 🆕 Pendant la genèse, fond noir + pas de texte de repli visible (une
-     image manquante doit rester un noir sobre, pas un message d'erreur
-     qui casserait l'ambiance) — voir jouerGenese() plus bas. */
-  .scene-image.scene-image-genese .scene-image-repli { display: none; }
 
   #navDialogue,
   .zone-bulle-overlay {
@@ -221,6 +342,14 @@
 
 <a class="retour" href="../parcours.html" aria-label="Retour au parcours">‹</a>
 
+<!-- 🆕 Séquence d'ouverture (carte titre + genèse muette) — plein écran,
+     complètement hors de la structure habituelle d'une leçon (voir
+     commentaire CSS de .intro-plein-ecran ci-dessus). #sceneLecon reste
+     caché derrière tant que cette séquence n'est pas terminée. -->
+<div class="intro-plein-ecran" id="introPleinEcran">
+  <div class="intro-image" id="introImage"></div>
+</div>
+
 <div id="sceneLecon">
 
   <div class="cadre-scene">
@@ -256,7 +385,6 @@
 
 <script src="../progression.js"></script>
 <script src="../mot-tooltip.js"></script>
-<script src="../lecon-intro.js"></script>
 <script>
 (function () {
   'use strict';
@@ -269,16 +397,23 @@
     try { return localStorage.getItem('kebbek_langue') || 'en'; } catch (e) { return 'en'; }
   }
 
-  // 🆕 (demande de Raphaël, 20-08-2026) Séquence "genèse" — noir complet,
-  // illumination progressive sur une scène vide, Keb créé/dessiné erre
-  // seul, puis Bek créée à son tour, puis ils se remarquent. Purement
-  // visuelle (aucun texte/bulle) : c'est la toute première fois que Keb
-  // et Bek se rencontrent EN TANT QUE BONOMES dans cet univers — une
-  // genèse distincte de toute autre histoire déjà existante des
-  // personnages. `img: null` = noir total (aucune image, voir
-  // jouerGenese()). Illustrations pas encore prêtes — repli graphique
-  // (voir creerImage()) pour chaque étape en attendant.
+  // 🆕 (demande de Raphaël, 20-08-2026 ; restructuré 21-08-2026) Séquence
+  // "genèse" — carte titre, puis noir complet, illumination progressive
+  // sur une scène vide, Keb créé/dessiné erre seul, puis Bek créée à
+  // son tour, puis ils se remarquent. Purement visuelle (aucun
+  // texte/bulle) : c'est la toute première fois que Keb et Bek se
+  // rencontrent EN TANT QUE BONOMES dans cet univers — une genèse
+  // distincte de toute autre histoire déjà existante des personnages.
+  // `img: null` = noir total (aucune image, voir jouerGenese()).
+  // Illustrations de la genèse elle-même pas encore prêtes — repli
+  // graphique (voir creerImage()) pour chaque étape en attendant ; la
+  // carte titre, elle, existe déjà (l1_titre_01.webp).
+  // 🆕 Joue désormais entièrement dans #introPleinEcran (plein écran,
+  // hors de la structure habituelle d'une leçon) plutôt que dans le
+  // petit cadre de dialogue — voir jouerGenese() plus bas, qui cible
+  // #introImage au lieu de #sceneImage.
   const GENESE = [
+    { img: 'l1_titre_01.webp', duree: 2200 },
     { img: null, duree: 1100 },
     { img: 'lecon-01-rencontre_genese_illumination.webp', duree: 1300 },
     { img: 'lecon-01-rencontre_genese_keb_seul.webp', duree: 1900 },
@@ -335,7 +470,7 @@
       repli.textContent = 'Image not ready yet (' + nomFichier + ')';
       conteneur.appendChild(repli);
     };
-    img.src = '../images/lecon-01-rencontre/' + nomFichier;
+    img.src = '../images/lecons/' + nomFichier;
     img.alt = '';
     return conteneur;
   }
@@ -349,34 +484,35 @@
   const elBulleOverlay = document.querySelector('.zone-bulle-overlay');
   const elEtapePrenom = document.getElementById('etapePrenom');
   const elEtapeFin = document.getElementById('etapeFin');
-  const elCadreScene = document.querySelector('.cadre-scene');
+  const elSceneLecon = document.getElementById('sceneLecon');
+  // 🆕 Éléments de la séquence plein écran (carte titre + genèse) —
+  // remplacent elCadreScene comme cible de jouerGenese() ci-dessous.
+  const elIntroPleinEcran = document.getElementById('introPleinEcran');
+  const elIntroImage = document.getElementById('introImage');
 
   function attendre(ms) {
     return new Promise(function (resolve) { setTimeout(resolve, ms); });
   }
 
-  // Tap n'importe où sur la scène pendant la genèse = passer directement
-  // à la rencontre (même intention que le tap-pour-passer de
-  // lecon-intro.js) — un élève qui revoit la leçon n'a pas à revivre
-  // toute la genèse à chaque fois.
+  // Tap n'importe où sur l'écran pendant la genèse = passer directement
+  // à la rencontre — un élève qui revoit la leçon n'a pas à revivre
+  // toute la genèse (carte titre incluse) à chaque fois.
   let genesePassee = false;
   function passerGenese() { genesePassee = true; }
 
   async function jouerGenese() {
     const reduireMouvement = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    elCadreScene.addEventListener('click', passerGenese);
+    elIntroPleinEcran.addEventListener('click', passerGenese);
     for (let i = 0; i < GENESE.length && !genesePassee; i++) {
       const pas = GENESE[i];
-      elScene.classList.add('scene-image-genese');
-      elScene.style.opacity = '0';
+      elIntroImage.style.opacity = '0';
       await attendre(reduireMouvement ? 20 : 250);
-      elScene.innerHTML = '';
-      if (pas.img) elScene.appendChild(creerImage(pas.img));
-      elScene.style.opacity = '1';
+      elIntroImage.innerHTML = '';
+      if (pas.img) elIntroImage.appendChild(creerImage(pas.img));
+      elIntroImage.style.opacity = '1';
       await attendre(reduireMouvement ? 40 : pas.duree);
     }
-    elCadreScene.removeEventListener('click', passerGenese);
-    elScene.classList.remove('scene-image-genese');
+    elIntroPleinEcran.removeEventListener('click', passerGenese);
   }
 
   let etape = 0;
@@ -455,15 +591,24 @@
 
   btnPrecedent.textContent = '‹ ' + texteInterface('precedent');
 
-  // ---------- Démarrage : carte titre plein écran, puis genèse muette, puis dialogue ----------
-  const elSceneLecon = document.getElementById('sceneLecon');
-  window.KebBekLeconIntro.afficher('../images/lecon-01-rencontre/l1_titre_01.webp', { alt: 'Leçon 1' }).then(async function () {
-    elSceneLecon.classList.add('revele');
+  // ---------- Démarrage : carte titre + genèse (plein écran, voir
+  // #introPleinEcran), PUIS seulement le dialogue/les boutons habituels.
+  // 🆕 (retour Raphaël, 21-08-2026) Ne passe plus par
+  // window.KebBekLeconIntro.afficher(...) — cette leçon gère sa propre
+  // séquence d'ouverture, entièrement plein écran, hors de la structure
+  // habituelle d'une leçon (voir GENESE et jouerGenese() plus haut).
+  // rendreEtape() peuple #sceneImage AVANT que #sceneLecon ne devienne
+  // visible, pour qu'il n'y ait jamais de cadre vide entrevu au moment
+  // du basculement.
+  async function demarrerLecon() {
     await jouerGenese();
+    elIntroPleinEcran.classList.add('intro-cachee');
+    rendreEtape();
+    elSceneLecon.classList.add('revele');
     navDialogue.classList.add('genese-terminee');
     elBulleOverlay.classList.add('genese-terminee');
-    rendreEtape();
-  });
+  }
+  demarrerLecon();
 
 })();
 </script>

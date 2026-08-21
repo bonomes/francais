@@ -2140,7 +2140,14 @@
     bouton.addEventListener('mouseenter', () => apercuConnexionChoix(bouton.dataset.cible));
     bouton.addEventListener('mouseleave', masquerApercuConnexionChoix);
   });
-  btnPremiereLeconIndex.addEventListener('click', () => demarrerIdentiteSiPremiereFois('accueil'));
+  // 🆕 (20-08-2026) "Première leçon" mène maintenant directement à la
+  // vraie Leçon 1 (lecons/lecon-01-rencontre.html), qui capte elle-même
+  // le prénom au fil de son dialogue — plus besoin de passer par
+  // demarrerIdentiteSiPremiereFois()/#sequenceIdentite pour ce chemin.
+  // Cette fonction et #sequenceIdentite restent utilisés ailleurs (voir
+  // demarrerReconnexionDepuisIndex() et onCreerCompte dans
+  // menu-principal.js plus bas) — on ne les retire donc PAS du fichier.
+  btnPremiereLeconIndex.addEventListener('click', () => { window.location.href = 'lecons/lecon-01-rencontre.html'; });
   btnConnexionIndex.addEventListener('click', () => demarrerReconnexionDepuisIndex('accueil'));
 
   const panneau = document.getElementById('slPanneau');

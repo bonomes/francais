@@ -1975,7 +1975,14 @@
   // de démo/aperçu, aussi tentant soit-il pour visualiser le rendu.
   const NIVEAUX = [
     { id: 'niveau-1', titre: 'Les salutations *', etat: 'actuel', chapitres: [
-        { id: 'd1', type: 'dialogue', titre: 'J\u2019ai faim', etat: 'actuel', reel: true, page: 'dialogues/d1/',
+        { id: 'r1', type: 'dialogue', titre: 'Rencontre', etat: 'actuel', reel: true, page: 'lecons/lecon-01-rencontre.html',
+          motsCles: ['salut', 'appeler', 'nom', 'enchanté', 'hello', 'name', 'nice to meet you'],
+          resume: {
+            fr: 'Keb et Bek se rencontrent pour la toute première fois — et te demandent enfin ton prénom. Ta première leçon.',
+            en: 'Keb and Bek meet for the very first time — and finally ask for your name. Your first lesson.'
+          },
+          image: 'images/lecons/lecon-01-rencontre/vignette_01.webp' },
+        { id: 'd1', type: 'dialogue', titre: 'J\u2019ai faim', etat: 'verrouille', reel: true, page: 'dialogues/d1/',
           motsCles: ['manger', 'faim', 'sandwich', 'impératif', 'nourriture', 'eat', 'hungry', 'food', 'imperative'],
           resume: {
             fr: 'Keb a faim et demande de l\u2019aide — Bek partage son sandwich. Un tout premier échange, simple et chaleureux, entre Keb et Bek.',

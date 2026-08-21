@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Leçon 1 — Keb &amp; Bek</title>
+<!-- Page à part entière, même situation que dialogues/d1/ et parcours.html :
+     chargée directement par le navigateur (via le bouton "Première leçon"
+     de index.html, ou depuis parcours.html une fois débloquée/verrouillée
+     comme n'importe quel autre chapitre — voir son entrée 'r1' dans
+     NIVEAUX). Vit À LA RACINE de lecons/ (un seul niveau sous la racine du
+     site, PAS deux comme dialogues/d1/) — donc chemins relatifs en ../
+     partout ci-dessous, jamais ../../. -->
+<link rel="stylesheet" href="../sac-a-dos.css">
+<link rel="stylesheet" href="../mot-tooltip.css">
+<link rel="stylesheet" href="../lecon-intro.css">
+<style>
+  :root {
+    --fond: #F2EDE3;
+    --brun: #665045;
+    --brun-fonce: #4A3B33;
+    --brun-clair: #8A7364;
+    --peche: #F0A98B;
+    --peche-fonce: #E08867;
+    --peche-pale: rgba(240, 169, 139, 0.16);
+    --peche-pale-vif: rgba(240, 169, 139, 0.30);
+    --vert-clair: #EAF3DE;
+    --ombre: rgba(102, 80, 69, 0.16);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background: var(--fond);
+    font-family: 'Baloo 2', sans-serif;
+    color: var(--brun-fonce);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .retour {
+    position: fixed;
+    top: 14px;
+    left: 14px;
+    z-index: 300;
+    width: 38px;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: #FFFFFF;
+    border: 1.5px solid var(--peche);
+    color: var(--peche-fonce);
+    font-size: 1.3rem;
+    text-decoration: none;
+    box-shadow: 2px 2px 8px var(--ombre);
+  }
+
+  /* ==================================================================
+     Scène — contenu masqué (visibility:hidden, pas display:none : garde
+     sa place dans la mise en page pour que rien ne saute une fois révélé)
+     tant que la carte titre (lecon-intro.js) n'a pas fini de disparaître.
+     ================================================================== */
+  #sceneLecon {
+    visibility: hidden;
+    width: min(94vw, 640px);
+    margin: 64px auto 32px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 18px;
+  }
+  #sceneLecon.revele { visibility: visible; }
+
+  /* ==================================================================
+     🆕 Bulle EN SUPERPOSITION sur l'image (demande de Raphaël, session du
+     20-08-2026) : contrairement à dialogue-d1.html (bulle avant l'image
+     dans le flux normal, donc pousse l'image quand le texte passe à 2
+     lignes), ici .zone-bulle-overlay est en position absolute PAR-DESSUS
+     .scene-image — un cadre à hauteur fixe (aspect-ratio ci-dessous),
+     jamais déplacé par la bulle, qui peut chevaucher son bas sans
+     jamais rien pousser. Images aussi plus grandes qu'avant (voir
+     largeur du conteneur, min(94vw, 640px) contre ~500px sur d1). */
+  .cadre-scene {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1408 / 768;
+    border-radius: 22px;
+    overflow: hidden;
+    background: #FFFFFF;
+    box-shadow: 4px 4px 18px var(--ombre);
+  }
+
+  .scene-image {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #000000; /* 🆕 noir par défaut — la genèse (voir GENESE plus bas) commence dans le noir avant toute image */
+    transition: opacity 0.6s ease;
+  }
+  .scene-image img { width: 100%; height: 100%; object-fit: cover; }
+  .scene-image-repli {
+    font-size: 0.85rem;
+    color: var(--brun-clair);
+    text-align: center;
+    padding: 0 24px;
+  }
+  /* 🆕 Pendant la genèse, fond noir + pas de texte de repli visible (une
+     image manquante doit rester un noir sobre, pas un message d'erreur
+     qui casserait l'ambiance) — voir jouerGenese() plus bas. */
+  .scene-image.scene-image-genese .scene-image-repli { display: none; }
+
+  #navDialogue,
+  .zone-bulle-overlay {
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.5s ease;
+  }
+  #navDialogue.genese-terminee,
+  .zone-bulle-overlay.genese-terminee { opacity: 1; pointer-events: auto; }
+  .zone-bulle-overlay.genese-terminee .bulle-dialogue { pointer-events: auto; }
+
+  .zone-bulle-overlay {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    padding: 0 16px 16px;
+    pointer-events: none; /* laisse les clics traverser vers l'image en dehors de la bulle elle-même */
+  }
+  .zone-bulle-overlay .bulle-dialogue { pointer-events: auto; }
+
+  .bulle-dialogue {
+    max-width: 88%;
+    background: rgba(255, 255, 255, 0.94);
+    backdrop-filter: blur(2px);
+    border-radius: 18px;
+    padding: 12px 18px;
+    font-size: 1.05rem;
+    line-height: 1.4;
+    box-shadow: 0 6px 20px rgba(74, 59, 51, 0.18);
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity 0.25s ease, transform 0.25s cubic-bezier(.2,.8,.3,1.2);
+  }
+  .bulle-dialogue.in { opacity: 1; transform: translateY(0); }
+  .bulle-dialogue.cote-bek { margin-left: auto; }
+  .bulle-dialogue.cote-question { margin: 0 auto; text-align: center; font-weight: 700; }
+
+  .nav-bas {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    gap: 12px;
+  }
+  .nav-bouton {
+    font-family: inherit;
+    font-weight: 700;
+    font-size: 0.95rem;
+    padding: 10px 22px;
+    border-radius: 999px;
+    border: 1.5px solid var(--peche);
+    background: #FFFFFF;
+    color: var(--brun-fonce);
+    cursor: pointer;
+    box-shadow: 0 3px 0 0 var(--peche), 2px 3px 8px var(--ombre);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+  .nav-bouton:hover { transform: translateY(-1px); }
+  .nav-bouton:active { transform: translateY(3px); box-shadow: 0 0 0 0 var(--peche), 1px 1px 4px var(--ombre); }
+  .nav-bouton:disabled { opacity: 0.4; cursor: default; box-shadow: none; transform: none; }
+  .nav-bouton-suivant { background: var(--peche-fonce); border-color: var(--peche-fonce); color: #FFFFFF; box-shadow: 0 3px 0 0 var(--brun-fonce), 2px 3px 8px var(--ombre); }
+  .nav-bouton-suivant:active { box-shadow: 0 0 0 0 var(--brun-fonce), 1px 1px 4px var(--ombre); }
+  #compteur { font-size: 0.85rem; color: var(--brun-clair); font-weight: 700; }
+
+  /* ---------- Étape prénom ---------- */
+  #etapePrenom {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    width: 100%;
+  }
+  .champ-prenom {
+    font-family: inherit;
+    font-size: 1.1rem;
+    text-align: center;
+    padding: 12px 20px;
+    border-radius: 999px;
+    border: 1.5px solid var(--peche);
+    width: min(80%, 320px);
+  }
+  .champ-prenom:focus { outline: 2px solid var(--peche-fonce); outline-offset: 2px; }
+
+  /* ---------- Étape finale ---------- */
+  #etapeFin {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    width: 100%;
+    text-align: center;
+  }
+  .message-fin { font-size: 1.15rem; font-weight: 700; }
+
+  @media (max-width: 460px) {
+    .bulle-dialogue { font-size: 0.95rem; padding: 10px 14px; }
+    .nav-bouton { padding: 9px 16px; font-size: 0.88rem; }
+  }
+</style>
+</head>
+<body>
+
+<a class="retour" href="../parcours.html" aria-label="Retour au parcours">‹</a>
+
+<div id="sceneLecon">
+
+  <div class="cadre-scene">
+    <div class="scene-image" id="sceneImage"></div>
+    <div class="zone-bulle-overlay">
+      <div class="bulle-dialogue" id="bulleDialogue"></div>
+    </div>
+  </div>
+
+  <div class="nav-bas" id="navDialogue">
+    <button type="button" class="nav-bouton" id="btnPrecedent">‹</button>
+    <span id="compteur"></span>
+    <button type="button" class="nav-bouton nav-bouton-suivant" id="btnSuivant">Suivant</button>
+  </div>
+
+  <!-- 🆕 Saisie du prénom — vraie capture (contrairement à l'ancienne
+       séquence identite-eleve.js pré-menu, retirée pour ce chemin) :
+       enregistrée via KebBekProgression.enregistrerIdentite(undefined,
+       undefined, prenom, undefined) — les autres champs (genre,
+       nationalité, adulte) restent intacts, captés plus tard par
+       d'autres leçons (exercices.js "choix_identite"). -->
+  <div id="etapePrenom">
+    <input type="text" class="champ-prenom" id="champPrenom" autocomplete="given-name" maxlength="30">
+    <button type="button" class="nav-bouton nav-bouton-suivant" id="btnValiderPrenom">Continuer</button>
+  </div>
+
+  <div id="etapeFin">
+    <p class="message-fin" id="messageFin"></p>
+    <button type="button" class="nav-bouton nav-bouton-suivant" id="btnTerminerLecon">Terminer</button>
+  </div>
+
+</div>
+
+<script src="../progression.js"></script>
+<script src="../mot-tooltip.js"></script>
+<script src="../lecon-intro.js"></script>
+<script>
+(function () {
+  'use strict';
+
+  const CHAPITRE_ID = 'r1';
+
+  // Même clé que sac-a-dos.js/menu-principal.js/dialogue-d1.html — un
+  // seul réglage de langue pour tout le site.
+  function langueActuelle() {
+    try { return localStorage.getItem('kebbek_langue') || 'en'; } catch (e) { return 'en'; }
+  }
+
+  // 🆕 (demande de Raphaël, 20-08-2026) Séquence "genèse" — noir complet,
+  // illumination progressive sur une scène vide, Keb créé/dessiné erre
+  // seul, puis Bek créée à son tour, puis ils se remarquent. Purement
+  // visuelle (aucun texte/bulle) : c'est la toute première fois que Keb
+  // et Bek se rencontrent EN TANT QUE BONOMES dans cet univers — une
+  // genèse distincte de toute autre histoire déjà existante des
+  // personnages. `img: null` = noir total (aucune image, voir
+  // jouerGenese()). Illustrations pas encore prêtes — repli graphique
+  // (voir creerImage()) pour chaque étape en attendant.
+  const GENESE = [
+    { img: null, duree: 1100 },
+    { img: 'lecon-01-rencontre_genese_illumination.webp', duree: 1300 },
+    { img: 'lecon-01-rencontre_genese_keb_seul.webp', duree: 1900 },
+    { img: 'lecon-01-rencontre_genese_bek_apparait.webp', duree: 1900 },
+    { img: 'lecon-01-rencontre_genese_ils_se_remarquent.webp', duree: 1600 }
+  ];
+
+  const ETAPES = [
+    { speaker: 'keb', texte: "Salut ! Comment tu t’appelles ?", img: 'lecon-01-rencontre_e1.webp', trad: { en: "Hi! What’s your name?", es: "¡Hola! ¿Cómo te llamas?", it: "Ciao! Come ti chiami?", pt: "Oi! Como te chamas?", ca: "Hola! Com et dius?", eo: "Saluton! Kiel vi nomiĝas?", zh: "你好！你叫什么名字？", ja: "やあ！名前は何？", ko: "안녕! 이름이 뭐야?", vi: "Chào! Bạn tên gì?", ht: "Alo! Ki jan ou rele?", tl: "Hi! Ano ang pangalan mo?", id: "Hai! Siapa namamu?", nl: "Hoi! Hoe heet je?", de: "Hallo! Wie heißt du?", fa: "سلام! اسمت چیه؟", sv: "Hej! Vad heter du?", no: "Hei! Hva heter du?", ru: "Привет! Как тебя зовут?" } },
+    { speaker: 'bek', texte: "Je m’appelle Bek, et toi ?", img: 'lecon-01-rencontre_e2.webp', trad: { en: "My name is Bek, and you?", es: "Me llamo Bek, ¿y tú?", it: "Io mi chiamo Bek, e tu?", pt: "Eu me chamo Bek, e tu?", ca: "Em dic Bek, i tu?", eo: "Mi nomiĝas Bek, kaj vi?", zh: "我叫贝克，你呢？", ja: "僕はベックだよ、君は？", ko: "난 벡이야, 너는?", vi: "Mình tên là Bek, còn bạn?", ht: "Mwen rele Bek, e ou menm?", tl: "Ako si Bek, ikaw?", id: "Namaku Bek, kalau kamu?", nl: "Ik heet Bek, en jij?", de: "Ich heiße Bek, und du?", fa: "اسم من بکه؛ تو چی؟", sv: "Jag heter Bek, och du?", no: "Jeg heter Bek, og du?", ru: "Меня зовут Бек, а тебя?" } },
+    { speaker: 'keb', texte: "Je m’appelle Keb.", img: 'lecon-01-rencontre_e3.webp', trad: { en: "My name is Keb.", es: "Me llamo Keb.", it: "Io mi chiamo Keb.", pt: "Eu me chamo Keb.", ca: "Em dic Keb.", eo: "Mi nomiĝas Keb.", zh: "我叫凯布。", ja: "僕はケブだよ。", ko: "난 케브야.", vi: "Mình tên là Keb.", ht: "Mwen rele Keb.", tl: "Ako si Keb.", id: "Namaku Keb.", nl: "Ik heet Keb.", de: "Ich heiße Keb.", fa: "اسم من کبه.", sv: "Jag heter Keb.", no: "Jeg heter Keb.", ru: "Меня зовут Кеб." } },
+    { speaker: 'bek', texte: "Enchantée, Keb !", img: 'lecon-01-rencontre_e4.webp', trad: { en: "Nice to meet you, Keb!", es: "¡Encantada, Keb!", it: "Piacere, Keb!", pt: "Prazer, Keb!", ca: "Encantada, Keb!", eo: "Pleĝas, Keb!", zh: "很高兴认识你，凯布！", ja: "会えて嫌しい、ケブ！", ko: "만나서 반가워, 케브!", vi: "Rất vui được gặp bạn, Keb!", ht: "Kontan konnen w, Keb!", tl: "Ikinagagalak kitang makilala, Keb!", id: "Senang berkenalan denganmu, Keb!", nl: "Leuk je te ontmoeten, Keb!", de: "Freut mich, Keb!", fa: "از آشناییت خوشوقتم، کب!", sv: "Trevligt att träffas, Keb!", no: "Hyggelig å treffe deg, Keb!", ru: "Приятно познакомиться, Кеб!" } },
+    { speaker: 'keb', texte: "Enchanté, Bek !", img: 'lecon-01-rencontre_e5.webp', trad: { en: "Nice to meet you, Bek!", es: "¡Encantado, Bek!", it: "Piacere, Bek!", pt: "Prazer, Bek!", ca: "Encantat, Bek!", eo: "Pleĝas, Bek!", zh: "很高兴认识你，贝克！", ja: "会えて嫌しい、ベック！", ko: "만나서 반가워, 벡!", vi: "Rất vui được gặp bạn, Bek!", ht: "Kontan konnen w, Bek!", tl: "Ikinagagalak kitang makilala, Bek!", id: "Senang berkenalan denganmu, Bek!", nl: "Leuk je te ontmoeten, Bek!", de: "Freut mich, Bek!", fa: "از آشناییت خوشوقتم، بک!", sv: "Trevligt att träffas, Bek!", no: "Hyggelig å treffe deg, Bek!", ru: "Приятно познакомиться, Бек!" } },
+    { speaker: 'question', texte: "Et toi, comment tu t’appelles ?", img: 'lecon-01-rencontre_e6.webp', trad: { en: "And you, what’s your name?", es: "¿Y tú, cómo te llamas?", it: "E tu, come ti chiami?", pt: "E tu, como te chamas?", ca: "I tu, com et dius?", eo: "Kaj vi, kiel vi nomiĝas?", zh: "那你呢，你叫什么名字？", ja: "では君は？名前は何？", ko: "그럼 너는, 이름이 뭐야?", vi: "Còn bạn, bạn tên gì?", ht: "E ou menm, ki jan ou rele?", tl: "Ikaw naman, ano ang pangalan mo?", id: "Kalau kamu, siapa namamu?", nl: "En jij, hoe heet je?", de: "Und du, wie heißt du?", fa: "تو چی؟ اسمت چیه؟", sv: "Och du, vad heter du?", no: "Og du, hva heter du?", ru: "А тебя, как тебя зовут?" } },
+  ];
+
+  const INTERFACE = {
+    fr: { precedent: "Précédent", continuer: "Continuer", terminer: "Terminer", placeholderPrenom: "Ton prénom", messageFin: "Enchanté, {prenom} !" },
+    en: { precedent: "Back", continuer: "Continue", terminer: "Finish", placeholderPrenom: "Your first name", messageFin: "Nice to meet you, {prenom}!" },
+    es: { precedent: "Atrás", continuer: "Continuar", terminer: "Terminar", placeholderPrenom: "Tu nombre", messageFin: "¡Encantados, {prenom}!" },
+    it: { precedent: "Indietro", continuer: "Continua", terminer: "Fine", placeholderPrenom: "Il tuo nome", messageFin: "Piacere, {prenom}!" },
+    pt: { precedent: "Voltar", continuer: "Continuar", terminer: "Terminar", placeholderPrenom: "O teu nome", messageFin: "Prazer, {prenom}!" },
+    ca: { precedent: "Enrere", continuer: "Continua", terminer: "Acaba", placeholderPrenom: "El teu nom", messageFin: "Encantats, {prenom}!" },
+    eo: { precedent: "Reen", continuer: "Daŭrigi", terminer: "Fini", placeholderPrenom: "Via nomo", messageFin: "Pleĝas, {prenom}!" },
+    zh: { precedent: "返回", continuer: "继续", terminer: "完成", placeholderPrenom: "你的名字", messageFin: "很高兴认识你，{prenom}！" },
+    ja: { precedent: "戻る", continuer: "続ける", terminer: "終了", placeholderPrenom: "お前の名前", messageFin: "会えて嫌しい、{prenom}！" },
+    ko: { precedent: "뒤로", continuer: "계속", terminer: "완료", placeholderPrenom: "네 이름", messageFin: "만나서 반가워, {prenom}!" },
+    vi: { precedent: "Quay lại", continuer: "Tiếp tục", terminer: "Hoàn thành", placeholderPrenom: "Tên của bạn", messageFin: "Rất vui được gặp bạn, {prenom}!" },
+    ht: { precedent: "Tounen", continuer: "Kontinye", terminer: "Fini", placeholderPrenom: "Non ou", messageFin: "Kontan konnen w, {prenom}!" },
+    tl: { precedent: "Bumalik", continuer: "Magpatuloy", terminer: "Tapusin", placeholderPrenom: "Ang pangalan mo", messageFin: "Ikinagagalak kitang makilala, {prenom}!" },
+    id: { precedent: "Kembali", continuer: "Lanjut", terminer: "Selesai", placeholderPrenom: "Namamu", messageFin: "Senang berkenalan denganmu, {prenom}!" },
+    nl: { precedent: "Terug", continuer: "Verder", terminer: "Klaar", placeholderPrenom: "Je voornaam", messageFin: "Leuk je te ontmoeten, {prenom}!" },
+    de: { precedent: "Zurück", continuer: "Weiter", terminer: "Fertig", placeholderPrenom: "Dein Vorname", messageFin: "Freut mich, {prenom}!" },
+    fa: { precedent: "بازگشت", continuer: "ادامه", terminer: "پایان", placeholderPrenom: "اسم تو", messageFin: "از آشناییت خوشوقتم، {prenom}!" },
+    sv: { precedent: "Tillbaka", continuer: "Fortsätt", terminer: "Klart", placeholderPrenom: "Ditt förnamn", messageFin: "Trevligt att träffas, {prenom}!" },
+    no: { precedent: "Tilbake", continuer: "Fortsett", terminer: "Ferdig", placeholderPrenom: "Fornavnet ditt", messageFin: "Hyggelig å treffe deg, {prenom}!" },
+    ru: { precedent: "Назад", continuer: "Далее", terminer: "Готово", placeholderPrenom: "Твоё имя", messageFin: "Приятно познакомиться, {prenom}!" },
+  };
+
+  function texteInterface(cle) {
+    const dict = INTERFACE[langueActuelle()] || INTERFACE.en;
+    return dict[cle] || INTERFACE.en[cle];
+  }
+
+  // ---------- Image de scène — repli gracieux tant que l'art n'existe
+  // pas encore (même patron que creerImage() dans dialogue-d1.html). ----------
+  function creerImage(nomFichier) {
+    const conteneur = document.createElement('div');
+    const img = new Image();
+    img.onload = function () { conteneur.appendChild(img); };
+    img.onerror = function () {
+      const repli = document.createElement('div');
+      repli.className = 'scene-image-repli';
+      repli.textContent = 'Image not ready yet (' + nomFichier + ')';
+      conteneur.appendChild(repli);
+    };
+    img.src = '../images/lecon-01-rencontre/' + nomFichier;
+    img.alt = '';
+    return conteneur;
+  }
+
+  const elScene = document.getElementById('sceneImage');
+  const elBulle = document.getElementById('bulleDialogue');
+  const elCompteur = document.getElementById('compteur');
+  const btnPrecedent = document.getElementById('btnPrecedent');
+  const btnSuivant = document.getElementById('btnSuivant');
+  const navDialogue = document.getElementById('navDialogue');
+  const elBulleOverlay = document.querySelector('.zone-bulle-overlay');
+  const elEtapePrenom = document.getElementById('etapePrenom');
+  const elEtapeFin = document.getElementById('etapeFin');
+  const elCadreScene = document.querySelector('.cadre-scene');
+
+  function attendre(ms) {
+    return new Promise(function (resolve) { setTimeout(resolve, ms); });
+  }
+
+  // Tap n'importe où sur la scène pendant la genèse = passer directement
+  // à la rencontre (même intention que le tap-pour-passer de
+  // lecon-intro.js) — un élève qui revoit la leçon n'a pas à revivre
+  // toute la genèse à chaque fois.
+  let genesePassee = false;
+  function passerGenese() { genesePassee = true; }
+
+  async function jouerGenese() {
+    const reduireMouvement = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    elCadreScene.addEventListener('click', passerGenese);
+    for (let i = 0; i < GENESE.length && !genesePassee; i++) {
+      const pas = GENESE[i];
+      elScene.classList.add('scene-image-genese');
+      elScene.style.opacity = '0';
+      await attendre(reduireMouvement ? 20 : 250);
+      elScene.innerHTML = '';
+      if (pas.img) elScene.appendChild(creerImage(pas.img));
+      elScene.style.opacity = '1';
+      await attendre(reduireMouvement ? 40 : pas.duree);
+    }
+    elCadreScene.removeEventListener('click', passerGenese);
+    elScene.classList.remove('scene-image-genese');
+  }
+
+  let etape = 0;
+
+  function rendreEtape() {
+    const def = ETAPES[etape];
+    elCompteur.textContent = (etape + 1) + ' / ' + ETAPES.length;
+    btnPrecedent.disabled = (etape === 0);
+    btnSuivant.textContent = (etape === ETAPES.length - 1) ? texteInterface('continuer') : texteInterface('continuer');
+
+    elBulle.classList.remove('in');
+    elBulle.className = 'bulle-dialogue cote-' + def.speaker;
+    window.KebBekMotTooltip.fermer();
+    elBulle.innerHTML = '';
+    elBulle.appendChild(window.KebBekMotTooltip.creerMotCliquable(def.texte, CHAPITRE_ID));
+    requestAnimationFrame(() => requestAnimationFrame(() => elBulle.classList.add('in')));
+
+    elScene.innerHTML = '';
+    elScene.appendChild(creerImage(def.img));
+  }
+
+  btnPrecedent.addEventListener('click', function () {
+    if (etape === 0) return;
+    etape -= 1;
+    rendreEtape();
+  });
+
+  btnSuivant.addEventListener('click', function () {
+    if (etape < ETAPES.length - 1) {
+      etape += 1;
+      rendreEtape();
+      return;
+    }
+    // Dernière étape de la démonstration ("Et toi, comment tu
+    // t'appelles ?") — place à la vraie saisie.
+    window.KebBekMotTooltip.fermer();
+    navDialogue.style.display = 'none';
+    elEtapePrenom.style.display = 'flex';
+    document.getElementById('champPrenom').focus();
+  });
+
+  document.getElementById('champPrenom').placeholder = texteInterface('placeholderPrenom');
+
+  function soumettrePrenom() {
+    const champ = document.getElementById('champPrenom');
+    const prenom = champ.value.trim();
+    if (!prenom) { champ.focus(); return; }
+
+    if (window.KebBekProgression) {
+      window.KebBekProgression
+        .enregistrerIdentite(undefined, undefined, prenom, undefined)
+        .catch(function (e) { console.warn('lecon-01-rencontre.html : échec de l\u2019enregistrement du prénom.', e); });
+    } else {
+      console.warn('KebBekProgression indisponible — prénom non enregistré.', prenom);
+    }
+
+    elEtapePrenom.style.display = 'none';
+    elEtapeFin.style.display = 'flex';
+    document.getElementById('messageFin').textContent = texteInterface('messageFin').replace('{prenom}', prenom);
+    document.getElementById('btnTerminerLecon').textContent = texteInterface('terminer');
+  }
+
+  document.getElementById('btnValiderPrenom').addEventListener('click', soumettrePrenom);
+  document.getElementById('champPrenom').addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') { e.preventDefault(); soumettrePrenom(); }
+  });
+
+  document.getElementById('btnTerminerLecon').addEventListener('click', async function (e) {
+    e.target.disabled = true;
+    if (window.KebBekProgression) {
+      try { await window.KebBekProgression.marquerChapitreComplete(CHAPITRE_ID); }
+      catch (err) { console.warn('lecon-01-rencontre.html : échec de marquerChapitreComplete.', err); }
+    }
+    window.location.href = '../parcours.html';
+  });
+
+  btnPrecedent.textContent = '‹ ' + texteInterface('precedent');
+
+  // ---------- Démarrage : carte titre plein écran, puis genèse muette, puis dialogue ----------
+  const elSceneLecon = document.getElementById('sceneLecon');
+  window.KebBekLeconIntro.afficher('../images/lecon-01-rencontre/l1_titre_01.webp', { alt: 'Leçon 1' }).then(async function () {
+    elSceneLecon.classList.add('revele');
+    await jouerGenese();
+    navDialogue.classList.add('genese-terminee');
+    elBulleOverlay.classList.add('genese-terminee');
+    rendreEtape();
+  });
+
+})();
+</script>
+</body>
+</html>

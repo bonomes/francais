@@ -41,6 +41,18 @@
        - #sceneLecon cité (visibility:hidden) tant qu'une intro n'est pas
          terminée, révélé ensuite via .revele — évite tout saut de mise
          en page au moment de la révélation.
+       - 🆕 (retour Raphaël, 21-08-2026) La pile "Ce qui a été dit" +
+         notes grammaticales (#pilesConteneur, .pile-avatar, etc.) —
+         repris de dialogues/d1/index.html, adapté au style de cette
+         page. ajouterLigneDialogue()/ajouterNoteGrammaire() attendent
+         un objet ETAPES[i] avec {speaker, texte, trad, grammaire?} —
+         même format que d1. Pour une future leçon : copier NOMS/
+         INITIALES (ajuster les couleurs --keb-couleur/--bek-couleur si
+         de nouveaux personnages apparaissent) et les 4 clés INTERFACE
+         (ceQuiAEteDit/aRetenir/afficherTrad/cacherTrad, déjà traduites
+         dans les 20 langues du site). GRAMMAIRE reste à définir par
+         leçon (voir plus bas, ETAPES/GRAMMAIRE) — vide pour l'instant
+         dans r1.
 
      🔁 RÉUTILISABLE COMME PATRON, MAIS À RÉÉCRIRE LE CONTENU :
        - CHAPITRE_ID (ici 'r1') — un identifiant unique par leçon,
@@ -54,10 +66,12 @@
 
      🚫 SPÉCIFIQUE À CETTE LEÇON (r1), NE PAS COPIER TEL QUEL :
        - #introPleinEcran / GENESE / jouerGenese() — la séquence
-         MUETTE, plein écran, fond NOIR (noir → illumination → Keb seul
-         → Bek apparaît → ils se remarquent) est la genèse DE L'UNIVERS
-         DES BONOMES lui-même, propre à la toute première rencontre de
-         Keb et Bek. Aucune autre leçon n'a de raison de la rejouer.
+         MUETTE, plein écran (titre sur fond beige → bref noir/vide →
+         beige à nouveau pour l'illumination → Keb seul → Bek apparaît
+         → ils se remarquent, voir le champ `fond` par étape dans
+         GENESE) est la genèse DE L'UNIVERS DES BONOMES lui-même,
+         propre à la toute première rencontre de Keb et Bek. Aucune
+         autre leçon n'a de raison de la rejouer.
          → Pour une future leçon qui a simplement besoin d'une carte
          titre (SANS narration muette avant), utiliser plutôt le module
          partagé window.KebBekLeconIntro (voir ../lecon-intro.js/.css,
@@ -100,6 +114,14 @@
     --peche-pale-vif: rgba(240, 169, 139, 0.30);
     --vert-clair: #EAF3DE;
     --ombre: rgba(102, 80, 69, 0.16);
+    /* 🆕 (retour Raphaël, 21-08-2026) Couleurs Keb/Bek — mêmes valeurs
+       que dialogues/d1/index.html (seule source jusqu'ici), reprises
+       ici pour les avatars-cercles de la pile "Ce qui a été dit"
+       (voir .pile-avatar plus bas). N'affectent PAS .bulle-dialogue :
+       demande de Raphaël = adapter le mécanisme au style de CETTE
+       page, pas importer tel quel la bulle bordée-colorée de d1. */
+    --keb-couleur: #5B7FA6;
+    --bek-couleur: #C97B3D;
   }
 
   * { box-sizing: border-box; }
@@ -178,20 +200,36 @@
      cliquable même pendant la genèse, un enfant doit toujours pouvoir
      quitter. object-fit: contain (pas cover) : les scènes de la genèse
      ne sont pas forcément pensées pour un cadrage bord-à-bord sur
-     n'importe quel écran ; le "letterboxing" naturel sur fond noir sert
-     justement l'effet recherché ("tout l'écran passe au noir"),
-     jamais un rognage imprévisible des personnages. */
+     n'importe quel écran ; le "letterboxing" naturel (sur le fond de
+     l'étape en cours — beige la plupart du temps, noir seulement pour
+     le vide juste après la carte titre, voir .intro-noir plus bas)
+     évite tout rognage imprévisible des personnages. */
   .intro-plein-ecran {
     position: fixed;
     inset: 0;
     z-index: 200;
-    background: #000000;
+    /* 🆕 (retour Raphaël, 21-08-2026) Fond beige (var(--fond), le fond
+       habituel du site) par défaut, PAS noir : la carte titre
+       (l1_titre_01.webp) a été extraite avec Gimp et ses bords
+       ressortent pixelisés/frangés sur un fond noir. Le noir n'arrive
+       qu'ENSUITE, une seule étape (le "vide" juste après la carte
+       titre, voir GENESE plus bas, pas: null), via .intro-noir —
+       ajoutée/retirée dynamiquement par jouerGenese() selon le champ
+       `fond` de chaque étape. Le retour au beige à ce moment-là (juste
+       avant l'illumination) EST l'effet recherché : le fond "apparaît"
+       pour simuler la genèse du monde, puis reste beige pour de bon
+       (illumination, Keb, Bek, et ensuite tout le dialogue habituel —
+       jamais de retour au noir après ce point). background-color
+       transitionne comme opacity pour que ce passage noir → beige soit
+       un fondu, pas un saut brusque. */
+    background: var(--fond);
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    transition: opacity 0.6s ease;
+    transition: opacity 0.6s ease, background-color 1s ease;
   }
+  .intro-plein-ecran.intro-noir { background: #000000; }
   .intro-plein-ecran.intro-cachee {
     opacity: 0;
     pointer-events: none;
@@ -238,13 +276,15 @@
   }
 
   #navDialogue,
-  .zone-bulle-overlay {
+  .zone-bulle-overlay,
+  .piles-conteneur {
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.5s ease;
   }
   #navDialogue.genese-terminee,
-  .zone-bulle-overlay.genese-terminee { opacity: 1; pointer-events: auto; }
+  .zone-bulle-overlay.genese-terminee,
+  .piles-conteneur.genese-terminee { opacity: 1; pointer-events: auto; }
   .zone-bulle-overlay.genese-terminee .bulle-dialogue { pointer-events: auto; }
 
   .zone-bulle-overlay {
@@ -332,6 +372,135 @@
   }
   .message-fin { font-size: 1.15rem; font-weight: 700; }
 
+  /* ==================================================================
+     🆕 (retour Raphaël, 21-08-2026) Pile "Ce qui a été dit" + notes
+     grammaticales — repris de dialogues/d1/index.html (seul endroit du
+     site où ce mécanisme existait), demande explicite de Raphaël de ne
+     PAS l'enlever, adapté au langage visuel de CETTE page (cadre plus
+     large, palette identique, pas de bordure colorée sur les bulles —
+     seuls les avatars-cercles portent la couleur du personnage).
+     Même stratégie de reconstruction que d1 : à chaque Précédent, les
+     deux piles sont vidées et reconstruites de 0 à l'étape courante
+     plutôt que de retirer seulement le dernier élément (voir
+     precedent() en JS) — plus simple, jamais de désynchronisation
+     entre les deux piles.
+     ================================================================== */
+  .piles-conteneur {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .pile-entete {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin: 0 0 2px 4px;
+  }
+  .pile-section-titre {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--brun-clair);
+    margin: 0;
+  }
+  .btn-toggle-trad {
+    flex-shrink: 0;
+    border: 1.5px solid var(--peche);
+    background: #FFFFFF;
+    color: var(--brun-clair);
+    border-radius: 999px;
+    padding: 4px 12px;
+    font-family: inherit;
+    font-size: 0.7rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+  }
+  .btn-toggle-trad:hover { background: var(--peche-pale); }
+  .btn-toggle-trad.actif { background: var(--peche-fonce); border-color: var(--peche-fonce); color: #FFFFFF; }
+
+  .pile-dialogue { display: flex; flex-direction: column; }
+  .pile-item {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease, opacity 0.3s ease, margin 0.3s ease;
+  }
+  .pile-item.in { opacity: 1; max-height: 220px; margin: 7px 0; overflow: visible; }
+
+  /* 🆕 C'est CE cercle — initiale du personnage qui parle (K/B), fond
+     coloré selon --keb-couleur/--bek-couleur — que Raphaël appelle le
+     "mécanisme de cercles avec l'acronyme du prénom". Cliquable : bascule
+     la traduction de CETTE réplique seule, en plus du bouton global. */
+  .pile-avatar {
+    flex-shrink: 0;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #FFFFFF;
+    background: var(--c, var(--brun));
+    cursor: pointer;
+    border: none;
+    padding: 0;
+    font-family: inherit;
+    transition: transform 0.15s ease;
+  }
+  .pile-avatar:hover { transform: scale(1.08); }
+  .pile-item.keb { --c: var(--keb-couleur); }
+  .pile-item.bek { --c: var(--bek-couleur); }
+  /* La dernière étape de la démo ('Et toi, comment tu t'appelles\u00A0?')
+     s'adresse directement à l'élève, ni Keb ni Bek — cercle neutre. */
+  .pile-item.question { --c: var(--brun-clair); }
+
+  .pile-corps { flex: 1; min-width: 0; }
+  .pile-qui { display: block; font-size: 0.68rem; font-weight: 700; color: var(--c, var(--brun)); margin-bottom: 1px; }
+  .pile-texte { font-size: 0.92rem; line-height: 1.35; cursor: pointer; }
+  .pile-trad {
+    font-size: 0.82rem;
+    line-height: 1.3;
+    color: var(--peche-fonce);
+    font-style: italic;
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+    transition: max-height 0.25s ease, opacity 0.25s ease, margin 0.25s ease;
+  }
+  .pile-trad.visible { max-height: 80px; opacity: 1; margin-top: 3px; }
+
+  /* Notes grammaticales — même langage visuel qu'un contenu d'aide
+     ponctuel ailleurs sur le site (fond pêche-pâle) : jamais confondu
+     avec une réplique du dialogue. Caché par défaut (#blocGrammaire),
+     révélé seulement si l'étape courante porte un champ `grammaire`
+     (voir ajouterNoteGrammaire() en JS) — aucune étape de CETTE leçon
+     n'en a pour l'instant, le mécanisme reste prêt pour le jour où
+     Raphaël en ajoutera (ex. « je m'appelle », « comment »...). */
+  #blocGrammaire { display: none; }
+  .pile-grammaire { display: flex; flex-direction: column; gap: 8px; }
+  .grammaire-item {
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+    padding: 0 14px;
+    background: var(--peche-pale);
+    border-radius: 12px;
+    font-size: 0.84rem;
+    line-height: 1.45;
+    color: var(--brun-fonce);
+    transition: max-height 0.3s ease, opacity 0.3s ease, padding 0.3s ease;
+  }
+  .grammaire-item.in { opacity: 1; max-height: 160px; padding: 10px 14px; overflow: visible; }
+
   @media (max-width: 460px) {
     .bulle-dialogue { font-size: 0.95rem; padding: 10px 14px; }
     .nav-bouton { padding: 9px 16px; font-size: 0.88rem; }
@@ -363,6 +532,26 @@
     <button type="button" class="nav-bouton" id="btnPrecedent">‹</button>
     <span id="compteur"></span>
     <button type="button" class="nav-bouton nav-bouton-suivant" id="btnSuivant">Suivant</button>
+  </div>
+
+  <!-- 🆕 (retour Raphaël, 21-08-2026) Pile "Ce qui a été dit" + notes
+       grammaticales — repris de dialogues/d1/index.html, voir le
+       commentaire CSS détaillé plus haut (.piles-conteneur). Masqué en
+       même temps que #navDialogue tant que la genèse n'est pas
+       terminée (opacity/pointer-events via .genese-terminee, même
+       classe réutilisée ici). -->
+  <div class="piles-conteneur" id="pilesConteneur">
+    <div class="pile-entete">
+      <div class="pile-section-titre" id="titrePileDialogue">Ce qui a été dit</div>
+      <button type="button" class="btn-toggle-trad" id="btnToggleTraductions" aria-pressed="false">
+        <span id="txtToggleTraductions">Afficher la traduction</span>
+      </button>
+    </div>
+    <div class="pile-dialogue" id="pileDialogue"></div>
+    <div id="blocGrammaire">
+      <div class="pile-section-titre" id="titrePileGrammaire">À retenir</div>
+      <div class="pile-grammaire" id="pileGrammaire"></div>
+    </div>
   </div>
 
   <!-- 🆕 Saisie du prénom — vraie capture (contrairement à l'ancienne
@@ -412,13 +601,18 @@
   // hors de la structure habituelle d'une leçon) plutôt que dans le
   // petit cadre de dialogue — voir jouerGenese() plus bas, qui cible
   // #introImage au lieu de #sceneImage.
+  // 🆕 (retour Raphaël, 21-08-2026) `fond` par étape : 'beige' (défaut
+  // visuel, voir .intro-plein-ecran) ou 'noir'. Seule l'étape du vide
+  // (juste après la carte titre) est noire — tout le reste, à
+  // commencer par l'illumination, revient au beige habituel et y
+  // reste (jouerGenese() bascule .intro-noir en conséquence).
   const GENESE = [
-    { img: 'l1_titre_01.webp', duree: 2200 },
-    { img: null, duree: 1100 },
-    { img: 'lecon-01-rencontre_genese_illumination.webp', duree: 1300 },
-    { img: 'lecon-01-rencontre_genese_keb_seul.webp', duree: 1900 },
-    { img: 'lecon-01-rencontre_genese_bek_apparait.webp', duree: 1900 },
-    { img: 'lecon-01-rencontre_genese_ils_se_remarquent.webp', duree: 1600 }
+    { img: 'l1_titre_01.webp', duree: 2200, fond: 'beige' },
+    { img: null, duree: 1100, fond: 'noir' },
+    { img: 'lecon-01-rencontre_genese_illumination.webp', duree: 1300, fond: 'beige' },
+    { img: 'lecon-01-rencontre_genese_keb_seul.webp', duree: 1900, fond: 'beige' },
+    { img: 'lecon-01-rencontre_genese_bek_apparait.webp', duree: 1900, fond: 'beige' },
+    { img: 'lecon-01-rencontre_genese_ils_se_remarquent.webp', duree: 1600, fond: 'beige' }
   ];
 
   const ETAPES = [
@@ -431,26 +625,26 @@
   ];
 
   const INTERFACE = {
-    fr: { precedent: "Précédent", continuer: "Continuer", terminer: "Terminer", placeholderPrenom: "Ton prénom", messageFin: "Enchanté, {prenom} !" },
-    en: { precedent: "Back", continuer: "Continue", terminer: "Finish", placeholderPrenom: "Your first name", messageFin: "Nice to meet you, {prenom}!" },
-    es: { precedent: "Atrás", continuer: "Continuar", terminer: "Terminar", placeholderPrenom: "Tu nombre", messageFin: "¡Encantados, {prenom}!" },
-    it: { precedent: "Indietro", continuer: "Continua", terminer: "Fine", placeholderPrenom: "Il tuo nome", messageFin: "Piacere, {prenom}!" },
-    pt: { precedent: "Voltar", continuer: "Continuar", terminer: "Terminar", placeholderPrenom: "O teu nome", messageFin: "Prazer, {prenom}!" },
-    ca: { precedent: "Enrere", continuer: "Continua", terminer: "Acaba", placeholderPrenom: "El teu nom", messageFin: "Encantats, {prenom}!" },
-    eo: { precedent: "Reen", continuer: "Daŭrigi", terminer: "Fini", placeholderPrenom: "Via nomo", messageFin: "Pleĝas, {prenom}!" },
-    zh: { precedent: "返回", continuer: "继续", terminer: "完成", placeholderPrenom: "你的名字", messageFin: "很高兴认识你，{prenom}！" },
-    ja: { precedent: "戻る", continuer: "続ける", terminer: "終了", placeholderPrenom: "お前の名前", messageFin: "会えて嫌しい、{prenom}！" },
-    ko: { precedent: "뒤로", continuer: "계속", terminer: "완료", placeholderPrenom: "네 이름", messageFin: "만나서 반가워, {prenom}!" },
-    vi: { precedent: "Quay lại", continuer: "Tiếp tục", terminer: "Hoàn thành", placeholderPrenom: "Tên của bạn", messageFin: "Rất vui được gặp bạn, {prenom}!" },
-    ht: { precedent: "Tounen", continuer: "Kontinye", terminer: "Fini", placeholderPrenom: "Non ou", messageFin: "Kontan konnen w, {prenom}!" },
-    tl: { precedent: "Bumalik", continuer: "Magpatuloy", terminer: "Tapusin", placeholderPrenom: "Ang pangalan mo", messageFin: "Ikinagagalak kitang makilala, {prenom}!" },
-    id: { precedent: "Kembali", continuer: "Lanjut", terminer: "Selesai", placeholderPrenom: "Namamu", messageFin: "Senang berkenalan denganmu, {prenom}!" },
-    nl: { precedent: "Terug", continuer: "Verder", terminer: "Klaar", placeholderPrenom: "Je voornaam", messageFin: "Leuk je te ontmoeten, {prenom}!" },
-    de: { precedent: "Zurück", continuer: "Weiter", terminer: "Fertig", placeholderPrenom: "Dein Vorname", messageFin: "Freut mich, {prenom}!" },
-    fa: { precedent: "بازگشت", continuer: "ادامه", terminer: "پایان", placeholderPrenom: "اسم تو", messageFin: "از آشناییت خوشوقتم، {prenom}!" },
-    sv: { precedent: "Tillbaka", continuer: "Fortsätt", terminer: "Klart", placeholderPrenom: "Ditt förnamn", messageFin: "Trevligt att träffas, {prenom}!" },
-    no: { precedent: "Tilbake", continuer: "Fortsett", terminer: "Ferdig", placeholderPrenom: "Fornavnet ditt", messageFin: "Hyggelig å treffe deg, {prenom}!" },
-    ru: { precedent: "Назад", continuer: "Далее", terminer: "Готово", placeholderPrenom: "Твоё имя", messageFin: "Приятно познакомиться, {prenom}!" },
+    fr: { precedent: "Précédent", continuer: "Continuer", terminer: "Terminer", placeholderPrenom: "Ton prénom", messageFin: "Enchanté, {prenom} !", ceQuiAEteDit: "Ce qui a été dit", aRetenir: "À retenir", afficherTrad: "Afficher la traduction", cacherTrad: "Cacher la traduction" },
+    en: { precedent: "Back", continuer: "Continue", terminer: "Finish", placeholderPrenom: "Your first name", messageFin: "Nice to meet you, {prenom}!", ceQuiAEteDit: "What was said", aRetenir: "Good to know", afficherTrad: "Show translation", cacherTrad: "Hide translation" },
+    es: { precedent: "Atrás", continuer: "Continuar", terminer: "Terminar", placeholderPrenom: "Tu nombre", messageFin: "¡Encantados, {prenom}!", ceQuiAEteDit: "Lo que se dijo", aRetenir: "Para recordar", afficherTrad: "Mostrar traducción", cacherTrad: "Ocultar traducción" },
+    it: { precedent: "Indietro", continuer: "Continua", terminer: "Fine", placeholderPrenom: "Il tuo nome", messageFin: "Piacere, {prenom}!", ceQuiAEteDit: "Cosa è stato detto", aRetenir: "Da ricordare", afficherTrad: "Mostra traduzione", cacherTrad: "Nascondi traduzione" },
+    pt: { precedent: "Voltar", continuer: "Continuar", terminer: "Terminar", placeholderPrenom: "O teu nome", messageFin: "Prazer, {prenom}!", ceQuiAEteDit: "O que foi dito", aRetenir: "A reter", afficherTrad: "Mostrar tradução", cacherTrad: "Ocultar tradução" },
+    ca: { precedent: "Enrere", continuer: "Continua", terminer: "Acaba", placeholderPrenom: "El teu nom", messageFin: "Encantats, {prenom}!", ceQuiAEteDit: "El que s’ha dit", aRetenir: "Per recordar", afficherTrad: "Mostra la traducció", cacherTrad: "Amaga la traducció" },
+    eo: { precedent: "Reen", continuer: "Daŭrigi", terminer: "Fini", placeholderPrenom: "Via nomo", messageFin: "Pleĝas, {prenom}!", ceQuiAEteDit: "Kio estis dirita", aRetenir: "Por memori", afficherTrad: "Montri tradukon", cacherTrad: "Kaŝi tradukon" },
+    zh: { precedent: "返回", continuer: "继续", terminer: "完成", placeholderPrenom: "你的名字", messageFin: "很高兴认识你，{prenom}！", ceQuiAEteDit: "已说内容", aRetenir: "记住这个", afficherTrad: "显示翻译", cacherTrad: "隐藏翻译" },
+    ja: { precedent: "戻る", continuer: "続ける", terminer: "終了", placeholderPrenom: "お前の名前", messageFin: "会えて嫌しい、{prenom}！", ceQuiAEteDit: "話されたこと", aRetenir: "覚えておこう", afficherTrad: "翻訳を表示", cacherTrad: "翻訳を隠す" },
+    ko: { precedent: "뒤로", continuer: "계속", terminer: "완료", placeholderPrenom: "네 이름", messageFin: "만나서 반가워, {prenom}!", ceQuiAEteDit: "나눈 이야기", aRetenir: "기억해두기", afficherTrad: "번역 보기", cacherTrad: "번역 숨기기" },
+    vi: { precedent: "Quay lại", continuer: "Tiếp tục", terminer: "Hoàn thành", placeholderPrenom: "Tên của bạn", messageFin: "Rất vui được gặp bạn, {prenom}!", ceQuiAEteDit: "Những gì đã nói", aRetenir: "Ghi nhớ", afficherTrad: "Hiện bản dịch", cacherTrad: "Ẩn bản dịch" },
+    ht: { precedent: "Tounen", continuer: "Kontinye", terminer: "Fini", placeholderPrenom: "Non ou", messageFin: "Kontan konnen w, {prenom}!", ceQuiAEteDit: "Sa ki te di", aRetenir: "Pou sonje", afficherTrad: "Montre tradiksyon", cacherTrad: "Kache tradiksyon" },
+    tl: { precedent: "Bumalik", continuer: "Magpatuloy", terminer: "Tapusin", placeholderPrenom: "Ang pangalan mo", messageFin: "Ikinagagalak kitang makilala, {prenom}!", ceQuiAEteDit: "Ang nasabi na", aRetenir: "Dapat tandaan", afficherTrad: "Ipakita ang salin", cacherTrad: "Itago ang salin" },
+    id: { precedent: "Kembali", continuer: "Lanjut", terminer: "Selesai", placeholderPrenom: "Namamu", messageFin: "Senang berkenalan denganmu, {prenom}!", ceQuiAEteDit: "Yang sudah dikatakan", aRetenir: "Perlu diingat", afficherTrad: "Tampilkan terjemahan", cacherTrad: "Sembunyikan terjemahan" },
+    nl: { precedent: "Terug", continuer: "Verder", terminer: "Klaar", placeholderPrenom: "Je voornaam", messageFin: "Leuk je te ontmoeten, {prenom}!", ceQuiAEteDit: "Wat er gezegd is", aRetenir: "Om te onthouden", afficherTrad: "Vertaling tonen", cacherTrad: "Vertaling verbergen" },
+    de: { precedent: "Zurück", continuer: "Weiter", terminer: "Fertig", placeholderPrenom: "Dein Vorname", messageFin: "Freut mich, {prenom}!", ceQuiAEteDit: "Was gesagt wurde", aRetenir: "Zum Merken", afficherTrad: "Übersetzung anzeigen", cacherTrad: "Übersetzung ausblenden" },
+    fa: { precedent: "بازگشت", continuer: "ادامه", terminer: "پایان", placeholderPrenom: "اسم تو", messageFin: "از آشناییت خوشوقتم، {prenom}!", ceQuiAEteDit: "آنچه گفته شد", aRetenir: "نکته‌ی مهم", afficherTrad: "نمایش ترجمه", cacherTrad: "پنهان کردن ترجمه" },
+    sv: { precedent: "Tillbaka", continuer: "Fortsätt", terminer: "Klart", placeholderPrenom: "Ditt förnamn", messageFin: "Trevligt att träffas, {prenom}!", ceQuiAEteDit: "Vad som sagts", aRetenir: "Bra att veta", afficherTrad: "Visa översättning", cacherTrad: "Dölj översättning" },
+    no: { precedent: "Tilbake", continuer: "Fortsett", terminer: "Ferdig", placeholderPrenom: "Fornavnet ditt", messageFin: "Hyggelig å treffe deg, {prenom}!", ceQuiAEteDit: "Det som ble sagt", aRetenir: "Verdt å huske", afficherTrad: "Vis oversettelse", cacherTrad: "Skjul oversettelse" },
+    ru: { precedent: "Назад", continuer: "Далее", terminer: "Готово", placeholderPrenom: "Твоё имя", messageFin: "Приятно познакомиться, {prenom}!", ceQuiAEteDit: "Что было сказано", aRetenir: "Важно запомнить", afficherTrad: "Показать перевод", cacherTrad: "Скрыть перевод" },
   };
 
   function texteInterface(cle) {
@@ -490,6 +684,109 @@
   const elIntroPleinEcran = document.getElementById('introPleinEcran');
   const elIntroImage = document.getElementById('introImage');
 
+  // 🆕 (retour Raphaël, 21-08-2026) Pile "Ce qui a été dit" + notes
+  // grammaticales — voir le commentaire CSS détaillé (.piles-conteneur)
+  // et le commentaire du guide de réutilisation en tête de fichier.
+  const elPileDialogue = document.getElementById('pileDialogue');
+  const elPileGrammaire = document.getElementById('pileGrammaire');
+  const blocGrammaire = document.getElementById('blocGrammaire');
+  const btnToggleTraductions = document.getElementById('btnToggleTraductions');
+  const txtToggleTraductions = document.getElementById('txtToggleTraductions');
+
+  // Étiquette + initiale par type de locuteur — 'question' couvre la
+  // dernière étape de la démo ("Et toi, comment tu t'appelles ?"), qui
+  // s'adresse directement à l'élève plutôt qu'à Keb ou Bek (voir
+  // .pile-item.question dans le CSS) : NOMS.question volontairement
+  // vide, .pile-qui n'est alors pas ajouté du tout (voir plus bas).
+  const NOMS = { keb: 'Keb', bek: 'Bek', question: '' };
+  const INITIALES = { keb: 'K', bek: 'B', question: '?' };
+
+  // Même logique que dialogues/d1/index.html : dict.trad n'a pas de clé
+  // 'fr' (le français est la langue source du dialogue lui-même) — repli
+  // sur l'anglais si la langue d'interface n'a pas d'entrée dédiée.
+  function traductionPhrase(def) {
+    if (!def.trad) return '';
+    return def.trad[langueActuelle()] || def.trad.en || '';
+  }
+
+  // 🆕 État global d'affichage des traductions de phrase — appliqué par
+  // défaut à chaque nouvelle réplique ajoutée à la pile ; un clic sur
+  // l'avatar ou le texte d'UNE réplique bascule seulement celle-là, sans
+  // toucher à ce réglage global (même mécanique que d1).
+  let traductionsVisiblesParDefaut = false;
+
+  function ajouterLigneDialogue(def) {
+    const div = document.createElement('div');
+    div.className = 'pile-item ' + def.speaker;
+    const trad = traductionPhrase(def);
+    const avatar = document.createElement('button');
+    avatar.type = 'button';
+    avatar.className = 'pile-avatar';
+    avatar.setAttribute('aria-label', texteInterface('afficherTrad'));
+    avatar.textContent = INITIALES[def.speaker] || '?';
+    const corps = document.createElement('div');
+    corps.className = 'pile-corps';
+    if (NOMS[def.speaker]) {
+      const qui = document.createElement('span');
+      qui.className = 'pile-qui';
+      qui.textContent = NOMS[def.speaker];
+      corps.appendChild(qui);
+    }
+    const texte = document.createElement('div');
+    texte.className = 'pile-texte';
+    texte.textContent = def.texte;
+    corps.appendChild(texte);
+    let elTrad = null;
+    if (trad) {
+      elTrad = document.createElement('div');
+      elTrad.className = 'pile-trad';
+      elTrad.textContent = trad;
+      if (traductionsVisiblesParDefaut) elTrad.classList.add('visible');
+      corps.appendChild(elTrad);
+    }
+    div.appendChild(avatar);
+    div.appendChild(corps);
+    if (elTrad) {
+      const bascule = () => elTrad.classList.toggle('visible');
+      avatar.addEventListener('click', bascule);
+      texte.addEventListener('click', bascule);
+    }
+    elPileDialogue.appendChild(div);
+    requestAnimationFrame(() => requestAnimationFrame(() => div.classList.add('in')));
+  }
+
+  // 🆕 Mécanisme PRÊT (voir .grammaire-item en CSS), mais aucune étape de
+  // CETTE leçon ne porte encore de champ `grammaire` — blocGrammaire
+  // reste donc caché tant qu'aucune note n'y est ajoutée. Même patron
+  // que dialogues/d1/index.html pour qu'une future leçon puisse
+  // réutiliser ETAPES[i].grammaire = 'uneCle' sans rien changer ici.
+  function ajouterNoteGrammaire(def) {
+    if (!def.grammaire) return;
+    blocGrammaire.style.display = 'block';
+    const cles = Array.isArray(def.grammaire) ? def.grammaire : [def.grammaire];
+    cles.forEach(function (cle) {
+      const texteBrut = (typeof GRAMMAIRE !== 'undefined' && GRAMMAIRE[cle])
+        ? (GRAMMAIRE[cle][langueActuelle()] || GRAMMAIRE[cle].fr)
+        : null;
+      if (!texteBrut) return;
+      const div = document.createElement('div');
+      div.className = 'grammaire-item';
+      div.textContent = texteBrut;
+      elPileGrammaire.appendChild(div);
+      requestAnimationFrame(() => requestAnimationFrame(() => div.classList.add('in')));
+    });
+  }
+
+  btnToggleTraductions.addEventListener('click', function () {
+    traductionsVisiblesParDefaut = !traductionsVisiblesParDefaut;
+    btnToggleTraductions.classList.toggle('actif', traductionsVisiblesParDefaut);
+    btnToggleTraductions.setAttribute('aria-pressed', String(traductionsVisiblesParDefaut));
+    txtToggleTraductions.textContent = texteInterface(traductionsVisiblesParDefaut ? 'cacherTrad' : 'afficherTrad');
+    elPileDialogue.querySelectorAll('.pile-trad').forEach(function (el) {
+      el.classList.toggle('visible', traductionsVisiblesParDefaut);
+    });
+  });
+
   function attendre(ms) {
     return new Promise(function (resolve) { setTimeout(resolve, ms); });
   }
@@ -505,6 +802,11 @@
     elIntroPleinEcran.addEventListener('click', passerGenese);
     for (let i = 0; i < GENESE.length && !genesePassee; i++) {
       const pas = GENESE[i];
+      // 🆕 Bascule le fond (beige/noir) AVANT le fondu de l'image, pour
+      // que le passage noir → beige (l'"apparition" du monde) et
+      // l'arrivée de l'image d'illumination se fondent ensemble plutôt
+      // que de se suivre sèchement.
+      elIntroPleinEcran.classList.toggle('intro-noir', pas.fond === 'noir');
       elIntroImage.style.opacity = '0';
       await attendre(reduireMouvement ? 20 : 250);
       elIntroImage.innerHTML = '';
@@ -513,9 +815,15 @@
       await attendre(reduireMouvement ? 40 : pas.duree);
     }
     elIntroPleinEcran.removeEventListener('click', passerGenese);
+    elIntroPleinEcran.classList.remove('intro-noir');
   }
 
   let etape = 0;
+  // 🆕 Même stratégie que precedent() dans dialogues/d1/index.html :
+  // reconstruit les deux piles depuis le début plutôt que de retirer
+  // juste le dernier élément — plus simple, aucun risque de
+  // désynchronisation entre pile-dialogue et pile-grammaire.
+  let reconstructionEnCours = false;
 
   function rendreEtape() {
     const def = ETAPES[etape];
@@ -532,12 +840,28 @@
 
     elScene.innerHTML = '';
     elScene.appendChild(creerImage(def.img));
+
+    if (!reconstructionEnCours) {
+      ajouterLigneDialogue(def);
+      ajouterNoteGrammaire(def);
+    }
   }
 
   btnPrecedent.addEventListener('click', function () {
     if (etape === 0) return;
     etape -= 1;
+    elPileDialogue.innerHTML = '';
+    elPileGrammaire.innerHTML = '';
+    blocGrammaire.style.display = 'none';
+    reconstructionEnCours = true;
+    for (let i = 0; i <= etape; i++) {
+      ajouterLigneDialogue(ETAPES[i]);
+      ajouterNoteGrammaire(ETAPES[i]);
+    }
+    elPileDialogue.querySelectorAll('.pile-item').forEach(el => el.classList.add('in'));
+    elPileGrammaire.querySelectorAll('.grammaire-item').forEach(el => el.classList.add('in'));
     rendreEtape();
+    reconstructionEnCours = false;
   });
 
   btnSuivant.addEventListener('click', function () {
@@ -555,6 +879,9 @@
   });
 
   document.getElementById('champPrenom').placeholder = texteInterface('placeholderPrenom');
+  document.getElementById('titrePileDialogue').textContent = texteInterface('ceQuiAEteDit');
+  document.getElementById('titrePileGrammaire').textContent = texteInterface('aRetenir');
+  txtToggleTraductions.textContent = texteInterface('afficherTrad');
 
   function soumettrePrenom() {
     const champ = document.getElementById('champPrenom');
@@ -607,6 +934,7 @@
     elSceneLecon.classList.add('revele');
     navDialogue.classList.add('genese-terminee');
     elBulleOverlay.classList.add('genese-terminee');
+    document.getElementById('pilesConteneur').classList.add('genese-terminee');
   }
   demarrerLecon();
 

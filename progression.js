@@ -487,6 +487,67 @@
     return marquerConditionInvite(conditionId);
   }
 
+  // 🆕 (retour Raphaël, 22-08-2026) Choix initial du personnage (Leçon
+  // 1, écran d'achat à 0 P$/0 PB — voir choisir_personnage_initial()
+  // côté Supabase, table objets/inventaire). Trois résultats possibles,
+  // mêmes noms que la RPC : 'nouveau' (premier choix), 'deja_ce_personnage'
+  // (rejeu du même choix, idempotent), 'bloque_autre_deja_choisi' (l'AUTRE
+  // personnage a déjà été choisi gratuitement ici — refusé, reste
+  // achetable au prix normal du catalogue ailleurs). Repli invité :
+  // même trois résultats, mais en localStorage (aucune ligne `objets`/
+  // `inventaire` pour un compte qui n'existe pas encore) — migré vers
+  // Supabase par migrerPersonnageInviteVersCompte(), au même moment que
+  // l'identité et la progression (voir migrerProgressionInviteVersCompte).
+  const CLE_PERSONNAGE_INVITE = 'kebbek_personnage_choisi_invite'; // 'Keb' | 'Bek' | null
+
+  function personnageChoisiInviteLocal() {
+    try { return localStorage.getItem(CLE_PERSONNAGE_INVITE) || null; }
+    catch (e) { return null; }
+  }
+
+  function choisirPersonnageInvite(personnage) {
+    const actuel = personnageChoisiInviteLocal();
+    if (actuel === personnage) return 'deja_ce_personnage';
+    if (actuel !== null) return 'bloque_autre_deja_choisi';
+    try { localStorage.setItem(CLE_PERSONNAGE_INVITE, personnage); }
+    catch (e) { console.warn('progression.js : choisirPersonnageInvite a échoué (localStorage indisponible ou plein).', e); }
+    return 'nouveau';
+  }
+
+  async function choisirPersonnageInitial(personnage) {
+    if (sessionActuelle && profilActifId && clientSupabase) {
+      const { data, error } = await clientSupabase.rpc('choisir_personnage_initial', {
+        p_eleve_id: profilActifId,
+        p_personnage: personnage
+      });
+      if (error) { console.warn('progression.js : choisirPersonnageInitial (compte) a échoué.', error); return null; }
+      return (data && data[0] && data[0].resultat) || null;
+    }
+    return choisirPersonnageInvite(personnage);
+  }
+
+  async function migrerPersonnageInviteVersCompte(eleveId) {
+    const choisi = personnageChoisiInviteLocal();
+    if (!choisi || !clientSupabase) return;
+    const ancienProfil = profilActifId;
+    profilActifId = eleveId;
+    try { await choisirPersonnageInitial(choisi); }
+    finally { profilActifId = ancienProfil; }
+    localStorage.removeItem(CLE_PERSONNAGE_INVITE);
+  }
+
+  // 🆕 À appeler avant de rejouer la genèse d'une leçon qui commence par
+  // l'écran de choix — renvoie 'Keb' | 'Bek' | null. Repli invité : lit
+  // le même localStorage que choisirPersonnageInvite() ci-dessus.
+  async function lirePersonnageChoisi() {
+    if (sessionActuelle && profilActifId && clientSupabase) {
+      const { data, error } = await clientSupabase.rpc('lire_personnage_choisi', { p_eleve_id: profilActifId });
+      if (error) { console.warn('progression.js : lirePersonnageChoisi (compte) a échoué.', error); return null; }
+      return (data && data[0] && data[0].personnage) || null;
+    }
+    return personnageChoisiInviteLocal();
+  }
+
   // ---------- Migration invité → compte ----------
   //
   // À appeler UNE SEULE FOIS, immédiatement après un creerProfil() réussi
@@ -666,6 +727,9 @@
     lireRecompensesAttribuees,
     marquerChapitreComplete,
     marquerConditionComplete,
+    choisirPersonnageInitial,
+    lirePersonnageChoisi,
+    migrerPersonnageInviteVersCompte,
     attribuerRecompensePremiereFois,
     migrerProgressionInviteVersCompte,
     lireIdentite,

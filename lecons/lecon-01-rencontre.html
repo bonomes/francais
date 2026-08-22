@@ -1185,10 +1185,11 @@
     const imgInterpelle = imagePerso('interpelle');
     const imgBonjour = imagePerso('bonjour');
     const imgJeMappelle = imagePerso('je_mappelle');
+    const imgMamanPapa = imagePerso('maman_papa');
     return [
       { type: 'texte', speaker: perso, img: imgBonjour, texte: "Bonjour... ?", trad: { en: "Hello...?" } },
       { type: 'texte', speaker: perso, img: imgInterpelle, texte: "Qui... qui parle ?", trad: { en: "Who... who's there?" } },
-      { type: 'texte', speaker: perso, img: imgInterpelle, texte: nomAutre + " ? Papa ? Maman ?", trad: { en: nomAutre + "? Dad? Mom?" } },
+      { type: 'texte', speaker: perso, img: imgMamanPapa, texte: nomAutre + " ? Papa ? Maman ?", trad: { en: nomAutre + "? Dad? Mom?" } },
       { type: 'qcm', cle_reponse: 'quiParle', img: imgInterpelle, recompense_id: 'r1_ex_qui_parle',
         mot_cible: 'Non.',
         consigne: { fr: 'Que veut dire ce mot ?', en: 'What does this word mean?' },
@@ -1326,10 +1327,10 @@
     // premier « Bonjour... ? » du dialogue (etapesDialogue()), distincte
     // de 'interpelle' (utilisée pour les répliques suivantes, une fois
     // que le personnage réagit plus vivement à être appelé).
-    keb: { neutre: 'keb_neutre_01.webp', genere: 'keb_généré_01.webp', bonjour: 'l1_keb_bonjour_01.webp', confus: 'l1_keb_confus_01.webp', je_suis_ou: 'l1_keb_je-suis-ou_01.webp', ou_est_ami: 'l1_keb_ou-est-bek_01.webp', appelle_ami: 'l1_keb_bek-bek_01.webp', interpelle: 'l1_keb_interpellé_02.webp', je_mappelle: 'l1_keb_je-m-appelle-Keb_01.webp' },
+    keb: { neutre: 'keb_neutre_01.webp', genere: 'keb_généré_01.webp', bonjour: 'l1_keb_bonjour_01.webp', confus: 'l1_keb_confus_01.webp', je_suis_ou: 'l1_keb_je-suis-ou_01.webp', ou_est_ami: 'l1_keb_ou-est-bek_01.webp', appelle_ami: 'l1_keb_bek-bek_01.webp', interpelle: 'l1_keb_interpellé_02.webp', je_mappelle: 'l1_keb_je-m-appelle-Keb_01.webp', maman_papa: 'l1_keb_maman-papa_01.webp' },
     // 🆕 (Raphaël, 22-08-2026) neutre bek_neutre_03.webp (remplace
     // bek_neutre_01.webp — nouvelle version fournie).
-    bek: { neutre: 'bek_neutre_03.webp', genere: 'bek_générée_01.webp', bonjour: 'l1_bek_bonjour_01.webp', confus: 'l1_bek_confuse_01.webp', je_suis_ou: 'l1_bek_je-suis-ou_01.webp', ou_est_ami: 'l1_bek_ou-est-keb_01.webp', appelle_ami: 'l1_bek_keb-keb_01.webp', interpelle: 'l1_bek_interpellée_01.webp', je_mappelle: 'l1_bek_je-m-appelle-Bek_01.webp' }
+    bek: { neutre: 'bek_neutre_03.webp', genere: 'bek_générée_01.webp', bonjour: 'l1_bek_bonjour_01.webp', confus: 'l1_bek_confuse_01.webp', je_suis_ou: 'l1_bek_je-suis-ou_01.webp', ou_est_ami: 'l1_bek_ou-est-keb_01.webp', appelle_ami: 'l1_bek_keb-keb_01.webp', interpelle: 'l1_bek_interpellée_01.webp', je_mappelle: 'l1_bek_je-m-appelle-Bek_01.webp', maman_papa: 'l1_bek_maman-papa_01.webp' }
   };
   function imagePerso(cle) {
     const jeu = IMAGES_PERSO[personnageChoisi === 'Bek' ? 'bek' : 'keb'];

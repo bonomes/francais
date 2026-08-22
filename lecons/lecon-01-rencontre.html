@@ -1444,11 +1444,17 @@
     const imgBonjour = imagePerso('bonjour');
     const imgJeMappelle = imagePerso('je_mappelle');
     const imgMamanPapa = imagePerso('maman_papa');
+    // 🆕 (23-08-2026) imgAttend — remplace l'ancienne main générique
+    // '../images/lecons/main_non_01.webp' : pendant l'exercice QCM, on
+    // reste sur LE PERSONNAGE (Keb ou Bek selon le choix), qui patiente
+    // pendant que l'élève répond, plutôt que de couper brutalement sur
+    // un gros plan de main sans lien avec la scène.
+    const imgAttend = imagePerso('attend');
     return [
       { type: 'texte', speaker: perso, img: imgBonjour, texte: "Bonjour... ?", trad: { en: "Hello...?" } },
       { type: 'texte', speaker: perso, img: imgInterpelle, texte: "Qui... qui parle ?", trad: { en: "Who... who's there?" } },
       { type: 'texte', speaker: perso, img: imgMamanPapa, texte: nomAutre + " ? Papa ? Maman ?", trad: { en: nomAutre + "? Dad? Mom?" } },
-      { type: 'qcm', cle_reponse: 'quiParle', img: '../images/lecons/main_non_01.webp', recompense_id: 'r1_ex_qui_parle',
+      { type: 'qcm', cle_reponse: 'quiParle', img: imgAttend, recompense_id: 'r1_ex_qui_parle',
         mot_cible: 'Non.',
         consigne: { fr: 'Que veut dire ce mot ?', en: 'What does this word mean?' },
         choix: [
@@ -1592,10 +1598,14 @@
     // d'être désorienté. Voir BEATS_DESORIENTATION plus bas (nouveau
     // premier beat, avec rejeu de l'éclat de #flashApparition juste
     // avant lui) et jouerEclatLumineux(). Images fournies par Raphaël.
-    keb: { neutre: 'keb_neutre_01.webp', genere: 'keb_généré_01.webp', bonjour: 'l1_keb_bonjour_01.webp', ebloui: 'l1_keb_ebloui_01.webp', confus: 'l1_keb_confus_01.webp', je_suis_ou: 'l1_keb_je-suis-ou_01.webp', ou_est_ami: 'l1_keb_ou-est-bek_01.webp', appelle_ami: 'l1_keb_bek-bek_01.webp', interpelle: 'l1_keb_interpellé_02.webp', je_mappelle: 'l1_keb_je-m-appelle-Keb_01.webp', maman_papa: 'l1_keb_maman-papa_01.webp' },
+    keb: { neutre: 'keb_neutre_01.webp', genere: 'keb_généré_01.webp', bonjour: 'l1_keb_bonjour_01.webp', ebloui: 'l1_keb_ebloui_01.webp', confus: 'l1_keb_confus_01.webp', je_suis_ou: 'l1_keb_je-suis-ou_01.webp', ou_est_ami: 'l1_keb_ou-est-bek_01.webp', appelle_ami: 'l1_keb_bek-bek_01.webp', interpelle: 'l1_keb_interpellé_02.webp', je_mappelle: 'l1_keb_je-m-appelle-Keb_01.webp', maman_papa: 'l1_keb_maman-papa_01.webp', attend: 'l1_keb_attend-r1_01.webp' },
     // 🆕 (Raphaël, 22-08-2026) neutre bek_neutre_03.webp (remplace
     // bek_neutre_01.webp — nouvelle version fournie).
-    bek: { neutre: 'bek_neutre_03.webp', genere: 'bek_générée_01.webp', bonjour: 'l1_bek_bonjour_01.webp', ebloui: 'l1_bek_eblouie_01.webp', confus: 'l1_bek_confuse_01.webp', je_suis_ou: 'l1_bek_je-suis-ou_01.webp', ou_est_ami: 'l1_bek_ou-est-keb_01.webp', appelle_ami: 'l1_bek_keb-keb_01.webp', interpelle: 'l1_bek_interpellée_01.webp', je_mappelle: 'l1_bek_je-m-appelle-Bek_01.webp', maman_papa: 'l1_bek_maman-papa_01.webp' }
+    bek: { neutre: 'bek_neutre_03.webp', genere: 'bek_générée_01.webp', bonjour: 'l1_bek_bonjour_01.webp', ebloui: 'l1_bek_eblouie_01.webp', confus: 'l1_bek_confuse_01.webp', je_suis_ou: 'l1_bek_je-suis-ou_01.webp', ou_est_ami: 'l1_bek_ou-est-keb_01.webp', appelle_ami: 'l1_bek_keb-keb_01.webp', interpelle: 'l1_bek_interpellée_01.webp', je_mappelle: 'l1_bek_je-m-appelle-Bek_01.webp', maman_papa: 'l1_bek_maman-papa_01.webp', attend: 'l1_bek_attend-r1_01.webp' }
+    // 🆕 (23-08-2026) clé 'attend' — pose du personnage qui patiente,
+    // mains jointes sur la poitrine, PENDANT que l'élève répond à
+    // l'exercice QCM "qui parle ?" (voir etapesDialogue()) — remplace la
+    // main générique déconnectée qui servait de repli jusqu'ici.
   };
   function imagePerso(cle) {
     const jeu = IMAGES_PERSO[personnageChoisi === 'Bek' ? 'bek' : 'keb'];

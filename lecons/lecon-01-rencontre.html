@@ -327,19 +327,27 @@
      en JS) — jamais un simple disabled visuel plat : on baisse
      l'opacité pour signaler "en cours", sans faire disparaître la carte. */
   .choix-carte.choix-en-cours { opacity: 0.5; pointer-events: none; }
-  .choix-carte-image { width: 100%; aspect-ratio: 3 / 4; display: flex; align-items: center; justify-content: center; }
-  /* 🆕 (Raphaël, 22-08-2026) object-position: bottom plutôt que le repli
-     "center" par défaut — les fichiers keb_généré_01.webp (848×1264,
-     ratio 0,671) et bek_générée_01.webp (896×1196, ratio 0,749) n'ont
-     PAS le même format, donc avec un centrage vertical les deux
-     personnages ne "posent pas les pieds" à la même hauteur dans leur
-     carte respective (nom/prix qui suivent semblent alors décalés d'une
-     carte à l'autre, pas alignés). Ancrer les deux images en BAS de leur
-     boîte aligne les deux personnages sur une même ligne de sol, peu
-     importe l'espace vide que chaque fichier source laisse au-dessus
-     de la tête. object-fit reste `contain` : rien n'est rogné, juste
-     repositionné. */
-  .choix-carte-image img { width: 100%; height: 100%; object-fit: contain; object-position: center bottom; }
+  /* 🆕 (Raphaël, 22-08-2026, corrigé en profondeur) LA VRAIE CAUSE du
+     décalage "Keb plus haut que Bek" n'était PAS l'ancrage (object-
+     position) — déjà tenté ci-dessous avant et insuffisant — mais le
+     fait que .choix-carte-image n'avait JAMAIS de hauteur réellement
+     fixe : `aspect-ratio: 3/4` ne s'applique que si rien d'autre ne
+     force la boîte plus haute, or l'image (dans le <div> ajouté par
+     creerImage()) reste un enfant EN FLUX NORMAL avec `height:100%` —
+     et comme la hauteur du parent est elle-même "auto" au moment du
+     calcul, ce 100% ne veut rien dire : le navigateur retombe sur la
+     taille intrinsèque de l'image, qui FORCE la boîte à s'agrandir
+     pour l'accueillir (vérifié en isolant le rendu : la carte Keb
+     mesurait 360px de haut, celle de Bek 323px, au lieu des 320px
+     attendus des deux côtés — l'écart correspond exactement à la
+     différence de format entre keb_neutre_01.webp 848×1264 et
+     bek_neutre_03.webp 758×1012). Corrigé en sortant l'image du flux
+     (position: absolute + inset: 0) : n'étant plus "du contenu" pour
+     .choix-carte-image, elle ne peut plus l'agrandir, et aspect-ratio
+     s'applique enfin pour de vrai — vérifié : les deux cartes font
+     maintenant exactement 320px, nom et prix parfaitement alignés. */
+  .choix-carte-image { width: 100%; aspect-ratio: 3 / 4; position: relative; overflow: hidden; }
+  .choix-carte-image img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; object-position: center bottom; }
   .choix-carte-nom { font-size: 1.18rem; font-weight: 700; color: var(--brun-fonce); }
   .choix-carte-prix {
     font-size: 0.76rem;
@@ -1176,6 +1184,7 @@
     const nomAutre = personnageChoisi === 'Bek' ? 'Keb' : 'Bek';
     const imgInterpelle = imagePerso('interpelle');
     const imgBonjour = imagePerso('bonjour');
+    const imgJeMappelle = imagePerso('je_mappelle');
     return [
       { type: 'texte', speaker: perso, img: imgBonjour, texte: "Bonjour... ?", trad: { en: "Hello...?" } },
       { type: 'texte', speaker: perso, img: imgInterpelle, texte: "Qui... qui parle ?", trad: { en: "Who... who's there?" } },
@@ -1189,7 +1198,7 @@
           { id: 'aucun', correcte: false, fr: 'Aucun', en: 'None' },
           { id: 'pere_noel', correcte: false, blague: true, fr: 'Le Père Noël', en: 'Santa Claus' }
         ] },
-      { type: 'texte', speaker: perso, texte: "Tu es qui ? Moi, je m\u2019appelle " + nomPerso + ", et toi ?",
+      { type: 'texte', speaker: perso, img: imgJeMappelle, texte: "Tu es qui ? Moi, je m\u2019appelle " + nomPerso + ", et toi ?",
         trad: { en: "Who are you? My name is " + nomPerso + ", and you?" } },
       // 🆕 (session 22-08-2026, suite) Exercice de traduction longue —
       // pas une simple saisie du prénom : l'élève traduit "My name
@@ -1317,10 +1326,10 @@
     // premier « Bonjour... ? » du dialogue (etapesDialogue()), distincte
     // de 'interpelle' (utilisée pour les répliques suivantes, une fois
     // que le personnage réagit plus vivement à être appelé).
-    keb: { neutre: 'keb_neutre_01.webp', genere: 'keb_généré_01.webp', bonjour: 'l1_keb_bonjour_01.webp', confus: 'l1_keb_confus_01.webp', je_suis_ou: 'l1_keb_je-suis-ou_01.webp', ou_est_ami: 'l1_keb_ou-est-bek_01.webp', appelle_ami: 'l1_keb_bek-bek_01.webp', interpelle: 'l1_keb_interpellé_02.webp' },
+    keb: { neutre: 'keb_neutre_01.webp', genere: 'keb_généré_01.webp', bonjour: 'l1_keb_bonjour_01.webp', confus: 'l1_keb_confus_01.webp', je_suis_ou: 'l1_keb_je-suis-ou_01.webp', ou_est_ami: 'l1_keb_ou-est-bek_01.webp', appelle_ami: 'l1_keb_bek-bek_01.webp', interpelle: 'l1_keb_interpellé_02.webp', je_mappelle: 'l1_keb_je-m-appelle-Keb_01.webp' },
     // 🆕 (Raphaël, 22-08-2026) neutre bek_neutre_03.webp (remplace
     // bek_neutre_01.webp — nouvelle version fournie).
-    bek: { neutre: 'bek_neutre_03.webp', genere: 'bek_générée_01.webp', bonjour: 'l1_bek_bonjour_01.webp', confus: 'l1_bek_confuse_01.webp', je_suis_ou: 'l1_bek_je-suis-ou_01.webp', ou_est_ami: 'l1_bek_ou-est-keb_01.webp', appelle_ami: 'l1_bek_keb-keb_01.webp', interpelle: 'l1_bek_interpellée_01.webp' }
+    bek: { neutre: 'bek_neutre_03.webp', genere: 'bek_générée_01.webp', bonjour: 'l1_bek_bonjour_01.webp', confus: 'l1_bek_confuse_01.webp', je_suis_ou: 'l1_bek_je-suis-ou_01.webp', ou_est_ami: 'l1_bek_ou-est-keb_01.webp', appelle_ami: 'l1_bek_keb-keb_01.webp', interpelle: 'l1_bek_interpellée_01.webp', je_mappelle: 'l1_bek_je-m-appelle-Bek_01.webp' }
   };
   function imagePerso(cle) {
     const jeu = IMAGES_PERSO[personnageChoisi === 'Bek' ? 'bek' : 'keb'];

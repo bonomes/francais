@@ -1465,6 +1465,11 @@
     // pendant que l'élève répond, plutôt que de couper brutalement sur
     // un gros plan de main sans lien avec la scène.
     const imgAttend = imagePerso('attend');
+    // 🆕 (23-08-2026) imgAlorsTuEsQui — image dédiée fournie par Raphaël
+    // pour le tout premier des deux beats désormais séparés ("Alors, tu
+    // es qui ?"), distincte de imgJeMappelle qui reste utilisée pour le
+    // second ("Hmm... moi, je m'appelle...").
+    const imgAlorsTuEsQui = imagePerso('alors_tu_es_qui');
     return [
       { type: 'texte', speaker: perso, img: imgBonjour, texte: "Bonjour... ?", trad: { en: "Hello...?" } },
       { type: 'texte', speaker: perso, img: imgInterpelle, texte: "Qui... qui parle ?", trad: { en: "Who... who's there?" } },
@@ -1478,8 +1483,10 @@
           { id: 'aucun', correcte: false, fr: 'Aucun', en: 'None' },
           { id: 'pere_noel', correcte: false, blague: true, fr: 'Le Père Noël', en: 'Santa Claus' }
         ] },
-      { type: 'texte', speaker: perso, img: imgJeMappelle, texte: "Tu es qui ? Moi, je m\u2019appelle " + nomPerso + ", et toi ?",
-        trad: { en: "Who are you? My name is " + nomPerso + ", and you?" } },
+      { type: 'texte', speaker: perso, img: imgAlorsTuEsQui, texte: "Alors, tu es qui ?",
+        trad: { en: "So, who are you?" } },
+      { type: 'texte', speaker: perso, img: imgJeMappelle, texte: "Hmm\u2026 moi, je m\u2019appelle " + nomPerso + ". Toi ?",
+        trad: { en: "Hmm\u2026 my name is " + nomPerso + ". You?" } },
       // 🆕 (session 22-08-2026, suite) Exercice de traduction longue —
       // pas une simple saisie du prénom : l'élève traduit "My name
       // is..." en français, et c'est CE texte (analysé par
@@ -1613,10 +1620,10 @@
     // d'être désorienté. Voir BEATS_DESORIENTATION plus bas (nouveau
     // premier beat, avec rejeu de l'éclat de #flashApparition juste
     // avant lui) et jouerEclatLumineux(). Images fournies par Raphaël.
-    keb: { neutre: 'keb_neutre_01.webp', genere: 'keb_généré_01.webp', bonjour: 'l1_keb_bonjour_01.webp', ebloui: 'l1_keb_ebloui_01.webp', confus: 'l1_keb_confus_01.webp', je_suis_ou: 'l1_keb_je-suis-ou_01.webp', ou_est_ami: 'l1_keb_ou-est-bek_01.webp', appelle_ami: 'l1_keb_bek-bek_01.webp', interpelle: 'l1_keb_interpellé_02.webp', je_mappelle: 'l1_keb_je-m-appelle-Keb_01.webp', maman_papa: 'l1_keb_maman-papa_01.webp', attend: 'l1_keb_attend-r1_01.webp' },
+    keb: { neutre: 'keb_neutre_01.webp', genere: 'keb_généré_01.webp', bonjour: 'l1_keb_bonjour_01.webp', ebloui: 'l1_keb_ebloui_01.webp', confus: 'l1_keb_confus_01.webp', je_suis_ou: 'l1_keb_je-suis-ou_01.webp', ou_est_ami: 'l1_keb_ou-est-bek_01.webp', appelle_ami: 'l1_keb_bek-bek_01.webp', interpelle: 'l1_keb_interpellé_02.webp', je_mappelle: 'l1_keb_je-m-appelle-Keb_01.webp', maman_papa: 'l1_keb_maman-papa_01.webp', attend: 'l1_keb_attend-r1_01.webp', alors_tu_es_qui: 'l1_keb_alors-tu-es-qui_01.webp' },
     // 🆕 (Raphaël, 22-08-2026) neutre bek_neutre_03.webp (remplace
     // bek_neutre_01.webp — nouvelle version fournie).
-    bek: { neutre: 'bek_neutre_03.webp', genere: 'bek_générée_01.webp', bonjour: 'l1_bek_bonjour_01.webp', ebloui: 'l1_bek_eblouie_01.webp', confus: 'l1_bek_confuse_01.webp', je_suis_ou: 'l1_bek_je-suis-ou_01.webp', ou_est_ami: 'l1_bek_ou-est-keb_01.webp', appelle_ami: 'l1_bek_keb-keb_01.webp', interpelle: 'l1_bek_interpellée_01.webp', je_mappelle: 'l1_bek_je-m-appelle-Bek_01.webp', maman_papa: 'l1_bek_maman-papa_01.webp', attend: 'l1_bek_attend-r1_01.webp' }
+    bek: { neutre: 'bek_neutre_03.webp', genere: 'bek_générée_01.webp', bonjour: 'l1_bek_bonjour_01.webp', ebloui: 'l1_bek_eblouie_01.webp', confus: 'l1_bek_confuse_01.webp', je_suis_ou: 'l1_bek_je-suis-ou_01.webp', ou_est_ami: 'l1_bek_ou-est-keb_01.webp', appelle_ami: 'l1_bek_keb-keb_01.webp', interpelle: 'l1_bek_interpellée_01.webp', je_mappelle: 'l1_bek_je-m-appelle-Bek_01.webp', maman_papa: 'l1_bek_maman-papa_01.webp', attend: 'l1_bek_attend-r1_01.webp', alors_tu_es_qui: 'l1_bek_alors-tu-es-qui_01.webp' }
     // 🆕 (23-08-2026) clé 'attend' — pose du personnage qui patiente,
     // mains jointes sur la poitrine, PENDANT que l'élève répond à
     // l'exercice QCM "qui parle ?" (voir etapesDialogue()) — remplace la

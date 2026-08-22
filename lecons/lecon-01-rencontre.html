@@ -376,6 +376,20 @@
     12% { opacity: 0.92; }
     100% { opacity: 0; }
   }
+  /* 🆕 (Raphaël, 22-08-2026, retour) Variante pour le beat 'ebloui' de
+     jouerBeats() — un éclat plus GRAND et plus tenu que celui de la
+     naissance du personnage (.jouer ci-dessus) : monte à blanc plein,
+     y reste un instant (c'est PENDANT ce plateau que l'image bascule
+     en JS, invisible, voir jouerBeats()), puis ne s'efface que
+     lentement — le personnage se révèle en sortant de la lumière, les
+     mains sur les yeux, plutôt que de changer de pose à vue. */
+  .flash-apparition.jouer-eblouissement { animation: flashEblouissement 0.9s ease-out; }
+  @keyframes flashEblouissement {
+    0% { opacity: 0; }
+    15% { opacity: 1; }
+    55% { opacity: 0.95; }
+    100% { opacity: 0; }
+  }
   /* Le personnage vient de naître, ne comprend pas encore où il est —
      un léger balancement, jamais une secousse comique. */
   .perso-deboussole { animation: persoDeboussole 2.6s ease-in-out infinite; }
@@ -1743,13 +1757,21 @@
   // ce beat (indexDepart > son index), seulement si on y entre pour de
   // vrai (fraîchement, ou en reprise pile dessus).
   async function jouerBeats(nomAutre, indexDepart) {
+    const reduireMouvement = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     for (let i = (indexDepart || 0); i < BEATS_DESORIENTATION.length; i++) {
       const beat = BEATS_DESORIENTATION[i];
       elIntroLegende.classList.remove('visible');
       if (beat.flash) {
-        elFlashApparition.classList.remove('jouer');
+        elFlashApparition.classList.remove('jouer', 'jouer-eblouissement');
         void elFlashApparition.offsetWidth; // force le reflow, même patron que reveilPersonnage()
-        elFlashApparition.classList.add('jouer');
+        elFlashApparition.classList.add('jouer-eblouissement');
+        // 🆕 (Raphaël, 22-08-2026, retour) La bascule d'image ci-dessous
+        // doit se faire PENDANT le plateau blanc de l'éclat (voir
+        // @keyframes flashEblouissement, pic vers 15%), jamais avant —
+        // sinon l'élève voit le personnage se couvrir les yeux AVANT le
+        // flash, sans raison apparente. On attend donc que l'écran soit
+        // presque tout blanc avant d'échanger l'image dessous.
+        await attendre(reduireMouvement ? 20 : 320);
       }
       elIntroImage.innerHTML = '';
       elIntroImage.appendChild(creerImage(imagePerso(beat.cle)));

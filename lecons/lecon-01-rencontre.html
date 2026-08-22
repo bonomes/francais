@@ -1150,8 +1150,9 @@
     const nomPerso = personnageChoisi || 'Keb';
     const nomAutre = personnageChoisi === 'Bek' ? 'Keb' : 'Bek';
     const imgInterpelle = imagePerso('interpelle');
+    const imgBonjour = imagePerso('bonjour');
     return [
-      { type: 'texte', speaker: perso, img: imgInterpelle, texte: "Bonjour... ?", trad: { en: "Hello...?" } },
+      { type: 'texte', speaker: perso, img: imgBonjour, texte: "Bonjour... ?", trad: { en: "Hello...?" } },
       { type: 'texte', speaker: perso, img: imgInterpelle, texte: "Qui... qui parle ?", trad: { en: "Who... who's there?" } },
       { type: 'texte', speaker: perso, img: imgInterpelle, texte: nomAutre + " ? Papa ? Maman ?", trad: { en: nomAutre + "? Dad? Mom?" } },
       { type: 'qcm', cle_reponse: 'quiParle', img: imgInterpelle, recompense_id: 'r1_ex_qui_parle',
@@ -1287,8 +1288,12 @@
   // je-suis-où/appelle-ami/où-est-ami/interpellé, une paire Keb+Bek
   // par pose). `cle` manquante ou inconnue → repli sur 'neutre'.
   const IMAGES_PERSO = {
-    keb: { neutre: 'keb_neutre_01.webp', genere: 'keb_généré_01.webp', confus: 'l1_keb_confus_01.webp', je_suis_ou: 'l1_keb_je-suis-ou_01.webp', ou_est_ami: 'l1_keb_ou-est-bek_01.webp', appelle_ami: 'l1_keb_bek-bek_01.webp', interpelle: 'l1_keb_interpellé_02.webp' },
-    bek: { neutre: 'bek_neutre_01.webp', genere: 'bek_générée_01.webp', confus: 'l1_bek_confuse_01.webp', je_suis_ou: 'l1_bek_je-suis-ou_01.webp', ou_est_ami: 'l1_bek_ou-est-keb_01.webp', appelle_ami: 'l1_bek_keb-keb_01.webp', interpelle: 'l1_bek_interpellée_01.webp' }
+    // 🆕 (Raphaël, 22-08-2026) clé 'bonjour' — pose hésitante du tout
+    // premier « Bonjour... ? » du dialogue (etapesDialogue()), distincte
+    // de 'interpelle' (utilisée pour les répliques suivantes, une fois
+    // que le personnage réagit plus vivement à être appelé).
+    keb: { neutre: 'keb_neutre_01.webp', genere: 'keb_généré_01.webp', bonjour: 'l1_keb_bonjour_01.webp', confus: 'l1_keb_confus_01.webp', je_suis_ou: 'l1_keb_je-suis-ou_01.webp', ou_est_ami: 'l1_keb_ou-est-bek_01.webp', appelle_ami: 'l1_keb_bek-bek_01.webp', interpelle: 'l1_keb_interpellé_02.webp' },
+    bek: { neutre: 'bek_neutre_01.webp', genere: 'bek_générée_01.webp', bonjour: 'l1_bek_bonjour_01.webp', confus: 'l1_bek_confuse_01.webp', je_suis_ou: 'l1_bek_je-suis-ou_01.webp', ou_est_ami: 'l1_bek_ou-est-keb_01.webp', appelle_ami: 'l1_bek_keb-keb_01.webp', interpelle: 'l1_bek_interpellée_01.webp' }
   };
   function imagePerso(cle) {
     const jeu = IMAGES_PERSO[personnageChoisi === 'Bek' ? 'bek' : 'keb'];
@@ -1744,6 +1749,19 @@
   // plus de sens.
   let navigationActive = true;
 
+  // 🆕 (Raphaël, 22-08-2026) Reprise exacte de la leçon — sauvegarde
+  // best-effort à chaque changement d'étape (voir suivant()/precedent()
+  // plus bas), jamais bloquante : un échec réseau ne doit jamais gêner
+  // la leçon en cours, seulement priver un futur retour de la reprise
+  // exacte (repli sur le début, comme aujourd'hui). Volontairement
+  // "fire-and-forget" (pas de await à l'appel) — attendre ici retarderait
+  // la navigation pour une écriture qui n'a pas besoin d'être synchrone.
+  function sauvegarderPosition() {
+    if (!window.KebBekProgression) return;
+    window.KebBekProgression.enregistrerPositionLecon(CHAPITRE_ID, etape, reponses)
+      .catch(function (e) { console.warn('lecon-01-rencontre.html : échec de la sauvegarde de position.', e); });
+  }
+
   function precedent() {
     if (!navigationActive) return;
     let i = etape - 1;
@@ -1764,6 +1782,7 @@
     elPileGrammaire.querySelectorAll('.grammaire-item').forEach(el => el.classList.add('in'));
     rendreEtape();
     reconstructionEnCours = false;
+    sauvegarderPosition();
   }
 
   function suivant() {
@@ -1773,6 +1792,7 @@
     if (i < ETAPES.length) {
       etape = i;
       rendreEtape();
+      sauvegarderPosition();
       return;
     }
     terminerConversation();
@@ -2044,6 +2064,10 @@
     if (window.KebBekProgression) {
       try { await window.KebBekProgression.marquerChapitreComplete(CHAPITRE_ID); }
       catch (err) { console.warn('lecon-01-rencontre.html : échec de marquerChapitreComplete.', err); }
+      // 🆕 La leçon est terminée : la position en cours n'a plus de sens
+      // (jamais réutilisée pour un rejeu volontaire depuis le début).
+      try { await window.KebBekProgression.effacerPositionLecon(CHAPITRE_ID); }
+      catch (err) { console.warn('lecon-01-rencontre.html : échec de effacerPositionLecon.', err); }
     }
     window.location.href = '../parcours.html';
   });
@@ -2090,8 +2114,43 @@
 
     ETAPES = etapesDialogue();
     construireBoutonsNiveau();
+
+    // 🆕 (Raphaël, 22-08-2026) Reprise exacte — si une position a déjà
+    // été sauvegardée pour cette leçon (voir sauvegarderPosition()), on
+    // repart de là plutôt que du début. `reponses` est MUTÉ (pas
+    // réassigné : c'est un `const` fermé par toutes les fonctions du
+    // dialogue) pour que les répliques qui en dépendent (prénom, etc.)
+    // restent correctes dès le premier rendu. Une position invalide ou
+    // hors bornes (ex. contenu du dialogue modifié depuis) retombe
+    // silencieusement sur le début plutôt que de planter.
+    const positionSauvegardee = window.KebBekProgression
+      ? await window.KebBekProgression.lirePositionLecon(CHAPITRE_ID).catch(function () { return null; })
+      : null;
+
     etape = 0;
+    if (positionSauvegardee && Number.isInteger(positionSauvegardee.etape) &&
+        positionSauvegardee.etape >= 0 && positionSauvegardee.etape < ETAPES.length) {
+      Object.assign(reponses, positionSauvegardee.reponses || {});
+      etape = positionSauvegardee.etape;
+    }
     while (etape < ETAPES.length && !etapeApplicable(ETAPES[etape])) etape += 1;
+
+    // Reconstruit la pile "Ce qui a été dit" + notes grammaticales pour
+    // toutes les répliques déjà passées, même patron que precedent() —
+    // sans ça, une reprise en cours de route afficherait la bonne étape
+    // mais un historique vide, comme si le dialogue venait de commencer.
+    if (etape > 0) {
+      reconstructionEnCours = true;
+      for (let j = 0; j < etape; j++) {
+        if (ETAPES[j].type === 'texte' && etapeApplicable(ETAPES[j])) {
+          ajouterLigneDialogue(ETAPES[j]);
+          ajouterNoteGrammaire(ETAPES[j]);
+        }
+      }
+      elPileDialogue.querySelectorAll('.pile-item').forEach(el => el.classList.add('in'));
+      elPileGrammaire.querySelectorAll('.grammaire-item').forEach(el => el.classList.add('in'));
+      reconstructionEnCours = false;
+    }
 
     elIntroPleinEcran.classList.add('intro-cachee');
     rendreEtape();

@@ -438,6 +438,16 @@
     transition: opacity 0.25s ease, transform 0.25s ease;
   }
   .main-salue-bonjour.visible { opacity: 1; transform: translateX(-50%) translateY(0); }
+  /* 🆕 (Raphaël, 22-08-2026, session de reprise) Même hiérarchie
+     visuelle que .intro-legende-trad : traduction en retrait, jamais
+     aussi appuyée que le mot principal. */
+  .main-salue-bonjour-trad {
+    display: block;
+    font-weight: 500;
+    font-size: 0.75rem;
+    color: var(--brun-clair);
+    text-align: center;
+  }
 
   /* 🆕 Légende sous l'image pendant la séquence de désorientation
      (voir jouerBeats() en JS) — français en avant, traduction en
@@ -954,7 +964,13 @@
        qui fait que le personnage nous remarque enfin. -->
   <button type="button" class="main-salue" id="btnMainSalue" aria-label="Saluer">
     <span class="main-salue-inner" id="imageMainSalue"></span>
-    <span class="main-salue-bonjour" id="mainSalueBonjour">Bonjour !</span>
+    <!-- 🆕 (Raphaël, 22-08-2026, session de reprise) Traduction ajoutée
+         — c'était la seule réplique de personnage de toute la première
+         partie (genèse/désorientation/salut) sans aucune traduction
+         disponible, contrairement aux beats de désorientation
+         (.intro-legende-trad) qui en ont depuis le début. Même patron
+         visuel (petit texte en retrait sous la réplique principale). -->
+    <span class="main-salue-bonjour" id="mainSalueBonjour">Bonjour !<span class="main-salue-bonjour-trad">Hello!</span></span>
   </button>
 </div>
 
@@ -1327,10 +1343,17 @@
     // premier « Bonjour... ? » du dialogue (etapesDialogue()), distincte
     // de 'interpelle' (utilisée pour les répliques suivantes, une fois
     // que le personnage réagit plus vivement à être appelé).
-    keb: { neutre: 'keb_neutre_01.webp', genere: 'keb_généré_01.webp', bonjour: 'l1_keb_bonjour_01.webp', confus: 'l1_keb_confus_01.webp', je_suis_ou: 'l1_keb_je-suis-ou_01.webp', ou_est_ami: 'l1_keb_ou-est-bek_01.webp', appelle_ami: 'l1_keb_bek-bek_01.webp', interpelle: 'l1_keb_interpellé_02.webp', je_mappelle: 'l1_keb_je-m-appelle-Keb_01.webp', maman_papa: 'l1_keb_maman-papa_01.webp' },
+    // 🆕 (Raphaël, 22-08-2026, session de reprise) clé 'ebloui' — le
+    // chaînon manquant entre la matérialisation (calqueGenere, dans
+    // reveilPersonnage()) et 'confus' : le personnage vient de naître
+    // et se prend la pleine lumière du monde en pleine face avant même
+    // d'être désorienté. Voir BEATS_DESORIENTATION plus bas (nouveau
+    // premier beat, avec rejeu de l'éclat de #flashApparition juste
+    // avant lui) et jouerEclatLumineux(). Images fournies par Raphaël.
+    keb: { neutre: 'keb_neutre_01.webp', genere: 'keb_généré_01.webp', bonjour: 'l1_keb_bonjour_01.webp', ebloui: 'l1_keb_ebloui_01.webp', confus: 'l1_keb_confus_01.webp', je_suis_ou: 'l1_keb_je-suis-ou_01.webp', ou_est_ami: 'l1_keb_ou-est-bek_01.webp', appelle_ami: 'l1_keb_bek-bek_01.webp', interpelle: 'l1_keb_interpellé_02.webp', je_mappelle: 'l1_keb_je-m-appelle-Keb_01.webp', maman_papa: 'l1_keb_maman-papa_01.webp' },
     // 🆕 (Raphaël, 22-08-2026) neutre bek_neutre_03.webp (remplace
     // bek_neutre_01.webp — nouvelle version fournie).
-    bek: { neutre: 'bek_neutre_03.webp', genere: 'bek_générée_01.webp', bonjour: 'l1_bek_bonjour_01.webp', confus: 'l1_bek_confuse_01.webp', je_suis_ou: 'l1_bek_je-suis-ou_01.webp', ou_est_ami: 'l1_bek_ou-est-keb_01.webp', appelle_ami: 'l1_bek_keb-keb_01.webp', interpelle: 'l1_bek_interpellée_01.webp', je_mappelle: 'l1_bek_je-m-appelle-Bek_01.webp', maman_papa: 'l1_bek_maman-papa_01.webp' }
+    bek: { neutre: 'bek_neutre_03.webp', genere: 'bek_générée_01.webp', bonjour: 'l1_bek_bonjour_01.webp', ebloui: 'l1_bek_eblouie_01.webp', confus: 'l1_bek_confuse_01.webp', je_suis_ou: 'l1_bek_je-suis-ou_01.webp', ou_est_ami: 'l1_bek_ou-est-keb_01.webp', appelle_ami: 'l1_bek_keb-keb_01.webp', interpelle: 'l1_bek_interpellée_01.webp', je_mappelle: 'l1_bek_je-m-appelle-Bek_01.webp', maman_papa: 'l1_bek_maman-papa_01.webp' }
   };
   function imagePerso(cle) {
     const jeu = IMAGES_PERSO[personnageChoisi === 'Bek' ? 'bek' : 'keb'];
@@ -1348,6 +1371,23 @@
   const elChampReponseLibre = document.getElementById('champReponseLibre');
   const elReponseBinaire = document.getElementById('reponseBinaire');
   const elReponseNiveau = document.getElementById('reponseNiveau');
+  // 🐛 CORRIGÉ (22-08-2026, session de reprise) : ces deux références
+  // manquaient purement et simplement — rendreEtape() (et la fonction
+  // de nettoyage qui suit plus bas) les utilise pourtant sans condition
+  // à CHAQUE étape, quel que soit son type. Conséquence réelle : la
+  // toute première fois que rendreEtape() s'exécutait (donc la toute
+  // première réplique du dialogue, quel que soit le personnage),
+  // 'elReponseQcm is not defined' explosait en ReferenceError — après
+  // que #introPleinEcran ait déjà reçu .intro-cachee mais AVANT que
+  // #sceneLecon ne reçoive .revele : résultat, une page bel et bien
+  // vide (aucun des deux écrans visible), pas une erreur silencieuse.
+  // C'est ce qui a produit le blocage signalé par Raphaël : personne
+  // n'avait encore atteint rendreEtape() en jouant la leçon normalement
+  // (la désorientation, elle, ne l'appelle jamais), donc le bug était
+  // resté invisible jusqu'à ce qu'une reprise (dejaChoisi) saute
+  // directement au dialogue.
+  const elReponseQcm = document.getElementById('reponseQcm');
+  const elReponseGenre = document.getElementById('reponseGenre');
 
   // 🆕 (retour Raphaël, 21-08-2026) Pile "Ce qui a été dit" + notes
   // grammaticales — voir le commentaire CSS détaillé (.piles-conteneur)
@@ -1613,6 +1653,29 @@
     await jouerBeats(nomAutre);
   }
 
+  // 🆕 (Raphaël, 22-08-2026, session de reprise) Variante de
+  // reveilPersonnage() pour un RETOUR en cours de désorientation
+  // (dejaChoisi vrai + une position 'r1_intro' existe déjà, voir
+  // demarrerLecon()) : le personnage a déjà vécu sa matérialisation
+  // pendant la session précédente — on ne rejoue JAMAIS une seconde
+  // fois le flash + fondu-enchaîné généré→neutre (ce serait lui faire
+  // revivre une naissance déjà arrivée), on retrouve directement la
+  // pose neutre désorientée, puis jouerBeats() reprend pile à l'index
+  // sauvegardé (qui peut être BEATS_DESORIENTATION.length lui-même, si
+  // la désorientation était déjà terminée et qu'il ne restait que le
+  // salut — jouerBeats() ne boucle alors pas du tout, ce qui est
+  // voulu : la pose reste affichée telle quelle derrière la main).
+  async function reveilPersonnageResume(indexDepart) {
+    elIntroPleinEcran.classList.remove('intro-noir');
+    elIntroImage.classList.add('intro-image-personnage');
+    elIntroImage.innerHTML = '';
+    elIntroImage.appendChild(creerImage(imagePersonnageActuel()));
+    elIntroImage.style.opacity = '1';
+    elIntroImage.classList.add('perso-deboussole');
+    const nomAutre = personnageChoisi === 'Bek' ? 'Keb' : 'Bek';
+    await jouerBeats(nomAutre, indexDepart);
+  }
+
   // 🆕 (session 22-08-2026, suite) Séquence de désorientation —
   // "confus" → "Je suis où ?" → "Où est [ami] ?" → l'appelle deux fois,
   // sans réponse (voir #introLegende/.intro-legende en CSS et HTML,
@@ -1623,6 +1686,15 @@
   // seulement au clic sur la main, dans attendreSalutMain()) : le
   // personnage est toujours désorienté pendant qu'il cherche et appelle.
   const BEATS_DESORIENTATION = [
+    // 🆕 (Raphaël, 22-08-2026, session de reprise) Chaînon ajouté entre
+    // la matérialisation et 'confus' — Raphaël a signalé que la
+    // transition ne se sentait pas naturelle sans lui. `flash: true`
+    // rejoue #flashApparition juste avant d'afficher l'image de CE
+    // beat (voir jouerBeats()) pour simuler l'éblouissement.
+    // ⚠️ TEXTE PROVISOIRE — à valider par Raphaël (voir narratif) :
+    // proposé pour rester cohérent avec le ton bref et non verbal des
+    // autres beats, jamais confirmé comme réplique canonique.
+    { cle: 'ebloui', flash: true, fr: 'Aïe\u2026 la lumi\u00e8re\u00a0!', en: 'Ow\u2026 the light!' },
     { cle: 'confus', fr: 'Hmm\u2026 ?', en: 'Hmm\u2026?' },
     { cle: 'je_suis_ou', fr: 'Je suis o\u00f9\u00a0?', en: 'Where am I?' },
     { cle: 'ou_est_ami',
@@ -1643,10 +1715,42 @@
     });
   }
 
-  async function jouerBeats(nomAutre) {
-    for (let i = 0; i < BEATS_DESORIENTATION.length; i++) {
+  // 🆕 (Raphaël, 22-08-2026, session de reprise) Reprise exacte de la
+  // séquence d'intro (réveil + désorientation + main qui salue), même
+  // principe que sauvegarderPosition() plus bas pour le VRAI dialogue,
+  // mais sous une clé de chapitre distincte ('r1_intro' plutôt que
+  // 'r1') : ce n'est pas une étape de ETAPES, il n'y a pas encore de
+  // `reponses` à cette phase, et surtout, le choix du personnage
+  // lui-même (achat unique, voir choisirPersonnageInitial()) doit
+  // rester intouché par ce mécanisme. `indexBeat` va de 0 à
+  // BEATS_DESORIENTATION.length (ce dernier signifiant "désorientation
+  // terminée, en attente du salut"). Best-effort et fire-and-forget,
+  // même philosophie que sauvegarderPosition().
+  function sauvegarderPositionIntro(indexBeat) {
+    if (!window.KebBekProgression) return;
+    window.KebBekProgression.enregistrerPositionLecon(CHAPITRE_ID + '_intro', indexBeat, {})
+      .catch(function (e) { console.warn('lecon-01-rencontre.html : échec de la sauvegarde de position (intro).', e); });
+  }
+
+  // 🆕 (Raphaël, 22-08-2026, session de reprise) `indexDepart` — permet
+  // de rentrer dans la boucle à un beat précis plutôt que toujours au
+  // premier, pour la reprise exacte (voir reveilPersonnageResume() et
+  // sauvegarderPositionIntro() plus bas) : un élève qui quitte pendant
+  // "Hmm... ?" doit retrouver "Hmm... ?" à son retour, pas revivre
+  // l'éblouissement qu'il a déjà vu. `beat.flash` (voir 'ebloui'
+  // ci-dessus) rejoue #flashApparition juste avant l'image de ce
+  // beat — jamais rejoué en reprise si on saute directement PAR-DESSUS
+  // ce beat (indexDepart > son index), seulement si on y entre pour de
+  // vrai (fraîchement, ou en reprise pile dessus).
+  async function jouerBeats(nomAutre, indexDepart) {
+    for (let i = (indexDepart || 0); i < BEATS_DESORIENTATION.length; i++) {
       const beat = BEATS_DESORIENTATION[i];
       elIntroLegende.classList.remove('visible');
+      if (beat.flash) {
+        elFlashApparition.classList.remove('jouer');
+        void elFlashApparition.offsetWidth; // force le reflow, même patron que reveilPersonnage()
+        elFlashApparition.classList.add('jouer');
+      }
       elIntroImage.innerHTML = '';
       elIntroImage.appendChild(creerImage(imagePerso(beat.cle)));
       const texteFr = typeof beat.fr === 'function' ? beat.fr(nomAutre) : beat.fr;
@@ -1654,9 +1758,14 @@
       elIntroLegende.innerHTML = '<div class="intro-legende-fr">' + texteFr + '</div>' +
         '<div class="intro-legende-trad">' + texteEn + '</div>';
       requestAnimationFrame(function () { elIntroLegende.classList.add('visible'); });
+      sauvegarderPositionIntro(i);
       await attendreTapIntro();
     }
     elIntroLegende.classList.remove('visible');
+    // Désorientation terminée, il ne reste plus que la main qui salue —
+    // voir demarrerLecon() : une reprise à ce stade doit sauter les
+    // beats mais PAS rejouer l'éblouissement/désorientation.
+    sauvegarderPositionIntro(BEATS_DESORIENTATION.length);
   }
 
   // Main qui salue — cliquable, ondule doucement pour signaler qu'elle
@@ -2161,6 +2270,32 @@
 
     if (dejaChoisi) {
       personnageChoisi = dejaChoisi;
+
+      // 🆕 (Raphaël, 22-08-2026, session de reprise) Le choix du
+      // personnage ne se rejoue jamais (achat unique), mais TOUT ce
+      // qui suit doit reprendre exactement où l'élève l'avait laissé,
+      // pas être sauté en bloc au premier retour comme avant ce
+      // correctif. Priorité : si le VRAI dialogue (ETAPES, position
+      // 'r1') a déjà commencé, on saute directement dedans (c'était
+      // déjà le seul cas géré) ; SINON, on regarde s'il existe une
+      // position dans la séquence d'intro elle-même ('r1_intro') pour
+      // reprendre le réveil/désorientation/salut au bon endroit plutôt
+      // que de les sauter entièrement.
+      const positionDialogueExistante = window.KebBekProgression
+        ? await window.KebBekProgression.lirePositionLecon(CHAPITRE_ID).catch(function () { return null; })
+        : null;
+
+      if (!positionDialogueExistante) {
+        const positionIntro = window.KebBekProgression
+          ? await window.KebBekProgression.lirePositionLecon(CHAPITRE_ID + '_intro').catch(function () { return null; })
+          : null;
+        const indexDepart = (positionIntro && Number.isInteger(positionIntro.etape) &&
+          positionIntro.etape >= 0 && positionIntro.etape <= BEATS_DESORIENTATION.length)
+          ? positionIntro.etape
+          : 0;
+        await reveilPersonnageResume(indexDepart);
+        await attendreSalutMain();
+      }
     } else {
       await jouerGenese(GENESE_AVANT);
       if (!genesePassee) {
@@ -2179,6 +2314,18 @@
         elIntroImage.appendChild(creerImage(imagePersonnageActuel()));
         elIntroImage.style.opacity = '1';
       }
+    }
+
+    // 🆕 (Raphaël, 22-08-2026, session de reprise) La position d'intro
+    // n'a plus de sens une fois qu'on s'apprête à entrer dans le VRAI
+    // dialogue (ETAPES, sauvegardé sous 'r1' à partir d'ici) — même
+    // logique qu'effacerPositionLecon() pour un chapitre terminé.
+    // Idempotent/best-effort : ne fait rien si 'r1_intro' n'existait
+    // pas (ex. la position 'r1' existait déjà et toute cette phase a
+    // été sautée plus haut).
+    if (window.KebBekProgression) {
+      window.KebBekProgression.effacerPositionLecon(CHAPITRE_ID + '_intro')
+        .catch(function (e) { console.warn('lecon-01-rencontre.html : échec de effacerPositionLecon (intro).', e); });
     }
 
     ETAPES = etapesDialogue();
@@ -2223,6 +2370,14 @@
 
     elIntroPleinEcran.classList.add('intro-cachee');
     rendreEtape();
+    // 🆕 (Raphaël, 22-08-2026, session de reprise) Sans cet appel, une
+    // sortie AVANT le tout premier clic sur "Suivant" (suivant() est le
+    // seul autre appelant jusqu'ici) ne laissait aucune position 'r1'
+    // — et comme 'r1_intro' vient tout juste d'être effacée ci-dessus,
+    // un retour dans cet état précis aurait fait rejouer toute la
+    // désorientation depuis le début plutôt que de rouvrir sur "Bonjour... ?"
+    // (etape 0) où l'élève l'avait pourtant bel et bien laissée.
+    sauvegarderPosition();
     elSceneLecon.classList.add('revele');
     navDialogue.classList.add('genese-terminee');
     elBulleOverlay.classList.add('genese-terminee');

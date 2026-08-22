@@ -254,6 +254,139 @@
      qui casserait l'ambiance de la genèse. */
   .intro-image .scene-image-repli { display: none; }
 
+  /* ==================================================================
+     🆕 (retour Raphaël, 22-08-2026) Écran de choix du personnage —
+     "achat" à 0 P$/0 PB, à usage unique (voir choisir_personnage_initial
+     côté Supabase et ecranChoixPersonnage() en JS). Demande explicite :
+     disposition "digne des meilleurs sites du monde", pas d'impression
+     d'amateurisme — cartes surélevées, ombre profonde, dégradé subtil,
+     jamais un simple bouton texte.
+     ================================================================== */
+  .ecran-choix-personnage {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(24px, 5vh, 44px);
+    padding: 24px;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+    pointer-events: none;
+  }
+  .ecran-choix-personnage.visible { opacity: 1; transform: translateY(0); pointer-events: auto; }
+  .choix-titre {
+    font-family: 'Baloo 2', sans-serif;
+    font-size: clamp(1.05rem, 2.6vw, 1.55rem);
+    font-weight: 700;
+    color: #FDFBF7;
+    text-align: center;
+    letter-spacing: 0.01em;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
+  }
+  .choix-cartes {
+    display: flex;
+    gap: clamp(20px, 4vw, 52px);
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .choix-carte {
+    all: unset;
+    box-sizing: border-box;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    width: min(40vw, 210px);
+    padding: 22px 16px 18px;
+    background: linear-gradient(180deg, #FFFFFF 0%, var(--fond) 100%);
+    border-radius: 26px;
+    border: 2.5px solid transparent;
+    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.38), 0 2px 0 rgba(255, 255, 255, 0.5) inset;
+    transition: transform 0.22s cubic-bezier(.2,.8,.3,1.2), box-shadow 0.22s ease, border-color 0.22s ease;
+  }
+  .choix-carte:hover, .choix-carte:focus-visible {
+    transform: translateY(-6px) scale(1.035);
+    border-color: var(--peche-fonce);
+    box-shadow: 0 22px 46px rgba(0, 0, 0, 0.42), 0 2px 0 rgba(255, 255, 255, 0.5) inset;
+  }
+  .choix-carte:active { transform: translateY(-2px) scale(1.01); }
+  /* Carte non retenue pendant l'appel réseau (voir ecranChoixPersonnage()
+     en JS) — jamais un simple disabled visuel plat : on baisse
+     l'opacité pour signaler "en cours", sans faire disparaître la carte. */
+  .choix-carte.choix-en-cours { opacity: 0.5; pointer-events: none; }
+  .choix-carte-image { width: 100%; aspect-ratio: 3 / 4; display: flex; align-items: center; justify-content: center; }
+  .choix-carte-image img { width: 100%; height: 100%; object-fit: contain; }
+  .choix-carte-nom { font-size: 1.18rem; font-weight: 700; color: var(--brun-fonce); }
+  .choix-carte-prix {
+    font-size: 0.76rem;
+    font-weight: 700;
+    color: var(--peche-fonce);
+    background: var(--peche-pale);
+    border-radius: 999px;
+    padding: 4px 14px;
+  }
+
+  /* Flash blanc bref au moment où le personnage choisi "apparaît" —
+     rejoué à chaque fois via un retrait/ajout de .jouer (reflow forcé,
+     voir reveilPersonnage() en JS), jamais une simple transition CSS
+     qui ne se rejouerait pas d'une leçon à l'autre. */
+  .flash-apparition {
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    background: #FFFFFF;
+    opacity: 0;
+    pointer-events: none;
+  }
+  .flash-apparition.jouer { animation: flashApparition 0.7s ease-out; }
+  @keyframes flashApparition {
+    0% { opacity: 0; }
+    12% { opacity: 0.92; }
+    100% { opacity: 0; }
+  }
+  /* Le personnage vient de naître, ne comprend pas encore où il est —
+     un léger balancement, jamais une secousse comique. */
+  .perso-deboussole { animation: persoDeboussole 2.6s ease-in-out infinite; }
+  @keyframes persoDeboussole {
+    0%, 100% { transform: rotate(0deg) translateY(0); }
+    25% { transform: rotate(-1.4deg) translateY(-2px); }
+    75% { transform: rotate(1.4deg) translateY(-2px); }
+  }
+
+  .main-salue {
+    all: unset;
+    box-sizing: border-box;
+    position: absolute;
+    z-index: 4;
+    left: 50%;
+    bottom: 12%;
+    transform: translateX(-50%);
+    width: min(24vw, 128px);
+    cursor: pointer;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.5s ease;
+  }
+  .main-salue.visible { opacity: 1; pointer-events: auto; }
+  .main-salue-inner {
+    display: block;
+    animation: mainSalueOndulation 1.3s ease-in-out infinite;
+    transition: transform 0.15s ease;
+    transform-origin: 70% 85%;
+  }
+  .main-salue:hover .main-salue-inner,
+  .main-salue:focus-visible .main-salue-inner { transform: scale(1.1); }
+  .main-salue img { width: 100%; display: block; }
+  @keyframes mainSalueOndulation {
+    0%, 100% { transform: rotate(0deg); }
+    50% { transform: rotate(-14deg); }
+  }
+
   .cadre-scene {
     position: relative;
     width: 100%;
@@ -378,6 +511,37 @@
     width: min(80%, 320px);
   }
   .champ-prenom:focus { outline: 2px solid var(--peche-fonce); outline-offset: 2px; }
+
+  /* ---------- Panneaux de réponse (saisie libre / oui-non / niveau) ----------
+     🆕 (retour Raphaël, 22-08-2026) Remplacent #navDialogue le temps
+     d'une étape qui attend une vraie réponse plutôt qu'un "Suivant" —
+     voir rendreEtape() en JS. Cachés par défaut (display:none inline,
+     posé directement dans le HTML) : c'est rendreEtape() qui bascule
+     entre les quatre panneaux (#navDialogue, #reponseLibre,
+     #reponseBinaire, #reponseNiveau) selon le type de l'étape courante. */
+  .zone-reponse {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    width: 100%;
+  }
+  .zone-reponse-niveau { gap: 10px; }
+  .bouton-choix {
+    font-family: inherit;
+    font-size: 0.92rem;
+    font-weight: 700;
+    color: var(--brun-fonce);
+    background: #FFFFFF;
+    border: 1.5px solid var(--peche);
+    border-radius: 999px;
+    padding: 10px 20px;
+    cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease, color 0.15s ease;
+  }
+  .bouton-choix:hover { background: var(--peche-pale); }
+  .bouton-choix:active { background: var(--peche-fonce); border-color: var(--peche-fonce); color: #FFFFFF; transform: translateY(1px); }
 
   /* ---------- Étape finale ---------- */
   #etapeFin {
@@ -535,6 +699,35 @@
      caché derrière tant que cette séquence n'est pas terminée. -->
 <div class="intro-plein-ecran" id="introPleinEcran">
   <div class="intro-image" id="introImage"></div>
+  <div class="flash-apparition" id="flashApparition"></div>
+
+  <!-- 🆕 (retour Raphaël, 22-08-2026) Écran de choix du personnage —
+       "achat" à 0 P$/0 PB, à usage unique (voir choisir_personnage_initial
+       côté Supabase). Superposé à #introImage, sur le fond noir du
+       "vide" qui précède la genèse (voir GENESE_AVANT/CSS) : l'élève
+       choisit QUI faire apparaître avant que quiconque existe. -->
+  <div class="ecran-choix-personnage" id="ecranChoixPersonnage">
+    <div class="choix-titre" id="choixPersonnageTitre">Qui veux-tu faire apparaître en premier ?</div>
+    <div class="choix-cartes">
+      <button type="button" class="choix-carte" data-personnage="Keb">
+        <span class="choix-carte-image" id="choixImageKeb"></span>
+        <span class="choix-carte-nom">Keb</span>
+        <span class="choix-carte-prix">0 P$ / 0 PB</span>
+      </button>
+      <button type="button" class="choix-carte" data-personnage="Bek">
+        <span class="choix-carte-image" id="choixImageBek"></span>
+        <span class="choix-carte-nom">Bek</span>
+        <span class="choix-carte-prix">0 P$ / 0 PB</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- 🆕 Main qui salue — apparaît une fois le personnage révélé et
+       "désorienté" ; cliquer dessus mime notre salut, ce qui déclenche
+       sa réplique d'ouverture (voir attendreSalutMain() en JS). -->
+  <button type="button" class="main-salue" id="btnMainSalue" aria-label="Saluer">
+    <span class="main-salue-inner" id="imageMainSalue"></span>
+  </button>
 </div>
 
 <div id="sceneLecon">
@@ -551,6 +744,24 @@
     <span id="compteur"></span>
     <button type="button" class="nav-bouton nav-bouton-suivant" id="btnSuivant">Suivant</button>
   </div>
+
+  <!-- 🆕 (retour Raphaël, 22-08-2026) Trois panneaux de réponse — un
+       seul visible à la fois (voir rendreEtape() en JS selon def.type),
+       remplacent #navDialogue le temps d'une étape qui attend une vraie
+       réponse de l'élève plutôt qu'un simple "Suivant". Répondre fait
+       AVANCER directement (voir validerReponseLibre()/les gestionnaires
+       de clic plus bas) — pas de bouton "Suivant" séparé à cliquer en
+       plus. #etapePrenom (plus bas) suit le même principe mais réutilise
+       son propre balisage existant, inchangé. -->
+  <div class="zone-reponse" id="reponseLibre" style="display: none;">
+    <input type="text" class="champ-prenom" id="champReponseLibre" autocomplete="off">
+    <button type="button" class="nav-bouton nav-bouton-suivant" id="btnValiderReponseLibre">Continuer</button>
+  </div>
+  <div class="zone-reponse" id="reponseBinaire" style="display: none;">
+    <button type="button" class="bouton-choix" data-valeur="oui" id="btnOui">Oui</button>
+    <button type="button" class="bouton-choix" data-valeur="non" id="btnNon">Non</button>
+  </div>
+  <div class="zone-reponse zone-reponse-niveau" id="reponseNiveau" style="display: none;"></div>
 
   <!-- 🆕 (retour Raphaël, 21-08-2026) Pile "Ce qui a été dit" + notes
        grammaticales — repris de dialogues/d1/index.html, voir le
@@ -604,71 +815,147 @@
     try { return localStorage.getItem('kebbek_langue') || 'en'; } catch (e) { return 'en'; }
   }
 
-  // 🆕 (demande de Raphaël, 20-08-2026 ; restructuré 21-08-2026) Séquence
-  // "genèse" — carte titre, puis noir complet, illumination progressive
-  // sur une scène vide, Keb créé/dessiné erre seul, puis Bek créée à
-  // son tour, puis ils se remarquent. Purement visuelle (aucun
-  // texte/bulle) : c'est la toute première fois que Keb et Bek se
-  // rencontrent EN TANT QUE BONOMES dans cet univers — une genèse
-  // distincte de toute autre histoire déjà existante des personnages.
-  // `img: null` = noir total (aucune image, voir jouerGenese()).
-  // Illustrations de la genèse elle-même pas encore prêtes — repli
-  // graphique (voir creerImage()) pour chaque étape en attendant ; la
-  // carte titre, elle, existe déjà (l1_titre_01.webp).
-  // 🆕 Joue désormais entièrement dans #introPleinEcran (plein écran,
-  // hors de la structure habituelle d'une leçon) plutôt que dans le
-  // petit cadre de dialogue — voir jouerGenese() plus bas, qui cible
-  // #introImage au lieu de #sceneImage.
-  // 🆕 (retour Raphaël, 21-08-2026) `fond` par étape : 'beige' (défaut
-  // visuel, voir .intro-plein-ecran) ou 'noir'. Seule l'étape du vide
-  // (juste après la carte titre) est noire — tout le reste, à
-  // commencer par l'illumination, revient au beige habituel et y
-  // reste (jouerGenese() bascule .intro-noir en conséquence).
-  const GENESE = [
+  // 🆕 (demande de Raphaël, 20-08-2026 ; restructuré 21-08-2026 ; réduit
+  // 22-08-2026) Carte titre puis noir complet — c'est tout ce que la
+  // genèse fait maintenant de façon AUTOMATIQUE. Elle ne fait plus
+  // naître Keb ET Bek ensemble : un seul personnage existe au sortir de
+  // la Leçon 1, celui que l'élève choisit de faire apparaître (voir
+  // #ecranChoixPersonnage, affiché juste après ce noir — ecranChoixPersonnage()
+  // en JS). La suite de la genèse (flash + apparition + désorientation)
+  // ne peut plus être une liste statique puisqu'elle dépend du choix :
+  // voir reveilPersonnage(), qui la joue "à la main" une fois
+  // personnageChoisi connu, avec les mêmes outils (creerImage(),
+  // .intro-noir, attendre()).
+  const GENESE_AVANT = [
     { img: 'l1_titre_01.webp', duree: 2200, fond: 'beige' },
-    { img: null, duree: 1100, fond: 'noir' },
-    { img: 'lecon-01-rencontre_genese_illumination.webp', duree: 1300, fond: 'beige' },
-    { img: 'lecon-01-rencontre_genese_keb_seul.webp', duree: 1900, fond: 'beige' },
-    { img: 'lecon-01-rencontre_genese_bek_apparait.webp', duree: 1900, fond: 'beige' },
-    { img: 'lecon-01-rencontre_genese_ils_se_remarquent.webp', duree: 1600, fond: 'beige' }
+    { img: null, duree: 900, fond: 'noir' }
   ];
 
-  const ETAPES = [
-    { speaker: 'keb', texte: "Salut ! Comment tu t’appelles ?", img: 'lecon-01-rencontre_e1.webp', trad: { en: "Hi! What’s your name?", es: "¡Hola! ¿Cómo te llamas?", it: "Ciao! Come ti chiami?", pt: "Oi! Como te chamas?", ca: "Hola! Com et dius?", eo: "Saluton! Kiel vi nomiĝas?", zh: "你好！你叫什么名字？", ja: "やあ！名前は何？", ko: "안녕! 이름이 뭐야?", vi: "Chào! Bạn tên gì?", ht: "Alo! Ki jan ou rele?", tl: "Hi! Ano ang pangalan mo?", id: "Hai! Siapa namamu?", nl: "Hoi! Hoe heet je?", de: "Hallo! Wie heißt du?", fa: "سلام! اسمت چیه؟", sv: "Hej! Vad heter du?", no: "Hei! Hva heter du?", ru: "Привет! Как тебя зовут?" } },
-    { speaker: 'bek', texte: "Je m’appelle Bek, et toi ?", img: 'lecon-01-rencontre_e2.webp', trad: { en: "My name is Bek, and you?", es: "Me llamo Bek, ¿y tú?", it: "Io mi chiamo Bek, e tu?", pt: "Eu me chamo Bek, e tu?", ca: "Em dic Bek, i tu?", eo: "Mi nomiĝas Bek, kaj vi?", zh: "我叫贝克，你呢？", ja: "僕はベックだよ、君は？", ko: "난 벡이야, 너는?", vi: "Mình tên là Bek, còn bạn?", ht: "Mwen rele Bek, e ou menm?", tl: "Ako si Bek, ikaw?", id: "Namaku Bek, kalau kamu?", nl: "Ik heet Bek, en jij?", de: "Ich heiße Bek, und du?", fa: "اسم من بکه؛ تو چی؟", sv: "Jag heter Bek, och du?", no: "Jeg heter Bek, og du?", ru: "Меня зовут Бек, а тебя?" } },
-    { speaker: 'keb', texte: "Je m’appelle Keb.", img: 'lecon-01-rencontre_e3.webp', trad: { en: "My name is Keb.", es: "Me llamo Keb.", it: "Io mi chiamo Keb.", pt: "Eu me chamo Keb.", ca: "Em dic Keb.", eo: "Mi nomiĝas Keb.", zh: "我叫凯布。", ja: "僕はケブだよ。", ko: "난 케브야.", vi: "Mình tên là Keb.", ht: "Mwen rele Keb.", tl: "Ako si Keb.", id: "Namaku Keb.", nl: "Ik heet Keb.", de: "Ich heiße Keb.", fa: "اسم من کبه.", sv: "Jag heter Keb.", no: "Jeg heter Keb.", ru: "Меня зовут Кеб." } },
-    { speaker: 'bek', texte: "Enchantée, Keb !", img: 'lecon-01-rencontre_e4.webp', trad: { en: "Nice to meet you, Keb!", es: "¡Encantada, Keb!", it: "Piacere, Keb!", pt: "Prazer, Keb!", ca: "Encantada, Keb!", eo: "Pleĝas, Keb!", zh: "很高兴认识你，凯布！", ja: "会えて嫌しい、ケブ！", ko: "만나서 반가워, 케브!", vi: "Rất vui được gặp bạn, Keb!", ht: "Kontan konnen w, Keb!", tl: "Ikinagagalak kitang makilala, Keb!", id: "Senang berkenalan denganmu, Keb!", nl: "Leuk je te ontmoeten, Keb!", de: "Freut mich, Keb!", fa: "از آشناییت خوشوقتم، کب!", sv: "Trevligt att träffas, Keb!", no: "Hyggelig å treffe deg, Keb!", ru: "Приятно познакомиться, Кеб!" } },
-    { speaker: 'keb', texte: "Enchanté, Bek !", img: 'lecon-01-rencontre_e5.webp', trad: { en: "Nice to meet you, Bek!", es: "¡Encantado, Bek!", it: "Piacere, Bek!", pt: "Prazer, Bek!", ca: "Encantat, Bek!", eo: "Pleĝas, Bek!", zh: "很高兴认识你，贝克！", ja: "会えて嫌しい、ベック！", ko: "만나서 반가워, 벡!", vi: "Rất vui được gặp bạn, Bek!", ht: "Kontan konnen w, Bek!", tl: "Ikinagagalak kitang makilala, Bek!", id: "Senang berkenalan denganmu, Bek!", nl: "Leuk je te ontmoeten, Bek!", de: "Freut mich, Bek!", fa: "از آشناییت خوشوقتم، بک!", sv: "Trevligt att träffas, Bek!", no: "Hyggelig å treffe deg, Bek!", ru: "Приятно познакомиться, Бек!" } },
-    { speaker: 'question', texte: "Et toi, comment tu t’appelles ?", img: 'lecon-01-rencontre_e6.webp', trad: { en: "And you, what’s your name?", es: "¿Y tú, cómo te llamas?", it: "E tu, come ti chiami?", pt: "E tu, como te chamas?", ca: "I tu, com et dius?", eo: "Kaj vi, kiel vi nomiĝas?", zh: "那你呢，你叫什么名字？", ja: "では君は？名前は何？", ko: "그럼 너는, 이름이 뭐야?", vi: "Còn bạn, bạn tên gì?", ht: "E ou menm, ki jan ou rele?", tl: "Ikaw naman, ano ang pangalan mo?", id: "Kalau kamu, siapa namamu?", nl: "En jij, hoe heet je?", de: "Und du, wie heißt du?", fa: "تو چی؟ اسمت چیه؟", sv: "Och du, vad heter du?", no: "Og du, hva heter du?", ru: "А тебя, как тебя зовут?" } },
+  // 🆕 (retour Raphaël, 22-08-2026) Dialogue reconstruit en profondeur :
+  // ce n'est plus une DÉMONSTRATION jouée entre Keb et Bek (l'ancienne
+  // ETAPES, retirée), c'est une VRAIE conversation entre l'élève et le
+  // seul personnage qu'il vient de faire apparaître (voir
+  // #ecranChoixPersonnage/personnageChoisi). D'où ETAPES en `let`,
+  // construite par etapesDialogue() une fois personnageChoisi connu
+  // (le prénom du personnage doit apparaître dans son propre texte), et
+  // non plus un tableau figé au chargement de la page.
+  //
+  // Chaque étape porte un `type` qui détermine à la fois ce qui
+  // s'affiche dans la bulle ET quel panneau de réponse prend la place
+  // de #navDialogue (voir rendreEtape()) :
+  //   - 'texte'        : réplique du personnage, bulle + #navDialogue
+  //                      habituel (Suivant), comme avant.
+  //   - 'saisie_libre' : l'élève tape une réponse libre (#reponseLibre) ;
+  //                      reconnue avec souplesse (accents/casse ignorés,
+  //                      voir reponses_acceptees) mais JAMAIS bloquante —
+  //                      répondre fait avancer, reconnue ou non.
+  //   - 'prenom'       : réutilise #etapePrenom tel quel (balisage et
+  //                      soumettrePrenom() déjà en place), simplement
+  //                      intégré au fil des étapes plutôt que traité
+  //                      comme un écran final séparé.
+  //   - 'binaire'      : Oui/Non (#reponseBinaire).
+  //   - 'niveau'       : les 6 boutons de niveau (#reponseNiveau,
+  //                      construits une fois par construireBoutonsNiveau()).
+  // `condition(reponses)` (optionnel) : étape sautée si elle renvoie
+  // false — voir etapeApplicable()/precedent()/suivant(). Sert ici à
+  // sauter la question du niveau si l'élève a répondu "non" à "Tu
+  // parles français ?".
+  let ETAPES = [];
+  const reponses = { salutation: null, prenom: null, parleFrancais: null, niveau: null };
+
+  // Formules de salutation reconnues pour l'étape 'saisie_libre' —
+  // comparaison insensible à la casse/aux accents (voir normaliserTexte()
+  // plus bas). Volontairement large plutôt que strict : rien ne doit
+  // jamais empêcher l'élève d'avancer, la reconnaissance n'est qu'un
+  // aiguillage cosmétique pour une future variante de réponse, pas une
+  // barrière.
+  const SALUTATIONS_RECONNUES = ['bonjour', 'salut', 'allo', 'bonsoir', 'coucou', 'yo', 'hey', 'hello', 'hi'];
+
+  // 🆕 Niveaux déclarés — 6 choix, mêmes 20 langues que le reste de
+  // l'interface. Servent à construireBoutonsNiveau() plus bas ; l'id
+  // (colonne stable, jamais affichée) est ce qui est réellement stocké
+  // dans reponses.niveau, pour ne jamais dépendre du texte affiché.
+  const NIVEAUX = [
+    { id: 'nul', fr: 'Nul / débutant', en: 'None / beginner', es: 'Nulo / principiante', it: 'Nullo / principiante', pt: 'Nulo / iniciante', ca: 'Nul / principiant', eo: 'Nula / komencanto', zh: '零基础/初学', ja: 'ゼロ／初心者', ko: '전혀 없음/초급', vi: 'Không biết / mới bắt đầu', ht: 'Okenn / debutan', tl: 'Wala / baguhan', id: 'Nol / pemula', nl: 'Geen / beginner', de: 'Keine / Anfänger', fa: 'هیچ / مبتدی', sv: 'Ingen / nybörjare', no: 'Ingen / nybegynner', ru: 'Нет / начинающий' },
+    { id: 'mauvais', fr: 'Mauvais', en: 'Poor', es: 'Malo', it: 'Scarso', pt: 'Fraco', ca: 'Dolent', eo: 'Malbona', zh: '较差', ja: '苦手', ko: '나쁨', vi: 'Kém', ht: 'Fèb', tl: 'Mahina', id: 'Buruk', nl: 'Zwak', de: 'Schwach', fa: 'ضعیف', sv: 'Dålig', no: 'Dårlig', ru: 'Слабый' },
+    { id: 'bon', fr: 'Bon', en: 'Good', es: 'Bueno', it: 'Buono', pt: 'Bom', ca: 'Bo', eo: 'Bona', zh: '不错', ja: '良い', ko: '좋음', vi: 'Khá', ht: 'Bon', tl: 'Mabuti', id: 'Bagus', nl: 'Goed', de: 'Gut', fa: 'خوب', sv: 'Bra', no: 'Bra', ru: 'Хороший' },
+    { id: 'tres_bon', fr: 'Très bon', en: 'Very good', es: 'Muy bueno', it: 'Molto buono', pt: 'Muito bom', ca: 'Molt bo', eo: 'Tre bona', zh: '很好', ja: 'とても良い', ko: '매우 좋음', vi: 'Rất tốt', ht: 'Trè bon', tl: 'Napakahusay', id: 'Sangat bagus', nl: 'Heel goed', de: 'Sehr gut', fa: 'خیلی خوب', sv: 'Mycket bra', no: 'Veldig bra', ru: 'Очень хороший' },
+    { id: 'excellent', fr: 'Excellent', en: 'Excellent', es: 'Excelente', it: 'Eccellente', pt: 'Excelente', ca: 'Excel·lent', eo: 'Elstara', zh: '优秀', ja: '優秀', ko: '뛰어남', vi: 'Xuất sắc', ht: 'Ekselan', tl: 'Napakahusay talaga', id: 'Sangat baik', nl: 'Uitstekend', de: 'Exzellent', fa: 'عالی', sv: 'Utmärkt', no: 'Utmerket', ru: 'Отличный' },
+    { id: 'natif', fr: 'Locuteur natif', en: 'Native speaker', es: 'Hablante nativo', it: 'Madrelingua', pt: 'Falante nativo', ca: 'Parlant natiu', eo: 'Denaska parolanto', zh: '母语者', ja: 'ネイティブ', ko: '원어민', vi: 'Người bản ngữ', ht: 'Lokitè natif', tl: 'Katutubong nagsasalita', id: 'Penutur asli', nl: 'Moedertaalspreker', de: 'Muttersprachler', fa: 'زبان مادری', sv: 'Modersmålstalare', no: 'Morsmålsbruker', ru: 'Носитель языка' }
   ];
+
+  // Construit ETAPES une fois personnageChoisi connu (voir plus bas,
+  // ecranChoixPersonnage()) — le nom du personnage doit apparaître DANS
+  // le texte ("Je m'appelle Keb" ou "Je m'appelle Bek"), donc ce tableau
+  // ne peut pas être statique.
+  function etapesDialogue() {
+    const perso = personnageChoisi === 'Bek' ? 'bek' : 'keb';
+    const nomPerso = personnageChoisi || 'Keb';
+    return [
+      { type: 'texte', speaker: perso, texte: "Bonjour !",
+        trad: { en: "Hello!", es: "¡Hola!", it: "Ciao!", pt: "Olá!", ca: "Hola!", eo: "Saluton!", zh: "你好！", ja: "こんにちは！", ko: "안녕!", vi: "Xin chào!", ht: "Bonjou!", tl: "Kumusta!", id: "Halo!", nl: "Hallo!", de: "Hallo!", fa: "سلام!", sv: "Hej!", no: "Hei!", ru: "Привет!" } },
+      { type: 'saisie_libre', cle_reponse: 'salutation' },
+      { type: 'texte', speaker: perso, texte: "Je m\u2019appelle " + nomPerso + ", et toi ?",
+        trad: { en: "My name is " + nomPerso + ", and you?", es: "Me llamo " + nomPerso + ", \u00bfy t\u00fa?", it: "Mi chiamo " + nomPerso + ", e tu?", pt: "Chamo-me " + nomPerso + ", e tu?", ca: "Em dic " + nomPerso + ", i tu?", eo: "Mi nomi\u011das " + nomPerso + ", kaj vi?", zh: "\u6211\u53eb" + nomPerso + "\uff0c\u4f60\u5462\uff1f", ja: nomPerso + "\u3060\u3088\u3001\u541b\u306f\uff1f", ko: "\ub09c " + nomPerso + "\uc57c, \ub108\ub294?", vi: "M\u00ecnh t\u00ean l\u00e0 " + nomPerso + ", c\u00f2n b\u1ea1n?", ht: "Mwen rele " + nomPerso + ", e ou menm?", tl: "Ako si " + nomPerso + ", ikaw?", id: "Namaku " + nomPerso + ", kalau kamu?", nl: "Ik heet " + nomPerso + ", en jij?", de: "Ich hei\u00dfe " + nomPerso + ", und du?", fa: "\u0627\u0633\u0645 \u0645\u0646 " + nomPerso + "\u0647\u060c \u062a\u0648 \u091a\u06cc\u061f", sv: "Jag heter " + nomPerso + ", och du?", no: "Jeg heter " + nomPerso + ", og du?", ru: "\u041c\u0435\u043d\u044f \u0437\u043e\u0432\u0443\u0442 " + nomPerso + ", \u0430 \u0442\u0435\u0431\u044f?" } },
+      { type: 'prenom', cle_reponse: 'prenom' },
+      { type: 'texte', speaker: perso, texte: "Tu parles fran\u00e7ais ?",
+        trad: { en: "Do you speak French?", es: "\u00bfHablas franc\u00e9s?", it: "Parli francese?", pt: "Falas franc\u00eas?", ca: "Parles franc\u00e8s?", eo: "\u0108u vi parolas la francan?", zh: "\u4f60\u8bf4\u6cd5\u8bed\u5417\uff1f", ja: "\u30d5\u30e9\u30f3\u30b9\u8a9e\u3092\u8a71\u3059\uff1f", ko: "\ud504\ub791\uc2a4\uc5b4 \ud560 \uc904 \uc54c\uc544?", vi: "B\u1ea1n n\u00f3i ti\u1ebfng Ph\u00e1p kh\u00f4ng?", ht: "Ou pale frans\u00e8?", tl: "Marunong ka bang mag-Pranses?", id: "Kamu bisa bahasa Prancis?", nl: "Spreek je Frans?", de: "Sprichst du Franz\u00f6sisch?", fa: "\u0641\u0631\u0627\u0646\u0633\u0648\u06cc \u0635\u062d\u0628\u062a \u0645\u06cc\u200c\u06a9\u0646\u06cc\u061f", sv: "Pratar du franska?", no: "Snakker du fransk?", ru: "\u0422\u044b \u0433\u043e\u0432\u043e\u0440\u0438\u0448\u044c \u043f\u043e-\u0444\u0440\u0430\u043d\u0446\u0443\u0437\u0441\u043a\u0438?" } },
+      { type: 'binaire', cle_reponse: 'parleFrancais' },
+      { type: 'texte', speaker: perso, condition: function (r) { return r.parleFrancais === 'oui'; }, texte: "Quel est ton niveau ?",
+        trad: { en: "What\u2019s your level?", es: "\u00bfCu\u00e1l es tu nivel?", it: "Qual \u00e8 il tuo livello?", pt: "Qual \u00e9 o teu n\u00edvel?", ca: "Quin \u00e9s el teu nivell?", eo: "Kio estas via nivelo?", zh: "\u4f60\u7684\u6c34\u5e73\u600e\u4e48\u6837\uff1f", ja: "\u30ec\u30d9\u30eb\u306f\u3069\u306e\u304f\u3089\u3044\uff1f", ko: "\uc218\uc900\uc774 \uc5b4\ub290 \uc815\ub3c4\uc57c?", vi: "Tr\u00ecnh \u0111\u1ed9 c\u1ee7a b\u1ea1n th\u1ebf n\u00e0o?", ht: "Ki nivo ou genyen?", tl: "Ano ang antas mo?", id: "Bagaimana levelmu?", nl: "Wat is jouw niveau?", de: "Wie ist dein Niveau?", fa: "\u0633\u0637\u062d \u062a\u0648 \u091a\u0642\u062f\u0631\u0647\u061f", sv: "Vad \u00e4r din niv\u00e5?", no: "Hva er niv\u00e5et ditt?", ru: "\u041a\u0430\u043a\u043e\u0439 \u0443 \u0442\u0435\u0431\u044f \u0443\u0440\u043e\u0432\u0435\u043d\u044c?" } },
+      { type: 'niveau', cle_reponse: 'niveau', condition: function (r) { return r.parleFrancais === 'oui'; } },
+      { type: 'texte', speaker: perso, texte: "On va bien s\u2019amuser ensemble !",
+        trad: { en: "We\u2019re going to have so much fun together!", es: "\u00a1Nos vamos a divertir mucho juntos!", it: "Ci divertiremo un mondo insieme!", pt: "Vamos nos divertir muito juntos!", ca: "Ens ho passarem molt b\u00e9 junts!", eo: "Ni tre amuzi\u011dos kune!", zh: "\u6211\u4eec\u4f1a\u4e00\u8d77\u73a9\u5f97\u5f88\u5f00\u5fc3\uff01", ja: "\u4e00\u7dd2\u306b\u305f\u304f\u3055\u3093\u697d\u3057\u3082\u3046\u306d\uff01", ko: "\uc6b0\ub9ac \uac19\uc774 \uc2e0\ub098\uac8c \ub180\uc790!", vi: "Ch\u00fang ta s\u1ebd vui ch\u01a1i th\u1eadt nhi\u1ec1u c\u00f9ng nhau!", ht: "Nou pral pran anpil plezi ansanm!", tl: "Magsasaya tayo nang sobra nang magkasama!", id: "Kita akan sangat bersenang-senang bersama!", nl: "We gaan het samen heel leuk hebben!", de: "Wir werden zusammen viel Spa\u00df haben!", fa: "\u0628\u0627 \u0647\u0645 \u062e\u06cc\u0644\u06cc \u062e\u0648\u0634 \u0645\u06cc\u200c\u06af\u0630\u0631\u0648\u0646\u06cc\u0645!", sv: "Vi kommer ha j\u00e4ttekul tillsammans!", no: "Vi kommer til \u00e5 ha det veldig g\u00f8y sammen!", ru: "\u041c\u044b \u043a\u043b\u0430\u0441\u0441\u043d\u043e \u043f\u043e\u0432\u0435\u0441\u0435\u043b\u0438\u043c\u0441\u044f \u0432\u043c\u0435\u0441\u0442\u0435!" } }
+    ];
+  }
+
+  function etapeApplicable(def) {
+    return !def.condition || def.condition(reponses);
+  }
+
+  function normaliserTexte(s) {
+    return (s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+  }
 
   const INTERFACE = {
-    fr: { precedent: "Précédent", continuer: "Continuer", terminer: "Terminer", placeholderPrenom: "Ton prénom", messageFin: "Enchanté, {prenom} !", ceQuiAEteDit: "Ce qui a été dit", aRetenir: "À retenir", afficherTrad: "Afficher la traduction", cacherTrad: "Cacher la traduction" },
-    en: { precedent: "Back", continuer: "Continue", terminer: "Finish", placeholderPrenom: "Your first name", messageFin: "Nice to meet you, {prenom}!", ceQuiAEteDit: "What was said", aRetenir: "Good to know", afficherTrad: "Show translation", cacherTrad: "Hide translation" },
-    es: { precedent: "Atrás", continuer: "Continuar", terminer: "Terminar", placeholderPrenom: "Tu nombre", messageFin: "¡Encantados, {prenom}!", ceQuiAEteDit: "Lo que se dijo", aRetenir: "Para recordar", afficherTrad: "Mostrar traducción", cacherTrad: "Ocultar traducción" },
-    it: { precedent: "Indietro", continuer: "Continua", terminer: "Fine", placeholderPrenom: "Il tuo nome", messageFin: "Piacere, {prenom}!", ceQuiAEteDit: "Cosa è stato detto", aRetenir: "Da ricordare", afficherTrad: "Mostra traduzione", cacherTrad: "Nascondi traduzione" },
-    pt: { precedent: "Voltar", continuer: "Continuar", terminer: "Terminar", placeholderPrenom: "O teu nome", messageFin: "Prazer, {prenom}!", ceQuiAEteDit: "O que foi dito", aRetenir: "A reter", afficherTrad: "Mostrar tradução", cacherTrad: "Ocultar tradução" },
-    ca: { precedent: "Enrere", continuer: "Continua", terminer: "Acaba", placeholderPrenom: "El teu nom", messageFin: "Encantats, {prenom}!", ceQuiAEteDit: "El que s’ha dit", aRetenir: "Per recordar", afficherTrad: "Mostra la traducció", cacherTrad: "Amaga la traducció" },
-    eo: { precedent: "Reen", continuer: "Daŭrigi", terminer: "Fini", placeholderPrenom: "Via nomo", messageFin: "Pleĝas, {prenom}!", ceQuiAEteDit: "Kio estis dirita", aRetenir: "Por memori", afficherTrad: "Montri tradukon", cacherTrad: "Kaŝi tradukon" },
-    zh: { precedent: "返回", continuer: "继续", terminer: "完成", placeholderPrenom: "你的名字", messageFin: "很高兴认识你，{prenom}！", ceQuiAEteDit: "已说内容", aRetenir: "记住这个", afficherTrad: "显示翻译", cacherTrad: "隐藏翻译" },
-    ja: { precedent: "戻る", continuer: "続ける", terminer: "終了", placeholderPrenom: "お前の名前", messageFin: "会えて嫌しい、{prenom}！", ceQuiAEteDit: "話されたこと", aRetenir: "覚えておこう", afficherTrad: "翻訳を表示", cacherTrad: "翻訳を隠す" },
-    ko: { precedent: "뒤로", continuer: "계속", terminer: "완료", placeholderPrenom: "네 이름", messageFin: "만나서 반가워, {prenom}!", ceQuiAEteDit: "나눈 이야기", aRetenir: "기억해두기", afficherTrad: "번역 보기", cacherTrad: "번역 숨기기" },
-    vi: { precedent: "Quay lại", continuer: "Tiếp tục", terminer: "Hoàn thành", placeholderPrenom: "Tên của bạn", messageFin: "Rất vui được gặp bạn, {prenom}!", ceQuiAEteDit: "Những gì đã nói", aRetenir: "Ghi nhớ", afficherTrad: "Hiện bản dịch", cacherTrad: "Ẩn bản dịch" },
-    ht: { precedent: "Tounen", continuer: "Kontinye", terminer: "Fini", placeholderPrenom: "Non ou", messageFin: "Kontan konnen w, {prenom}!", ceQuiAEteDit: "Sa ki te di", aRetenir: "Pou sonje", afficherTrad: "Montre tradiksyon", cacherTrad: "Kache tradiksyon" },
-    tl: { precedent: "Bumalik", continuer: "Magpatuloy", terminer: "Tapusin", placeholderPrenom: "Ang pangalan mo", messageFin: "Ikinagagalak kitang makilala, {prenom}!", ceQuiAEteDit: "Ang nasabi na", aRetenir: "Dapat tandaan", afficherTrad: "Ipakita ang salin", cacherTrad: "Itago ang salin" },
-    id: { precedent: "Kembali", continuer: "Lanjut", terminer: "Selesai", placeholderPrenom: "Namamu", messageFin: "Senang berkenalan denganmu, {prenom}!", ceQuiAEteDit: "Yang sudah dikatakan", aRetenir: "Perlu diingat", afficherTrad: "Tampilkan terjemahan", cacherTrad: "Sembunyikan terjemahan" },
-    nl: { precedent: "Terug", continuer: "Verder", terminer: "Klaar", placeholderPrenom: "Je voornaam", messageFin: "Leuk je te ontmoeten, {prenom}!", ceQuiAEteDit: "Wat er gezegd is", aRetenir: "Om te onthouden", afficherTrad: "Vertaling tonen", cacherTrad: "Vertaling verbergen" },
-    de: { precedent: "Zurück", continuer: "Weiter", terminer: "Fertig", placeholderPrenom: "Dein Vorname", messageFin: "Freut mich, {prenom}!", ceQuiAEteDit: "Was gesagt wurde", aRetenir: "Zum Merken", afficherTrad: "Übersetzung anzeigen", cacherTrad: "Übersetzung ausblenden" },
-    fa: { precedent: "بازگشت", continuer: "ادامه", terminer: "پایان", placeholderPrenom: "اسم تو", messageFin: "از آشناییت خوشوقتم، {prenom}!", ceQuiAEteDit: "آنچه گفته شد", aRetenir: "نکته‌ی مهم", afficherTrad: "نمایش ترجمه", cacherTrad: "پنهان کردن ترجمه" },
-    sv: { precedent: "Tillbaka", continuer: "Fortsätt", terminer: "Klart", placeholderPrenom: "Ditt förnamn", messageFin: "Trevligt att träffas, {prenom}!", ceQuiAEteDit: "Vad som sagts", aRetenir: "Bra att veta", afficherTrad: "Visa översättning", cacherTrad: "Dölj översättning" },
-    no: { precedent: "Tilbake", continuer: "Fortsett", terminer: "Ferdig", placeholderPrenom: "Fornavnet ditt", messageFin: "Hyggelig å treffe deg, {prenom}!", ceQuiAEteDit: "Det som ble sagt", aRetenir: "Verdt å huske", afficherTrad: "Vis oversettelse", cacherTrad: "Skjul oversettelse" },
-    ru: { precedent: "Назад", continuer: "Далее", terminer: "Готово", placeholderPrenom: "Твоё имя", messageFin: "Приятно познакомиться, {prenom}!", ceQuiAEteDit: "Что было сказано", aRetenir: "Важно запомнить", afficherTrad: "Показать перевод", cacherTrad: "Скрыть перевод" },
+    fr: { precedent: "Précédent", continuer: "Continuer", terminer: "Terminer", placeholderPrenom: "Ton prénom", messageFin: "Enchanté, {prenom} !", ceQuiAEteDit: "Ce qui a été dit", aRetenir: "À retenir", afficherTrad: "Afficher la traduction", cacherTrad: "Cacher la traduction", choixPersonnage: "Qui veux-tu faire apparaître en premier ?", prixChoixInitial: "0 P$ / 0 PB" },
+    en: { precedent: "Back", continuer: "Continue", terminer: "Finish", placeholderPrenom: "Your first name", messageFin: "Nice to meet you, {prenom}!", ceQuiAEteDit: "What was said", aRetenir: "Good to know", afficherTrad: "Show translation", cacherTrad: "Hide translation", choixPersonnage: "Who do you want to bring to life first?", prixChoixInitial: "0 P$ / 0 PB" },
+    es: { precedent: "Atrás", continuer: "Continuar", terminer: "Terminar", placeholderPrenom: "Tu nombre", messageFin: "¡Encantados, {prenom}!", ceQuiAEteDit: "Lo que se dijo", aRetenir: "Para recordar", afficherTrad: "Mostrar traducción", cacherTrad: "Ocultar traducción", choixPersonnage: "¿A quién quieres dar vida primero?", prixChoixInitial: "0 P$ / 0 PB" },
+    it: { precedent: "Indietro", continuer: "Continua", terminer: "Fine", placeholderPrenom: "Il tuo nome", messageFin: "Piacere, {prenom}!", ceQuiAEteDit: "Cosa è stato detto", aRetenir: "Da ricordare", afficherTrad: "Mostra traduzione", cacherTrad: "Nascondi traduzione", choixPersonnage: "Chi vuoi far apparire per primo?", prixChoixInitial: "0 P$ / 0 PB" },
+    pt: { precedent: "Voltar", continuer: "Continuar", terminer: "Terminar", placeholderPrenom: "O teu nome", messageFin: "Prazer, {prenom}!", ceQuiAEteDit: "O que foi dito", aRetenir: "A reter", afficherTrad: "Mostrar tradução", cacherTrad: "Ocultar tradução", choixPersonnage: "Quem queres criar primeiro?", prixChoixInitial: "0 P$ / 0 PB" },
+    ca: { precedent: "Enrere", continuer: "Continua", terminer: "Acaba", placeholderPrenom: "El teu nom", messageFin: "Encantats, {prenom}!", ceQuiAEteDit: "El que s’ha dit", aRetenir: "Per recordar", afficherTrad: "Mostra la traducció", cacherTrad: "Amaga la traducció", choixPersonnage: "A qui vols fer aparèixer primer?", prixChoixInitial: "0 P$ / 0 PB" },
+    eo: { precedent: "Reen", continuer: "Daŭrigi", terminer: "Fini", placeholderPrenom: "Via nomo", messageFin: "Pleĝas, {prenom}!", ceQuiAEteDit: "Kio estis dirita", aRetenir: "Por memori", afficherTrad: "Montri tradukon", cacherTrad: "Kaŝi tradukon", choixPersonnage: "Kiun vi volas unue aperigi?", prixChoixInitial: "0 P$ / 0 PB" },
+    zh: { precedent: "返回", continuer: "继续", terminer: "完成", placeholderPrenom: "你的名字", messageFin: "很高兴认识你，{prenom}！", ceQuiAEteDit: "已说内容", aRetenir: "记住这个", afficherTrad: "显示翻译", cacherTrad: "隐藏翻译", choixPersonnage: "你想先创造谁？", prixChoixInitial: "0 P$ / 0 PB" },
+    ja: { precedent: "戻る", continuer: "続ける", terminer: "終了", placeholderPrenom: "お前の名前", messageFin: "会えて嫌しい、{prenom}！", ceQuiAEteDit: "話されたこと", aRetenir: "覚えておこう", afficherTrad: "翻訳を表示", cacherTrad: "翻訳を隠す", choixPersonnage: "最初に誰を登場させたい？", prixChoixInitial: "0 P$ / 0 PB" },
+    ko: { precedent: "뒤로", continuer: "계속", terminer: "완료", placeholderPrenom: "네 이름", messageFin: "만나서 반가워, {prenom}!", ceQuiAEteDit: "나눈 이야기", aRetenir: "기억해두기", afficherTrad: "번역 보기", cacherTrad: "번역 숨기기", choixPersonnage: "누구를 먼저 나타나게 하고 싶어?", prixChoixInitial: "0 P$ / 0 PB" },
+    vi: { precedent: "Quay lại", continuer: "Tiếp tục", terminer: "Hoàn thành", placeholderPrenom: "Tên của bạn", messageFin: "Rất vui được gặp bạn, {prenom}!", ceQuiAEteDit: "Những gì đã nói", aRetenir: "Ghi nhớ", afficherTrad: "Hiện bản dịch", cacherTrad: "Ẩn bản dịch", choixPersonnage: "Bạn muốn ai xuất hiện trước?", prixChoixInitial: "0 P$ / 0 PB" },
+    ht: { precedent: "Tounen", continuer: "Kontinye", terminer: "Fini", placeholderPrenom: "Non ou", messageFin: "Kontan konnen w, {prenom}!", ceQuiAEteDit: "Sa ki te di", aRetenir: "Pou sonje", afficherTrad: "Montre tradiksyon", cacherTrad: "Kache tradiksyon", choixPersonnage: "Ki moun ou vle fè parèt an premye?", prixChoixInitial: "0 P$ / 0 PB" },
+    tl: { precedent: "Bumalik", continuer: "Magpatuloy", terminer: "Tapusin", placeholderPrenom: "Ang pangalan mo", messageFin: "Ikinagagalak kitang makilala, {prenom}!", ceQuiAEteDit: "Ang nasabi na", aRetenir: "Dapat tandaan", afficherTrad: "Ipakita ang salin", cacherTrad: "Itago ang salin", choixPersonnage: "Sino ang gusto mong lumitaw muna?", prixChoixInitial: "0 P$ / 0 PB" },
+    id: { precedent: "Kembali", continuer: "Lanjut", terminer: "Selesai", placeholderPrenom: "Namamu", messageFin: "Senang berkenalan denganmu, {prenom}!", ceQuiAEteDit: "Yang sudah dikatakan", aRetenir: "Perlu diingat", afficherTrad: "Tampilkan terjemahan", cacherTrad: "Sembunyikan terjemahan", choixPersonnage: "Siapa yang ingin kamu munculkan lebih dulu?", prixChoixInitial: "0 P$ / 0 PB" },
+    nl: { precedent: "Terug", continuer: "Verder", terminer: "Klaar", placeholderPrenom: "Je voornaam", messageFin: "Leuk je te ontmoeten, {prenom}!", ceQuiAEteDit: "Wat er gezegd is", aRetenir: "Om te onthouden", afficherTrad: "Vertaling tonen", cacherTrad: "Vertaling verbergen", choixPersonnage: "Wie wil je als eerste laten verschijnen?", prixChoixInitial: "0 P$ / 0 PB" },
+    de: { precedent: "Zurück", continuer: "Weiter", terminer: "Fertig", placeholderPrenom: "Dein Vorname", messageFin: "Freut mich, {prenom}!", ceQuiAEteDit: "Was gesagt wurde", aRetenir: "Zum Merken", afficherTrad: "Übersetzung anzeigen", cacherTrad: "Übersetzung ausblenden", choixPersonnage: "Wen möchtest du zuerst erscheinen lassen?", prixChoixInitial: "0 P$ / 0 PB" },
+    fa: { precedent: "بازگشت", continuer: "ادامه", terminer: "پایان", placeholderPrenom: "اسم تو", messageFin: "از آشناییت خوشوقتم، {prenom}!", ceQuiAEteDit: "آنچه گفته شد", aRetenir: "نکته‌ی مهم", afficherTrad: "نمایش ترجمه", cacherTrad: "پنهان کردن ترجمه", choixPersonnage: "می‌خوای اول کی رو به وجود بیاری؟", prixChoixInitial: "0 P$ / 0 PB" },
+    sv: { precedent: "Tillbaka", continuer: "Fortsätt", terminer: "Klart", placeholderPrenom: "Ditt förnamn", messageFin: "Trevligt att träffas, {prenom}!", ceQuiAEteDit: "Vad som sagts", aRetenir: "Bra att veta", afficherTrad: "Visa översättning", cacherTrad: "Dölj översättning", choixPersonnage: "Vem vill du skapa först?", prixChoixInitial: "0 P$ / 0 PB" },
+    no: { precedent: "Tilbake", continuer: "Fortsett", terminer: "Ferdig", placeholderPrenom: "Fornavnet ditt", messageFin: "Hyggelig å treffe deg, {prenom}!", ceQuiAEteDit: "Det som ble sagt", aRetenir: "Verdt å huske", afficherTrad: "Vis oversettelse", cacherTrad: "Skjul oversettelse", choixPersonnage: "Hvem vil du skape først?", prixChoixInitial: "0 P$ / 0 PB" },
+    ru: { precedent: "Назад", continuer: "Далее", terminer: "Готово", placeholderPrenom: "Твоё имя", messageFin: "Приятно познакомиться, {prenom}!", ceQuiAEteDit: "Что было сказано", aRetenir: "Важно запомнить", afficherTrad: "Показать перевод", cacherTrad: "Скрыть перевод", choixPersonnage: "Кого ты хочешь создать первым?", prixChoixInitial: "0 P$ / 0 PB" },
   };
 
   function texteInterface(cle) {
     const dict = INTERFACE[langueActuelle()] || INTERFACE.en;
     return dict[cle] || INTERFACE.en[cle];
   }
+
+  // 🆕 (retour Raphaël, 22-08-2026) Oui/Non pour l'étape 'binaire' —
+  // dictionnaire séparé plutôt qu'ajouté à INTERFACE ci-dessus : ce
+  // n'est pas un texte de CHROME (bouton, titre d'écran) mais une
+  // réponse de dialogue, donc rangé avec le reste du contenu de la
+  // leçon (etapesDialogue(), NIVEAUX) par cohérence.
+  const OUI_NON = {
+    fr: ['Oui', 'Non'], en: ['Yes', 'No'], es: ['Sí', 'No'], it: ['Sì', 'No'], pt: ['Sim', 'Não'],
+    ca: ['Sí', 'No'], eo: ['Jes', 'Ne'], zh: ['是', '不'], ja: ['はい', 'いいえ'], ko: ['네', '아니'],
+    vi: ['Có', 'Không'], ht: ['Wi', 'Non'], tl: ['Oo', 'Hindi'], id: ['Ya', 'Tidak'], nl: ['Ja', 'Nee'],
+    de: ['Ja', 'Nein'], fa: ['بله', 'نه'], sv: ['Ja', 'Nej'], no: ['Ja', 'Nei'], ru: ['Да', 'Нет']
+  };
 
   // ---------- Image de scène — repli gracieux tant que l'art n'existe
   // pas encore (même patron que creerImage() dans dialogue-d1.html). ----------
@@ -702,6 +989,28 @@
   const elIntroPleinEcran = document.getElementById('introPleinEcran');
   const elIntroImage = document.getElementById('introImage');
 
+  // 🆕 (retour Raphaël, 22-08-2026) Écran de choix du personnage + main
+  // qui salue + flash d'apparition — voir ecranChoixPersonnage(),
+  // reveilPersonnage(), attendreSalutMain() plus bas.
+  const elEcranChoix = document.getElementById('ecranChoixPersonnage');
+  const elFlashApparition = document.getElementById('flashApparition');
+  const elBtnMainSalue = document.getElementById('btnMainSalue');
+  // 'Keb' | 'Bek' — connu seulement après ecranChoixPersonnage(), donc
+  // encore `null` ici. Toute fonction qui en a besoin (etapesDialogue(),
+  // imagePersonnageActuel()) est appelée seulement après coup.
+  let personnageChoisi = null;
+
+  function imagePersonnageActuel() {
+    return personnageChoisi === 'Bek' ? 'bek_neutre_01.webp' : 'keb_neutre_01.webp';
+  }
+
+  // 🆕 Panneaux de réponse — voir rendreEtape() plus bas, qui bascule
+  // entre eux et #navDialogue selon le type de l'étape courante.
+  const elReponseLibre = document.getElementById('reponseLibre');
+  const elChampReponseLibre = document.getElementById('champReponseLibre');
+  const elReponseBinaire = document.getElementById('reponseBinaire');
+  const elReponseNiveau = document.getElementById('reponseNiveau');
+
   // 🆕 (retour Raphaël, 21-08-2026) Pile "Ce qui a été dit" + notes
   // grammaticales — voir le commentaire CSS détaillé (.piles-conteneur)
   // et le commentaire du guide de réutilisation en tête de fichier.
@@ -711,11 +1020,13 @@
   const btnToggleTraductions = document.getElementById('btnToggleTraductions');
   const txtToggleTraductions = document.getElementById('txtToggleTraductions');
 
-  // Étiquette + initiale par type de locuteur — 'question' couvre la
-  // dernière étape de la démo ("Et toi, comment tu t'appelles ?"), qui
-  // s'adresse directement à l'élève plutôt qu'à Keb ou Bek (voir
-  // .pile-item.question dans le CSS) : NOMS.question volontairement
-  // vide, .pile-qui n'est alors pas ajouté du tout (voir plus bas).
+  // Étiquette + initiale par personnage — pour la pile "Ce qui a été
+  // dit" (voir ajouterLigneDialogue() plus bas). 🆕 (retour Raphaël,
+  // 22-08-2026) La clé 'question' (ancien narrateur neutre de la démo
+  // Keb/Bek, retirée) n'a plus d'utilité : un seul personnage parle
+  // désormais dans tout le dialogue (voir etapesDialogue()), jamais
+  // d'étape 'question'. Laissée inoffensive plutôt que retirée, au cas
+  // où une future leçon en aurait besoin.
   const NOMS = { keb: 'Keb', bek: 'Bek', question: '' };
   const INITIALES = { keb: 'K', bek: 'B', question: '?' };
 
@@ -811,15 +1122,21 @@
 
   // Tap n'importe où sur l'écran pendant la genèse = passer directement
   // à la rencontre — un élève qui revoit la leçon n'a pas à revivre
-  // toute la genèse (carte titre incluse) à chaque fois.
+  // toute la genèse (carte titre incluse) à chaque fois. 🆕 (retour
+  // Raphaël, 22-08-2026) Ne saute plus QUE la genèse : si l'écran de
+  // choix ou le réveil du personnage sont en cours, ils écoutent
+  // eux-mêmes ce même indicateur pour s'interrompre proprement (voir
+  // ecranChoixPersonnage()/reveilPersonnage()/attendreSalutMain()) —
+  // jamais un simple "passer" qui laisserait un écran de choix à moitié
+  // construit derrière lui.
   let genesePassee = false;
   function passerGenese() { genesePassee = true; }
 
-  async function jouerGenese() {
+  async function jouerGenese(liste) {
     const reduireMouvement = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     elIntroPleinEcran.addEventListener('click', passerGenese);
-    for (let i = 0; i < GENESE.length && !genesePassee; i++) {
-      const pas = GENESE[i];
+    for (let i = 0; i < liste.length && !genesePassee; i++) {
+      const pas = liste[i];
       // 🆕 Bascule le fond (beige/noir) AVANT le fondu de l'image, pour
       // que le passage noir → beige (l'"apparition" du monde) et
       // l'arrivée de l'image d'illumination se fondent ensemble plutôt
@@ -833,7 +1150,94 @@
       await attendre(reduireMouvement ? 40 : pas.duree);
     }
     elIntroPleinEcran.removeEventListener('click', passerGenese);
+  }
+
+  // ==================================================================
+  // 🆕 (retour Raphaël, 22-08-2026) Écran de choix, réveil du
+  // personnage, main qui salue — les trois étapes interactives entre la
+  // genèse (titre + noir, ci-dessus) et le vrai dialogue (rendreEtape(),
+  // plus bas). Chacune retourne une Promise résolue quand l'élève a agi
+  // (choisi une carte / cliqué la main), pour s'enchaîner simplement
+  // avec des `await` dans demarrerLecon() plutôt que de dupliquer la
+  // logique de callback trois fois.
+  // ==================================================================
+
+  // Choix du personnage — appelle choisir_personnage_initial() côté
+  // Supabase (voir progression.js). 'bloque_autre_deja_choisi' ne
+  // devrait normalement JAMAIS survenir ici (c'est justement le tout
+  // premier écran de la toute première visite) — le seul cas où ça
+  // pourrait arriver est un rejeu improbable après un signet partagé ;
+  // par prudence, on n'insiste pas et on repart avec le personnage déjà
+  // possédé plutôt que de laisser choisir une seconde fois gratuitement.
+  function ecranChoixPersonnage() {
+    return new Promise(function (resolve) {
+      document.getElementById('choixImageKeb').appendChild(creerImage('keb_neutre_01.webp'));
+      document.getElementById('choixImageBek').appendChild(creerImage('bek_neutre_01.webp'));
+      document.getElementById('choixPersonnageTitre').textContent = texteInterface('choixPersonnage');
+      elEcranChoix.querySelectorAll('.choix-carte-prix').forEach(function (el) { el.textContent = texteInterface('prixChoixInitial'); });
+      elEcranChoix.classList.add('visible');
+
+      const cartes = elEcranChoix.querySelectorAll('.choix-carte');
+      function surClic(e) {
+        const carte = e.currentTarget;
+        const personnage = carte.dataset.personnage;
+        cartes.forEach(function (c) { c.classList.add('choix-en-cours'); });
+
+        const promesse = window.KebBekProgression
+          ? window.KebBekProgression.choisirPersonnageInitial(personnage)
+          : Promise.resolve('nouveau');
+
+        promesse
+          .then(function (resultat) {
+            personnageChoisi = (resultat === 'bloque_autre_deja_choisi')
+              ? (personnage === 'Keb' ? 'Bek' : 'Keb')
+              : personnage;
+          })
+          .catch(function (err) {
+            console.warn('lecon-01-rencontre.html : choisirPersonnageInitial a échoué.', err);
+            personnageChoisi = personnage; // jamais bloquer l'histoire pour un souci réseau
+          })
+          .then(function () {
+            elEcranChoix.classList.remove('visible');
+            resolve();
+          });
+      }
+      cartes.forEach(function (c) { c.addEventListener('click', surClic, { once: true }); });
+    });
+  }
+
+  // Réveil : fond noir → beige (la genèse "s'achève" pour de bon ici),
+  // flash blanc, apparition du personnage choisi, léger balancement
+  // désorienté (.perso-deboussole) pendant une pause SANS texte — le
+  // personnage ne parle pas encore, il découvre juste qu'il existe.
+  async function reveilPersonnage() {
+    const reduireMouvement = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     elIntroPleinEcran.classList.remove('intro-noir');
+    await attendre(reduireMouvement ? 20 : 500);
+    elFlashApparition.classList.remove('jouer');
+    void elFlashApparition.offsetWidth; // force le reflow pour pouvoir rejouer l'animation d'une leçon à l'autre
+    elFlashApparition.classList.add('jouer');
+    elIntroImage.innerHTML = '';
+    elIntroImage.appendChild(creerImage(imagePersonnageActuel()));
+    elIntroImage.style.opacity = '1';
+    elIntroImage.classList.add('perso-deboussole');
+    await attendre(reduireMouvement ? 30 : 1800);
+  }
+
+  // Main qui salue — cliquable, ondule doucement pour signaler qu'elle
+  // attend un geste. Le clic MIME notre salut ; c'est ce qui fait que
+  // le personnage nous "voit" et lance sa première réplique.
+  function attendreSalutMain() {
+    return new Promise(function (resolve) {
+      document.getElementById('imageMainSalue').appendChild(creerImage('main-neutre_salue_01.webp'));
+      elBtnMainSalue.classList.add('visible');
+      elBtnMainSalue.addEventListener('click', function surClic() {
+        elBtnMainSalue.removeEventListener('click', surClic);
+        elBtnMainSalue.classList.remove('visible');
+        elIntroImage.classList.remove('perso-deboussole');
+        resolve();
+      }, { once: true });
+    });
   }
 
   let etape = 0;
@@ -843,49 +1247,73 @@
   // désynchronisation entre pile-dialogue et pile-grammaire.
   let reconstructionEnCours = false;
 
+  // 🆕 (retour Raphaël, 22-08-2026) Reconstruite pour distinguer QUATRE
+  // panneaux possibles (texte/saisie libre/binaire/niveau/prénom) au
+  // lieu d'un seul #navDialogue — un seul visible à la fois, déterminé
+  // par ETAPES[etape].type. La bulle-dialogue, elle, n'est mise à jour
+  // QUE pour les étapes 'texte' : elle reste affichée telle quelle
+  // pendant une étape de réponse (l'élève répond à la question qu'il
+  // vient de lire, elle ne doit pas disparaître entre-temps).
   function rendreEtape() {
     const def = ETAPES[etape];
     elCompteur.textContent = (etape + 1) + ' / ' + ETAPES.length;
-    btnPrecedent.disabled = (etape === 0);
-    btnSuivant.textContent = (etape === ETAPES.length - 1) ? texteInterface('continuer') : texteInterface('continuer');
-
-    elBulle.classList.remove('in');
-    elBulle.className = 'bulle-dialogue cote-' + def.speaker;
-    window.KebBekMotTooltip.fermer();
-    elBulle.innerHTML = '';
-    elBulle.appendChild(window.KebBekMotTooltip.creerMotCliquable(def.texte, CHAPITRE_ID));
-    requestAnimationFrame(() => requestAnimationFrame(() => elBulle.classList.add('in')));
+    btnPrecedent.disabled = !ETAPES.slice(0, etape).some(etapeApplicable);
 
     elScene.innerHTML = '';
-    elScene.appendChild(creerImage(def.img));
+    elScene.appendChild(creerImage(def.img || imagePersonnageActuel()));
 
-    if (!reconstructionEnCours) {
-      ajouterLigneDialogue(def);
-      ajouterNoteGrammaire(def);
+    navDialogue.style.display = (def.type === 'texte') ? 'flex' : 'none';
+    elReponseLibre.style.display = (def.type === 'saisie_libre') ? 'flex' : 'none';
+    elReponseBinaire.style.display = (def.type === 'binaire') ? 'flex' : 'none';
+    elReponseNiveau.style.display = (def.type === 'niveau') ? 'flex' : 'none';
+    elEtapePrenom.style.display = (def.type === 'prenom') ? 'flex' : 'none';
+
+    if (def.type === 'texte') {
+      elBulle.classList.remove('in');
+      elBulle.className = 'bulle-dialogue cote-' + def.speaker;
+      window.KebBekMotTooltip.fermer();
+      elBulle.innerHTML = '';
+      elBulle.appendChild(window.KebBekMotTooltip.creerMotCliquable(def.texte, CHAPITRE_ID));
+      requestAnimationFrame(() => requestAnimationFrame(() => elBulle.classList.add('in')));
+      if (!reconstructionEnCours) {
+        ajouterLigneDialogue(def);
+        ajouterNoteGrammaire(def);
+      }
+    } else if (def.type === 'saisie_libre') {
+      elChampReponseLibre.value = '';
+      setTimeout(function () { elChampReponseLibre.focus(); }, 50);
+    } else if (def.type === 'prenom') {
+      document.getElementById('champPrenom').value = '';
+      document.getElementById('champPrenom').placeholder = texteInterface('placeholderPrenom');
+      setTimeout(function () { document.getElementById('champPrenom').focus(); }, 50);
     }
   }
 
-  // 🆕 (retour Raphaël, 21-08-2026) Refactorisées en fonctions nommées
-  // (au lieu de handlers anonymes inline) pour être réutilisables par
-  // TROIS déclencheurs équivalents : les boutons, les flèches clavier
-  // gauche/droite, et le tap direct sur la scène (voir plus bas,
-  // navigationActive + les écouteurs keydown/click). `navigationActive`
-  // coupe les trois en même temps une fois qu'on quitte le dialogue
-  // (étape prénom) — au-delà, ‹/› et le tap sur l'écran n'ont plus de
-  // sens ici.
+  // 🆕 (retour Raphaël, 21-08-2026 ; adaptée 22-08-2026 pour sauter les
+  // étapes dont `condition(reponses)` est fausse — ex. la question du
+  // niveau si l'élève a répondu "non" à "Tu parles français ?") —
+  // fonctions nommées pour rester réutilisables par TROIS déclencheurs
+  // équivalents : les boutons, les flèches clavier gauche/droite, et le
+  // tap direct sur la scène. `navigationActive` coupe les trois à la
+  // toute fin du dialogue — au-delà, ‹/› et le tap sur l'écran n'ont
+  // plus de sens.
   let navigationActive = true;
 
   function precedent() {
     if (!navigationActive) return;
-    if (etape === 0) return;
-    etape -= 1;
+    let i = etape - 1;
+    while (i >= 0 && !etapeApplicable(ETAPES[i])) i -= 1;
+    if (i < 0) return;
+    etape = i;
     elPileDialogue.innerHTML = '';
     elPileGrammaire.innerHTML = '';
     blocGrammaire.style.display = 'none';
     reconstructionEnCours = true;
-    for (let i = 0; i <= etape; i++) {
-      ajouterLigneDialogue(ETAPES[i]);
-      ajouterNoteGrammaire(ETAPES[i]);
+    for (let j = 0; j <= etape; j++) {
+      if (ETAPES[j].type === 'texte' && etapeApplicable(ETAPES[j])) {
+        ajouterLigneDialogue(ETAPES[j]);
+        ajouterNoteGrammaire(ETAPES[j]);
+      }
     }
     elPileDialogue.querySelectorAll('.pile-item').forEach(el => el.classList.add('in'));
     elPileGrammaire.querySelectorAll('.grammaire-item').forEach(el => el.classList.add('in'));
@@ -895,28 +1323,97 @@
 
   function suivant() {
     if (!navigationActive) return;
-    if (etape < ETAPES.length - 1) {
-      etape += 1;
+    let i = etape + 1;
+    while (i < ETAPES.length && !etapeApplicable(ETAPES[i])) i += 1;
+    if (i < ETAPES.length) {
+      etape = i;
       rendreEtape();
       return;
     }
-    // Dernière étape de la démonstration ("Et toi, comment tu
-    // t'appelles ?") — place à la vraie saisie. navigationActive à
-    // false À PARTIR D'ICI : la scène/le clavier ne doivent plus faire
-    // avancer/reculer un dialogue qui n'est plus affiché.
+    terminerConversation();
+  }
+
+  // Fin du dialogue (dernière étape 'texte' passée) — plus d'écran
+  // final séparé à part #etapeFin : le prénom, lui, a déjà été capturé
+  // EN COURS de conversation (étape 'prenom'), pas ici.
+  function terminerConversation() {
     window.KebBekMotTooltip.fermer();
     navigationActive = false;
     navDialogue.style.display = 'none';
-    elEtapePrenom.style.display = 'flex';
-    document.getElementById('champPrenom').focus();
+    elReponseLibre.style.display = 'none';
+    elReponseBinaire.style.display = 'none';
+    elReponseNiveau.style.display = 'none';
+    elEtapeFin.style.display = 'flex';
+    document.getElementById('messageFin').textContent = texteInterface('messageFin').replace('{prenom}', reponses.prenom || '');
+    document.getElementById('btnTerminerLecon').textContent = texteInterface('terminer');
   }
 
   btnPrecedent.addEventListener('click', precedent);
   btnSuivant.addEventListener('click', suivant);
 
+  // 🆕 Validation de la réponse libre ("Bonjour !") — reconnue ou non,
+  // ça n'empêche JAMAIS d'avancer (voir SALUTATIONS_RECONNUES plus
+  // haut) : l'important est que l'élève ait répondu, pas qu'il ait
+  // deviné la bonne formule.
+  // 🆕 Reconnaissance de la salutation — n'a AUCUN effet sur la
+  // progression (voir commentaire de SALUTATIONS_RECONNUES plus haut) ;
+  // seulement conservée dans `reponses` pour une future variante de
+  // réplique ("Ah, tu m'as dit bonjour !" par ex.), pas exploitée pour
+  // l'instant.
+  function reponseSalutationReconnue(valeur) {
+    const v = normaliserTexte(valeur);
+    return SALUTATIONS_RECONNUES.some(function (m) { return v === m || v.indexOf(m) !== -1; });
+  }
+
+  function validerReponseLibre() {
+    const def = ETAPES[etape];
+    const valeur = elChampReponseLibre.value.trim();
+    if (!valeur) { elChampReponseLibre.focus(); return; }
+    reponses[def.cle_reponse] = valeur;
+    reponses.salutationReconnue = reponseSalutationReconnue(valeur);
+    suivant();
+  }
+  document.getElementById('btnValiderReponseLibre').addEventListener('click', validerReponseLibre);
+  elChampReponseLibre.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') { e.preventDefault(); validerReponseLibre(); }
+  });
+
+  // 🆕 Oui/Non — répondre fait directement avancer, pas de bouton
+  // "Continuer" séparé en plus (cohérent avec saisie_libre/niveau).
+  elReponseBinaire.querySelectorAll('.bouton-choix').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      const def = ETAPES[etape];
+      reponses[def.cle_reponse] = btn.dataset.valeur;
+      suivant();
+    });
+  });
+
+  // 🆕 Les 6 boutons de niveau sont construits une seule fois (la langue
+  // ne change pas en cours de leçon), pas régénérés à chaque rendu.
+  function construireBoutonsNiveau() {
+    elReponseNiveau.innerHTML = '';
+    NIVEAUX.forEach(function (niv) {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'bouton-choix';
+      btn.textContent = niv[langueActuelle()] || niv.fr;
+      btn.addEventListener('click', function () {
+        const def = ETAPES[etape];
+        reponses[def.cle_reponse] = niv.id;
+        suivant();
+      });
+      elReponseNiveau.appendChild(btn);
+    });
+  }
+
+  document.querySelectorAll('#reponseBinaire .bouton-choix').forEach(function (btn, i) {
+    btn.textContent = (OUI_NON[langueActuelle()] || OUI_NON.en)[i];
+  });
+
   // 🆕 Navigation clavier (flèches gauche/droite) — ignorée si le focus
-  // est dans un champ de saisie (le champ prénom, plus bas, gère déjà
-  // ses propres touches) pour ne jamais voler une frappe de texte.
+  // est dans un champ de saisie (le champ prénom ou la réponse libre,
+  // qui gèrent déjà leurs propres touches) pour ne jamais voler une
+  // frappe de texte.
   document.addEventListener('keydown', function (e) {
     const cible = e.target;
     const dansChampSaisie = cible && (cible.tagName === 'INPUT' || cible.tagName === 'TEXTAREA' || cible.isContentEditable);
@@ -925,32 +1422,42 @@
     else if (e.key === 'ArrowRight') { e.preventDefault(); suivant(); }
   });
 
-  // 🆕 Tap/clic direct sur la scène (les personnages) — demande de
+  // 🆕 Tap/clic direct sur la scène (le personnage) — demande de
   // Raphaël, mêmes règles que dans dialogue-d1.html à l'origine : la
   // moitié GAUCHE de l'image fait reculer, la moitié DROITE fait
   // avancer, pour que le geste imite naturellement un livre qu'on
   // feuillette. Un clic sur un MOT de la bulle (traduction, voir
   // mot-tooltip.js) ne doit JAMAIS déclencher cette navigation — d'où
-  // l'exclusion .closest('.bulle-dialogue') tout en haut.
+  // l'exclusion .closest('.bulle-dialogue') tout en haut. Sans effet
+  // pendant une étape de réponse (saisie_libre/binaire/niveau/prénom) :
+  // répondre EST déjà le geste qui fait avancer, un tap sur l'image à
+  // côté ne doit pas resauter une étape par-dessus.
   const elCadreScene = document.querySelector('.cadre-scene');
   elCadreScene.addEventListener('click', function (e) {
     if (e.target.closest('.bulle-dialogue')) return;
     if (!navigationActive) return;
+    if (ETAPES[etape] && ETAPES[etape].type !== 'texte') return;
     const rect = elCadreScene.getBoundingClientRect();
     const x = e.clientX - rect.left;
     if (x < rect.width / 2) precedent();
     else suivant();
   });
 
-  document.getElementById('champPrenom').placeholder = texteInterface('placeholderPrenom');
   document.getElementById('titrePileDialogue').textContent = texteInterface('ceQuiAEteDit');
   document.getElementById('titrePileGrammaire').textContent = texteInterface('aRetenir');
   txtToggleTraductions.textContent = texteInterface('afficherTrad');
 
+  // 🆕 (retour Raphaël, 22-08-2026) Ne saute plus vers #etapeFin
+  // directement : le prénom est désormais capturé EN COURS de
+  // conversation (voir etapesDialogue(), type 'prenom'), donc valider
+  // le prénom fait juste avancer d'une étape comme n'importe quelle
+  // autre réponse — c'est suivant() qui décide s'il reste des étapes ou
+  // s'il faut terminerConversation().
   function soumettrePrenom() {
     const champ = document.getElementById('champPrenom');
     const prenom = champ.value.trim();
     if (!prenom) { champ.focus(); return; }
+    reponses.prenom = prenom;
 
     if (window.KebBekProgression) {
       window.KebBekProgression
@@ -960,10 +1467,7 @@
       console.warn('KebBekProgression indisponible — prénom non enregistré.', prenom);
     }
 
-    elEtapePrenom.style.display = 'none';
-    elEtapeFin.style.display = 'flex';
-    document.getElementById('messageFin').textContent = texteInterface('messageFin').replace('{prenom}', prenom);
-    document.getElementById('btnTerminerLecon').textContent = texteInterface('terminer');
+    suivant();
   }
 
   document.getElementById('btnValiderPrenom').addEventListener('click', soumettrePrenom);
@@ -982,17 +1486,47 @@
 
   btnPrecedent.textContent = '‹ ' + texteInterface('precedent');
 
-  // ---------- Démarrage : carte titre + genèse (plein écran, voir
-  // #introPleinEcran), PUIS seulement le dialogue/les boutons habituels.
-  // 🆕 (retour Raphaël, 21-08-2026) Ne passe plus par
-  // window.KebBekLeconIntro.afficher(...) — cette leçon gère sa propre
-  // séquence d'ouverture, entièrement plein écran, hors de la structure
-  // habituelle d'une leçon (voir GENESE et jouerGenese() plus haut).
-  // rendreEtape() peuple #sceneImage AVANT que #sceneLecon ne devienne
-  // visible, pour qu'il n'y ait jamais de cadre vide entrevu au moment
-  // du basculement.
+  // ---------- Démarrage ----------
+  // 🆕 (retour Raphaël, 22-08-2026) Restructuré autour du choix du
+  // personnage : SI l'élève a déjà fait ce choix par le passé (rejeu de
+  // la leçon — voir lirePersonnageChoisi()), on saute directement toute
+  // la genèse ET l'écran d'achat, jamais réaffiché une seconde fois à
+  // qui a déjà un personnage. Sinon, déroulement complet : titre + noir
+  // (jouerGenese) → écran de choix (ecranChoixPersonnage, "achat" à
+  // 0 P$/0 PB) → réveil du personnage choisi (reveilPersonnage) → main
+  // qui salue (attendreSalutMain) → dialogue (rendreEtape, construit
+  // par etapesDialogue() maintenant que personnageChoisi est connu).
   async function demarrerLecon() {
-    await jouerGenese();
+    const dejaChoisi = window.KebBekProgression
+      ? await window.KebBekProgression.lirePersonnageChoisi().catch(function () { return null; })
+      : null;
+
+    if (dejaChoisi) {
+      personnageChoisi = dejaChoisi;
+    } else {
+      await jouerGenese(GENESE_AVANT);
+      if (!genesePassee) {
+        await ecranChoixPersonnage();
+        await reveilPersonnage();
+        await attendreSalutMain();
+      } else {
+        // Genèse sautée en cours de route (tap précoce) — pas de choix
+        // fait, pas de personnage révélé : on ne peut pas improviser un
+        // choix à la place de l'élève, donc on le pose quand même, sans
+        // l'animation, plutôt que de planter sur personnageChoisi vide.
+        await ecranChoixPersonnage();
+        elIntroPleinEcran.classList.remove('intro-noir');
+        elIntroImage.innerHTML = '';
+        elIntroImage.appendChild(creerImage(imagePersonnageActuel()));
+        elIntroImage.style.opacity = '1';
+      }
+    }
+
+    ETAPES = etapesDialogue();
+    construireBoutonsNiveau();
+    etape = 0;
+    while (etape < ETAPES.length && !etapeApplicable(ETAPES[etape])) etape += 1;
+
     elIntroPleinEcran.classList.add('intro-cachee');
     rendreEtape();
     elSceneLecon.classList.add('revele');

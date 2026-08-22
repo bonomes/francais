@@ -254,9 +254,11 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    min-width: 0;
+    min-height: 0;
     transition: opacity 0.6s ease;
   }
-  .intro-image img { width: 100%; height: 100%; object-fit: contain; }
+  .intro-image img { width: 100%; height: 100%; max-width: 100%; max-height: 100%; object-fit: contain; display: block; }
   /* Même intention que l'ancien .scene-image-genese : une image pas
      encore prête doit rester un noir sobre, jamais un message d'erreur
      qui casserait l'ambiance de la genèse. */
@@ -492,7 +494,15 @@
   }
   .intro-legende-trad {
     font-size: 0.85rem;
-    color: rgba(253, 251, 247, 0.78);
+    font-weight: 600;
+    /* 🆕 (Raphaël, 22-08-2026, retour) Était blanc translucide sur fond
+       clair — quasi illisible (contraste signalé par Raphaël). La
+       légende FR au-dessus reste blanche (elle a un text-shadow foncé
+       qui la sauve), mais la traduction n'en avait pas : on passe donc
+       à une couleur foncée, avec un léger halo clair pour rester
+       lisible même si l'image derrière est sombre par endroits. */
+    color: var(--brun-fonce);
+    text-shadow: 0 1px 6px rgba(253, 251, 247, 0.9), 0 1px 6px rgba(253, 251, 247, 0.9);
     text-align: center;
   }
   /* Petit indicateur "touchez pour continuer" — les légendes avancent
@@ -608,6 +618,15 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    /* 🆕 (Raphaël, 22-08-2026, retour) "Keb sort du cadre" — un flex
+       item a par défaut min-height/min-width: auto, ce qui laisse son
+       contenu (l'image) grandir jusqu'à SA taille intrinsèque et
+       déborder le parent MALGRÉ width/height/object-fit ci-dessous.
+       0 force le flex item à vraiment respecter les bornes de
+       .cadre-scene (qui, lui, a overflow: hidden) plutôt que de
+       compter uniquement sur object-fit. */
+    min-width: 0;
+    min-height: 0;
     /* 🆕 (retour Raphaël, 21-08-2026) Beige (var(--fond)), plus noir : le
        noir n'a plus lieu d'être ici — la genèse plein écran (seule
        séquence qui en avait besoin) joue désormais entièrement dans
@@ -635,7 +654,7 @@
      depuis le haut, vérifié sur les 4 derniers fichiers), atterrit donc
      systématiquement au même niveau dans le cadre, quelle que soit
      l'image. */
-  .scene-image img { width: 100%; height: 100%; object-fit: contain; }
+  .scene-image img { width: 100%; height: 100%; max-width: 100%; max-height: 100%; object-fit: contain; display: block; }
   .scene-image-repli {
     font-size: 0.85rem;
     color: var(--brun-clair);
@@ -680,6 +699,30 @@
     transition: opacity 0.25s ease, transform 0.25s cubic-bezier(.2,.8,.3,1.2);
   }
   .bulle-dialogue.in { opacity: 1; transform: translateY(0); }
+
+  /* 🆕 (Raphaël, 22-08-2026, retour) Raphaël aime la hiérarchie
+     FR-en-avant / traduction-en-retrait de .intro-legende — reprise
+     ici pour la RÉPLIQUE COURANTE de la bulle du dialogue (jamais vue
+     auparavant : seule la pile "Ce qui a été dit" avait une
+     traduction). Cachée par défaut (comme .pile-trad) : visible si le
+     réglage global "Afficher la traduction" est actif (.visible,
+     posée en JS dans rendreEtape()), ET en survol sur un appareil qui
+     a une vraie souris (voir @media (hover: hover) plus bas) — sur
+     mobile, seul le bouton global fait apparaître la traduction,
+     puisqu'il n'y a pas de survol possible au doigt. */
+  .bulle-trad {
+    display: block;
+    margin-top: 4px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--brun-clair);
+    opacity: 0;
+    transition: opacity 0.2s ease;
+  }
+  .bulle-trad.visible { opacity: 1; }
+  @media (hover: hover) {
+    .bulle-dialogue:hover .bulle-trad { opacity: 1; }
+  }
   .bulle-dialogue.cote-bek { margin-left: auto; }
   .bulle-dialogue.cote-question { margin: 0 auto; text-align: center; font-weight: 700; }
 
@@ -1515,6 +1558,12 @@
     elPileDialogue.querySelectorAll('.pile-trad').forEach(function (el) {
       el.classList.toggle('visible', traductionsVisiblesParDefaut);
     });
+    // 🆕 (Raphaël, 22-08-2026, retour) La bulle de la réplique COURANTE
+    // (.bulle-trad, voir rendreEtape()) suit le même réglage global —
+    // sur mobile, c'est le seul moyen de la révéler (pas de survol).
+    elBulle.querySelectorAll('.bulle-trad').forEach(function (el) {
+      el.classList.toggle('visible', traductionsVisiblesParDefaut);
+    });
   });
 
   function attendre(ms) {
@@ -1719,17 +1768,7 @@
       en: function (nomAutre) { return nomAutre + '? ' + nomAutre + '?'; } }
   ];
 
-  function attendreTapIntro() {
-    return new Promise(function (resolve) {
-      function surTap() {
-        elIntroPleinEcran.removeEventListener('click', surTap);
-        resolve();
-      }
-      elIntroPleinEcran.addEventListener('click', surTap);
-    });
-  }
-
-  // 🆕 (Raphaël, 22-08-2026, session de reprise) Reprise exacte de la
+  // 🆕 (Raphaël, 22-08-2026, retour) Reprise exacte de la
   // séquence d'intro (réveil + désorientation + main qui salue), même
   // principe que sauvegarderPosition() plus bas pour le VRAI dialogue,
   // mais sous une clé de chapitre distincte ('r1_intro' plutôt que
@@ -1746,53 +1785,101 @@
       .catch(function (e) { console.warn('lecon-01-rencontre.html : échec de la sauvegarde de position (intro).', e); });
   }
 
-  // 🆕 (Raphaël, 22-08-2026, session de reprise) `indexDepart` — permet
-  // de rentrer dans la boucle à un beat précis plutôt que toujours au
-  // premier, pour la reprise exacte (voir reveilPersonnageResume() et
-  // sauvegarderPositionIntro() plus bas) : un élève qui quitte pendant
-  // "Hmm... ?" doit retrouver "Hmm... ?" à son retour, pas revivre
-  // l'éblouissement qu'il a déjà vu. `beat.flash` (voir 'ebloui'
-  // ci-dessus) rejoue #flashApparition juste avant l'image de ce
-  // beat — jamais rejoué en reprise si on saute directement PAR-DESSUS
-  // ce beat (indexDepart > son index), seulement si on y entre pour de
-  // vrai (fraîchement, ou en reprise pile dessus).
-  async function jouerBeats(nomAutre, indexDepart) {
+  // 🆕 (Raphaël, 22-08-2026, retour — 5ème demande) La désorientation
+  // était jusqu'ici une simple boucle for + un unique clic qui ne
+  // faisait qu'avancer (attendreTapIntro()) : impossible de reculer.
+  // Remplacée par un contrôleur pilotable dans les deux sens —
+  // `beatsControleur` retient l'index courant + la promesse à résoudre
+  // une fois la désorientation terminée — pour que flèches clavier,
+  // tap gauche/droite ET glissement (voir plus bas, mêmes écouteurs que
+  // .cadre-scene) fonctionnent ICI AUSSI, pas seulement dans le VRAI
+  // dialogue. `enTransition` empêche un double avancement pendant le
+  // court délai du flash (voir plus bas) — un deuxième tap pendant ce
+  // délai est ignoré plutôt que de sauter un beat.
+  let beatsControleur = null;
+
+  async function rendreBeat(nomAutre, i) {
+    const beat = BEATS_DESORIENTATION[i];
     const reduireMouvement = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    for (let i = (indexDepart || 0); i < BEATS_DESORIENTATION.length; i++) {
-      const beat = BEATS_DESORIENTATION[i];
-      elIntroLegende.classList.remove('visible');
-      if (beat.flash) {
-        elFlashApparition.classList.remove('jouer', 'jouer-eblouissement');
-        void elFlashApparition.offsetWidth; // force le reflow, même patron que reveilPersonnage()
-        elFlashApparition.classList.add('jouer-eblouissement');
-        // 🆕 (Raphaël, 22-08-2026, retour) La bascule d'image ci-dessous
-        // doit se faire PENDANT le plateau blanc de l'éclat (voir
-        // @keyframes flashEblouissement, pic vers 15%), jamais avant —
-        // sinon l'élève voit le personnage se couvrir les yeux AVANT le
-        // flash, sans raison apparente. On attend donc que l'écran soit
-        // presque tout blanc avant d'échanger l'image dessous.
-        await attendre(reduireMouvement ? 20 : 320);
-      }
-      elIntroImage.innerHTML = '';
-      elIntroImage.appendChild(creerImage(imagePerso(beat.cle)));
-      // 🆕 (Raphaël, 22-08-2026, session de reprise) beat.fr est absent
-      // pour 'ebloui' (pas de réplique voulue, juste flash + image) —
-      // on laisse alors la légende vide plutôt que d'afficher "undefined".
-      if (beat.fr) {
-        const texteFr = typeof beat.fr === 'function' ? beat.fr(nomAutre) : beat.fr;
-        const texteEn = typeof beat.en === 'function' ? beat.en(nomAutre) : beat.en;
-        elIntroLegende.innerHTML = '<div class="intro-legende-fr">' + texteFr + '</div>' +
-          '<div class="intro-legende-trad">' + texteEn + '</div>';
-        requestAnimationFrame(function () { elIntroLegende.classList.add('visible'); });
-      }
-      sauvegarderPositionIntro(i);
-      await attendreTapIntro();
-    }
     elIntroLegende.classList.remove('visible');
-    // Désorientation terminée, il ne reste plus que la main qui salue —
-    // voir demarrerLecon() : une reprise à ce stade doit sauter les
-    // beats mais PAS rejouer l'éblouissement/désorientation.
-    sauvegarderPositionIntro(BEATS_DESORIENTATION.length);
+    if (beat.flash) {
+      elFlashApparition.classList.remove('jouer', 'jouer-eblouissement');
+      void elFlashApparition.offsetWidth; // force le reflow, même patron que reveilPersonnage()
+      elFlashApparition.classList.add('jouer-eblouissement');
+      // La bascule d'image ci-dessous doit se faire PENDANT le plateau
+      // blanc de l'éclat (voir @keyframes flashEblouissement, pic vers
+      // 15%), jamais avant — sinon l'élève voit le personnage se
+      // couvrir les yeux AVANT le flash, sans raison apparente. On
+      // attend donc que l'écran soit presque tout blanc avant
+      // d'échanger l'image dessous. Rejoué à l'identique qu'on arrive
+      // sur ce beat en avançant OU en reculant dessus (jamais si on le
+      // saute par-dessus, ex. reprise plus loin).
+      await attendre(reduireMouvement ? 20 : 320);
+    }
+    elIntroImage.innerHTML = '';
+    elIntroImage.appendChild(creerImage(imagePerso(beat.cle)));
+    // beat.fr est absent pour 'ebloui' (pas de réplique voulue, juste
+    // flash + image) — on laisse alors la légende vide plutôt que
+    // d'afficher "undefined".
+    if (beat.fr) {
+      const texteFr = typeof beat.fr === 'function' ? beat.fr(nomAutre) : beat.fr;
+      const texteEn = typeof beat.en === 'function' ? beat.en(nomAutre) : beat.en;
+      elIntroLegende.innerHTML = '<div class="intro-legende-fr">' + texteFr + '</div>' +
+        '<div class="intro-legende-trad">' + texteEn + '</div>';
+      requestAnimationFrame(function () { elIntroLegende.classList.add('visible'); });
+    }
+    sauvegarderPositionIntro(i);
+  }
+
+  // Avance d'un beat, ou termine la désorientation (résout la promesse
+  // de jouerBeats()) si on était déjà sur le dernier.
+  async function avancerBeat() {
+    if (!beatsControleur || beatsControleur.enTransition) return;
+    const c = beatsControleur;
+    if (c.index + 1 < BEATS_DESORIENTATION.length) {
+      c.enTransition = true;
+      c.index += 1;
+      await rendreBeat(c.nomAutre, c.index);
+      c.enTransition = false;
+    } else {
+      beatsControleur = null;
+      elIntroLegende.classList.remove('visible');
+      // Désorientation terminée, il ne reste plus que la main qui
+      // salue — voir demarrerLecon() : une reprise à ce stade doit
+      // sauter les beats mais PAS rejouer l'éblouissement/désorientation.
+      sauvegarderPositionIntro(BEATS_DESORIENTATION.length);
+      c.resolve();
+    }
+  }
+
+  // Recule d'un beat — jamais avant le premier (index 0) : on ne
+  // revient JAMAIS à l'écran de choix du personnage par ce chemin,
+  // comme demandé (« on ne pourrait pas retourner à choisir soit Keb,
+  // soit Bek, mais tout ce qui suit... peut être repris »).
+  async function reculerBeat() {
+    if (!beatsControleur || beatsControleur.enTransition) return;
+    const c = beatsControleur;
+    if (c.index <= 0) return;
+    c.enTransition = true;
+    c.index -= 1;
+    await rendreBeat(c.nomAutre, c.index);
+    c.enTransition = false;
+  }
+
+  // 🆕 (Raphaël, 22-08-2026, retour) `indexDepart` — permet de rentrer
+  // dans la séquence à un beat précis plutôt que toujours au premier,
+  // pour la reprise exacte (voir reveilPersonnageResume() et
+  // sauvegarderPositionIntro() plus haut) : un élève qui quitte pendant
+  // "Hmm... ?" doit retrouver "Hmm... ?" à son retour, pas revivre
+  // l'éblouissement qu'il a déjà vu.
+  function jouerBeats(nomAutre, indexDepart) {
+    return new Promise(function (resolve) {
+      const indexInitial = indexDepart || 0;
+      beatsControleur = { index: indexInitial, nomAutre: nomAutre, enTransition: true, resolve: resolve };
+      rendreBeat(nomAutre, indexInitial).then(function () {
+        if (beatsControleur) beatsControleur.enTransition = false;
+      });
+    });
   }
 
   // Main qui salue — cliquable, ondule doucement pour signaler qu'elle
@@ -1809,9 +1896,14 @@
     return new Promise(function (resolve) {
       document.getElementById('imageMainSalue').appendChild(creerImage('main-neutre_salue_01.webp'));
       elBtnMainSalue.classList.add('visible');
+      // 🆕 (Raphaël, 22-08-2026, retour) "Bonjour !" doit être visible
+      // DÈS que la main apparaît, pas seulement après le clic — sinon
+      // l'élève ne sait pas ce que le geste représente avant de l'avoir
+      // fait. Reste affiché tant qu'on n'a pas cliqué ; le clic ne fait
+      // plus que refermer la séquence (voir setTimeout ci-dessous).
+      elMainSalueBonjour.classList.add('visible');
       elBtnMainSalue.addEventListener('click', function surClic() {
         elBtnMainSalue.removeEventListener('click', surClic);
-        elMainSalueBonjour.classList.add('visible');
         setTimeout(function () {
           elBtnMainSalue.classList.remove('visible');
           elMainSalueBonjour.classList.remove('visible');
@@ -1866,6 +1958,17 @@
       window.KebBekMotTooltip.fermer();
       elBulle.innerHTML = '';
       elBulle.appendChild(window.KebBekMotTooltip.creerMotCliquable(texteEtape(def), CHAPITRE_ID));
+      // 🆕 (Raphaël, 22-08-2026, retour) Traduction de LA RÉPLIQUE
+      // AFFICHÉE, directement dans la bulle — voir .bulle-trad en CSS
+      // (survol sur ordinateur, réglage global sur mobile/tactile).
+      const tradActuelle = traductionPhrase(def);
+      if (tradActuelle) {
+        const elBulleTrad = document.createElement('div');
+        elBulleTrad.className = 'bulle-trad';
+        elBulleTrad.textContent = tradActuelle;
+        if (traductionsVisiblesParDefaut) elBulleTrad.classList.add('visible');
+        elBulle.appendChild(elBulleTrad);
+      }
       requestAnimationFrame(() => requestAnimationFrame(() => elBulle.classList.add('in')));
       if (!reconstructionEnCours) {
         ajouterLigneDialogue(def);
@@ -2146,12 +2249,24 @@
   // est dans un champ de saisie (le champ prénom ou la réponse libre,
   // qui gèrent déjà leurs propres touches) pour ne jamais voler une
   // frappe de texte.
+  // 🆕 (Raphaël, 22-08-2026, retour — 5ème demande) Ne gérait QUE le
+  // vrai dialogue (precedent()/suivant(), navigationActive) — les
+  // flèches ne faisaient donc rien pendant la désorientation (juste
+  // après le choix de la carte), d'où le "seulement possible de
+  // déplacer la page de haut en bas" : rien ne consommait la touche à
+  // ce moment-là. `beatsControleur` (voir plus haut) est maintenant
+  // vérifié EN PREMIER pour couvrir aussi cette phase.
   document.addEventListener('keydown', function (e) {
     const cible = e.target;
     const dansChampSaisie = cible && (cible.tagName === 'INPUT' || cible.tagName === 'TEXTAREA' || cible.isContentEditable);
     if (dansChampSaisie) return;
-    if (e.key === 'ArrowLeft') { e.preventDefault(); precedent(); }
-    else if (e.key === 'ArrowRight') { e.preventDefault(); suivant(); }
+    if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+    e.preventDefault();
+    if (beatsControleur) {
+      if (e.key === 'ArrowLeft') reculerBeat(); else avancerBeat();
+      return;
+    }
+    if (e.key === 'ArrowLeft') precedent(); else suivant();
   });
 
   // 🆕 Tap/clic direct sur la scène (le personnage) — demande de
@@ -2205,6 +2320,39 @@
     if (!navigationActive) return;
     if (ETAPES[etape] && ETAPES[etape].type !== 'texte') return;
     if (deltaX < 0) suivant(); else precedent();
+  }, { passive: true });
+
+  // 🆕 (Raphaël, 22-08-2026, retour — 5ème demande) Même patron tap
+  // gauche/droite + glissement que .cadre-scene ci-dessus, mais pour la
+  // séquence de désorientation (#introPleinEcran) — jusqu'ici un simple
+  // clic n'importe où ne faisait qu'avancer, sans équivalent "reculer".
+  // Sans effet une fois beatsControleur à null (pendant la genèse
+  // muette, gérée par passerGenese() ; ou après, pendant la main qui
+  // salue, qui a son propre bouton).
+  elIntroPleinEcran.addEventListener('click', function (e) {
+    if (!beatsControleur) return;
+    const rect = elIntroPleinEcran.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    if (x < rect.width / 2) reculerBeat(); else avancerBeat();
+  });
+  let swipeIntroDepartX = null;
+  let swipeIntroDepartY = null;
+  elIntroPleinEcran.addEventListener('touchstart', function (e) {
+    if (e.touches.length !== 1) { swipeIntroDepartX = null; return; }
+    swipeIntroDepartX = e.touches[0].clientX;
+    swipeIntroDepartY = e.touches[0].clientY;
+  }, { passive: true });
+  elIntroPleinEcran.addEventListener('touchend', function (e) {
+    if (swipeIntroDepartX === null) return;
+    const arrivee = e.changedTouches[0];
+    const deltaX = arrivee.clientX - swipeIntroDepartX;
+    const deltaY = arrivee.clientY - swipeIntroDepartY;
+    swipeIntroDepartX = null;
+    swipeIntroDepartY = null;
+    const SEUIL_GLISSEMENT = 50;
+    if (Math.abs(deltaX) < SEUIL_GLISSEMENT || Math.abs(deltaX) < Math.abs(deltaY)) return;
+    if (!beatsControleur) return;
+    if (deltaX < 0) avancerBeat(); else reculerBeat();
   }, { passive: true });
 
   document.getElementById('titrePileDialogue').textContent = texteInterface('ceQuiAEteDit');

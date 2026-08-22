@@ -320,7 +320,18 @@
      l'opacité pour signaler "en cours", sans faire disparaître la carte. */
   .choix-carte.choix-en-cours { opacity: 0.5; pointer-events: none; }
   .choix-carte-image { width: 100%; aspect-ratio: 3 / 4; display: flex; align-items: center; justify-content: center; }
-  .choix-carte-image img { width: 100%; height: 100%; object-fit: contain; }
+  /* 🆕 (Raphaël, 22-08-2026) object-position: bottom plutôt que le repli
+     "center" par défaut — les fichiers keb_généré_01.webp (848×1264,
+     ratio 0,671) et bek_générée_01.webp (896×1196, ratio 0,749) n'ont
+     PAS le même format, donc avec un centrage vertical les deux
+     personnages ne "posent pas les pieds" à la même hauteur dans leur
+     carte respective (nom/prix qui suivent semblent alors décalés d'une
+     carte à l'autre, pas alignés). Ancrer les deux images en BAS de leur
+     boîte aligne les deux personnages sur une même ligne de sol, peu
+     importe l'espace vide que chaque fichier source laisse au-dessus
+     de la tête. object-fit reste `contain` : rien n'est rogné, juste
+     repositionné. */
+  .choix-carte-image img { width: 100%; height: 100%; object-fit: contain; object-position: center bottom; }
   .choix-carte-nom { font-size: 1.18rem; font-weight: 700; color: var(--brun-fonce); }
   .choix-carte-prix {
     font-size: 0.76rem;
@@ -472,6 +483,68 @@
     width: min(52vw, 340px);
     height: min(62vh, 460px);
     margin: 0 auto;
+    /* 🆕 (Raphaël, 22-08-2026) Devient le conteneur des DEUX calques
+       empilés (généré + neutre, voir .intro-image-genere/-neutre-fondu
+       juste en dessous et reveilPersonnage() en JS) le temps du
+       fondu-enchaîné qui les relie. */
+    position: relative;
+  }
+
+  /* ==================================================================
+     🆕 (Raphaël, 22-08-2026) Matérialisation du personnage — demande
+     explicite : la toute première image vue au clic doit être la
+     version "généré" scintillante (keb_généré_01.webp / bek_générée_01.webp,
+     déjà cataloguées dans IMAGES_PERSO.genere), avec une animation qui
+     donne l'impression qu'elle vient d'apparaître spontanément — pas un
+     simple fondu plat comme .flash-apparition seul le faisait jusqu'ici.
+     Le calque "généré" se pose PAR-DESSUS le calque "neutre" (voir
+     reveilPersonnage()), joue sa matérialisation, puis s'efface en
+     fondu pour révéler la pose neutre déjà présente en dessous — un
+     vrai fondu-enchaîné entre les deux images, jamais un saut de src.
+     ================================================================== */
+  .intro-image-genere,
+  .intro-image-neutre-fondu {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .intro-image-genere img,
+  .intro-image-neutre-fondu img { width: 100%; height: 100%; object-fit: contain; }
+
+  /* Le calque neutre est déjà en place mais invisible : il n'a qu'à
+     monter en opacité pendant que le calque généré redescend (voir
+     .intro-image-stabilise plus bas) — les deux fondus se croisent. */
+  .intro-image-neutre-fondu { opacity: 0; transition: opacity 0.9s ease; }
+  .intro-image-neutre-fondu.visible { opacity: 1; }
+
+  /* Matérialisation : part flou/surexposé/rétréci — comme un dessin qui
+     prend forme dans un éclat de lumière — puis se stabilise net à sa
+     taille réelle. `both` retient l'état final (net, échelle 1) tant
+     qu'aucune autre classe ne prend le relais. */
+  .intro-image-genere {
+    animation: materialisationPersonnage 1.6s cubic-bezier(.16,.9,.28,1) both;
+  }
+  @keyframes materialisationPersonnage {
+    0%   { opacity: 0;   transform: scale(0.78); filter: brightness(2.4) blur(9px) saturate(1.35); }
+    45%  { opacity: 1;   transform: scale(1.06); filter: brightness(1.7) blur(1.5px) saturate(1.2); }
+    75%  { opacity: 1;   transform: scale(0.99); filter: brightness(1.1) blur(0) saturate(1.05); }
+    100% { opacity: 1;   transform: scale(1);    filter: brightness(1) blur(0) saturate(1); }
+  }
+  /* Une fois la matérialisation jouée, le fondu vers le neutre (piloté
+     par reveilPersonnage()) reprend le contrôle de l'opacité via une
+     transition ordinaire — `animation: none` rend la main pour que la
+     transition ne soit pas écrasée par le fill-mode `both` ci-dessus. */
+  .intro-image-genere.intro-image-stabilise {
+    animation: none;
+    opacity: 0;
+    transition: opacity 0.9s ease;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .intro-image-genere { animation: none; opacity: 1; filter: none; transform: none; }
+    .intro-image-genere.intro-image-stabilise,
+    .intro-image-neutre-fondu { transition: opacity 0.25s ease; }
   }
 
   .cadre-scene {
@@ -1463,10 +1536,36 @@
     elFlashApparition.classList.add('jouer');
     elIntroImage.classList.add('intro-image-personnage');
     elIntroImage.innerHTML = '';
-    elIntroImage.appendChild(creerImage(imagePersonnageActuel()));
     elIntroImage.style.opacity = '1';
+
+    // 🆕 (Raphaël, 22-08-2026) Demande explicite : la toute première
+    // image du personnage doit être sa version "généré" (scintillante),
+    // avec l'impression qu'elle vient d'apparaître spontanément — voir
+    // .intro-image-genere / @keyframes materialisationPersonnage en CSS.
+    // La pose neutre est posée dessous, invisible, prête à recevoir le
+    // fondu-enchaîné une fois la matérialisation vue (deux calques
+    // superposés, jamais un simple remplacement de src).
+    const calqueGenere = creerImage(imagePerso('genere'));
+    calqueGenere.classList.add('intro-image-genere');
+    const calqueNeutre = creerImage(imagePersonnageActuel());
+    calqueNeutre.classList.add('intro-image-neutre-fondu');
+    elIntroImage.appendChild(calqueNeutre);
+    elIntroImage.appendChild(calqueGenere);
+
+    // Laisse le temps de VOIR la matérialisation avant d'entamer le
+    // fondu (1.6s d'animation + une courte pause sur l'image stabilisée).
+    await attendre(reduireMouvement ? 30 : 2000);
+
+    // Fondu-enchaîné : le calque généré s'efface pendant que le neutre
+    // monte en opacité — les deux transitions durent le même temps
+    // (0.9s, voir CSS) donc se croisent sans à-coup.
+    calqueGenere.classList.add('intro-image-stabilise');
+    calqueNeutre.classList.add('visible');
+    await attendre(reduireMouvement ? 20 : 900);
+    calqueGenere.remove();
+
     elIntroImage.classList.add('perso-deboussole');
-    await attendre(reduireMouvement ? 30 : 1200);
+    await attendre(reduireMouvement ? 30 : 700);
 
     const nomAutre = personnageChoisi === 'Bek' ? 'Keb' : 'Bek';
     await jouerBeats(nomAutre);

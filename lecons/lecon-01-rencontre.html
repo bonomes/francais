@@ -691,31 +691,80 @@
   .piles-conteneur.genese-terminee { opacity: 1; pointer-events: auto; }
   .zone-bulle-overlay.genese-terminee .bulle-dialogue { pointer-events: auto; }
 
+  /* 🆕 (Raphaël, 23-08-2026) Refonte complète de la légende de dialogue
+     — remplace l'ancienne boîte blanche arrondie ancrée en bas (repli
+     "chat bubble d'appli" que Raphaël voulait quitter) par le même
+     geste graphique que .intro-legende (texte posé directement sur
+     l'image) mais adapté à un fond clair : texte foncé, gras, grand,
+     ancré en HAUT du cadre plutôt qu'en bas — le personnage occupe le
+     bas du cadre, la légende respire au-dessus, jamais superposée à son
+     visage. Position horizontale centrée pour l'instant (le personnage
+     de cette leçon est TOUJOURS centré dans le cadre, jamais positionné
+     à gauche/droite) — .cote-keb/.cote-bek restent posées par le JS et
+     prêtes à ancrer le texte à gauche/droite le jour où une leçon
+     positionne réellement son personnage sur un côté. */
   .zone-bulle-overlay {
     position: absolute;
     left: 0;
     right: 0;
-    bottom: 0;
+    top: 0;
+    bottom: auto;
     display: flex;
-    padding: 0 16px 16px;
-    pointer-events: none; /* laisse les clics traverser vers l'image en dehors de la bulle elle-même */
+    padding: 7% 7% 0;
+    pointer-events: none;
   }
   .zone-bulle-overlay .bulle-dialogue { pointer-events: auto; }
 
   .bulle-dialogue {
-    max-width: 88%;
-    background: rgba(255, 255, 255, 0.94);
-    backdrop-filter: blur(2px);
-    border-radius: 18px;
-    padding: 12px 18px;
-    font-size: 1.05rem;
-    line-height: 1.4;
-    box-shadow: 0 6px 20px rgba(74, 59, 51, 0.18);
+    width: 100%;
+    max-width: 640px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    text-align: center;
     opacity: 0;
-    transform: translateY(8px);
-    transition: opacity 0.25s ease, transform 0.25s cubic-bezier(.2,.8,.3,1.2);
+    transform: translateY(-10px) scale(0.94);
+    transition: opacity 0.32s ease, transform 0.4s cubic-bezier(.2,.8,.3,1.2);
   }
-  .bulle-dialogue.in { opacity: 1; transform: translateY(0); }
+  .bulle-dialogue.in { opacity: 1; transform: translateY(0) scale(1); }
+  /* Ancres gauche/droite prêtes pour plus tard (voir note ci-dessus) —
+     inertes tant que le personnage reste centré. */
+  .bulle-dialogue.cote-bek { text-align: right; align-items: flex-end; margin-left: auto; }
+  .bulle-dialogue.cote-keb { text-align: left; align-items: flex-start; margin-right: auto; }
+
+  .bulle-dialogue-fr {
+    font-family: 'Baloo 2', sans-serif;
+    font-weight: 800;
+    font-size: clamp(1.55rem, 6.5vw, 2.3rem);
+    line-height: 1.08;
+    color: var(--brun-fonce);
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
+  }
+  /* Ponctuation expressive teintée pêche (…, ?, !) — voir
+     accentuerPonctuation() en JS, appliquée juste après que
+     mot-tooltip.js ait construit les mots cliquables. */
+  .bulle-dialogue-fr .accent { color: var(--peche-fonce); }
+
+  /* 🆕 Petit repère pulsé sous la légende, signalant qu'une traduction
+     existe — même esprit que .intro-legende::after, mais posé UNE FOIS
+     (pas ::after, puisqu'on doit pouvoir le masquer quand .bulle-trad
+     est déjà ouverte) plutôt que de dupliquer le point sur chaque étape. */
+  .bulle-dialogue-puce {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--peche-fonce);
+    opacity: 0.4;
+    animation: bulleDialoguePuce 1.4s ease-in-out infinite;
+  }
+  .bulle-trad.visible ~ .bulle-dialogue-puce,
+  .bulle-dialogue-puce.cachee { display: none; }
+  @keyframes bulleDialoguePuce {
+    0%, 100% { opacity: 0.3; transform: scale(1); }
+    50% { opacity: 0.9; transform: scale(1.25); }
+  }
 
   /* 🆕 (Raphaël, 22-08-2026, retour) Raphaël aime la hiérarchie
      FR-en-avant / traduction-en-retrait de .intro-legende — reprise
@@ -736,14 +785,13 @@
     opacity: 0;
     overflow: hidden;
     cursor: pointer;
+    text-align: center;
     transition: max-height 0.25s ease, opacity 0.2s ease, margin 0.25s ease;
   }
   .bulle-trad.visible { max-height: 60px; opacity: 1; margin-top: 4px; }
   @media (hover: hover) {
     .bulle-dialogue:hover .bulle-trad { max-height: 60px; opacity: 1; margin-top: 4px; }
   }
-  .bulle-dialogue.cote-bek { margin-left: auto; }
-  .bulle-dialogue.cote-question { margin: 0 auto; text-align: center; font-weight: 700; }
 
   .nav-bas {
     display: flex;
@@ -845,6 +893,101 @@
     gap: 10px;
     flex-wrap: wrap;
     justify-content: center;
+  }
+
+  /* ==================================================================
+     🆕 (Raphaël, 23-08-2026) Panneau EXERCICE — refonte complète.
+     Correctif du vrai bug signalé : le mot testé ("Non.") et la
+     consigne d'exercice ne sont PLUS JAMAIS écrits dans .bulle-dialogue
+     (donc jamais collés sur le visage du personnage — ce n'est pas lui
+     qui répond, c'est l'élève). La scène affiche seulement un geste
+     (def.img, ex. la main qui fait "non") et un indicateur discret
+     (.scene-tap-indicateur) ; taper dessus révèle CE panneau, séparé,
+     sous le cadre — voir revelerExercice() en JS. Carte blanche
+     distincte, étiquette "EXERCICE" en pêche façon survol, jamais
+     confondue avec une réplique de dialogue.
+     ================================================================== */
+  .exercice-panneau {
+    width: 100%;
+    background: #FFFFFF;
+    border: 1.5px solid var(--peche);
+    border-radius: 20px;
+    box-shadow: 4px 4px 16px var(--ombre);
+    padding: 16px 20px 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    opacity: 0;
+    transform: translateY(10px) scale(0.97);
+    transition: opacity 0.28s ease, transform 0.32s cubic-bezier(.2,.8,.3,1.2);
+  }
+  .exercice-panneau.in { opacity: 1; transform: translateY(0) scale(1); }
+
+  .exercice-etiquette {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--peche-fonce);
+  }
+
+  /* Le mot testé — SEULEMENT pour le QCM (def.mot_cible), affiché ICI,
+     dans le panneau, jamais sur l'image. Cadre neutre, pas un style de
+     réplique : c'est un objet d'exercice, pas du récit. */
+  .exercice-mot {
+    font-family: 'Baloo 2', sans-serif;
+    font-weight: 800;
+    font-size: 1.4rem;
+    color: var(--brun-fonce);
+    background: var(--fond);
+    border-radius: 12px;
+    padding: 6px 22px;
+  }
+
+  .exercice-consigne {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--brun);
+    text-align: center;
+  }
+
+  /* 🆕 Indicateur "quelque chose à effleurer ici" — anneaux pulsés
+     concentriques, jamais de texte (la scène reste propre). Centré par
+     défaut ; positionnement fin possible plus tard par étape si un
+     geste précis (ex. la main) doit être visé plus précisément. */
+  .scene-tap-indicateur {
+    position: absolute;
+    left: 50%;
+    bottom: 10%;
+    transform: translateX(-50%);
+    width: 46px;
+    height: 46px;
+    pointer-events: none;
+  }
+  .scene-tap-indicateur::before,
+  .scene-tap-indicateur::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    border: 2px solid var(--peche-fonce);
+    animation: sceneTapAnneau 1.8s ease-out infinite;
+  }
+  .scene-tap-indicateur::after { animation-delay: 0.9s; }
+  @keyframes sceneTapAnneau {
+    0% { transform: scale(0.5); opacity: 0.9; }
+    100% { transform: scale(1.6); opacity: 0; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .scene-tap-indicateur::before, .scene-tap-indicateur::after,
+    .bulle-dialogue-puce { animation: none; opacity: 0.6; }
+  }
+
+  @media (max-width: 460px) {
+    .exercice-mot { font-size: 1.2rem; padding: 5px 18px; }
+    .exercice-consigne { font-size: 0.92rem; }
   }
 
   /* ---------- Étape finale ---------- */
@@ -1057,6 +1200,13 @@
     <div class="zone-bulle-overlay">
       <div class="bulle-dialogue" id="bulleDialogue"></div>
     </div>
+    <!-- 🆕 (Raphaël, 22-08-2026, soir) Indicateur "il y a quelque chose à
+         effleurer ici" — affiché UNIQUEMENT le temps qu'un exercice
+         (qcm/deduction/prenom) n'a pas encore été déclenché par
+         l'élève (voir revelerExercice()/le gestionnaire de clic sur
+         .cadre-scene plus bas). Jamais de texte dessus : un simple
+         repère visuel, la scène reste propre. -->
+    <div class="scene-tap-indicateur" id="sceneTapIndicateur" aria-hidden="true" style="display: none;"></div>
   </div>
 
   <div class="nav-bas" id="navDialogue">
@@ -1071,24 +1221,50 @@
        réponse de l'élève plutôt qu'un simple "Suivant". Répondre fait
        AVANCER directement (voir validerReponseLibre()/les gestionnaires
        de clic plus bas) — pas de bouton "Suivant" séparé à cliquer en
-       plus. #etapePrenom (plus bas) suit le même principe mais réutilise
-       son propre balisage existant, inchangé. -->
-  <div class="zone-reponse" id="reponseLibre" style="display: none;">
-    <input type="text" class="champ-prenom" id="champReponseLibre" autocomplete="off">
-    <button type="button" class="nav-bouton nav-bouton-suivant" id="btnValiderReponseLibre">Continuer</button>
-  </div>
+       plus. -->
   <div class="zone-reponse" id="reponseBinaire" style="display: none;">
     <button type="button" class="bouton-choix" data-valeur="oui" id="btnOui">Oui</button>
     <button type="button" class="bouton-choix" data-valeur="non" id="btnNon">Non</button>
   </div>
   <div class="zone-reponse zone-reponse-niveau" id="reponseNiveau" style="display: none;"></div>
 
-  <!-- 🆕 (retour Raphaël, 22-08-2026) Panneau QCM — exercice de
-       reconnaissance simple (voir construireQcm()/repondreQcm() en JS).
-       #qcmChoix est rempli dynamiquement (un bouton par choix, dont un
-       "blague" qui ne compte jamais comme un essai). -->
-  <div class="zone-reponse" id="reponseQcm" style="display: none;">
-    <div class="qcm-choix" id="qcmChoix"></div>
+  <!-- 🆕 (Raphaël, 22-08-2026, soir) Panneau EXERCICE — conteneur
+       distinct du récit (jamais superposé à l'image, jamais confondu
+       avec une réplique ou une traduction — c'est ce qui posait
+       problème avant). Caché par défaut ; revelerExercice() (JS) le
+       fait apparaître une fois que l'élève a tapé/effleuré la scène
+       (voir #sceneTapIndicateur ci-dessus et le gestionnaire de clic
+       sur .cadre-scene plus bas). N'héberge QUE les trois étapes qui
+       sont de VRAIS exercices (qcm/deduction/prenom) — binaire/niveau/
+       genre restent des cases prédéterminées hors de ce panneau, comme
+       avant (pas des exercices au sens de Raphaël). -->
+  <div class="exercice-panneau" id="exercicePanneau" style="display: none;">
+    <div class="exercice-etiquette" id="exerciceEtiquette">Exercice</div>
+    <div class="exercice-mot" id="exerciceMot" style="display: none;"></div>
+    <div class="exercice-consigne" id="exerciceConsigne"></div>
+    <div class="zone-reponse" id="reponseLibre" style="display: none;">
+      <input type="text" class="champ-prenom" id="champReponseLibre" autocomplete="off">
+      <button type="button" class="nav-bouton nav-bouton-suivant" id="btnValiderReponseLibre">Continuer</button>
+    </div>
+    <!-- 🆕 (retour Raphaël, 22-08-2026) Panneau QCM — exercice de
+         reconnaissance simple (voir construireQcm()/repondreQcm() en
+         JS). #qcmChoix est rempli dynamiquement (un bouton par choix,
+         dont un "blague" qui ne compte jamais comme un essai). -->
+    <div class="zone-reponse" id="reponseQcm" style="display: none;">
+      <div class="qcm-choix" id="qcmChoix"></div>
+    </div>
+    <!-- 🆕 Saisie du prénom — vraie capture (contrairement à l'ancienne
+         séquence identite-eleve.js pré-menu, retirée pour ce chemin) :
+         enregistrée via KebBekProgression.enregistrerIdentite(undefined,
+         undefined, prenom, undefined) — les autres champs (genre,
+         nationalité, adulte) restent intacts, captés plus tard par
+         d'autres leçons (exercices.js "choix_identite"). Déplacé DANS
+         #exercicePanneau (22-08-2026, soir) : c'est un exercice comme
+         les deux autres, doit suivre la même mécanique de révélation. -->
+    <div id="etapePrenom" style="display: none;">
+      <input type="text" class="champ-prenom" id="champPrenom" autocomplete="given-name" maxlength="30">
+      <button type="button" class="nav-bouton nav-bouton-suivant" id="btnValiderPrenom">Continuer</button>
+    </div>
   </div>
 
   <!-- 🆕 Panneau "genre" — confirmation/production de "je suis un
@@ -1121,16 +1297,6 @@
     </div>
   </div>
 
-  <!-- 🆕 Saisie du prénom — vraie capture (contrairement à l'ancienne
-       séquence identite-eleve.js pré-menu, retirée pour ce chemin) :
-       enregistrée via KebBekProgression.enregistrerIdentite(undefined,
-       undefined, prenom, undefined) — les autres champs (genre,
-       nationalité, adulte) restent intacts, captés plus tard par
-       d'autres leçons (exercices.js "choix_identite"). -->
-  <div id="etapePrenom">
-    <input type="text" class="champ-prenom" id="champPrenom" autocomplete="given-name" maxlength="30">
-    <button type="button" class="nav-bouton nav-bouton-suivant" id="btnValiderPrenom">Continuer</button>
-  </div>
 
   <div id="etapeFin">
     <p class="message-fin" id="messageFin"></p>
@@ -1282,7 +1448,7 @@
       { type: 'texte', speaker: perso, img: imgBonjour, texte: "Bonjour... ?", trad: { en: "Hello...?" } },
       { type: 'texte', speaker: perso, img: imgInterpelle, texte: "Qui... qui parle ?", trad: { en: "Who... who's there?" } },
       { type: 'texte', speaker: perso, img: imgMamanPapa, texte: nomAutre + " ? Papa ? Maman ?", trad: { en: nomAutre + "? Dad? Mom?" } },
-      { type: 'qcm', cle_reponse: 'quiParle', img: imgInterpelle, recompense_id: 'r1_ex_qui_parle',
+      { type: 'qcm', cle_reponse: 'quiParle', img: '../images/lecons/main_non_01.webp', recompense_id: 'r1_ex_qui_parle',
         mot_cible: 'Non.',
         consigne: { fr: 'Que veut dire ce mot ?', en: 'What does this word mean?' },
         choix: [
@@ -1323,26 +1489,26 @@
   }
 
   const INTERFACE = {
-    fr: { precedent: "Précédent", continuer: "Continuer", terminer: "Terminer", placeholderPrenom: "Ton prénom", messageFin: "Enchanté, {prenom} !", ceQuiAEteDit: "Ce qui a été dit", aRetenir: "À retenir", afficherTrad: "Afficher la traduction", cacherTrad: "Cacher la traduction", choixPersonnage: "Qui veux-tu faire apparaître en premier ?", prixChoixInitial: "0 P$ / 0 PB" },
-    en: { precedent: "Back", continuer: "Continue", terminer: "Finish", placeholderPrenom: "Your first name", messageFin: "Nice to meet you, {prenom}!", ceQuiAEteDit: "What was said", aRetenir: "Good to know", afficherTrad: "Show translation", cacherTrad: "Hide translation", choixPersonnage: "Who do you want to bring to life first?", prixChoixInitial: "0 P$ / 0 PB" },
-    es: { precedent: "Atrás", continuer: "Continuar", terminer: "Terminar", placeholderPrenom: "Tu nombre", messageFin: "¡Encantados, {prenom}!", ceQuiAEteDit: "Lo que se dijo", aRetenir: "Para recordar", afficherTrad: "Mostrar traducción", cacherTrad: "Ocultar traducción", choixPersonnage: "¿A quién quieres dar vida primero?", prixChoixInitial: "0 P$ / 0 PB" },
-    it: { precedent: "Indietro", continuer: "Continua", terminer: "Fine", placeholderPrenom: "Il tuo nome", messageFin: "Piacere, {prenom}!", ceQuiAEteDit: "Cosa è stato detto", aRetenir: "Da ricordare", afficherTrad: "Mostra traduzione", cacherTrad: "Nascondi traduzione", choixPersonnage: "Chi vuoi far apparire per primo?", prixChoixInitial: "0 P$ / 0 PB" },
-    pt: { precedent: "Voltar", continuer: "Continuar", terminer: "Terminar", placeholderPrenom: "O teu nome", messageFin: "Prazer, {prenom}!", ceQuiAEteDit: "O que foi dito", aRetenir: "A reter", afficherTrad: "Mostrar tradução", cacherTrad: "Ocultar tradução", choixPersonnage: "Quem queres criar primeiro?", prixChoixInitial: "0 P$ / 0 PB" },
-    ca: { precedent: "Enrere", continuer: "Continua", terminer: "Acaba", placeholderPrenom: "El teu nom", messageFin: "Encantats, {prenom}!", ceQuiAEteDit: "El que s’ha dit", aRetenir: "Per recordar", afficherTrad: "Mostra la traducció", cacherTrad: "Amaga la traducció", choixPersonnage: "A qui vols fer aparèixer primer?", prixChoixInitial: "0 P$ / 0 PB" },
-    eo: { precedent: "Reen", continuer: "Daŭrigi", terminer: "Fini", placeholderPrenom: "Via nomo", messageFin: "Pleĝas, {prenom}!", ceQuiAEteDit: "Kio estis dirita", aRetenir: "Por memori", afficherTrad: "Montri tradukon", cacherTrad: "Kaŝi tradukon", choixPersonnage: "Kiun vi volas unue aperigi?", prixChoixInitial: "0 P$ / 0 PB" },
-    zh: { precedent: "返回", continuer: "继续", terminer: "完成", placeholderPrenom: "你的名字", messageFin: "很高兴认识你，{prenom}！", ceQuiAEteDit: "已说内容", aRetenir: "记住这个", afficherTrad: "显示翻译", cacherTrad: "隐藏翻译", choixPersonnage: "你想先创造谁？", prixChoixInitial: "0 P$ / 0 PB" },
-    ja: { precedent: "戻る", continuer: "続ける", terminer: "終了", placeholderPrenom: "お前の名前", messageFin: "会えて嫌しい、{prenom}！", ceQuiAEteDit: "話されたこと", aRetenir: "覚えておこう", afficherTrad: "翻訳を表示", cacherTrad: "翻訳を隠す", choixPersonnage: "最初に誰を登場させたい？", prixChoixInitial: "0 P$ / 0 PB" },
-    ko: { precedent: "뒤로", continuer: "계속", terminer: "완료", placeholderPrenom: "네 이름", messageFin: "만나서 반가워, {prenom}!", ceQuiAEteDit: "나눈 이야기", aRetenir: "기억해두기", afficherTrad: "번역 보기", cacherTrad: "번역 숨기기", choixPersonnage: "누구를 먼저 나타나게 하고 싶어?", prixChoixInitial: "0 P$ / 0 PB" },
-    vi: { precedent: "Quay lại", continuer: "Tiếp tục", terminer: "Hoàn thành", placeholderPrenom: "Tên của bạn", messageFin: "Rất vui được gặp bạn, {prenom}!", ceQuiAEteDit: "Những gì đã nói", aRetenir: "Ghi nhớ", afficherTrad: "Hiện bản dịch", cacherTrad: "Ẩn bản dịch", choixPersonnage: "Bạn muốn ai xuất hiện trước?", prixChoixInitial: "0 P$ / 0 PB" },
-    ht: { precedent: "Tounen", continuer: "Kontinye", terminer: "Fini", placeholderPrenom: "Non ou", messageFin: "Kontan konnen w, {prenom}!", ceQuiAEteDit: "Sa ki te di", aRetenir: "Pou sonje", afficherTrad: "Montre tradiksyon", cacherTrad: "Kache tradiksyon", choixPersonnage: "Ki moun ou vle fè parèt an premye?", prixChoixInitial: "0 P$ / 0 PB" },
-    tl: { precedent: "Bumalik", continuer: "Magpatuloy", terminer: "Tapusin", placeholderPrenom: "Ang pangalan mo", messageFin: "Ikinagagalak kitang makilala, {prenom}!", ceQuiAEteDit: "Ang nasabi na", aRetenir: "Dapat tandaan", afficherTrad: "Ipakita ang salin", cacherTrad: "Itago ang salin", choixPersonnage: "Sino ang gusto mong lumitaw muna?", prixChoixInitial: "0 P$ / 0 PB" },
-    id: { precedent: "Kembali", continuer: "Lanjut", terminer: "Selesai", placeholderPrenom: "Namamu", messageFin: "Senang berkenalan denganmu, {prenom}!", ceQuiAEteDit: "Yang sudah dikatakan", aRetenir: "Perlu diingat", afficherTrad: "Tampilkan terjemahan", cacherTrad: "Sembunyikan terjemahan", choixPersonnage: "Siapa yang ingin kamu munculkan lebih dulu?", prixChoixInitial: "0 P$ / 0 PB" },
-    nl: { precedent: "Terug", continuer: "Verder", terminer: "Klaar", placeholderPrenom: "Je voornaam", messageFin: "Leuk je te ontmoeten, {prenom}!", ceQuiAEteDit: "Wat er gezegd is", aRetenir: "Om te onthouden", afficherTrad: "Vertaling tonen", cacherTrad: "Vertaling verbergen", choixPersonnage: "Wie wil je als eerste laten verschijnen?", prixChoixInitial: "0 P$ / 0 PB" },
-    de: { precedent: "Zurück", continuer: "Weiter", terminer: "Fertig", placeholderPrenom: "Dein Vorname", messageFin: "Freut mich, {prenom}!", ceQuiAEteDit: "Was gesagt wurde", aRetenir: "Zum Merken", afficherTrad: "Übersetzung anzeigen", cacherTrad: "Übersetzung ausblenden", choixPersonnage: "Wen möchtest du zuerst erscheinen lassen?", prixChoixInitial: "0 P$ / 0 PB" },
-    fa: { precedent: "بازگشت", continuer: "ادامه", terminer: "پایان", placeholderPrenom: "اسم تو", messageFin: "از آشناییت خوشوقتم، {prenom}!", ceQuiAEteDit: "آنچه گفته شد", aRetenir: "نکته‌ی مهم", afficherTrad: "نمایش ترجمه", cacherTrad: "پنهان کردن ترجمه", choixPersonnage: "می‌خوای اول کی رو به وجود بیاری؟", prixChoixInitial: "0 P$ / 0 PB" },
-    sv: { precedent: "Tillbaka", continuer: "Fortsätt", terminer: "Klart", placeholderPrenom: "Ditt förnamn", messageFin: "Trevligt att träffas, {prenom}!", ceQuiAEteDit: "Vad som sagts", aRetenir: "Bra att veta", afficherTrad: "Visa översättning", cacherTrad: "Dölj översättning", choixPersonnage: "Vem vill du skapa först?", prixChoixInitial: "0 P$ / 0 PB" },
-    no: { precedent: "Tilbake", continuer: "Fortsett", terminer: "Ferdig", placeholderPrenom: "Fornavnet ditt", messageFin: "Hyggelig å treffe deg, {prenom}!", ceQuiAEteDit: "Det som ble sagt", aRetenir: "Verdt å huske", afficherTrad: "Vis oversettelse", cacherTrad: "Skjul oversettelse", choixPersonnage: "Hvem vil du skape først?", prixChoixInitial: "0 P$ / 0 PB" },
-    ru: { precedent: "Назад", continuer: "Далее", terminer: "Готово", placeholderPrenom: "Твоё имя", messageFin: "Приятно познакомиться, {prenom}!", ceQuiAEteDit: "Что было сказано", aRetenir: "Важно запомнить", afficherTrad: "Показать перевод", cacherTrad: "Скрыть перевод", choixPersonnage: "Кого ты хочешь создать первым?", prixChoixInitial: "0 P$ / 0 PB" },
+    fr: { precedent: "Précédent", continuer: "Continuer", terminer: "Terminer", placeholderPrenom: "Ton prénom", messageFin: "Enchanté, {prenom} !", ceQuiAEteDit: "Ce qui a été dit", aRetenir: "À retenir", afficherTrad: "Afficher la traduction", cacherTrad: "Cacher la traduction", choixPersonnage: "Qui veux-tu faire apparaître en premier ?", prixChoixInitial: "0 P$ / 0 PB", exercice: "Exercice" },
+    en: { precedent: "Back", continuer: "Continue", terminer: "Finish", placeholderPrenom: "Your first name", messageFin: "Nice to meet you, {prenom}!", ceQuiAEteDit: "What was said", aRetenir: "Good to know", afficherTrad: "Show translation", cacherTrad: "Hide translation", choixPersonnage: "Who do you want to bring to life first?", prixChoixInitial: "0 P$ / 0 PB", exercice: "Exercise" },
+    es: { precedent: "Atrás", continuer: "Continuar", terminer: "Terminar", placeholderPrenom: "Tu nombre", messageFin: "¡Encantados, {prenom}!", ceQuiAEteDit: "Lo que se dijo", aRetenir: "Para recordar", afficherTrad: "Mostrar traducción", cacherTrad: "Ocultar traducción", choixPersonnage: "¿A quién quieres dar vida primero?", prixChoixInitial: "0 P$ / 0 PB", exercice: "Ejercicio" },
+    it: { precedent: "Indietro", continuer: "Continua", terminer: "Fine", placeholderPrenom: "Il tuo nome", messageFin: "Piacere, {prenom}!", ceQuiAEteDit: "Cosa è stato detto", aRetenir: "Da ricordare", afficherTrad: "Mostra traduzione", cacherTrad: "Nascondi traduzione", choixPersonnage: "Chi vuoi far apparire per primo?", prixChoixInitial: "0 P$ / 0 PB", exercice: "Esercizio" },
+    pt: { precedent: "Voltar", continuer: "Continuar", terminer: "Terminar", placeholderPrenom: "O teu nome", messageFin: "Prazer, {prenom}!", ceQuiAEteDit: "O que foi dito", aRetenir: "A reter", afficherTrad: "Mostrar tradução", cacherTrad: "Ocultar tradução", choixPersonnage: "Quem queres criar primeiro?", prixChoixInitial: "0 P$ / 0 PB", exercice: "Exercício" },
+    ca: { precedent: "Enrere", continuer: "Continua", terminer: "Acaba", placeholderPrenom: "El teu nom", messageFin: "Encantats, {prenom}!", ceQuiAEteDit: "El que s’ha dit", aRetenir: "Per recordar", afficherTrad: "Mostra la traducció", cacherTrad: "Amaga la traducció", choixPersonnage: "A qui vols fer aparèixer primer?", prixChoixInitial: "0 P$ / 0 PB", exercice: "Exercici" },
+    eo: { precedent: "Reen", continuer: "Daŭrigi", terminer: "Fini", placeholderPrenom: "Via nomo", messageFin: "Pleĝas, {prenom}!", ceQuiAEteDit: "Kio estis dirita", aRetenir: "Por memori", afficherTrad: "Montri tradukon", cacherTrad: "Kaŝi tradukon", choixPersonnage: "Kiun vi volas unue aperigi?", prixChoixInitial: "0 P$ / 0 PB", exercice: "Ekzerco" },
+    zh: { precedent: "返回", continuer: "继续", terminer: "完成", placeholderPrenom: "你的名字", messageFin: "很高兴认识你，{prenom}！", ceQuiAEteDit: "已说内容", aRetenir: "记住这个", afficherTrad: "显示翻译", cacherTrad: "隐藏翻译", choixPersonnage: "你想先创造谁？", prixChoixInitial: "0 P$ / 0 PB", exercice: "练习" },
+    ja: { precedent: "戻る", continuer: "続ける", terminer: "終了", placeholderPrenom: "お前の名前", messageFin: "会えて嫌しい、{prenom}！", ceQuiAEteDit: "話されたこと", aRetenir: "覚えておこう", afficherTrad: "翻訳を表示", cacherTrad: "翻訳を隠す", choixPersonnage: "最初に誰を登場させたい？", prixChoixInitial: "0 P$ / 0 PB", exercice: "練習" },
+    ko: { precedent: "뒤로", continuer: "계속", terminer: "완료", placeholderPrenom: "네 이름", messageFin: "만나서 반가워, {prenom}!", ceQuiAEteDit: "나눈 이야기", aRetenir: "기억해두기", afficherTrad: "번역 보기", cacherTrad: "번역 숨기기", choixPersonnage: "누구를 먼저 나타나게 하고 싶어?", prixChoixInitial: "0 P$ / 0 PB", exercice: "연습" },
+    vi: { precedent: "Quay lại", continuer: "Tiếp tục", terminer: "Hoàn thành", placeholderPrenom: "Tên của bạn", messageFin: "Rất vui được gặp bạn, {prenom}!", ceQuiAEteDit: "Những gì đã nói", aRetenir: "Ghi nhớ", afficherTrad: "Hiện bản dịch", cacherTrad: "Ẩn bản dịch", choixPersonnage: "Bạn muốn ai xuất hiện trước?", prixChoixInitial: "0 P$ / 0 PB", exercice: "Bài tập" },
+    ht: { precedent: "Tounen", continuer: "Kontinye", terminer: "Fini", placeholderPrenom: "Non ou", messageFin: "Kontan konnen w, {prenom}!", ceQuiAEteDit: "Sa ki te di", aRetenir: "Pou sonje", afficherTrad: "Montre tradiksyon", cacherTrad: "Kache tradiksyon", choixPersonnage: "Ki moun ou vle fè parèt an premye?", prixChoixInitial: "0 P$ / 0 PB", exercice: "Egzèsis" },
+    tl: { precedent: "Bumalik", continuer: "Magpatuloy", terminer: "Tapusin", placeholderPrenom: "Ang pangalan mo", messageFin: "Ikinagagalak kitang makilala, {prenom}!", ceQuiAEteDit: "Ang nasabi na", aRetenir: "Dapat tandaan", afficherTrad: "Ipakita ang salin", cacherTrad: "Itago ang salin", choixPersonnage: "Sino ang gusto mong lumitaw muna?", prixChoixInitial: "0 P$ / 0 PB", exercice: "Ehersisyo" },
+    id: { precedent: "Kembali", continuer: "Lanjut", terminer: "Selesai", placeholderPrenom: "Namamu", messageFin: "Senang berkenalan denganmu, {prenom}!", ceQuiAEteDit: "Yang sudah dikatakan", aRetenir: "Perlu diingat", afficherTrad: "Tampilkan terjemahan", cacherTrad: "Sembunyikan terjemahan", choixPersonnage: "Siapa yang ingin kamu munculkan lebih dulu?", prixChoixInitial: "0 P$ / 0 PB", exercice: "Latihan" },
+    nl: { precedent: "Terug", continuer: "Verder", terminer: "Klaar", placeholderPrenom: "Je voornaam", messageFin: "Leuk je te ontmoeten, {prenom}!", ceQuiAEteDit: "Wat er gezegd is", aRetenir: "Om te onthouden", afficherTrad: "Vertaling tonen", cacherTrad: "Vertaling verbergen", choixPersonnage: "Wie wil je als eerste laten verschijnen?", prixChoixInitial: "0 P$ / 0 PB", exercice: "Oefening" },
+    de: { precedent: "Zurück", continuer: "Weiter", terminer: "Fertig", placeholderPrenom: "Dein Vorname", messageFin: "Freut mich, {prenom}!", ceQuiAEteDit: "Was gesagt wurde", aRetenir: "Zum Merken", afficherTrad: "Übersetzung anzeigen", cacherTrad: "Übersetzung ausblenden", choixPersonnage: "Wen möchtest du zuerst erscheinen lassen?", prixChoixInitial: "0 P$ / 0 PB", exercice: "Übung" },
+    fa: { precedent: "بازگشت", continuer: "ادامه", terminer: "پایان", placeholderPrenom: "اسم تو", messageFin: "از آشناییت خوشوقتم، {prenom}!", ceQuiAEteDit: "آنچه گفته شد", aRetenir: "نکته‌ی مهم", afficherTrad: "نمایش ترجمه", cacherTrad: "پنهان کردن ترجمه", choixPersonnage: "می‌خوای اول کی رو به وجود بیاری؟", prixChoixInitial: "0 P$ / 0 PB", exercice: "تمرین" },
+    sv: { precedent: "Tillbaka", continuer: "Fortsätt", terminer: "Klart", placeholderPrenom: "Ditt förnamn", messageFin: "Trevligt att träffas, {prenom}!", ceQuiAEteDit: "Vad som sagts", aRetenir: "Bra att veta", afficherTrad: "Visa översättning", cacherTrad: "Dölj översättning", choixPersonnage: "Vem vill du skapa först?", prixChoixInitial: "0 P$ / 0 PB", exercice: "Övning" },
+    no: { precedent: "Tilbake", continuer: "Fortsett", terminer: "Ferdig", placeholderPrenom: "Fornavnet ditt", messageFin: "Hyggelig å treffe deg, {prenom}!", ceQuiAEteDit: "Det som ble sagt", aRetenir: "Verdt å huske", afficherTrad: "Vis oversettelse", cacherTrad: "Skjul oversettelse", choixPersonnage: "Hvem vil du skape først?", prixChoixInitial: "0 P$ / 0 PB", exercice: "Øvelse" },
+    ru: { precedent: "Назад", continuer: "Далее", terminer: "Готово", placeholderPrenom: "Твоё имя", messageFin: "Приятно познакомиться, {prenom}!", ceQuiAEteDit: "Что было сказано", aRetenir: "Важно запомнить", afficherTrad: "Показать перевод", cacherTrad: "Скрыть перевод", choixPersonnage: "Кого ты хочешь создать первым?", prixChoixInitial: "0 P$ / 0 PB", exercice: "Упражнение" },
   };
 
   function texteInterface(cle) {
@@ -1463,7 +1629,16 @@
   // resté invisible jusqu'à ce qu'une reprise (dejaChoisi) saute
   // directement au dialogue.
   const elReponseQcm = document.getElementById('reponseQcm');
+  const elQcmChoix = document.getElementById('qcmChoix');
   const elReponseGenre = document.getElementById('reponseGenre');
+
+  // 🆕 (23-08-2026) Panneau exercice + indicateur de tap — voir
+  // revelerExercice()/rendreEtape() plus bas.
+  const elExercicePanneau = document.getElementById('exercicePanneau');
+  const elExerciceEtiquette = document.getElementById('exerciceEtiquette');
+  const elExerciceMot = document.getElementById('exerciceMot');
+  const elExerciceConsigne = document.getElementById('exerciceConsigne');
+  const elSceneTapIndicateur = document.getElementById('sceneTapIndicateur');
 
   // 🆕 (retour Raphaël, 21-08-2026) Pile "Ce qui a été dit" + notes
   // grammaticales — voir le commentaire CSS détaillé (.piles-conteneur)
@@ -1955,6 +2130,33 @@
   // testée — voir plus bas), mais reste affichée telle quelle pendant
   // binaire/niveau/prénom/genre (l'élève répond à ce qu'il vient de lire,
   // la bulle ne doit pas disparaître entre-temps).
+  // 🆕 (Raphaël, 23-08-2026) Colore en pêche la ponctuation expressive
+  // finale d'une réplique ("…", "?", "!" — seuls ou combinés, ex. "… ?")
+  // — appliquée après coup sur le DERNIER mot cliquable construit par
+  // mot-tooltip.js, puisque ce module fusionne déjà la ponctuation
+  // isolée à la fin du mot précédent (voir sa propre regex
+  // PONCTUATION_SEULE) : on ne peut donc pas lui demander de séparer un
+  // <span class="accent"> à la construction, on le fait ici en
+  // ré-analysant le texte du dernier span une fois construit.
+  function accentuerPonctuation(conteneurLegende) {
+    const mots = conteneurLegende.querySelectorAll('.mtt-mot');
+    if (!mots.length) return;
+    const dernier = mots[mots.length - 1];
+    const m = dernier.textContent.match(/^(.*?)([\u2026?!\u00a0]+)(\u00a0?)$/);
+    if (!m || !m[2].trim()) return;
+    dernier.textContent = m[1];
+    const accent = document.createElement('span');
+    accent.className = 'accent';
+    accent.textContent = m[2] + m[3];
+    dernier.appendChild(accent);
+  }
+
+  // 🆕 (Raphaël, 23-08-2026) Un seul indicateur d'état : est-ce que
+  // l'élève a déjà tapé pour révéler l'exercice de l'étape COURANTE ?
+  // Remis à false à chaque rendreEtape() (voir plus bas), donc jamais
+  // périmé d'une étape à l'autre ni après un Précédent/Suivant.
+  let exerciceRevele = false;
+
   function rendreEtape() {
     const def = ETAPES[etape];
     elCompteur.textContent = (etape + 1) + ' / ' + ETAPES.length;
@@ -1963,73 +2165,107 @@
     elScene.innerHTML = '';
     elScene.appendChild(creerImage(def.img || imagePersonnageActuel()));
 
+    // 🆕 qcm/déduction/prénom sont de VRAIS exercices : jamais affichés
+    // tout de suite (voir estExercice plus bas) — seuls binaire/niveau/
+    // genre restent des cases prédéterminées montrées immédiatement,
+    // comme avant.
+    const estExercice = (def.type === 'qcm' || def.type === 'deduction' || def.type === 'prenom');
+    exerciceRevele = false;
+
     navDialogue.style.display = (def.type === 'texte') ? 'flex' : 'none';
     elReponseBinaire.style.display = (def.type === 'binaire') ? 'flex' : 'none';
     elReponseNiveau.style.display = (def.type === 'niveau') ? 'flex' : 'none';
-    elEtapePrenom.style.display = (def.type === 'prenom') ? 'flex' : 'none';
-    elReponseQcm.style.display = (def.type === 'qcm') ? 'flex' : 'none';
-    elReponseLibre.style.display = (def.type === 'deduction') ? 'flex' : 'none';
     elReponseGenre.style.display = (def.type === 'genre') ? 'flex' : 'none';
+    elSceneTapIndicateur.style.display = estExercice ? 'block' : 'none';
+    elExercicePanneau.style.display = 'none';
+    elExercicePanneau.classList.remove('in');
+    elEtapePrenom.style.display = 'none';
+    elReponseQcm.style.display = 'none';
+    elReponseLibre.style.display = 'none';
 
     if (def.type === 'texte') {
       elBulle.classList.remove('in');
       elBulle.className = 'bulle-dialogue cote-' + def.speaker;
       window.KebBekMotTooltip.fermer();
       elBulle.innerHTML = '';
-      elBulle.appendChild(window.KebBekMotTooltip.creerMotCliquable(texteEtape(def), CHAPITRE_ID));
+      const elFr = document.createElement('div');
+      elFr.className = 'bulle-dialogue-fr';
+      elFr.appendChild(window.KebBekMotTooltip.creerMotCliquable(texteEtape(def), CHAPITRE_ID));
+      accentuerPonctuation(elFr);
+      elBulle.appendChild(elFr);
       // 🆕 (Raphaël, 22-08-2026, retour) Traduction de LA RÉPLIQUE
-      // AFFICHÉE, directement dans la bulle — voir .bulle-trad en CSS
-      // (survol sur ordinateur, réglage global sur mobile/tactile).
+      // AFFICHÉE — voir .bulle-trad en CSS (survol sur ordinateur,
+      // réglage global sur mobile/tactile, ou tap direct sur la
+      // traduction/le repère pulsé).
       const tradActuelle = traductionPhrase(def);
       if (tradActuelle) {
         const elBulleTrad = document.createElement('div');
         elBulleTrad.className = 'bulle-trad';
         elBulleTrad.textContent = tradActuelle;
         if (traductionsVisiblesParDefaut) elBulleTrad.classList.add('visible');
-        // 🆕 (Raphaël, 22-08-2026, soir) Un tap/effleurement direct sur la
-        // traduction elle-même la révèle, sans dépendre du survol (absent
-        // au doigt) ni du bouton global — même geste que dans la pile
-        // "Ce qui a été dit" (voir ajouterLigneDialogue()/.pile-trad).
         elBulleTrad.addEventListener('click', function (e) {
           e.stopPropagation();
           elBulleTrad.classList.toggle('visible');
         });
         elBulle.appendChild(elBulleTrad);
+        const elPuce = document.createElement('div');
+        elPuce.className = 'bulle-dialogue-puce' + (traductionsVisiblesParDefaut ? ' cachee' : '');
+        elBulle.appendChild(elPuce);
       }
       requestAnimationFrame(() => requestAnimationFrame(() => elBulle.classList.add('in')));
       if (!reconstructionEnCours) {
         ajouterLigneDialogue(def);
         ajouterNoteGrammaire(def);
       }
-    } else if (def.type === 'qcm') {
-      // 🆕 La bulle affiche le mot testé lui-même (jamais loggé dans "Ce
-      // qui a été dit" — ce n'est pas une réplique, c'est un exercice),
-      // avec la consigne (langue de l'élève, repli anglais) en dessous.
+    } else if (estExercice) {
+      // 🆕 (23-08-2026) Correctif du bug central signalé : la bulle
+      // reste totalement vide et invisible pour ces trois types — le
+      // mot testé/la consigne ne sont JAMAIS écrits ici (donc jamais
+      // "collés sur la tête du personnage"). La scène ne montre que le
+      // geste (def.img) + l'indicateur de tap ; le contenu réel de
+      // l'exercice vit dans #exercicePanneau, révélé par revelerExercice()
+      // seulement au clic — voir le gestionnaire sur .cadre-scene plus
+      // bas.
       elBulle.classList.remove('in');
-      elBulle.className = 'bulle-dialogue cote-' + def.speaker + ' bulle-exercice';
-      elBulle.innerHTML = '<div class="bulle-mot-cible">' + def.mot_cible + '</div>' +
-        '<div class="bulle-consigne">' + (def.consigne[langueActuelle()] || def.consigne.en) + '</div>';
-      requestAnimationFrame(() => requestAnimationFrame(() => elBulle.classList.add('in')));
+      elBulle.innerHTML = '';
+    } else if (def.type === 'genre') {
+      rendreEtapeGenre(def);
+    }
+  }
+
+  // 🆕 (23-08-2026) Révèle le panneau d'exercice de l'étape courante —
+  // seul point d'entrée qui peuple #exerciceMot/#exerciceConsigne et
+  // affiche la bonne zone de réponse À L'INTÉRIEUR du panneau (jamais
+  // sur l'image). Appelée UNE fois par étape (voir exerciceRevele) —
+  // retaper la scène ensuite ne fait plus rien, le panneau reste ouvert.
+  function revelerExercice() {
+    if (exerciceRevele) return;
+    const def = ETAPES[etape];
+    if (def.type !== 'qcm' && def.type !== 'deduction' && def.type !== 'prenom') return;
+    exerciceRevele = true;
+
+    elSceneTapIndicateur.style.display = 'none';
+    elExercicePanneau.style.display = 'flex';
+    requestAnimationFrame(() => requestAnimationFrame(() => elExercicePanneau.classList.add('in')));
+    elExerciceEtiquette.textContent = texteInterface('exercice');
+    elExerciceConsigne.textContent = (def.consigne[langueActuelle()] || def.consigne.en);
+
+    if (def.type === 'qcm') {
+      elExerciceMot.style.display = 'block';
+      elExerciceMot.textContent = def.mot_cible;
+      elReponseQcm.style.display = 'flex';
       construireQcm(def);
     } else if (def.type === 'deduction') {
-      elBulle.classList.remove('in');
-      elBulle.className = 'bulle-dialogue cote-' + def.speaker + ' bulle-exercice';
-      elBulle.innerHTML = '<div class="bulle-consigne">' + (def.consigne[langueActuelle()] || def.consigne.en) + '</div>';
-      requestAnimationFrame(() => requestAnimationFrame(() => elBulle.classList.add('in')));
+      elExerciceMot.style.display = 'none';
+      elReponseLibre.style.display = 'flex';
       def.etatExercice = { tentatives: 0, resolu: false };
       elChampReponseLibre.value = '';
       elChampReponseLibre.classList.remove('qcm-mauvais');
       document.getElementById('btnValiderReponseLibre').disabled = false;
       setTimeout(function () { elChampReponseLibre.focus(); }, 50);
     } else if (def.type === 'prenom') {
-      // 🆕 Même patron que 'deduction' : bulle-exercice + consigne
-      // (jamais loggée dans "Ce qui a été dit", ce n'est pas une
-      // réplique), tentatives/récompense réinitialisées à chaque
-      // arrivée sur l'étape (utile aussi via precedent()/reconstruction).
-      elBulle.classList.remove('in');
-      elBulle.className = 'bulle-dialogue cote-' + def.speaker + ' bulle-exercice';
-      elBulle.innerHTML = '<div class="bulle-consigne">' + (def.consigne[langueActuelle()] || def.consigne.en) + '</div>';
-      requestAnimationFrame(() => requestAnimationFrame(() => elBulle.classList.add('in')));
+      elExerciceMot.style.display = 'none';
+      elEtapePrenom.style.display = 'flex';
       def.etatExercice = { tentatives: 0, resolu: false };
       const champPrenomEl = document.getElementById('champPrenom');
       champPrenomEl.value = '';
@@ -2037,8 +2273,6 @@
       champPrenomEl.placeholder = texteInterface('placeholderPrenom');
       document.getElementById('btnValiderPrenom').disabled = false;
       setTimeout(function () { champPrenomEl.focus(); }, 50);
-    } else if (def.type === 'genre') {
-      rendreEtapeGenre(def);
     }
   }
 
@@ -2310,7 +2544,12 @@
   elCadreScene.addEventListener('click', function (e) {
     if (e.target.closest('.bulle-dialogue')) return;
     if (!navigationActive) return;
-    if (ETAPES[etape] && ETAPES[etape].type !== 'texte') return;
+    const etapeActuelle = ETAPES[etape];
+    if (etapeActuelle && (etapeActuelle.type === 'qcm' || etapeActuelle.type === 'deduction' || etapeActuelle.type === 'prenom')) {
+      revelerExercice();
+      return;
+    }
+    if (etapeActuelle && etapeActuelle.type !== 'texte') return;
     const rect = elCadreScene.getBoundingClientRect();
     const x = e.clientX - rect.left;
     if (x < rect.width / 2) precedent();

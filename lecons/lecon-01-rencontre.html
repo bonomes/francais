@@ -654,6 +654,23 @@
      depuis le haut, vérifié sur les 4 derniers fichiers), atterrit donc
      systématiquement au même niveau dans le cadre, quelle que soit
      l'image. */
+  /* 🆕 (Raphaël, 22-08-2026, session du soir) Correctif du "Keb qui
+     déborde/est rogné" signalé sur mobile : creerImage() (voir plus
+     bas en JS) enveloppe TOUJOURS l'<img> dans un <div> intermédiaire
+     sans classe. `.scene-image img` (règle ci-dessous) stylait bien
+     l'image elle-même, mais PAS ce <div> — qui, comme enfant flex sans
+     taille explicite, se dimensionne sur le contenu (shrink-to-fit).
+     Résultat : le width:100%/height:100% de l'image n'avait aucune
+     référence fiable (bloc englobant non déterminé ⇒ la spec CSS
+     retombe sur la taille intrinsèque de l'image), donc l'image
+     s'affichait à sa taille native (souvent bien plus grande que le
+     cadre) et débordait, rognée par l'overflow:hidden de .cadre-scene
+     — un cadrage différent à chaque image selon sa résolution/pose,
+     exactement le symptôme rapporté. Cette règle force le <div>
+     enveloppe (enfant direct de .scene-image) à occuper tout l'espace
+     disponible, ce qui donne enfin à `object-fit: contain` une boîte
+     réelle dans laquelle se caler. */
+  .scene-image > div { width: 100%; height: 100%; min-width: 0; min-height: 0; display: flex; align-items: center; justify-content: center; }
   .scene-image img { width: 100%; height: 100%; max-width: 100%; max-height: 100%; object-fit: contain; display: block; }
   .scene-image-repli {
     font-size: 0.85rem;
@@ -711,17 +728,19 @@
      mobile, seul le bouton global fait apparaître la traduction,
      puisqu'il n'y a pas de survol possible au doigt. */
   .bulle-trad {
-    display: block;
-    margin-top: 4px;
     font-size: 0.85rem;
     font-weight: 600;
     color: var(--brun-clair);
+    max-height: 0;
+    margin-top: 0;
     opacity: 0;
-    transition: opacity 0.2s ease;
+    overflow: hidden;
+    cursor: pointer;
+    transition: max-height 0.25s ease, opacity 0.2s ease, margin 0.25s ease;
   }
-  .bulle-trad.visible { opacity: 1; }
+  .bulle-trad.visible { max-height: 60px; opacity: 1; margin-top: 4px; }
   @media (hover: hover) {
-    .bulle-dialogue:hover .bulle-trad { opacity: 1; }
+    .bulle-dialogue:hover .bulle-trad { max-height: 60px; opacity: 1; margin-top: 4px; }
   }
   .bulle-dialogue.cote-bek { margin-left: auto; }
   .bulle-dialogue.cote-question { margin: 0 auto; text-align: center; font-weight: 700; }
@@ -1967,6 +1986,14 @@
         elBulleTrad.className = 'bulle-trad';
         elBulleTrad.textContent = tradActuelle;
         if (traductionsVisiblesParDefaut) elBulleTrad.classList.add('visible');
+        // 🆕 (Raphaël, 22-08-2026, soir) Un tap/effleurement direct sur la
+        // traduction elle-même la révèle, sans dépendre du survol (absent
+        // au doigt) ni du bouton global — même geste que dans la pile
+        // "Ce qui a été dit" (voir ajouterLigneDialogue()/.pile-trad).
+        elBulleTrad.addEventListener('click', function (e) {
+          e.stopPropagation();
+          elBulleTrad.classList.toggle('visible');
+        });
         elBulle.appendChild(elBulleTrad);
       }
       requestAnimationFrame(() => requestAnimationFrame(() => elBulle.classList.add('in')));

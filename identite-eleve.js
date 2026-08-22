@@ -3429,6 +3429,26 @@ const KebBekIdentite = (function () {
         if (resultat.estNouveau) {
           await window.KebBekProgression.migrerProgressionInviteVersCompte(resultat.profil.id);
           await window.KebBekProgression.migrerIdentiteInviteVersCompte(resultat.profil.id);
+          // 🆕 (Raphaël, 22-08-2026) Deux migrations qui manquaient ici :
+          //   - migrerPersonnageInviteVersCompte() existait déjà côté
+          //     progression.js (exportée sur window.KebBekProgression)
+          //     mais n'était encore appelée nulle part — un personnage
+          //     choisi en mode invité (lecon-01-rencontre.html) ne
+          //     suivait donc jamais la création d'un compte.
+          //   - migrerPositionsLeconInviteVersCompte() est nouvelle (voir
+          //     progression.js, "Position dans une leçon") — sans cet
+          //     appel, une reprise de leçon sauvegardée en mode invité
+          //     restait coincée en localStorage et ne suivait pas non
+          //     plus la création du compte.
+          // Même règle de fusion que les deux migrations juste au-dessus :
+          // uniquement ici (tout premier creerProfil() réussi), jamais sur
+          // une reconnexion normale.
+          if (window.KebBekProgression.migrerPersonnageInviteVersCompte) {
+            await window.KebBekProgression.migrerPersonnageInviteVersCompte(resultat.profil.id);
+          }
+          if (window.KebBekProgression.migrerPositionsLeconInviteVersCompte) {
+            await window.KebBekProgression.migrerPositionsLeconInviteVersCompte(resultat.profil.id);
+          }
         }
         // prenom/nationalite non touchés ici (undefined) : le prénom est
         // déjà écrit via creerProfil ci-dessus, la nationalité n'est pas

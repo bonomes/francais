@@ -358,36 +358,6 @@
     75% { transform: rotate(1.4deg) translateY(-2px); }
   }
 
-  /* 🆕 (correctif, session du 22-08-2026) .intro-image en 100%×100% du
-     calque plein écran convenait à la carte titre et au vide (des
-     compositions pensées pour tout l'écran), mais un PORTRAIT de
-     personnage (Keb/Bek seul, canevas haut et étroit) s'y étirait
-     jusqu'à toucher le haut ET le bas du viewport — géant, débordant.
-     .intro-image-personnage plafonne sa taille à un gabarit de
-     personnage raisonnable ; .intro-plein-ecran (flex, centré) le
-     centre normalement dans l'espace restant. Appliquée/retirée par
-     genererPersonnage()/reveilPersonnage()/personnageDesoriente() —
-     jamais sur la carte titre ni le vide. */
-  .intro-image.intro-image-personnage {
-    width: min(58vw, 320px);
-    height: min(62vh, 440px);
-  }
-
-  /* 🆕 Matérialisation du personnage (keb_généré_01/bek_générée_01, déjà
-     scintillant/translucide par nature) — un souffle doux plutôt qu'un
-     simple fade-in, pour vendre l'idée qu'il est en train de se former
-     plutôt que de simplement apparaître tel quel. */
-  .perso-generation { animation: persoGeneration 1.8s ease-in-out infinite; }
-  @keyframes persoGeneration {
-    0%, 100% { opacity: 0.82; transform: scale(0.985); }
-    50%      { opacity: 1;    transform: scale(1); }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .perso-generation, .perso-deboussole { animation: none; }
-  }
-
-
   .main-salue {
     all: unset;
     box-sizing: border-box;
@@ -415,6 +385,93 @@
   @keyframes mainSalueOndulation {
     0%, 100% { transform: rotate(0deg); }
     50% { transform: rotate(-14deg); }
+  }
+
+  /* 🆕 (retour Raphaël, 22-08-2026) "Bonjour !" affiché un instant au
+     clic sur la main (voir attendreSalutMain() en JS, classe
+     .visible ajoutée puis retirée) — notre salut lui-même porte le mot,
+     avant même que le personnage ne nous remarque. */
+  .main-salue-bonjour {
+    position: absolute;
+    left: 50%;
+    bottom: 100%;
+    transform: translateX(-50%) translateY(6px);
+    margin-bottom: 8px;
+    white-space: nowrap;
+    font-family: 'Baloo 2', sans-serif;
+    font-weight: 700;
+    font-size: 1rem;
+    color: var(--brun-fonce);
+    background: #FFFFFF;
+    border-radius: 999px;
+    padding: 6px 16px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.22);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease, transform 0.25s ease;
+  }
+  .main-salue-bonjour.visible { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* 🆕 Légende sous l'image pendant la séquence de désorientation
+     (voir jouerBeats() en JS) — français en avant, traduction en
+     retrait, même hiérarchie visuelle que .pile-texte/.pile-trad. */
+  .intro-legende {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 6%;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 0 24px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.35s ease;
+  }
+  .intro-legende.visible { opacity: 1; }
+  .intro-legende-fr {
+    font-family: 'Baloo 2', sans-serif;
+    font-weight: 700;
+    font-size: clamp(1.1rem, 3vw, 1.5rem);
+    color: #FDFBF7;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
+    text-align: center;
+  }
+  .intro-legende-trad {
+    font-size: 0.85rem;
+    color: rgba(253, 251, 247, 0.78);
+    text-align: center;
+  }
+  /* Petit indicateur "touchez pour continuer" — les légendes avancent
+     au tap (voir jouerBeats()), contrairement aux étapes chronométrées
+     de GENESE_AVANT plus haut, parce qu'il y a ici du texte à lire. */
+  .intro-legende::after {
+    content: '';
+    width: 8px;
+    height: 8px;
+    margin-top: 6px;
+    border-radius: 50%;
+    background: rgba(253, 251, 247, 0.6);
+    animation: intoLegendePuce 1.4s ease-in-out infinite;
+  }
+  @keyframes intoLegendePuce {
+    0%, 100% { opacity: 0.35; }
+    50% { opacity: 1; }
+  }
+
+  /* 🆕 Corrige le bug "Keb apparaît en géant" : .intro-image est
+     dimensionnée 100%/100% de #introPleinEcran (plein écran) — bon pour
+     les scènes pleine page de la genèse (carte titre, illumination),
+     bien trop grand pour un simple portrait de personnage debout. Cette
+     classe modificatrice (ajoutée par reveilPersonnage()/jouerBeats(),
+     jamais pour les étapes plein-cadre) plafonne sa taille et la
+     centre, comme une vraie carte de personnage plutôt qu'un fond. */
+  .intro-image.intro-image-personnage {
+    width: min(52vw, 340px);
+    height: min(62vh, 460px);
+    margin: 0 auto;
   }
 
   .cadre-scene {
@@ -572,6 +629,31 @@
   }
   .bouton-choix:hover { background: var(--peche-pale); }
   .bouton-choix:active { background: var(--peche-fonce); border-color: var(--peche-fonce); color: #FFFFFF; transform: translateY(1px); }
+
+  /* 🆕 (retour Raphaël, 22-08-2026) États de rétroaction des exercices
+     (QCM et déduction) — voir repondreQcm()/validerReponseLibre() en
+     JS. Rouge bref (pas permanent : l'élève doit pouvoir réessayer sans
+     qu'un bouton reste marqué comme "cassé"), vert au moment précis de
+     la bonne réponse avant l'avancée automatique. */
+  .bouton-choix.qcm-mauvais { background: #F6D8D2; border-color: #D97862; color: #8C4636; animation: qcmSecousse 0.3s ease; }
+  .bouton-choix.qcm-correct { background: #DCEFC9; border-color: #7FAE4B; color: #3E5A24; }
+  .bouton-choix:disabled { opacity: 0.5; cursor: default; }
+  @keyframes qcmSecousse {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-4px); }
+    75% { transform: translateX(4px); }
+  }
+  /* Pré-sélection silencieuse (identité déjà connue, voir rendreEtapeGenre())
+     — distincte de .qcm-correct : ici on ne "félicite" pas, on reflète
+     juste ce que l'élève a déjà dit à propos de lui-même ailleurs. */
+  .bouton-choix.pre-rempli { background: var(--peche-pale); border-color: var(--peche); }
+
+  .qcm-choix {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
 
   /* ---------- Étape finale ---------- */
   #etapeFin {
@@ -731,6 +813,14 @@
   <div class="intro-image" id="introImage"></div>
   <div class="flash-apparition" id="flashApparition"></div>
 
+  <!-- 🆕 (retour Raphaël, 22-08-2026) Légende de la séquence de
+       désorientation (voir jouerBeats() en JS) — "Je suis où ?",
+       "Où est [ami] ?", l'appel resté sans réponse. Sous l'image,
+       jamais dans une bulle façon dialogue : ce ne sont pas encore de
+       vraies répliques adressées à l'élève, juste le personnage qui
+       pense/parle tout seul, avant même de nous remarquer. -->
+  <div class="intro-legende" id="introLegende"></div>
+
   <!-- 🆕 (retour Raphaël, 22-08-2026) Écran de choix du personnage —
        "achat" à 0 P$/0 PB, à usage unique (voir choisir_personnage_initial
        côté Supabase). Superposé à #introImage, sur le fond noir du
@@ -752,11 +842,13 @@
     </div>
   </div>
 
-  <!-- 🆕 Main qui salue — apparaît une fois le personnage révélé et
-       "désorienté" ; cliquer dessus mime notre salut, ce qui déclenche
-       sa réplique d'ouverture (voir attendreSalutMain() en JS). -->
+  <!-- 🆕 Main qui salue — apparaît une fois la séquence de désorientation
+       terminée ; cliquer dessus mime notre salut ("Bonjour !", affiché
+       un instant près de la main — voir attendreSalutMain() en JS), ce
+       qui fait que le personnage nous remarque enfin. -->
   <button type="button" class="main-salue" id="btnMainSalue" aria-label="Saluer">
     <span class="main-salue-inner" id="imageMainSalue"></span>
+    <span class="main-salue-bonjour" id="mainSalueBonjour">Bonjour !</span>
   </button>
 </div>
 
@@ -792,6 +884,24 @@
     <button type="button" class="bouton-choix" data-valeur="non" id="btnNon">Non</button>
   </div>
   <div class="zone-reponse zone-reponse-niveau" id="reponseNiveau" style="display: none;"></div>
+
+  <!-- 🆕 (retour Raphaël, 22-08-2026) Panneau QCM — exercice de
+       reconnaissance simple (voir construireQcm()/repondreQcm() en JS).
+       #qcmChoix est rempli dynamiquement (un bouton par choix, dont un
+       "blague" qui ne compte jamais comme un essai). -->
+  <div class="zone-reponse" id="reponseQcm" style="display: none;">
+    <div class="qcm-choix" id="qcmChoix"></div>
+  </div>
+
+  <!-- 🆕 Panneau "genre" — confirmation/production de "je suis un
+       garçon"/"une fille" (voir rendreEtapeGenre() en JS). Pré-rempli
+       silencieusement si l'identité de l'élève est déjà connue (voir
+       identite-eleve.js) ; sert alors de simple pratique de vocabulaire,
+       jamais une redemande. -->
+  <div class="zone-reponse" id="reponseGenre" style="display: none;">
+    <button type="button" class="bouton-choix" data-valeur="m" id="btnGenreGarcon">Un garçon</button>
+    <button type="button" class="bouton-choix" data-valeur="f" id="btnGenreFille">Une fille</button>
+  </div>
 
   <!-- 🆕 (retour Raphaël, 21-08-2026) Pile "Ce qui a été dit" + notes
        grammaticales — repris de dialogues/d1/index.html, voir le
@@ -891,60 +1001,124 @@
   // sauter la question du niveau si l'élève a répondu "non" à "Tu
   // parles français ?".
   let ETAPES = [];
-  const reponses = { salutation: null, prenom: null, parleFrancais: null, niveau: null };
+  const reponses = { prenom: null, parleFrancais: null, niveau: null, quiParle: null, pronomDeduit: null, genreEleve: null };
 
-  // Formules de salutation reconnues pour l'étape 'saisie_libre' —
-  // comparaison insensible à la casse/aux accents (voir normaliserTexte()
-  // plus bas). Volontairement large plutôt que strict : rien ne doit
-  // jamais empêcher l'élève d'avancer, la reconnaissance n'est qu'un
-  // aiguillage cosmétique pour une future variante de réponse, pas une
-  // barrière.
-  const SALUTATIONS_RECONNUES = ['bonjour', 'salut', 'allo', 'bonsoir', 'coucou', 'yo', 'hey', 'hello', 'hi'];
-
-  // 🆕 Niveaux déclarés — 6 choix, mêmes 20 langues que le reste de
-  // l'interface. Servent à construireBoutonsNiveau() plus bas ; l'id
-  // (colonne stable, jamais affichée) est ce qui est réellement stocké
-  // dans reponses.niveau, pour ne jamais dépendre du texte affiché.
-  const NIVEAUX = [
-    { id: 'nul', fr: 'Nul / débutant', en: 'None / beginner', es: 'Nulo / principiante', it: 'Nullo / principiante', pt: 'Nulo / iniciante', ca: 'Nul / principiant', eo: 'Nula / komencanto', zh: '零基础/初学', ja: 'ゼロ／初心者', ko: '전혀 없음/초급', vi: 'Không biết / mới bắt đầu', ht: 'Okenn / debutan', tl: 'Wala / baguhan', id: 'Nol / pemula', nl: 'Geen / beginner', de: 'Keine / Anfänger', fa: 'هیچ / مبتدی', sv: 'Ingen / nybörjare', no: 'Ingen / nybegynner', ru: 'Нет / начинающий' },
-    { id: 'mauvais', fr: 'Mauvais', en: 'Poor', es: 'Malo', it: 'Scarso', pt: 'Fraco', ca: 'Dolent', eo: 'Malbona', zh: '较差', ja: '苦手', ko: '나쁨', vi: 'Kém', ht: 'Fèb', tl: 'Mahina', id: 'Buruk', nl: 'Zwak', de: 'Schwach', fa: 'ضعیف', sv: 'Dålig', no: 'Dårlig', ru: 'Слабый' },
-    { id: 'bon', fr: 'Bon', en: 'Good', es: 'Bueno', it: 'Buono', pt: 'Bom', ca: 'Bo', eo: 'Bona', zh: '不错', ja: '良い', ko: '좋음', vi: 'Khá', ht: 'Bon', tl: 'Mabuti', id: 'Bagus', nl: 'Goed', de: 'Gut', fa: 'خوب', sv: 'Bra', no: 'Bra', ru: 'Хороший' },
-    { id: 'tres_bon', fr: 'Très bon', en: 'Very good', es: 'Muy bueno', it: 'Molto buono', pt: 'Muito bom', ca: 'Molt bo', eo: 'Tre bona', zh: '很好', ja: 'とても良い', ko: '매우 좋음', vi: 'Rất tốt', ht: 'Trè bon', tl: 'Napakahusay', id: 'Sangat bagus', nl: 'Heel goed', de: 'Sehr gut', fa: 'خیلی خوب', sv: 'Mycket bra', no: 'Veldig bra', ru: 'Очень хороший' },
-    { id: 'excellent', fr: 'Excellent', en: 'Excellent', es: 'Excelente', it: 'Eccellente', pt: 'Excelente', ca: 'Excel·lent', eo: 'Elstara', zh: '优秀', ja: '優秀', ko: '뛰어남', vi: 'Xuất sắc', ht: 'Ekselan', tl: 'Napakahusay talaga', id: 'Sangat baik', nl: 'Uitstekend', de: 'Exzellent', fa: 'عالی', sv: 'Utmärkt', no: 'Utmerket', ru: 'Отличный' },
-    { id: 'natif', fr: 'Locuteur natif', en: 'Native speaker', es: 'Hablante nativo', it: 'Madrelingua', pt: 'Falante nativo', ca: 'Parlant natiu', eo: 'Denaska parolanto', zh: '母语者', ja: 'ネイティブ', ko: '원어민', vi: 'Người bản ngữ', ht: 'Lokitè natif', tl: 'Katutubong nagsasalita', id: 'Penutur asli', nl: 'Moedertaalspreker', de: 'Muttersprachler', fa: 'زبان مادری', sv: 'Modersmålstalare', no: 'Morsmålsbruker', ru: 'Носитель языка' }
-  ];
-
-  // Construit ETAPES une fois personnageChoisi connu (voir plus bas,
-  // ecranChoixPersonnage()) — le nom du personnage doit apparaître DANS
-  // le texte ("Je m'appelle Keb" ou "Je m'appelle Bek"), donc ce tableau
-  // ne peut pas être statique.
-  function etapesDialogue() {
-    const perso = personnageChoisi === 'Bek' ? 'bek' : 'keb';
-    const nomPerso = personnageChoisi || 'Keb';
-    return [
-      { type: 'texte', speaker: perso, texte: "Bonjour !",
-        trad: { en: "Hello!", es: "¡Hola!", it: "Ciao!", pt: "Olá!", ca: "Hola!", eo: "Saluton!", zh: "你好！", ja: "こんにちは！", ko: "안녕!", vi: "Xin chào!", ht: "Bonjou!", tl: "Kumusta!", id: "Halo!", nl: "Hallo!", de: "Hallo!", fa: "سلام!", sv: "Hej!", no: "Hei!", ru: "Привет!" } },
-      { type: 'saisie_libre', cle_reponse: 'salutation' },
-      { type: 'texte', speaker: perso, texte: "Je m\u2019appelle " + nomPerso + ", et toi ?",
-        trad: { en: "My name is " + nomPerso + ", and you?", es: "Me llamo " + nomPerso + ", \u00bfy t\u00fa?", it: "Mi chiamo " + nomPerso + ", e tu?", pt: "Chamo-me " + nomPerso + ", e tu?", ca: "Em dic " + nomPerso + ", i tu?", eo: "Mi nomi\u011das " + nomPerso + ", kaj vi?", zh: "\u6211\u53eb" + nomPerso + "\uff0c\u4f60\u5462\uff1f", ja: nomPerso + "\u3060\u3088\u3001\u541b\u306f\uff1f", ko: "\ub09c " + nomPerso + "\uc57c, \ub108\ub294?", vi: "M\u00ecnh t\u00ean l\u00e0 " + nomPerso + ", c\u00f2n b\u1ea1n?", ht: "Mwen rele " + nomPerso + ", e ou menm?", tl: "Ako si " + nomPerso + ", ikaw?", id: "Namaku " + nomPerso + ", kalau kamu?", nl: "Ik heet " + nomPerso + ", en jij?", de: "Ich hei\u00dfe " + nomPerso + ", und du?", fa: "\u0627\u0633\u0645 \u0645\u0646 " + nomPerso + "\u0647\u060c \u062a\u0648 \u091a\u06cc\u061f", sv: "Jag heter " + nomPerso + ", och du?", no: "Jeg heter " + nomPerso + ", og du?", ru: "\u041c\u0435\u043d\u044f \u0437\u043e\u0432\u0443\u0442 " + nomPerso + ", \u0430 \u0442\u0435\u0431\u044f?" } },
-      { type: 'prenom', cle_reponse: 'prenom' },
-      { type: 'texte', speaker: perso, texte: "Tu parles fran\u00e7ais ?",
-        trad: { en: "Do you speak French?", es: "\u00bfHablas franc\u00e9s?", it: "Parli francese?", pt: "Falas franc\u00eas?", ca: "Parles franc\u00e8s?", eo: "\u0108u vi parolas la francan?", zh: "\u4f60\u8bf4\u6cd5\u8bed\u5417\uff1f", ja: "\u30d5\u30e9\u30f3\u30b9\u8a9e\u3092\u8a71\u3059\uff1f", ko: "\ud504\ub791\uc2a4\uc5b4 \ud560 \uc904 \uc54c\uc544?", vi: "B\u1ea1n n\u00f3i ti\u1ebfng Ph\u00e1p kh\u00f4ng?", ht: "Ou pale frans\u00e8?", tl: "Marunong ka bang mag-Pranses?", id: "Kamu bisa bahasa Prancis?", nl: "Spreek je Frans?", de: "Sprichst du Franz\u00f6sisch?", fa: "\u0641\u0631\u0627\u0646\u0633\u0648\u06cc \u0635\u062d\u0628\u062a \u0645\u06cc\u200c\u06a9\u0646\u06cc\u061f", sv: "Pratar du franska?", no: "Snakker du fransk?", ru: "\u0422\u044b \u0433\u043e\u0432\u043e\u0440\u0438\u0448\u044c \u043f\u043e-\u0444\u0440\u0430\u043d\u0446\u0443\u0437\u0441\u043a\u0438?" } },
-      { type: 'binaire', cle_reponse: 'parleFrancais' },
-      { type: 'texte', speaker: perso, condition: function (r) { return r.parleFrancais === 'oui'; }, texte: "Quel est ton niveau ?",
-        trad: { en: "What\u2019s your level?", es: "\u00bfCu\u00e1l es tu nivel?", it: "Qual \u00e8 il tuo livello?", pt: "Qual \u00e9 o teu n\u00edvel?", ca: "Quin \u00e9s el teu nivell?", eo: "Kio estas via nivelo?", zh: "\u4f60\u7684\u6c34\u5e73\u600e\u4e48\u6837\uff1f", ja: "\u30ec\u30d9\u30eb\u306f\u3069\u306e\u304f\u3089\u3044\uff1f", ko: "\uc218\uc900\uc774 \uc5b4\ub290 \uc815\ub3c4\uc57c?", vi: "Tr\u00ecnh \u0111\u1ed9 c\u1ee7a b\u1ea1n th\u1ebf n\u00e0o?", ht: "Ki nivo ou genyen?", tl: "Ano ang antas mo?", id: "Bagaimana levelmu?", nl: "Wat is jouw niveau?", de: "Wie ist dein Niveau?", fa: "\u0633\u0637\u062d \u062a\u0648 \u091a\u0642\u062f\u0631\u0647\u061f", sv: "Vad \u00e4r din niv\u00e5?", no: "Hva er niv\u00e5et ditt?", ru: "\u041a\u0430\u043a\u043e\u0439 \u0443 \u0442\u0435\u0431\u044f \u0443\u0440\u043e\u0432\u0435\u043d\u044c?" } },
-      { type: 'niveau', cle_reponse: 'niveau', condition: function (r) { return r.parleFrancais === 'oui'; } },
-      { type: 'texte', speaker: perso, texte: "On va bien s\u2019amuser ensemble !",
-        trad: { en: "We\u2019re going to have so much fun together!", es: "\u00a1Nos vamos a divertir mucho juntos!", it: "Ci divertiremo un mondo insieme!", pt: "Vamos nos divertir muito juntos!", ca: "Ens ho passarem molt b\u00e9 junts!", eo: "Ni tre amuzi\u011dos kune!", zh: "\u6211\u4eec\u4f1a\u4e00\u8d77\u73a9\u5f97\u5f88\u5f00\u5fc3\uff01", ja: "\u4e00\u7dd2\u306b\u305f\u304f\u3055\u3093\u697d\u3057\u3082\u3046\u306d\uff01", ko: "\uc6b0\ub9ac \uac19\uc774 \uc2e0\ub098\uac8c \ub180\uc790!", vi: "Ch\u00fang ta s\u1ebd vui ch\u01a1i th\u1eadt nhi\u1ec1u c\u00f9ng nhau!", ht: "Nou pral pran anpil plezi ansanm!", tl: "Magsasaya tayo nang sobra nang magkasama!", id: "Kita akan sangat bersenang-senang bersama!", nl: "We gaan het samen heel leuk hebben!", de: "Wir werden zusammen viel Spa\u00df haben!", fa: "\u0628\u0627 \u0647\u0645 \u062e\u06cc\u0644\u06cc \u062e\u0648\u0634 \u0645\u06cc\u200c\u06af\u0630\u0631\u0648\u0646\u06cc\u0645!", sv: "Vi kommer ha j\u00e4ttekul tillsammans!", no: "Vi kommer til \u00e5 ha det veldig g\u00f8y sammen!", ru: "\u041c\u044b \u043a\u043b\u0430\u0441\u0441\u043d\u043e \u043f\u043e\u0432\u0435\u0441\u0435\u043b\u0438\u043c\u0441\u044f \u0432\u043c\u0435\u0441\u0442\u0435!" } }
-    ];
+  // 🆕 (retour Raphaël, 22-08-2026) Portée assumée pour tout le NOUVEAU
+  // contenu ci-dessous (répliques, consignes d'exercice, choix) : FRANÇAIS
+  // + ANGLAIS seulement, pas les 20 langues comme le reste du site.
+  // Raison : ce n'est plus de la simple UI (boutons, titres d'écran) mais
+  // du contenu narratif/pédagogique fin ("Bek ? Papa ? Maman ?", nuances
+  // de niveau de langue) — le traduire correctement dans 19 langues
+  // d'un coup, sans relecture humaine, risquait de livrer des
+  // traductions de mauvaise qualité pour un public d'apprenants. Pour
+  // toute langue autre que fr/en, l'anglais sert de repli (voir
+  // texteEtape()/traductionPhrase() plus bas) — jamais un texte manquant,
+  // mais pas encore une vraie traduction dans la langue de l'élève. Un
+  // vrai chantier de traduction reste à faire avant mise en ligne.
+  function normaliserTexte(s) {
+    return (s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
   }
+
+  // 🆕 (session 22-08-2026, suite) Étape 'prenom' : contrairement à
+  // deduction (une seule réponse_attendue figée), l'élève peut traduire
+  // "My name is..." de PLUSIEURS façons correctes — "Je m'appelle X",
+  // "Moi, c'est X", "Mon nom est X" (apostrophe droite ou courbe,
+  // virgule ou non, casse libre — voir /i ci-dessous ; le reste de la
+  // phrase, lui, N'EST PAS accent-insensible : seul le prénom capturé
+  // est renvoyé tel que tapé, sans y toucher). Une réponse qui ne suit
+  // AUCUN de ces trois patrons est jugée incorrecte, même si elle
+  // contient un prénom plausible quelque part — l'exercice teste la
+  // construction de la phrase, pas seulement le prénom (cohérent avec
+  // "c'est un exercice de traduction long", pas une simple saisie).
+  // Renvoie le prénom extrait (string) ou null si aucun patron ne colle.
+  const PATRONS_PRENOM_TRADUIT = [
+    /^(?:moi,?\s*)?je\s*m['\u2019]appelle\s+(.+)$/i,
+    /^moi,?\s*c['\u2019]est\s+(.+)$/i,
+    /^mon\s+nom\s+est\s+(.+)$/i
+  ];
+  function extrairePrenomDeTraduction(valeur) {
+    const nettoye = (valeur || '').trim().replace(/[.!?]+$/g, '').trim();
+    for (let i = 0; i < PATRONS_PRENOM_TRADUIT.length; i++) {
+      const m = nettoye.match(PATRONS_PRENOM_TRADUIT[i]);
+      if (m && m[1] && m[1].trim()) return m[1].trim();
+    }
+    return null;
+  }
+
+  // 🆕 Niveaux d'auto-évaluation (remplace l'ancienne liste à 6 paliers
+  // "nul/mauvais/bon/..." — Raphaël a précisé la formulation exacte
+  // attendue : cinq suites possibles à "Oui, je parle français...").
+  const NIVEAUX = [
+    { id: 'commence', fr: 'Mais je commence', en: 'But I\u2019m just starting' },
+    { id: 'un_peu', fr: 'Juste un peu', en: 'Just a little' },
+    { id: 'assez_bien', fr: 'Assez bien', en: 'Fairly well' },
+    { id: 'tres_bien', fr: 'Très bien', en: 'Very well' },
+    { id: 'presque_parfait', fr: 'Presque parfaitement', en: 'Almost perfectly' }
+  ];
 
   function etapeApplicable(def) {
     return !def.condition || def.condition(reponses);
   }
 
-  function normaliserTexte(s) {
-    return (s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+  // Construit ETAPES une fois personnageChoisi connu — voir plus bas,
+  // ecranChoixPersonnage(). 🆕 (retour Raphaël, 22-08-2026) Reconstruit
+  // en profondeur autour du nouveau scénario : les Bonomes savaient déjà
+  // parler français (ils ne l'apprennent pas de zéro), ils sont
+  // seulement désorientés d'être désormais "numériques" et ne
+  // comprennent pas ce qu'il leur est arrivé — c'est l'ÉLÈVE qui doit
+  // les aider à comprendre, ce qui justifie pourquoi LUI doit d'abord
+  // leur montrer qu'il/elle parle (un peu de) français. D'où
+  // l'enchaînement : interpellé → "qui parle ?" (QCM) → présentations
+  // (prénom, avec récompense) → "tu parles français ?" + niveau →
+  // le personnage réalise qu'il EST vu, cherche son ami·e (déduction
+  // le/la) → puis demande enfin qui est l'élève (genre).
+  function etapesDialogue() {
+    const perso = personnageChoisi === 'Bek' ? 'bek' : 'keb';
+    const nomPerso = personnageChoisi || 'Keb';
+    const nomAutre = personnageChoisi === 'Bek' ? 'Keb' : 'Bek';
+    const imgInterpelle = imagePerso('interpelle');
+    return [
+      { type: 'texte', speaker: perso, img: imgInterpelle, texte: "Bonjour... ?", trad: { en: "Hello...?" } },
+      { type: 'texte', speaker: perso, img: imgInterpelle, texte: "Qui... qui parle ?", trad: { en: "Who... who's there?" } },
+      { type: 'texte', speaker: perso, img: imgInterpelle, texte: nomAutre + " ? Papa ? Maman ?", trad: { en: nomAutre + "? Dad? Mom?" } },
+      { type: 'qcm', cle_reponse: 'quiParle', img: imgInterpelle, recompense_id: 'r1_ex_qui_parle',
+        mot_cible: 'Non.',
+        consigne: { fr: 'Que veut dire ce mot ?', en: 'What does this word mean?' },
+        choix: [
+          { id: 'oui', correcte: false, fr: 'Oui', en: 'Yes' },
+          { id: 'non', correcte: true, fr: 'Non', en: 'No' },
+          { id: 'aucun', correcte: false, fr: 'Aucun', en: 'None' },
+          { id: 'pere_noel', correcte: false, blague: true, fr: 'Le Père Noël', en: 'Santa Claus' }
+        ] },
+      { type: 'texte', speaker: perso, texte: "Tu es qui ? Moi, je m\u2019appelle " + nomPerso + ", et toi ?",
+        trad: { en: "Who are you? My name is " + nomPerso + ", and you?" } },
+      // 🆕 (session 22-08-2026, suite) Exercice de traduction longue —
+      // pas une simple saisie du prénom : l'élève traduit "My name
+      // is..." en français, et c'est CE texte (analysé par
+      // extrairePrenomDeTraduction()) qui fournit le prénom, jamais un
+      // champ "prénom" nu. Voir rendreEtape()/soumettrePrenom() plus bas.
+      { type: 'prenom', cle_reponse: 'prenom', recompense_id: 'r1_ex_prenom',
+        consigne: { fr: 'Comment dit-on « My name is\u2026 » en fran\u00e7ais\u00a0? \u00c9cris la phrase compl\u00e8te.', en: 'How do you say \u201cMy name is\u2026\u201d in French? Write the full sentence.' } },
+      { type: 'texte', speaker: perso, texte: function (r) { return (r.prenom || '') + ", " + (r.prenom || '') + ", tu parles fran\u00e7ais ?"; },
+        trad: { en: function (r) { return (r.prenom || '') + ", " + (r.prenom || '') + ", do you speak French?"; } } },
+      { type: 'binaire', cle_reponse: 'parleFrancais' },
+      { type: 'niveau', cle_reponse: 'niveau', condition: function (r) { return r.parleFrancais === 'oui'; } },
+      { type: 'texte', speaker: perso, texte: "Je vois...", trad: { en: "I see..." } },
+      { type: 'texte', speaker: perso, texte: "Eh ! Tu me vois ? Moi, je ne te vois pas.", trad: { en: "Hey! You can see me? I can\u2019t see you." } },
+      { type: 'texte', speaker: perso, texte: "Moi, je suis " + (perso === 'keb' ? "un gar\u00e7on." : "une fille."),
+        trad: { en: "I\u2019m " + (perso === 'keb' ? "a boy." : "a girl.") } },
+      { type: 'texte', speaker: perso, texte: "Je cherche mon ami" + (perso === 'keb' ? "e" : "") + ". C\u2019est " + (perso === 'keb' ? "une fille." : "un gar\u00e7on."),
+        trad: { en: "I\u2019m looking for my friend. It\u2019s " + (perso === 'keb' ? "a girl." : "a boy.") } },
+      { type: 'texte', speaker: perso, texte: (perso === 'keb' ? "Tu la vois ?" : "Tu le vois ?"),
+        trad: { en: (perso === 'keb' ? "Can you see her?" : "Can you see him?") } },
+      { type: 'deduction', cle_reponse: 'pronomDeduit', recompense_id: 'r1_ex_deduction',
+        reponse_attendue: (perso === 'keb' ? 'la' : 'le'),
+        consigne: { fr: 'Dans la phrase précédente, quel mot veut dire "her" (ou "him") ?', en: 'Which word in the previous sentence means "her" (or "him")?' } },
+      { type: 'texte', speaker: perso, texte: "Ah, zut.", trad: { en: "Ah, darn." } },
+      { type: 'texte', speaker: perso, texte: "Et toi, tu es... ?", trad: { en: "And you, are you...?" } },
+      { type: 'genre', cle_reponse: 'genreEleve' },
+      { type: 'texte', speaker: perso, texte: "On va bien s\u2019amuser ensemble !", trad: { en: "We\u2019re going to have so much fun together!" } }
+    ];
   }
 
   const INTERFACE = {
@@ -1025,32 +1199,32 @@
   const elEcranChoix = document.getElementById('ecranChoixPersonnage');
   const elFlashApparition = document.getElementById('flashApparition');
   const elBtnMainSalue = document.getElementById('btnMainSalue');
+  const elMainSalueBonjour = document.getElementById('mainSalueBonjour');
+  const elIntroLegende = document.getElementById('introLegende');
   // 'Keb' | 'Bek' — connu seulement après ecranChoixPersonnage(), donc
   // encore `null` ici. Toute fonction qui en a besoin (etapesDialogue(),
-  // imagePersonnageActuel()) est appelée seulement après coup.
+  // imagePerso()) est appelée seulement après coup.
   let personnageChoisi = null;
 
+  // 🆕 (retour Raphaël, 22-08-2026) Une seule fonction pour retrouver le
+  // bon fichier image, quel que soit le personnage choisi — remplace
+  // imagePersonnageActuel(), devenu insuffisant maintenant que CHAQUE
+  // étape (pas seulement "neutre") a ses propres poses par personnage
+  // (voir la liste d'images fournie par Raphaël : généré/confus/
+  // je-suis-où/appelle-ami/où-est-ami/interpellé, une paire Keb+Bek
+  // par pose). `cle` manquante ou inconnue → repli sur 'neutre'.
+  const IMAGES_PERSO = {
+    keb: { neutre: 'keb_neutre_01.webp', genere: 'keb_généré_01.webp', confus: 'l1_keb_confus_01.webp', je_suis_ou: 'l1_keb_je-suis-ou_01.webp', ou_est_ami: 'l1_keb_ou-est-bek_01.webp', appelle_ami: 'l1_keb_bek-bek_01.webp', interpelle: 'l1_keb_interpellé_02.webp' },
+    bek: { neutre: 'bek_neutre_01.webp', genere: 'bek_générée_01.webp', confus: 'l1_bek_confuse_01.webp', je_suis_ou: 'l1_bek_je-suis-ou_01.webp', ou_est_ami: 'l1_bek_ou-est-keb_01.webp', appelle_ami: 'l1_bek_keb-keb_01.webp', interpelle: 'l1_bek_interpellée_01.webp' }
+  };
+  function imagePerso(cle) {
+    const jeu = IMAGES_PERSO[personnageChoisi === 'Bek' ? 'bek' : 'keb'];
+    return jeu[cle] || jeu.neutre;
+  }
+  // Conservée pour compatibilité avec le code existant qui l'appelait
+  // pour la pose par défaut d'une étape 'texte' sans image spécifique.
   function imagePersonnageActuel() {
-    return personnageChoisi === 'Bek' ? 'bek_neutre_01.webp' : 'keb_neutre_01.webp';
-  }
-
-  // 🆕 (session du 22-08-2026) Trois nouveaux registres d'image pour le
-  // personnage, tous nommés sur le même patron que imagePersonnageActuel()
-  // ci-dessus (préfixe selon personnageChoisi) — cohérent avec la
-  // convention images/lecons/ déjà en place. genere()/confus() ont les
-  // DEUX variantes déjà fournies ; interpelle() n'a pour l'instant que la
-  // variante Keb (l1_keb_interpellé_01.webp) — le nom prévu pour Bek
-  // (l1_bek_interpellee_01.webp) n'existe pas encore, le repli graphique
-  // habituel de creerImage() s'affiche à sa place en attendant, sans
-  // rien bloquer.
-  function imagePersonnageGenere() {
-    return personnageChoisi === 'Bek' ? 'bek_générée_01.webp' : 'keb_généré_01.webp';
-  }
-  function imagePersonnageConfus() {
-    return personnageChoisi === 'Bek' ? 'l1_bek_confuse_01.webp' : 'l1_keb_confus_01.webp';
-  }
-  function imagePersonnageInterpelle() {
-    return personnageChoisi === 'Bek' ? 'l1_bek_interpellee_01.webp' : 'l1_keb_interpellé_01.webp';
+    return imagePerso('neutre');
   }
 
   // 🆕 Panneaux de réponse — voir rendreEtape() plus bas, qui bascule
@@ -1082,9 +1256,18 @@
   // Même logique que dialogues/d1/index.html : dict.trad n'a pas de clé
   // 'fr' (le français est la langue source du dialogue lui-même) — repli
   // sur l'anglais si la langue d'interface n'a pas d'entrée dédiée.
+  // 🆕 (retour Raphaël, 22-08-2026) texteEtape()/traductionPhrase()
+  // acceptent maintenant soit une chaîne, soit une fonction(reponses) —
+  // nécessaire pour les répliques qui insèrent le prénom de l'élève
+  // (connu seulement une fois l'étape 'prenom' passée, donc impossible à
+  // figer au moment où etapesDialogue() construit le tableau).
+  function texteEtape(def) {
+    return typeof def.texte === 'function' ? def.texte(reponses) : def.texte;
+  }
   function traductionPhrase(def) {
     if (!def.trad) return '';
-    return def.trad[langueActuelle()] || def.trad.en || '';
+    const brut = def.trad[langueActuelle()] || def.trad.en || '';
+    return typeof brut === 'function' ? brut(reponses) : brut;
   }
 
   // 🆕 État global d'affichage des traductions de phrase — appliqué par
@@ -1112,7 +1295,7 @@
     }
     const texte = document.createElement('div');
     texte.className = 'pile-texte';
-    texte.textContent = def.texte;
+    texte.textContent = texteEtape(def);
     corps.appendChild(texte);
     let elTrad = null;
     if (trad) {
@@ -1256,50 +1439,21 @@
   }
 
   // Réveil : fond noir → beige (la genèse "s'achève" pour de bon ici),
-  // 🆕 matérialisation (image scintillante keb_généré/bek_générée, voir
-  // .perso-generation), flash blanc — le personnage "se solidifie" —
-  // puis apparition de la version nette (neutre), léger balancement
+  // flash blanc, apparition du personnage choisi, léger balancement
   // désorienté (.perso-deboussole) pendant une pause SANS texte — le
   // personnage ne parle pas encore, il découvre juste qu'il existe.
   async function reveilPersonnage() {
     const reduireMouvement = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     elIntroPleinEcran.classList.remove('intro-noir');
     await attendre(reduireMouvement ? 20 : 500);
-
-    // 🆕 Matérialisation — voir imagePersonnageGenere()/.perso-generation.
-    elIntroImage.classList.add('intro-image-personnage');
-    elIntroImage.innerHTML = '';
-    elIntroImage.appendChild(creerImage(imagePersonnageGenere()));
-    elIntroImage.style.opacity = '1';
-    elIntroImage.classList.add('perso-generation');
-    await attendre(reduireMouvement ? 30 : 1800);
-    elIntroImage.classList.remove('perso-generation');
-
     elFlashApparition.classList.remove('jouer');
     void elFlashApparition.offsetWidth; // force le reflow pour pouvoir rejouer l'animation d'une leçon à l'autre
     elFlashApparition.classList.add('jouer');
     elIntroImage.innerHTML = '';
     elIntroImage.appendChild(creerImage(imagePersonnageActuel()));
+    elIntroImage.style.opacity = '1';
     elIntroImage.classList.add('perso-deboussole');
-    await attendre(reduireMouvement ? 30 : 1400);
-  }
-
-  // 🆕 (demande de Raphaël, 22-08-2026) Le personnage se découvre
-  // "numérique" — étonné de sa propre texture — puis cherche son ami
-  // (Keb appelle Bek ou l'inverse) et n'obtient AUCUNE réponse : lui
-  // seul a été généré cette fois-ci. C'est précisément ce silence qui
-  // motive la main qui suit (attendreSalutMain()) — quelqu'un d'autre
-  // (l'élève) lui fait signe puisque son ami ne répond pas. Purement
-  // visuel, comme le reste de la genèse : aucun texte ici non plus.
-  async function personnageDesoriente() {
-    const reduireMouvement = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    elIntroImage.classList.remove('perso-deboussole');
-    elIntroImage.innerHTML = '';
-    elIntroImage.appendChild(creerImage(imagePersonnageConfus()));
-    await attendre(reduireMouvement ? 30 : 1700);
-    elIntroImage.innerHTML = '';
-    elIntroImage.appendChild(creerImage(imagePersonnageInterpelle()));
-    await attendre(reduireMouvement ? 30 : 1700);
+    await attendre(reduireMouvement ? 30 : 1800);
   }
 
   // Main qui salue — cliquable, ondule doucement pour signaler qu'elle
@@ -1332,6 +1486,14 @@
   // QUE pour les étapes 'texte' : elle reste affichée telle quelle
   // pendant une étape de réponse (l'élève répond à la question qu'il
   // vient de lire, elle ne doit pas disparaître entre-temps).
+  // 🆕 (retour Raphaël, 22-08-2026) Reconstruite pour distinguer SIX
+  // panneaux possibles (texte/binaire/niveau/prénom/qcm/déduction/genre)
+  // au lieu d'un seul #navDialogue — un seul visible à la fois, déterminé
+  // par ETAPES[etape].type. La bulle-dialogue, elle, est mise à jour pour
+  // 'texte' ET pour 'qcm'/'deduction' (elle y affiche le mot/la phrase
+  // testée — voir plus bas), mais reste affichée telle quelle pendant
+  // binaire/niveau/prénom/genre (l'élève répond à ce qu'il vient de lire,
+  // la bulle ne doit pas disparaître entre-temps).
   function rendreEtape() {
     const def = ETAPES[etape];
     elCompteur.textContent = (etape + 1) + ' / ' + ETAPES.length;
@@ -1341,29 +1503,62 @@
     elScene.appendChild(creerImage(def.img || imagePersonnageActuel()));
 
     navDialogue.style.display = (def.type === 'texte') ? 'flex' : 'none';
-    elReponseLibre.style.display = (def.type === 'saisie_libre') ? 'flex' : 'none';
     elReponseBinaire.style.display = (def.type === 'binaire') ? 'flex' : 'none';
     elReponseNiveau.style.display = (def.type === 'niveau') ? 'flex' : 'none';
     elEtapePrenom.style.display = (def.type === 'prenom') ? 'flex' : 'none';
+    elReponseQcm.style.display = (def.type === 'qcm') ? 'flex' : 'none';
+    elReponseLibre.style.display = (def.type === 'deduction') ? 'flex' : 'none';
+    elReponseGenre.style.display = (def.type === 'genre') ? 'flex' : 'none';
 
     if (def.type === 'texte') {
       elBulle.classList.remove('in');
       elBulle.className = 'bulle-dialogue cote-' + def.speaker;
       window.KebBekMotTooltip.fermer();
       elBulle.innerHTML = '';
-      elBulle.appendChild(window.KebBekMotTooltip.creerMotCliquable(def.texte, CHAPITRE_ID));
+      elBulle.appendChild(window.KebBekMotTooltip.creerMotCliquable(texteEtape(def), CHAPITRE_ID));
       requestAnimationFrame(() => requestAnimationFrame(() => elBulle.classList.add('in')));
       if (!reconstructionEnCours) {
         ajouterLigneDialogue(def);
         ajouterNoteGrammaire(def);
       }
-    } else if (def.type === 'saisie_libre') {
+    } else if (def.type === 'qcm') {
+      // 🆕 La bulle affiche le mot testé lui-même (jamais loggé dans "Ce
+      // qui a été dit" — ce n'est pas une réplique, c'est un exercice),
+      // avec la consigne (langue de l'élève, repli anglais) en dessous.
+      elBulle.classList.remove('in');
+      elBulle.className = 'bulle-dialogue cote-' + def.speaker + ' bulle-exercice';
+      elBulle.innerHTML = '<div class="bulle-mot-cible">' + def.mot_cible + '</div>' +
+        '<div class="bulle-consigne">' + (def.consigne[langueActuelle()] || def.consigne.en) + '</div>';
+      requestAnimationFrame(() => requestAnimationFrame(() => elBulle.classList.add('in')));
+      construireQcm(def);
+    } else if (def.type === 'deduction') {
+      elBulle.classList.remove('in');
+      elBulle.className = 'bulle-dialogue cote-' + def.speaker + ' bulle-exercice';
+      elBulle.innerHTML = '<div class="bulle-consigne">' + (def.consigne[langueActuelle()] || def.consigne.en) + '</div>';
+      requestAnimationFrame(() => requestAnimationFrame(() => elBulle.classList.add('in')));
+      def.etatExercice = { tentatives: 0, resolu: false };
       elChampReponseLibre.value = '';
+      elChampReponseLibre.classList.remove('qcm-mauvais');
+      document.getElementById('btnValiderReponseLibre').disabled = false;
       setTimeout(function () { elChampReponseLibre.focus(); }, 50);
     } else if (def.type === 'prenom') {
-      document.getElementById('champPrenom').value = '';
-      document.getElementById('champPrenom').placeholder = texteInterface('placeholderPrenom');
-      setTimeout(function () { document.getElementById('champPrenom').focus(); }, 50);
+      // 🆕 Même patron que 'deduction' : bulle-exercice + consigne
+      // (jamais loggée dans "Ce qui a été dit", ce n'est pas une
+      // réplique), tentatives/récompense réinitialisées à chaque
+      // arrivée sur l'étape (utile aussi via precedent()/reconstruction).
+      elBulle.classList.remove('in');
+      elBulle.className = 'bulle-dialogue cote-' + def.speaker + ' bulle-exercice';
+      elBulle.innerHTML = '<div class="bulle-consigne">' + (def.consigne[langueActuelle()] || def.consigne.en) + '</div>';
+      requestAnimationFrame(() => requestAnimationFrame(() => elBulle.classList.add('in')));
+      def.etatExercice = { tentatives: 0, resolu: false };
+      const champPrenomEl = document.getElementById('champPrenom');
+      champPrenomEl.value = '';
+      champPrenomEl.classList.remove('qcm-mauvais');
+      champPrenomEl.placeholder = texteInterface('placeholderPrenom');
+      document.getElementById('btnValiderPrenom').disabled = false;
+      setTimeout(function () { champPrenomEl.focus(); }, 50);
+    } else if (def.type === 'genre') {
+      rendreEtapeGenre(def);
     }
   }
 
@@ -1421,6 +1616,8 @@
     elReponseLibre.style.display = 'none';
     elReponseBinaire.style.display = 'none';
     elReponseNiveau.style.display = 'none';
+    elReponseQcm.style.display = 'none';
+    elReponseGenre.style.display = 'none';
     elEtapeFin.style.display = 'flex';
     document.getElementById('messageFin').textContent = texteInterface('messageFin').replace('{prenom}', reponses.prenom || '');
     document.getElementById('btnTerminerLecon').textContent = texteInterface('terminer');
@@ -1429,35 +1626,127 @@
   btnPrecedent.addEventListener('click', precedent);
   btnSuivant.addEventListener('click', suivant);
 
-  // 🆕 Validation de la réponse libre ("Bonjour !") — reconnue ou non,
-  // ça n'empêche JAMAIS d'avancer (voir SALUTATIONS_RECONNUES plus
-  // haut) : l'important est que l'élève ait répondu, pas qu'il ait
-  // deviné la bonne formule.
-  // 🆕 Reconnaissance de la salutation — n'a AUCUN effet sur la
-  // progression (voir commentaire de SALUTATIONS_RECONNUES plus haut) ;
-  // seulement conservée dans `reponses` pour une future variante de
-  // réplique ("Ah, tu m'as dit bonjour !" par ex.), pas exploitée pour
-  // l'instant.
-  function reponseSalutationReconnue(valeur) {
-    const v = normaliserTexte(valeur);
-    return SALUTATIONS_RECONNUES.some(function (m) { return v === m || v.indexOf(m) !== -1; });
+  // 🆕 (retour Raphaël, 22-08-2026) Exercice QCM — un bouton "blague" (ex.
+  // "Le Père Noël") ne compte JAMAIS comme un essai, juste un clin d'œil ;
+  // 2 P$ si la bonne réponse est trouvée du premier VRAI essai, 1 P$
+  // ensuite. La récompense passe par attribuer_recompense_premiere_fois
+  // (déjà existante côté Supabase, voir progression.js) avec un
+  // identifiant PROPRE À CET EXERCICE (def.recompense_id) : rejouer la
+  // leçon ne permet donc jamais de la retoucher une deuxième fois.
+  function construireQcm(def) {
+    elQcmChoix.innerHTML = '';
+    def.etatExercice = { tentatives: 0, resolu: false };
+    def.choix.forEach(function (c) {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'bouton-choix';
+      btn.textContent = c[langueActuelle()] || c.en || c.fr;
+      btn.addEventListener('click', function () { repondreQcm(def, c, btn); });
+      elQcmChoix.appendChild(btn);
+    });
   }
 
+  function accorderRecompenseExercice(def, piasses) {
+    if (window.KebBekProgression && def.recompense_id) {
+      window.KebBekProgression.attribuerRecompensePremiereFois(def.recompense_id, piasses, 0)
+        .catch(function (e) { console.warn('lecon-01-rencontre.html : récompense d\u2019exercice a échoué.', e); });
+    }
+  }
+
+  function repondreQcm(def, choix, btn) {
+    if (def.etatExercice.resolu) return;
+    if (choix.blague) {
+      btn.classList.add('qcm-mauvais');
+      setTimeout(function () { btn.classList.remove('qcm-mauvais'); }, 500);
+      return; // ne compte pas comme un essai
+    }
+    if (choix.correcte) {
+      def.etatExercice.resolu = true;
+      btn.classList.add('qcm-correct');
+      elQcmChoix.querySelectorAll('.bouton-choix').forEach(function (b) { b.disabled = true; });
+      accorderRecompenseExercice(def, def.etatExercice.tentatives === 0 ? 2 : 1);
+      setTimeout(suivant, 650);
+    } else {
+      def.etatExercice.tentatives += 1;
+      btn.classList.add('qcm-mauvais');
+      setTimeout(function () { btn.classList.remove('qcm-mauvais'); }, 500);
+      if (def.etatExercice.tentatives >= 3) {
+        elQcmChoix.querySelectorAll('.bouton-choix').forEach(function (b) { b.disabled = true; });
+        setTimeout(suivant, 900); // verrouillé, aucune récompense
+      }
+    }
+  }
+
+  // 🆕 Exercice de déduction (le/la) — réutilise le champ texte de
+  // #reponseLibre (devenu générique) plutôt qu'un panneau dédié, avec la
+  // même mécanique de tentatives/récompense que le QCM ci-dessus, mais en
+  // saisie libre plutôt qu'à choix multiples.
   function validerReponseLibre() {
     const def = ETAPES[etape];
+    if (def.type !== 'deduction' || (def.etatExercice && def.etatExercice.resolu)) return;
     const valeur = elChampReponseLibre.value.trim();
     if (!valeur) { elChampReponseLibre.focus(); return; }
     reponses[def.cle_reponse] = valeur;
-    reponses.salutationReconnue = reponseSalutationReconnue(valeur);
-    suivant();
+
+    if (normaliserTexte(valeur) === normaliserTexte(def.reponse_attendue)) {
+      def.etatExercice.resolu = true;
+      elChampReponseLibre.classList.remove('qcm-mauvais');
+      document.getElementById('btnValiderReponseLibre').disabled = true;
+      accorderRecompenseExercice(def, def.etatExercice.tentatives === 0 ? 2 : 1);
+      setTimeout(suivant, 500);
+    } else {
+      def.etatExercice.tentatives += 1;
+      elChampReponseLibre.classList.add('qcm-mauvais');
+      if (def.etatExercice.tentatives >= 3) {
+        document.getElementById('btnValiderReponseLibre').disabled = true;
+        elChampReponseLibre.disabled = true;
+        setTimeout(suivant, 900); // verrouillé, aucune récompense
+      }
+    }
   }
   document.getElementById('btnValiderReponseLibre').addEventListener('click', validerReponseLibre);
   elChampReponseLibre.addEventListener('keydown', function (e) {
     if (e.key === 'Enter') { e.preventDefault(); validerReponseLibre(); }
   });
 
+  // 🆕 (retour Raphaël, 22-08-2026) Étape 'genre' — "Et toi, tu es... ?".
+  // AVANT d'afficher les deux boutons, on vérifie si l'identité de
+  // l'élève (genre) est déjà connue ailleurs sur le site (voir
+  // identite-eleve.js, mécanisme distinct et plus riche, typiquement
+  // rempli à la création du compte) via lireIdentite() — pour ne
+  // JAMAIS reposer la question à quelqu'un qui a déjà répondu. Si connu :
+  // le bouton correspondant est simplement mis en évidence (.pre-rempli),
+  // aucune écriture ; ça devient une pratique de vocabulaire, pas une
+  // collecte. Si inconnu : cliquer écrit réellement le genre via
+  // enregistrerIdentite(), exactement comme identite-eleve.js le ferait.
+  function rendreEtapeGenre(def) {
+    document.getElementById('btnGenreGarcon').classList.remove('pre-rempli');
+    document.getElementById('btnGenreFille').classList.remove('pre-rempli');
+    const promesse = window.KebBekProgression ? window.KebBekProgression.lireIdentite() : Promise.resolve({ genre: null });
+    promesse.then(function (identite) {
+      if (identite && identite.genre) {
+        reponses[def.cle_reponse] = identite.genre;
+        document.getElementById(identite.genre === 'f' ? 'btnGenreFille' : 'btnGenreGarcon').classList.add('pre-rempli');
+      }
+    });
+  }
+  document.querySelectorAll('#reponseGenre .bouton-choix').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      const def = ETAPES[etape];
+      const genre = btn.dataset.valeur;
+      reponses[def.cle_reponse] = genre;
+      document.querySelectorAll('#reponseGenre .bouton-choix').forEach(function (b) { b.classList.remove('pre-rempli'); });
+      btn.classList.add('pre-rempli');
+      if (window.KebBekProgression) {
+        window.KebBekProgression.enregistrerIdentite(genre, undefined, undefined, undefined)
+          .catch(function (e) { console.warn('lecon-01-rencontre.html : échec de l\u2019enregistrement du genre.', e); });
+      }
+      setTimeout(suivant, 400);
+    });
+  });
+
   // 🆕 Oui/Non — répondre fait directement avancer, pas de bouton
-  // "Continuer" séparé en plus (cohérent avec saisie_libre/niveau).
+  // "Continuer" séparé en plus (cohérent avec niveau/qcm/déduction).
   elReponseBinaire.querySelectorAll('.bouton-choix').forEach(function (btn) {
     btn.addEventListener('click', function () {
       const def = ETAPES[etape];
@@ -1466,8 +1755,8 @@
     });
   });
 
-  // 🆕 Les 6 boutons de niveau sont construits une seule fois (la langue
-  // ne change pas en cours de leçon), pas régénérés à chaque rendu.
+  // 🆕 Les boutons de niveau sont construits une seule fois (la langue ne
+  // change pas en cours de leçon), pas régénérés à chaque rendu.
   function construireBoutonsNiveau() {
     elReponseNiveau.innerHTML = '';
     NIVEAUX.forEach(function (niv) {
@@ -1531,21 +1820,46 @@
   // le prénom fait juste avancer d'une étape comme n'importe quelle
   // autre réponse — c'est suivant() qui décide s'il reste des étapes ou
   // s'il faut terminerConversation().
+  // 🆕 (session 22-08-2026, suite) Exercice de traduction longue,
+  // même économie de récompense que le QCM/la déduction (2 P$ du
+  // premier essai, 1 P$ ensuite — voir accorderRecompenseExercice() /
+  // def.recompense_id = 'r1_ex_prenom'), mais SANS plafond de
+  // tentatives (contrairement au QCM et à sa règle "3 échecs" : rien
+  // dans la demande de Raphaël ne prévoit de bloquer cet exercice-ci,
+  // et bloquer la toute première capture réelle du prénom serait
+  // particulièrement mal venu). Une réponse qui ne suit aucun des
+  // patrons acceptés (voir extrairePrenomDeTraduction()) est traitée
+  // comme une erreur ordinaire — champ en rouge, on peut recommencer.
   function soumettrePrenom() {
+    const def = ETAPES[etape];
+    if (def.etatExercice && def.etatExercice.resolu) return;
     const champ = document.getElementById('champPrenom');
-    const prenom = champ.value.trim();
-    if (!prenom) { champ.focus(); return; }
-    reponses.prenom = prenom;
+    const valeur = champ.value.trim();
+    if (!valeur) { champ.focus(); return; }
+
+    const prenomExtrait = extrairePrenomDeTraduction(valeur);
+    if (!prenomExtrait) {
+      def.etatExercice.tentatives += 1;
+      champ.classList.add('qcm-mauvais');
+      champ.focus();
+      return;
+    }
+
+    def.etatExercice.resolu = true;
+    champ.classList.remove('qcm-mauvais');
+    document.getElementById('btnValiderPrenom').disabled = true;
+    reponses.prenom = prenomExtrait;
+    accorderRecompenseExercice(def, def.etatExercice.tentatives === 0 ? 2 : 1);
 
     if (window.KebBekProgression) {
       window.KebBekProgression
-        .enregistrerIdentite(undefined, undefined, prenom, undefined)
+        .enregistrerIdentite(undefined, undefined, prenomExtrait, undefined)
         .catch(function (e) { console.warn('lecon-01-rencontre.html : échec de l\u2019enregistrement du prénom.', e); });
     } else {
-      console.warn('KebBekProgression indisponible — prénom non enregistré.', prenom);
+      console.warn('KebBekProgression indisponible — prénom non enregistré.', prenomExtrait);
     }
 
-    suivant();
+    setTimeout(suivant, 500);
   }
 
   document.getElementById('btnValiderPrenom').addEventListener('click', soumettrePrenom);
@@ -1586,7 +1900,6 @@
       if (!genesePassee) {
         await ecranChoixPersonnage();
         await reveilPersonnage();
-        await personnageDesoriente();
         await attendreSalutMain();
       } else {
         // Genèse sautée en cours de route (tap précoce) — pas de choix
@@ -1595,7 +1908,6 @@
         // l'animation, plutôt que de planter sur personnageChoisi vide.
         await ecranChoixPersonnage();
         elIntroPleinEcran.classList.remove('intro-noir');
-        elIntroImage.classList.add('intro-image-personnage');
         elIntroImage.innerHTML = '';
         elIntroImage.appendChild(creerImage(imagePersonnageActuel()));
         elIntroImage.style.opacity = '1';

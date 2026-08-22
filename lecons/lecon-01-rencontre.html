@@ -41,12 +41,20 @@
        - #sceneLecon cité (visibility:hidden) tant qu'une intro n'est pas
          terminée, révélé ensuite via .revele — évite tout saut de mise
          en page au moment de la révélation.
-       - 🆕 (retour Raphaël, 21-08-2026) Navigation clavier (flèches
-         gauche/droite) + tap direct sur la scène (moitié gauche =
-         précédent, moitié droite = suivant, voir precedent()/suivant()
-         et l'écouteur sur .cadre-scene) — trois déclencheurs équivalents
+       - 🆕 (retour Raphaël, 21-08-2026 ; complété 22-08-2026) Navigation
+         clavier (flèches gauche/droite) + tap direct sur la scène
+         (moitié gauche = précédent, moitié droite = suivant) + glisser
+         horizontalement (gauche = suivant, droite = précédent) — voir
+         precedent()/suivant() et les écouteurs sur .cadre-scene
+         (click + touchstart/touchend) — quatre déclencheurs équivalents
          aux boutons, coupés ensemble via `navigationActive` une fois le
          dialogue terminé.
+       - 🆕 (Raphaël, 22-08-2026) .scene-image img EN object-fit: contain,
+         JAMAIS cover — les portraits de personnages sont hauts/étroits
+         et un cadre de scène large en `cover` rogne une hauteur
+         différente selon l'image, ce qui fait "sauter" le niveau
+         apparent du personnage (donc de la bulle) d'une image à
+         l'autre. Voir le commentaire détaillé sur `.scene-image img`.
        - 🆕 (retour Raphaël, 21-08-2026) La pile "Ce qui a été dit" +
          notes grammaticales (#pilesConteneur, .pile-avatar, etc.) —
          repris de dialogues/d1/index.html, adapté au style de cette
@@ -578,7 +586,24 @@
     background: var(--fond);
     transition: opacity 0.6s ease;
   }
-  .scene-image img { width: 100%; height: 100%; object-fit: cover; }
+  /* 🆕 (Raphaël, 22-08-2026) contain plutôt que cover — c'est LA cause
+     du "texte qui n'arrive pas au même niveau" : .cadre-scene est un
+     cadre très large (aspect-ratio 1408/768 ≈ 1.83) alors que les
+     portraits de personnages sont hauts et étroits (≈0.67–0.75, mesuré
+     sur les derniers fichiers livrés : 758×1012, 848×1264, 896×1196).
+     Avec `cover`, le navigateur met l'image à l'échelle sur sa LARGEUR
+     puis rogne le surplus de hauteur centré à 50% — et comme ce surplus
+     change d'une image à l'autre (poses/cadrages différents), la
+     tranche visible du personnage (donc la hauteur de sa tête/bouche
+     par rapport à la bulle, ancrée en bas) change elle aussi à chaque
+     image. Avec `contain`, l'image est mise à l'échelle sur sa HAUTEUR
+     (elle est toujours le facteur limitant ici, largeur ⇒ marge beige
+     de chaque côté, jamais de rognage) — la tête, qui commence à peu
+     près à la même fraction de hauteur sur tous ces portraits (~3–4 %
+     depuis le haut, vérifié sur les 4 derniers fichiers), atterrit donc
+     systématiquement au même niveau dans le cadre, quelle que soit
+     l'image. */
+  .scene-image img { width: 100%; height: 100%; object-fit: contain; }
   .scene-image-repli {
     font-size: 0.85rem;
     color: var(--brun-clair);
@@ -1293,7 +1318,9 @@
     // de 'interpelle' (utilisée pour les répliques suivantes, une fois
     // que le personnage réagit plus vivement à être appelé).
     keb: { neutre: 'keb_neutre_01.webp', genere: 'keb_généré_01.webp', bonjour: 'l1_keb_bonjour_01.webp', confus: 'l1_keb_confus_01.webp', je_suis_ou: 'l1_keb_je-suis-ou_01.webp', ou_est_ami: 'l1_keb_ou-est-bek_01.webp', appelle_ami: 'l1_keb_bek-bek_01.webp', interpelle: 'l1_keb_interpellé_02.webp' },
-    bek: { neutre: 'bek_neutre_01.webp', genere: 'bek_générée_01.webp', bonjour: 'l1_bek_bonjour_01.webp', confus: 'l1_bek_confuse_01.webp', je_suis_ou: 'l1_bek_je-suis-ou_01.webp', ou_est_ami: 'l1_bek_ou-est-keb_01.webp', appelle_ami: 'l1_bek_keb-keb_01.webp', interpelle: 'l1_bek_interpellée_01.webp' }
+    // 🆕 (Raphaël, 22-08-2026) neutre bek_neutre_03.webp (remplace
+    // bek_neutre_01.webp — nouvelle version fournie).
+    bek: { neutre: 'bek_neutre_03.webp', genere: 'bek_générée_01.webp', bonjour: 'l1_bek_bonjour_01.webp', confus: 'l1_bek_confuse_01.webp', je_suis_ou: 'l1_bek_je-suis-ou_01.webp', ou_est_ami: 'l1_bek_ou-est-keb_01.webp', appelle_ami: 'l1_bek_keb-keb_01.webp', interpelle: 'l1_bek_interpellée_01.webp' }
   };
   function imagePerso(cle) {
     const jeu = IMAGES_PERSO[personnageChoisi === 'Bek' ? 'bek' : 'keb'];
@@ -1482,7 +1509,7 @@
   function ecranChoixPersonnage() {
     return new Promise(function (resolve) {
       document.getElementById('choixImageKeb').appendChild(creerImage('keb_neutre_01.webp'));
-      document.getElementById('choixImageBek').appendChild(creerImage('bek_neutre_01.webp'));
+      document.getElementById('choixImageBek').appendChild(creerImage('bek_neutre_03.webp'));
       document.getElementById('choixPersonnageTitre').textContent = texteInterface('choixPersonnage');
       elEcranChoix.querySelectorAll('.choix-carte-prix').forEach(function (el) { el.textContent = texteInterface('prixChoixInitial'); });
       elEcranChoix.classList.add('visible');
@@ -2001,6 +2028,38 @@
     if (x < rect.width / 2) precedent();
     else suivant();
   });
+
+  // 🆕 (Raphaël, 22-08-2026) Glisser horizontalement sur la scène —
+  // même sémantique que le tap-moitié/les flèches : glisser vers la
+  // GAUCHE fait avancer (comme on feuillette une page vers la gauche),
+  // glisser vers la DROITE fait reculer. Seuil de 50px pour ignorer un
+  // simple tap (déjà géré par l'écouteur 'click' ci-dessus, qui se
+  // déclenche de toute façon aussi sur mobile) et pour ne jamais voler
+  // un petit tremblement de doigt ; on exige en plus que le mouvement
+  // soit surtout horizontal (|deltaX| > |deltaY|) pour ne jamais gêner
+  // un scroll vertical de la page. Mêmes gardes-fous que le tap
+  // (navigationActive, étape 'texte' uniquement — pendant une étape de
+  // réponse, glisser ne doit pas sauter une étape).
+  let swipeDepartX = null;
+  let swipeDepartY = null;
+  elCadreScene.addEventListener('touchstart', function (e) {
+    if (e.touches.length !== 1) { swipeDepartX = null; return; }
+    swipeDepartX = e.touches[0].clientX;
+    swipeDepartY = e.touches[0].clientY;
+  }, { passive: true });
+  elCadreScene.addEventListener('touchend', function (e) {
+    if (swipeDepartX === null) return;
+    const arrivee = e.changedTouches[0];
+    const deltaX = arrivee.clientX - swipeDepartX;
+    const deltaY = arrivee.clientY - swipeDepartY;
+    swipeDepartX = null;
+    swipeDepartY = null;
+    const SEUIL_GLISSEMENT = 50;
+    if (Math.abs(deltaX) < SEUIL_GLISSEMENT || Math.abs(deltaX) < Math.abs(deltaY)) return;
+    if (!navigationActive) return;
+    if (ETAPES[etape] && ETAPES[etape].type !== 'texte') return;
+    if (deltaX < 0) suivant(); else precedent();
+  }, { passive: true });
 
   document.getElementById('titrePileDialogue').textContent = texteInterface('ceQuiAEteDit');
   document.getElementById('titrePileGrammaire').textContent = texteInterface('aRetenir');

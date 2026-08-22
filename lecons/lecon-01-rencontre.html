@@ -358,6 +358,36 @@
     75% { transform: rotate(1.4deg) translateY(-2px); }
   }
 
+  /* 🆕 (correctif, session du 22-08-2026) .intro-image en 100%×100% du
+     calque plein écran convenait à la carte titre et au vide (des
+     compositions pensées pour tout l'écran), mais un PORTRAIT de
+     personnage (Keb/Bek seul, canevas haut et étroit) s'y étirait
+     jusqu'à toucher le haut ET le bas du viewport — géant, débordant.
+     .intro-image-personnage plafonne sa taille à un gabarit de
+     personnage raisonnable ; .intro-plein-ecran (flex, centré) le
+     centre normalement dans l'espace restant. Appliquée/retirée par
+     genererPersonnage()/reveilPersonnage()/personnageDesoriente() —
+     jamais sur la carte titre ni le vide. */
+  .intro-image.intro-image-personnage {
+    width: min(58vw, 320px);
+    height: min(62vh, 440px);
+  }
+
+  /* 🆕 Matérialisation du personnage (keb_généré_01/bek_générée_01, déjà
+     scintillant/translucide par nature) — un souffle doux plutôt qu'un
+     simple fade-in, pour vendre l'idée qu'il est en train de se former
+     plutôt que de simplement apparaître tel quel. */
+  .perso-generation { animation: persoGeneration 1.8s ease-in-out infinite; }
+  @keyframes persoGeneration {
+    0%, 100% { opacity: 0.82; transform: scale(0.985); }
+    50%      { opacity: 1;    transform: scale(1); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .perso-generation, .perso-deboussole { animation: none; }
+  }
+
+
   .main-salue {
     all: unset;
     box-sizing: border-box;
@@ -1004,6 +1034,25 @@
     return personnageChoisi === 'Bek' ? 'bek_neutre_01.webp' : 'keb_neutre_01.webp';
   }
 
+  // 🆕 (session du 22-08-2026) Trois nouveaux registres d'image pour le
+  // personnage, tous nommés sur le même patron que imagePersonnageActuel()
+  // ci-dessus (préfixe selon personnageChoisi) — cohérent avec la
+  // convention images/lecons/ déjà en place. genere()/confus() ont les
+  // DEUX variantes déjà fournies ; interpelle() n'a pour l'instant que la
+  // variante Keb (l1_keb_interpellé_01.webp) — le nom prévu pour Bek
+  // (l1_bek_interpellee_01.webp) n'existe pas encore, le repli graphique
+  // habituel de creerImage() s'affiche à sa place en attendant, sans
+  // rien bloquer.
+  function imagePersonnageGenere() {
+    return personnageChoisi === 'Bek' ? 'bek_générée_01.webp' : 'keb_généré_01.webp';
+  }
+  function imagePersonnageConfus() {
+    return personnageChoisi === 'Bek' ? 'l1_bek_confuse_01.webp' : 'l1_keb_confus_01.webp';
+  }
+  function imagePersonnageInterpelle() {
+    return personnageChoisi === 'Bek' ? 'l1_bek_interpellee_01.webp' : 'l1_keb_interpellé_01.webp';
+  }
+
   // 🆕 Panneaux de réponse — voir rendreEtape() plus bas, qui bascule
   // entre eux et #navDialogue selon le type de l'étape courante.
   const elReponseLibre = document.getElementById('reponseLibre');
@@ -1207,21 +1256,50 @@
   }
 
   // Réveil : fond noir → beige (la genèse "s'achève" pour de bon ici),
-  // flash blanc, apparition du personnage choisi, léger balancement
+  // 🆕 matérialisation (image scintillante keb_généré/bek_générée, voir
+  // .perso-generation), flash blanc — le personnage "se solidifie" —
+  // puis apparition de la version nette (neutre), léger balancement
   // désorienté (.perso-deboussole) pendant une pause SANS texte — le
   // personnage ne parle pas encore, il découvre juste qu'il existe.
   async function reveilPersonnage() {
     const reduireMouvement = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     elIntroPleinEcran.classList.remove('intro-noir');
     await attendre(reduireMouvement ? 20 : 500);
+
+    // 🆕 Matérialisation — voir imagePersonnageGenere()/.perso-generation.
+    elIntroImage.classList.add('intro-image-personnage');
+    elIntroImage.innerHTML = '';
+    elIntroImage.appendChild(creerImage(imagePersonnageGenere()));
+    elIntroImage.style.opacity = '1';
+    elIntroImage.classList.add('perso-generation');
+    await attendre(reduireMouvement ? 30 : 1800);
+    elIntroImage.classList.remove('perso-generation');
+
     elFlashApparition.classList.remove('jouer');
     void elFlashApparition.offsetWidth; // force le reflow pour pouvoir rejouer l'animation d'une leçon à l'autre
     elFlashApparition.classList.add('jouer');
     elIntroImage.innerHTML = '';
     elIntroImage.appendChild(creerImage(imagePersonnageActuel()));
-    elIntroImage.style.opacity = '1';
     elIntroImage.classList.add('perso-deboussole');
-    await attendre(reduireMouvement ? 30 : 1800);
+    await attendre(reduireMouvement ? 30 : 1400);
+  }
+
+  // 🆕 (demande de Raphaël, 22-08-2026) Le personnage se découvre
+  // "numérique" — étonné de sa propre texture — puis cherche son ami
+  // (Keb appelle Bek ou l'inverse) et n'obtient AUCUNE réponse : lui
+  // seul a été généré cette fois-ci. C'est précisément ce silence qui
+  // motive la main qui suit (attendreSalutMain()) — quelqu'un d'autre
+  // (l'élève) lui fait signe puisque son ami ne répond pas. Purement
+  // visuel, comme le reste de la genèse : aucun texte ici non plus.
+  async function personnageDesoriente() {
+    const reduireMouvement = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    elIntroImage.classList.remove('perso-deboussole');
+    elIntroImage.innerHTML = '';
+    elIntroImage.appendChild(creerImage(imagePersonnageConfus()));
+    await attendre(reduireMouvement ? 30 : 1700);
+    elIntroImage.innerHTML = '';
+    elIntroImage.appendChild(creerImage(imagePersonnageInterpelle()));
+    await attendre(reduireMouvement ? 30 : 1700);
   }
 
   // Main qui salue — cliquable, ondule doucement pour signaler qu'elle
@@ -1508,6 +1586,7 @@
       if (!genesePassee) {
         await ecranChoixPersonnage();
         await reveilPersonnage();
+        await personnageDesoriente();
         await attendreSalutMain();
       } else {
         // Genèse sautée en cours de route (tap précoce) — pas de choix
@@ -1516,6 +1595,7 @@
         // l'animation, plutôt que de planter sur personnageChoisi vide.
         await ecranChoixPersonnage();
         elIntroPleinEcran.classList.remove('intro-noir');
+        elIntroImage.classList.add('intro-image-personnage');
         elIntroImage.innerHTML = '';
         elIntroImage.appendChild(creerImage(imagePersonnageActuel()));
         elIntroImage.style.opacity = '1';

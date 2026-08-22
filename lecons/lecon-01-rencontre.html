@@ -691,18 +691,29 @@
   .piles-conteneur.genese-terminee { opacity: 1; pointer-events: auto; }
   .zone-bulle-overlay.genese-terminee .bulle-dialogue { pointer-events: auto; }
 
-  /* 🆕 (Raphaël, 23-08-2026) Refonte complète de la légende de dialogue
-     — remplace l'ancienne boîte blanche arrondie ancrée en bas (repli
-     "chat bubble d'appli" que Raphaël voulait quitter) par le même
-     geste graphique que .intro-legende (texte posé directement sur
-     l'image) mais adapté à un fond clair : texte foncé, gras, grand,
-     ancré en HAUT du cadre plutôt qu'en bas — le personnage occupe le
-     bas du cadre, la légende respire au-dessus, jamais superposée à son
-     visage. Position horizontale centrée pour l'instant (le personnage
-     de cette leçon est TOUJOURS centré dans le cadre, jamais positionné
-     à gauche/droite) — .cote-keb/.cote-bek restent posées par le JS et
-     prêtes à ancrer le texte à gauche/droite le jour où une leçon
-     positionne réellement son personnage sur un côté. */
+  /* 🆕 (23-08-2026, correctif Raphaël) La refonte précédente retirait
+     le fond de la bulle pour reprendre le geste graphique de
+     .intro-legende (texte posé directement sur l'image). En test réel,
+     ce texte sans support se superpose aux cheveux/au corps du
+     personnage et devient illisible dès que la réplique dépasse
+     quelques mots (ex. "Bek ? Papa ? Maman ?"). Fond restauré
+     ci-dessous — mais PAS l'ancienne boîte blanche pleine-largeur
+     ancrée en bas ("chat bubble d'appli" que Raphaël voulait quitter) :
+     ici la bulle épouse la largeur du texte (width: fit-content, pas
+     100%), reste ancrée en HAUT du cadre, et garde la hiérarchie
+     typographique FR-en-avant déjà en place. Fond crème translucide +
+     ombre douce, dans la palette du site plutôt qu'un blanc générique.
+     Bug de positionnement corrigé au passage : .cote-keb/.cote-bek
+     décalaient RÉELLEMENT la bulle à gauche/droite dès que le JS posait
+     la classe (elBulle.className = 'bulle-dialogue cote-' + def.speaker,
+     posée à CHAQUE étape 'texte') — pas "inertes" comme le commentaire
+     précédent l'affirmait. Comme le personnage de cette leçon reste
+     toujours centré, ce décalage plaçait la bulle à gauche ou à droite
+     de l'image alors qu'elle devait rester au centre, aggravant le
+     chevauchement. Les classes restent posées par le JS (utile le jour
+     où une leçon positionne vraiment son personnage sur un côté) mais
+     n'ont plus d'effet tant qu'un futur marqueur .perso-decale n'est
+     pas ajouté explicitement. */
   .zone-bulle-overlay {
     position: absolute;
     left: 0;
@@ -716,7 +727,7 @@
   .zone-bulle-overlay .bulle-dialogue { pointer-events: auto; }
 
   .bulle-dialogue {
-    width: 100%;
+    width: fit-content;
     max-width: 640px;
     margin: 0 auto;
     display: flex;
@@ -724,15 +735,19 @@
     align-items: center;
     gap: 5px;
     text-align: center;
+    background: rgba(255, 253, 248, 0.94);
+    border-radius: 22px;
+    padding: 14px 26px;
+    box-shadow: 0 6px 20px var(--ombre);
     opacity: 0;
     transform: translateY(-10px) scale(0.94);
     transition: opacity 0.32s ease, transform 0.4s cubic-bezier(.2,.8,.3,1.2);
   }
   .bulle-dialogue.in { opacity: 1; transform: translateY(0) scale(1); }
   /* Ancres gauche/droite prêtes pour plus tard (voir note ci-dessus) —
-     inertes tant que le personnage reste centré. */
-  .bulle-dialogue.cote-bek { text-align: right; align-items: flex-end; margin-left: auto; }
-  .bulle-dialogue.cote-keb { text-align: left; align-items: flex-start; margin-right: auto; }
+     vraiment inertes maintenant tant que .perso-decale n'est pas posé. */
+  .bulle-dialogue.perso-decale.cote-bek { text-align: right; align-items: flex-end; margin-left: auto; }
+  .bulle-dialogue.perso-decale.cote-keb { text-align: left; align-items: flex-start; margin-right: auto; }
 
   .bulle-dialogue-fr {
     font-family: 'Baloo 2', sans-serif;
@@ -740,7 +755,6 @@
     font-size: clamp(1.55rem, 6.5vw, 2.3rem);
     line-height: 1.08;
     color: var(--brun-fonce);
-    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
   }
   /* Ponctuation expressive teintée pêche (…, ?, !) — voir
      accentuerPonctuation() en JS, appliquée juste après que
@@ -1131,7 +1145,8 @@
   .grammaire-item.in { opacity: 1; max-height: 160px; padding: 10px 14px; overflow: visible; }
 
   @media (max-width: 460px) {
-    .bulle-dialogue { font-size: 0.95rem; padding: 10px 14px; }
+    .bulle-dialogue { padding: 11px 18px; }
+    .bulle-dialogue-fr { font-size: clamp(1.3rem, 7vw, 1.9rem); }
     .nav-bouton { padding: 9px 16px; font-size: 0.88rem; }
   }
 </style>

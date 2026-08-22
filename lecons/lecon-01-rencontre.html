@@ -1442,6 +1442,18 @@
   // flash blanc, apparition du personnage choisi, léger balancement
   // désorienté (.perso-deboussole) pendant une pause SANS texte — le
   // personnage ne parle pas encore, il découvre juste qu'il existe.
+  // 🆕 (session 22-08-2026, suite) DEUX correctifs appliqués ici même :
+  //   1. .intro-image-personnage était déjà écrite en CSS (plafonne la
+  //      taille au lieu du plein écran) mais jamais ajoutée en JS — Keb
+  //      apparaissait donc géant. Ajoutée ci-dessous, une fois pour
+  //      toutes pour le reste de la séquence plein écran (elle reste en
+  //      place pendant jouerBeats() juste après, qui réutilise la même
+  //      #introImage).
+  //   2. Enchaîne maintenant sur jouerBeats() (confus → "je suis où ?"
+  //      → cherche son ami → l'appelle) au lieu de sauter direct à la
+  //      main qui salue — c'est la séquence que Raphaël avait décrite
+  //      et que les données (IMAGES_PERSO.confus/je_suis_ou/ou_est_ami/
+  //      appelle_ami) et le CSS (.intro-legende) attendaient déjà.
   async function reveilPersonnage() {
     const reduireMouvement = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     elIntroPleinEcran.classList.remove('intro-noir');
@@ -1449,25 +1461,86 @@
     elFlashApparition.classList.remove('jouer');
     void elFlashApparition.offsetWidth; // force le reflow pour pouvoir rejouer l'animation d'une leçon à l'autre
     elFlashApparition.classList.add('jouer');
+    elIntroImage.classList.add('intro-image-personnage');
     elIntroImage.innerHTML = '';
     elIntroImage.appendChild(creerImage(imagePersonnageActuel()));
     elIntroImage.style.opacity = '1';
     elIntroImage.classList.add('perso-deboussole');
-    await attendre(reduireMouvement ? 30 : 1800);
+    await attendre(reduireMouvement ? 30 : 1200);
+
+    const nomAutre = personnageChoisi === 'Bek' ? 'Keb' : 'Bek';
+    await jouerBeats(nomAutre);
+  }
+
+  // 🆕 (session 22-08-2026, suite) Séquence de désorientation —
+  // "confus" → "Je suis où ?" → "Où est [ami] ?" → l'appelle deux fois,
+  // sans réponse (voir #introLegende/.intro-legende en CSS et HTML,
+  // déjà prêts mais jamais utilisés jusqu'ici). Contrairement à
+  // jouerGenese() (chronométrée, muette), on avance ici au TAP — il y a
+  // du texte à lire, comme annoncé par le commentaire CSS de
+  // .intro-legende. .perso-deboussole reste actif tout du long (retiré
+  // seulement au clic sur la main, dans attendreSalutMain()) : le
+  // personnage est toujours désorienté pendant qu'il cherche et appelle.
+  const BEATS_DESORIENTATION = [
+    { cle: 'confus', fr: 'Hmm\u2026 ?', en: 'Hmm\u2026?' },
+    { cle: 'je_suis_ou', fr: 'Je suis o\u00f9\u00a0?', en: 'Where am I?' },
+    { cle: 'ou_est_ami',
+      fr: function (nomAutre) { return 'O\u00f9 est ' + nomAutre + '\u00a0?'; },
+      en: function (nomAutre) { return 'Where is ' + nomAutre + '?'; } },
+    { cle: 'appelle_ami',
+      fr: function (nomAutre) { return nomAutre + '\u00a0? ' + nomAutre + '\u00a0?'; },
+      en: function (nomAutre) { return nomAutre + '? ' + nomAutre + '?'; } }
+  ];
+
+  function attendreTapIntro() {
+    return new Promise(function (resolve) {
+      function surTap() {
+        elIntroPleinEcran.removeEventListener('click', surTap);
+        resolve();
+      }
+      elIntroPleinEcran.addEventListener('click', surTap);
+    });
+  }
+
+  async function jouerBeats(nomAutre) {
+    for (let i = 0; i < BEATS_DESORIENTATION.length; i++) {
+      const beat = BEATS_DESORIENTATION[i];
+      elIntroLegende.classList.remove('visible');
+      elIntroImage.innerHTML = '';
+      elIntroImage.appendChild(creerImage(imagePerso(beat.cle)));
+      const texteFr = typeof beat.fr === 'function' ? beat.fr(nomAutre) : beat.fr;
+      const texteEn = typeof beat.en === 'function' ? beat.en(nomAutre) : beat.en;
+      elIntroLegende.innerHTML = '<div class="intro-legende-fr">' + texteFr + '</div>' +
+        '<div class="intro-legende-trad">' + texteEn + '</div>';
+      requestAnimationFrame(function () { elIntroLegende.classList.add('visible'); });
+      await attendreTapIntro();
+    }
+    elIntroLegende.classList.remove('visible');
   }
 
   // Main qui salue — cliquable, ondule doucement pour signaler qu'elle
   // attend un geste. Le clic MIME notre salut ; c'est ce qui fait que
   // le personnage nous "voit" et lance sa première réplique.
+  // 🆕 (session 22-08-2026, suite) "Bonjour !" (#mainSalueBonjour) était
+  // déjà dans le HTML/CSS, prêt avec sa classe .visible, mais jamais
+  // affiché — le clic résolvait tout de suite sans qu'on ait le temps
+  // de le voir. Ajouté ci-dessous : le mot apparaît brièvement au clic,
+  // PUIS la promesse se résout (petit délai, raccourci si
+  // prefers-reduced-motion).
   function attendreSalutMain() {
+    const reduireMouvement = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     return new Promise(function (resolve) {
       document.getElementById('imageMainSalue').appendChild(creerImage('main-neutre_salue_01.webp'));
       elBtnMainSalue.classList.add('visible');
       elBtnMainSalue.addEventListener('click', function surClic() {
         elBtnMainSalue.removeEventListener('click', surClic);
-        elBtnMainSalue.classList.remove('visible');
-        elIntroImage.classList.remove('perso-deboussole');
-        resolve();
+        elMainSalueBonjour.classList.add('visible');
+        setTimeout(function () {
+          elBtnMainSalue.classList.remove('visible');
+          elMainSalueBonjour.classList.remove('visible');
+          elIntroImage.classList.remove('perso-deboussole');
+          resolve();
+        }, reduireMouvement ? 100 : 700);
       }, { once: true });
     });
   }
@@ -1885,9 +1958,10 @@
   // la genèse ET l'écran d'achat, jamais réaffiché une seconde fois à
   // qui a déjà un personnage. Sinon, déroulement complet : titre + noir
   // (jouerGenese) → écran de choix (ecranChoixPersonnage, "achat" à
-  // 0 P$/0 PB) → réveil du personnage choisi (reveilPersonnage) → main
-  // qui salue (attendreSalutMain) → dialogue (rendreEtape, construit
-  // par etapesDialogue() maintenant que personnageChoisi est connu).
+  // 0 P$/0 PB) → réveil + désorientation du personnage choisi
+  // (reveilPersonnage, qui enchaîne lui-même sur jouerBeats) → main qui
+  // salue (attendreSalutMain) → dialogue (rendreEtape, construit par
+  // etapesDialogue() maintenant que personnageChoisi est connu).
   async function demarrerLecon() {
     const dejaChoisi = window.KebBekProgression
       ? await window.KebBekProgression.lirePersonnageChoisi().catch(function () { return null; })
@@ -1908,6 +1982,7 @@
         // l'animation, plutôt que de planter sur personnageChoisi vide.
         await ecranChoixPersonnage();
         elIntroPleinEcran.classList.remove('intro-noir');
+        elIntroImage.classList.add('intro-image-personnage');
         elIntroImage.innerHTML = '';
         elIntroImage.appendChild(creerImage(imagePersonnageActuel()));
         elIntroImage.style.opacity = '1';

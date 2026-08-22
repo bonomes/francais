@@ -1691,10 +1691,10 @@
     // transition ne se sentait pas naturelle sans lui. `flash: true`
     // rejoue #flashApparition juste avant d'afficher l'image de CE
     // beat (voir jouerBeats()) pour simuler l'éblouissement.
-    // ⚠️ TEXTE PROVISOIRE — à valider par Raphaël (voir narratif) :
-    // proposé pour rester cohérent avec le ton bref et non verbal des
-    // autres beats, jamais confirmé comme réplique canonique.
-    { cle: 'ebloui', flash: true, fr: 'Aïe\u2026 la lumi\u00e8re\u00a0!', en: 'Ow\u2026 the light!' },
+    // Pas de réplique ici (retour Raphaël, 22-08-2026) : juste le
+    // flash + l'image, aucun texte inventé — voir plus bas dans
+    // jouerBeats(), la légende n'est affichée que si fr/en existent.
+    { cle: 'ebloui', flash: true },
     { cle: 'confus', fr: 'Hmm\u2026 ?', en: 'Hmm\u2026?' },
     { cle: 'je_suis_ou', fr: 'Je suis o\u00f9\u00a0?', en: 'Where am I?' },
     { cle: 'ou_est_ami',
@@ -1753,11 +1753,16 @@
       }
       elIntroImage.innerHTML = '';
       elIntroImage.appendChild(creerImage(imagePerso(beat.cle)));
-      const texteFr = typeof beat.fr === 'function' ? beat.fr(nomAutre) : beat.fr;
-      const texteEn = typeof beat.en === 'function' ? beat.en(nomAutre) : beat.en;
-      elIntroLegende.innerHTML = '<div class="intro-legende-fr">' + texteFr + '</div>' +
-        '<div class="intro-legende-trad">' + texteEn + '</div>';
-      requestAnimationFrame(function () { elIntroLegende.classList.add('visible'); });
+      // 🆕 (Raphaël, 22-08-2026, session de reprise) beat.fr est absent
+      // pour 'ebloui' (pas de réplique voulue, juste flash + image) —
+      // on laisse alors la légende vide plutôt que d'afficher "undefined".
+      if (beat.fr) {
+        const texteFr = typeof beat.fr === 'function' ? beat.fr(nomAutre) : beat.fr;
+        const texteEn = typeof beat.en === 'function' ? beat.en(nomAutre) : beat.en;
+        elIntroLegende.innerHTML = '<div class="intro-legende-fr">' + texteFr + '</div>' +
+          '<div class="intro-legende-trad">' + texteEn + '</div>';
+        requestAnimationFrame(function () { elIntroLegende.classList.add('visible'); });
+      }
       sauvegarderPositionIntro(i);
       await attendreTapIntro();
     }

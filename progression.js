@@ -548,6 +548,152 @@
     return personnageChoisiInviteLocal();
   }
 
+  // ---------- Position dans une leçon (reprise exacte) ----------
+  //
+  // 🆕 AJOUT (retour Raphaël, 22-08-2026) : "quand on sort de la leçon,
+  // on doit reprendre exactement là où on l'avait laissée" — jusqu'ici
+  // seul choisirPersonnageInitial()/lirePersonnageChoisi() étaient
+  // sauvegardés (le PERSONNAGE), pas l'ÉTAPE en cours dans le dialogue
+  // ni les réponses déjà données (prénom, niveau, etc.) : une leçon
+  // quittée en cours de route recommençait tout le dialogue depuis le
+  // début à chaque retour. Même symétrie compte/invité que
+  // marquerChapitreComplete()/choisirPersonnageInitial() ci-dessus.
+  //
+  // Une position est TOUJOURS relative à un chapitre_id (une leçon peut
+  // vouloir en sauvegarder plusieurs à des moments différents — même
+  // convention que progression_chapitres) : { [chapitre_id]:
+  // { etape, reponses } }. `reponses` est stocké tel quel (objet
+  // arbitraire propre à chaque leçon, ex. { prenom, parleFrancais,
+  // niveau, ... } pour r1) — ce module n'a pas à connaître sa forme.
+  //
+  // ⚠️ SUPPOSE deux fonctions RPC côté Supabase, pas encore confirmées
+  // par introspection du schéma (même statut que attribuer_recompense_
+  // premiere_fois plus haut) :
+  //   - enregistrer_position_lecon(p_eleve_id, p_chapitre_id, p_etape,
+  //     p_reponses jsonb) — upsert, écrase la position précédente pour
+  //     ce chapitre_id.
+  //   - lire_position_lecon(p_eleve_id, p_chapitre_id) — renvoie une
+  //     ligne { etape, reponses } ou aucune ligne si jamais sauvegardée.
+  // Tant que ces RPC n'existent pas côté Supabase, l'appel échoue
+  // proprement (console.warn, jamais d'exception qui remonte) — un
+  // compte se comporte alors, pour cette seule fonctionnalité, comme
+  // s'il n'avait jamais quitté la leçon en cours de route (repli sûr,
+  // pas bloquant). Voir bravo_schema à mettre à jour.
+  //
+  // Écriture volontairement "silencieuse" (pas de récompense, pas de
+  // notion de première fois) : appelée à CHAQUE changement d'étape,
+  // donc doit rester bon marché et jamais faire échouer la leçon en
+  // cas de souci réseau.
+
+  const CLE_POSITION_LECON_INVITE = 'kebbek_position_lecon_invite'; // { [chapitre_id]: { etape, reponses } }
+
+  function positionsLeconInviteLocales() {
+    try { return JSON.parse(localStorage.getItem(CLE_POSITION_LECON_INVITE) || '{}'); }
+    catch (e) { return {}; }
+  }
+
+  function enregistrerPositionLeconInvite(chapitreId, etape, reponses) {
+    const p = positionsLeconInviteLocales();
+    p[chapitreId] = { etape: etape, reponses: reponses || {} };
+    try {
+      localStorage.setItem(CLE_POSITION_LECON_INVITE, JSON.stringify(p));
+      return true;
+    } catch (e) {
+      console.warn('progression.js : enregistrerPositionLeconInvite a échoué (localStorage indisponible ou plein).', e);
+      return false;
+    }
+  }
+
+  async function enregistrerPositionLecon(chapitreId, etape, reponses) {
+    if (sessionActuelle && profilActifId && clientSupabase) {
+      try {
+        const { error } = await clientSupabase.rpc('enregistrer_position_lecon', {
+          p_eleve_id: profilActifId,
+          p_chapitre_id: chapitreId,
+          p_etape: etape,
+          p_reponses: reponses || {}
+        });
+        if (error) { console.warn('progression.js : enregistrerPositionLecon (compte) a échoué (RPC pas encore créée côté Supabase ?).', error); return false; }
+        return true;
+      } catch (e) {
+        console.warn('progression.js : enregistrerPositionLecon a échoué.', e);
+        return false;
+      }
+    }
+    return enregistrerPositionLeconInvite(chapitreId, etape, reponses);
+  }
+
+  // Renvoie { etape, reponses } ou null si rien n'a jamais été
+  // sauvegardé pour ce chapitre_id — la page hôte traite null comme
+  // "démarrer depuis le début", jamais une erreur bloquante.
+  async function lirePositionLecon(chapitreId) {
+    if (sessionActuelle && profilActifId && clientSupabase) {
+      try {
+        const { data, error } = await clientSupabase.rpc('lire_position_lecon', {
+          p_eleve_id: profilActifId,
+          p_chapitre_id: chapitreId
+        });
+        if (error) { console.warn('progression.js : lirePositionLecon (compte) a échoué (RPC pas encore créée côté Supabase ?).', error); return null; }
+        const ligne = data && data[0];
+        if (!ligne) return null;
+        return { etape: ligne.etape, reponses: ligne.reponses || {} };
+      } catch (e) {
+        console.warn('progression.js : lirePositionLecon a échoué.', e);
+        return null;
+      }
+    }
+    const p = positionsLeconInviteLocales();
+    return p[chapitreId] || null;
+  }
+
+  // À appeler quand la leçon est TERMINÉE (voir marquerChapitreComplete
+  // juste avant) — la position en cours n'a plus de sens une fois le
+  // chapitre complété, jamais réutilisée pour un futur rejeu volontaire.
+  // Best-effort comme le reste de ce bloc : un échec ici n'empêche
+  // jamais de continuer (la pire conséquence est une position obsolète
+  // qui traîne, pas une leçon bloquée).
+  async function effacerPositionLecon(chapitreId) {
+    if (sessionActuelle && profilActifId && clientSupabase) {
+      try {
+        const { error } = await clientSupabase.rpc('effacer_position_lecon', {
+          p_eleve_id: profilActifId,
+          p_chapitre_id: chapitreId
+        });
+        if (error) console.warn('progression.js : effacerPositionLecon (compte) a échoué (RPC pas encore créée côté Supabase ?).', error);
+      } catch (e) {
+        console.warn('progression.js : effacerPositionLecon a échoué.', e);
+      }
+      return;
+    }
+    const p = positionsLeconInviteLocales();
+    if (p[chapitreId]) {
+      delete p[chapitreId];
+      try { localStorage.setItem(CLE_POSITION_LECON_INVITE, JSON.stringify(p)); } catch (e) {}
+    }
+  }
+
+  // Symétrique des autres migrations invité → compte ci-dessous — à
+  // appeler dans la même séquence (juste après migrerPersonnageInviteVersCompte(),
+  // par exemple), UNE SEULE FOIS après un creerProfil() réussi. Migre
+  // TOUTES les positions de leçon en attente (potentiellement plusieurs
+  // chapitres), pas seulement celle du chapitre courant.
+  async function migrerPositionsLeconInviteVersCompte(eleveId) {
+    const locales = positionsLeconInviteLocales();
+    const ids = Object.keys(locales);
+    if (ids.length === 0 || !clientSupabase) return;
+    const ancienProfil = profilActifId;
+    profilActifId = eleveId;
+    try {
+      for (const chapitreId of ids) {
+        try { await enregistrerPositionLecon(chapitreId, locales[chapitreId].etape, locales[chapitreId].reponses); }
+        catch (e) { console.warn('progression.js : échec de migration de position pour', chapitreId, e); }
+      }
+    } finally {
+      profilActifId = ancienProfil;
+    }
+    localStorage.removeItem(CLE_POSITION_LECON_INVITE);
+  }
+
   // ---------- Migration invité → compte ----------
   //
   // À appeler UNE SEULE FOIS, immédiatement après un creerProfil() réussi
@@ -730,6 +876,10 @@
     choisirPersonnageInitial,
     lirePersonnageChoisi,
     migrerPersonnageInviteVersCompte,
+    enregistrerPositionLecon,
+    lirePositionLecon,
+    effacerPositionLecon,
+    migrerPositionsLeconInviteVersCompte,
     attribuerRecompensePremiereFois,
     migrerProgressionInviteVersCompte,
     lireIdentite,

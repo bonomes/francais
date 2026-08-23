@@ -2683,13 +2683,17 @@
     });
   }
 
-  // 🆕 (retour Raphaël, 23-08-2026) Autocollant de félicitation plein
-  // écran — voir felicitations.js. `piasses` vient déjà du bon calcul
-  // ailleurs (2 = réussi du premier coup, 1 = du deuxième coup, jamais
-  // appelé au-delà) donc c'est directement le paramètre `coup` attendu
-  // par feter(). `reponses.genreEleve` peut être déjà connu même avant
-  // l'étape 'genre' de CETTE leçon si l'élève est un·e habitué·e — voir
-  // le préchargement silencieux ajouté dans demarrerLecon().
+  // 🆕 (retour Raphaël, 23-08-2026 ; correctif 23-08-2026 suite) Autocollant
+  // de félicitation plein écran — voir felicitations.js. ATTENTION :
+  // `piasses` est un MONTANT de récompense (2 P$ ou 1 P$), pas un numéro
+  // de coup — confusion corrigée ici après un retour terrain (l'élève
+  // recevait l'image "premier coup" en cas d'ÉCHEC suivi de réussite, et
+  // l'image "deuxième coup" en cas de réussite immédiate — exactement
+  // inversé). Le mapping correct : piasses===2 (récompense pleine, donc
+  // réussi SANS aucun raté) → coup 1 ; piasses===1 (récompense réduite,
+  // donc réussi après un raté) → coup 2. `reponses.genreEleve` peut être
+  // déjà connu même avant l'étape 'genre' de CETTE leçon si l'élève est
+  // un·e habitué·e — voir le préchargement silencieux dans demarrerLecon().
   function accorderRecompenseExercice(def, piasses) {
     if (window.KebBekProgression && def.recompense_id) {
       window.KebBekProgression.attribuerRecompensePremiereFois(def.recompense_id, piasses, 0)
@@ -2698,7 +2702,7 @@
     if (window.KebBekFelicitations && (piasses === 1 || piasses === 2)) {
       window.KebBekFelicitations.feter({
         personnage: personnageChoisi,
-        coup: piasses,
+        coup: piasses === 2 ? 1 : 2,
         genre: reponses.genreEleve
       });
     }

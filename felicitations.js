@@ -34,11 +34,6 @@ window.KebBekFelicitations = (function () {
   // d'autre à toucher).
   const PLAGE_STANDARD = { 1: 9, 2: 8 };
 
-  // ⚠️ Faute de frappe RÉELLE et volontaire à préserver : les fichiers
-  // "exclusif" de Keb sont nommés "Kek" dans le dépôt (pas "Keb"). Ne
-  // JAMAIS "corriger" ceci, ça casserait le lien vers les vrais fichiers.
-  const NOM_FICHIER_EXCLUSIF = { Bek: 'Bek', Keb: 'Kek' };
-
   // Numéros exacts des variantes genrées actuellement dans le dépôt
   // (irrégulier — pas de 01 à 09 propre comme le pool standard, d'où une
   // liste explicite plutôt qu'une simple plage). À compléter au fur et à
@@ -60,10 +55,9 @@ window.KebBekFelicitations = (function () {
       fichiers.push(dossier + '/bravo_' + motCoup + '_' + personnage + '_' + pad2(i) + '.webp');
     }
     if (coup === 1 && (genre === 'm' || genre === 'f')) {
-      const nomExclusif = NOM_FICHIER_EXCLUSIF[personnage];
       const numeros = (EXCLUSIF_PREMIER[personnage] && EXCLUSIF_PREMIER[personnage][genre]) || [];
       numeros.forEach(function (i) {
-        fichiers.push(dossier + '/bravo_' + motCoup + '_' + nomExclusif + '_exclusif-' + genre + '_' + pad2(i) + '.webp');
+        fichiers.push(dossier + '/bravo_' + motCoup + '_' + personnage + '_exclusif-' + genre + '_' + pad2(i) + '.webp');
       });
     }
     return fichiers;

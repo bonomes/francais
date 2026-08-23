@@ -756,6 +756,15 @@
     line-height: 1.08;
     color: var(--brun-fonce);
   }
+  /* 🆕 (Raphaël, reprise de la demande d'origine) "Quand il y aura de
+     plus longues répliques, il faudra penser à réduire la taille." —
+     seuils appliqués par JS (voir tailleBulleSelonLongueur() dans
+     rendreEtape()) sur le nombre de caractères de la réplique affichée,
+     jamais sur le nombre de mots seul (un mot très long compte aussi).
+     Paliers volontairement rapprochés du clamp de base — l'effet doit
+     rester une nuance, pas un changement brutal de registre visuel. */
+  .bulle-dialogue-fr.bulle-taille-moyenne { font-size: clamp(1.25rem, 5.2vw, 1.85rem); }
+  .bulle-dialogue-fr.bulle-taille-longue { font-size: clamp(1.05rem, 4.3vw, 1.5rem); }
   /* Ponctuation expressive teintée pêche (…, ?, !) — voir
      accentuerPonctuation() en JS, appliquée juste après que
      mot-tooltip.js ait construit les mots cliquables. */
@@ -999,6 +1008,80 @@
     .bulle-dialogue-puce { animation: none; opacity: 0.6; }
   }
 
+  /* 🆕 (Raphaël, 23-08-2026, correctif) Geste de personnage pour un
+     exercice QCM précis (ex. "Non.") — même esprit que .main-salue
+     (main cliquable + petite bulle de mot), mais VISIBLE À L'INTÉRIEUR
+     de .cadre-scene (pas en plein écran comme l'intro) : posée dans la
+     marge beige à côté du personnage (object-fit: contain laisse
+     toujours ~30% de marge de chaque côté d'un portrait haut/étroit —
+     voir le commentaire détaillé sur .scene-image img plus haut),
+     JAMAIS sur son visage. Remplace .scene-tap-indicateur pour CETTE
+     étape précise (voir rendreEtape()/revelerExercice() en JS : les
+     deux ne s'affichent jamais ensemble) — la main porte elle-même
+     l'affordance "il y a quelque chose à toucher ici", l'ancien rond
+     pulsé générique n'a plus de raison d'être en double. Positionnée à
+     DROITE par convention (le personnage de cette leçon reste toujours
+     centré, donc aucun risque de chevaucher une bulle-dialogue décalée
+     .perso-decale). */
+  .main-geste {
+    all: unset;
+    box-sizing: border-box;
+    position: absolute;
+    z-index: 4;
+    right: 4%;
+    bottom: 10%;
+    width: min(19vw, 92px);
+    cursor: pointer;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.4s ease;
+  }
+  .main-geste.visible { opacity: 1; pointer-events: auto; }
+  .main-geste-inner {
+    display: block;
+    animation: mainGesteSecoue 1s ease-in-out infinite;
+    transform-origin: 50% 85%;
+  }
+  .main-geste img { width: 100%; display: block; filter: drop-shadow(2px 4px 8px var(--ombre)); }
+  @keyframes mainGesteSecoue {
+    0%, 100% { transform: rotate(0deg); }
+    25% { transform: rotate(-12deg); }
+    75% { transform: rotate(12deg); }
+  }
+  /* Même hiérarchie que .main-salue-bonjour (mot posé au-dessus de la
+     main, fond blanc, ombre marquée) — placée ici au-dessus, jamais en
+     dessous, pour ne jamais finir masquée par #exercicePanneau qui
+     apparaît sous .cadre-scene une fois révélé. */
+  .main-geste-bulle {
+    position: absolute;
+    left: 50%;
+    bottom: 100%;
+    transform: translateX(-50%) translateY(6px);
+    margin-bottom: 8px;
+    white-space: nowrap;
+    font-family: 'Baloo 2', sans-serif;
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: var(--brun-fonce);
+    background: #FFFFFF;
+    border-radius: 999px;
+    padding: 5px 14px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.22);
+  }
+  .main-geste-bulle-trad {
+    display: block;
+    font-weight: 500;
+    font-size: 0.72rem;
+    color: var(--brun-clair);
+    text-align: center;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .main-geste-inner { animation: none; }
+  }
+  @media (max-width: 460px) {
+    .main-geste { right: 3%; bottom: 8%; }
+  }
+
   @media (max-width: 460px) {
     .exercice-mot { font-size: 1.2rem; padding: 5px 18px; }
     .exercice-consigne { font-size: 0.92rem; }
@@ -1147,6 +1230,8 @@
   @media (max-width: 460px) {
     .bulle-dialogue { padding: 11px 18px; }
     .bulle-dialogue-fr { font-size: clamp(1.3rem, 7vw, 1.9rem); }
+    .bulle-dialogue-fr.bulle-taille-moyenne { font-size: clamp(1.1rem, 5.8vw, 1.55rem); }
+    .bulle-dialogue-fr.bulle-taille-longue { font-size: clamp(0.95rem, 4.8vw, 1.3rem); }
     .nav-bouton { padding: 9px 16px; font-size: 0.88rem; }
   }
 </style>
@@ -1215,12 +1300,27 @@
     <div class="zone-bulle-overlay">
       <div class="bulle-dialogue" id="bulleDialogue"></div>
     </div>
+    <!-- 🆕 (Raphaël, 23-08-2026, correctif) Geste de personnage — voir le
+         commentaire CSS détaillé sur .main-geste. Peuplé/affiché
+         seulement quand ETAPES[etape].geste existe (voir rendreEtape()
+         en JS) ; un simple <span> (pas <button>) volontairement : le
+         clic doit rester géré par l'écouteur unique sur .cadre-scene
+         (même comportement "taper n'importe où sur la scène" que pour
+         .scene-tap-indicateur), pas un second gestionnaire redondant. -->
+    <div class="main-geste" id="mainGeste" aria-hidden="true">
+      <span class="main-geste-bulle" id="mainGesteBulle"></span>
+      <span class="main-geste-inner" id="imageMainGeste"></span>
+    </div>
     <!-- 🆕 (Raphaël, 22-08-2026, soir) Indicateur "il y a quelque chose à
          effleurer ici" — affiché UNIQUEMENT le temps qu'un exercice
          (qcm/deduction/prenom) n'a pas encore été déclenché par
          l'élève (voir revelerExercice()/le gestionnaire de clic sur
          .cadre-scene plus bas). Jamais de texte dessus : un simple
-         repère visuel, la scène reste propre. -->
+         repère visuel, la scène reste propre.
+         🆕 (23-08-2026) N'apparaît plus pour une étape qui a son propre
+         .main-geste (voir rendreEtape()) — la main porte alors elle-même
+         l'affordance, doubler avec le rond pulsé générique serait
+         redondant. -->
     <div class="scene-tap-indicateur" id="sceneTapIndicateur" aria-hidden="true" style="display: none;"></div>
   </div>
 
@@ -1320,6 +1420,16 @@
 
 </div>
 
+<!-- 🆕 (Raphaël, 23-08-2026, correctif) OUBLIÉ à la création de cette
+     page : progression.js ET mot-tooltip.js dépendent tous deux du SDK
+     Supabase (window.supabase.createClient — voir le commentaire en
+     tête de progression.js), mais rien ne le chargeait ici. Sans lui,
+     window.KebBekProgression.client reste null en silence : la
+     progression (récompenses, position sauvegardée, personnage choisi)
+     ET la fiche de mot au clic échouaient TOUTES LES DEUX sans aucune
+     erreur visible — d'où "je clique sur un mot, rien n'apparaît".
+     DOIT rester le tout premier <script>, avant progression.js. -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script src="../progression.js"></script>
 <script src="../mot-tooltip.js"></script>
 <script>
@@ -1476,6 +1586,12 @@
       { type: 'texte', speaker: perso, img: imgMamanPapa, texte: nomAutre + " ? Papa ? Maman ?", trad: { en: nomAutre + "? Dad? Mom?" } },
       { type: 'qcm', cle_reponse: 'quiParle', img: imgAttend, recompense_id: 'r1_ex_qui_parle',
         mot_cible: 'Non.',
+        // 🆕 (23-08-2026, correctif) Geste qui donne un CORPS au mot
+        // testé — voir .main-geste en CSS/le commentaire dans
+        // rendreEtape() : sans lui, l'élève ne voyait que le panneau
+        // d'exercice, sans aucun lien visuel avec la scène ("on ne
+        // comprend pas du tout où ce 'non' sort" — retour Raphaël).
+        geste: { img: 'main_non_01.webp', mot: 'Non\u00a0!', trad: 'No!' },
         consigne: { fr: 'Que veut dire ce mot ?', en: 'What does this word mean?' },
         choix: [
           { id: 'oui', correcte: false, fr: 'Oui', en: 'Yes' },
@@ -1662,6 +1778,11 @@
   // directement au dialogue.
   const elReponseQcm = document.getElementById('reponseQcm');
   const elQcmChoix = document.getElementById('qcmChoix');
+  // 🆕 (23-08-2026, correctif) Geste de personnage — voir .main-geste
+  // en CSS/HTML et son peuplement dans rendreEtape() plus bas.
+  const elMainGeste = document.getElementById('mainGeste');
+  const elImageMainGeste = document.getElementById('imageMainGeste');
+  const elMainGesteBulle = document.getElementById('mainGesteBulle');
   const elReponseGenre = document.getElementById('reponseGenre');
 
   // 🆕 (23-08-2026) Panneau exercice + indicateur de tap — voir
@@ -2147,6 +2268,18 @@
   // désynchronisation entre pile-dialogue et pile-grammaire.
   let reconstructionEnCours = false;
 
+  // 🆕 (Raphaël, demande d'origine restée en suspens pendant les
+  // correctifs plus urgents — reprise ici) "la bulle de texte apparaisse
+  // un peu après l'image, pour laisser le temps de voir le personnage."
+  // L'image est déjà posée en tout premier dans rendreEtape() (voir plus
+  // bas) ; la bulle, elle, attend ce court délai avant de s'animer —
+  // minuteurBulle permet d'annuler un délai encore en attente si l'élève
+  // enchaîne les clics Suivant/Précédent plus vite que ce délai lui-même
+  // (sinon une bulle d'une étape déjà quittée pourrait apparaître avec
+  // le contenu de la nouvelle, un flash visuel incohérent).
+  const DELAI_BULLE_APRES_IMAGE = 380;
+  let minuteurBulle = null;
+
   // 🆕 (retour Raphaël, 22-08-2026) Reconstruite pour distinguer QUATRE
   // panneaux possibles (texte/saisie libre/binaire/niveau/prénom) au
   // lieu d'un seul #navDialogue — un seul visible à la fois, déterminé
@@ -2183,6 +2316,20 @@
     dernier.appendChild(accent);
   }
 
+  // 🆕 (Raphaël, reprise de la demande d'origine) Retourne le suffixe de
+  // classe à ajouter à .bulle-dialogue-fr selon la longueur de la
+  // réplique — seuils choisis empiriquement sur les répliques les plus
+  // longues déjà écrites pour cette leçon (ex. "Bek ? Papa ? Maman ?"
+  // reste en taille normale ; une phrase complète avec subordonnée
+  // bascule en taille réduite pour ne jamais forcer un retour à la
+  // ligne qui pousserait la bulle à chevaucher le bas du cadre).
+  function tailleBulleSelonLongueur(texte) {
+    const longueur = (texte || '').length;
+    if (longueur > 55) return ' bulle-taille-longue';
+    if (longueur > 32) return ' bulle-taille-moyenne';
+    return '';
+  }
+
   // 🆕 (Raphaël, 23-08-2026) Un seul indicateur d'état : est-ce que
   // l'élève a déjà tapé pour révéler l'exercice de l'étape COURANTE ?
   // Remis à false à chaque rendreEtape() (voir plus bas), donc jamais
@@ -2208,7 +2355,19 @@
     elReponseBinaire.style.display = (def.type === 'binaire') ? 'flex' : 'none';
     elReponseNiveau.style.display = (def.type === 'niveau') ? 'flex' : 'none';
     elReponseGenre.style.display = (def.type === 'genre') ? 'flex' : 'none';
-    elSceneTapIndicateur.style.display = estExercice ? 'block' : 'none';
+    // 🆕 (23-08-2026, correctif) Le rond pulsé générique s'efface au
+    // profit de .main-geste quand l'étape en a un — les deux ne
+    // portent jamais l'affordance "tapez ici" en même temps.
+    elSceneTapIndicateur.style.display = (estExercice && !def.geste) ? 'block' : 'none';
+    if (def.geste) {
+      elImageMainGeste.innerHTML = '';
+      elImageMainGeste.appendChild(creerImage(def.geste.img));
+      elMainGesteBulle.innerHTML = def.geste.mot +
+        (def.geste.trad ? '<span class="main-geste-bulle-trad">' + def.geste.trad + '</span>' : '');
+      elMainGeste.classList.add('visible');
+    } else {
+      elMainGeste.classList.remove('visible');
+    }
     elExercicePanneau.style.display = 'none';
     elExercicePanneau.classList.remove('in');
     elEtapePrenom.style.display = 'none';
@@ -2220,9 +2379,10 @@
       elBulle.className = 'bulle-dialogue cote-' + def.speaker;
       window.KebBekMotTooltip.fermer();
       elBulle.innerHTML = '';
+      const texteActuel = texteEtape(def);
       const elFr = document.createElement('div');
-      elFr.className = 'bulle-dialogue-fr';
-      elFr.appendChild(window.KebBekMotTooltip.creerMotCliquable(texteEtape(def), CHAPITRE_ID));
+      elFr.className = 'bulle-dialogue-fr' + tailleBulleSelonLongueur(texteActuel);
+      elFr.appendChild(window.KebBekMotTooltip.creerMotCliquable(texteActuel, CHAPITRE_ID));
       accentuerPonctuation(elFr);
       elBulle.appendChild(elFr);
       // 🆕 (Raphaël, 22-08-2026, retour) Traduction de LA RÉPLIQUE
@@ -2244,7 +2404,18 @@
         elPuce.className = 'bulle-dialogue-puce' + (traductionsVisiblesParDefaut ? ' cachee' : '');
         elBulle.appendChild(elPuce);
       }
-      requestAnimationFrame(() => requestAnimationFrame(() => elBulle.classList.add('in')));
+      // 🆕 (Raphaël, reprise de la demande d'origine) Reconstruction de
+      // l'historique (reprise de session) : la bulle doit refléter l'état
+      // final tout de suite, jamais rejouer ce petit délai d'entrée à
+      // chaque page qui se recharge — seule une VRAIE nouvelle réplique,
+      // vue pour la première fois dans cette session d'affichage, mérite
+      // d'attendre que le personnage soit vu avant le texte.
+      clearTimeout(minuteurBulle);
+      if (reconstructionEnCours) {
+        elBulle.classList.add('in');
+      } else {
+        minuteurBulle = setTimeout(function () { elBulle.classList.add('in'); }, DELAI_BULLE_APRES_IMAGE);
+      }
       if (!reconstructionEnCours) {
         ajouterLigneDialogue(def);
         ajouterNoteGrammaire(def);
@@ -2258,6 +2429,7 @@
       // l'exercice vit dans #exercicePanneau, révélé par revelerExercice()
       // seulement au clic — voir le gestionnaire sur .cadre-scene plus
       // bas.
+      clearTimeout(minuteurBulle);
       elBulle.classList.remove('in');
       elBulle.innerHTML = '';
     } else if (def.type === 'genre') {
@@ -2737,6 +2909,29 @@
   // salue (attendreSalutMain) → dialogue (rendreEtape, construit par
   // etapesDialogue() maintenant que personnageChoisi est connu).
   async function demarrerLecon() {
+    // 🆕 (23-08-2026, correctif) MANQUAIT ENTIÈREMENT sur cette page :
+    // aucune fonction de progression.js ne crée le client Supabase tant
+    // que restaurerSessionEtProfil()/initSession() n'a pas été appelée
+    // au moins une fois (voir clientOuAutoCree() dans progression.js) —
+    // et lirePersonnageChoisi() ci-dessous, en mode invité, retombe
+    // directement sur le localStorage SANS jamais déclencher cette
+    // création. Résultat en cascade, silencieux de bout en bout :
+    // window.KebBekProgression.client restait null même une fois le
+    // SDK Supabase chargé (voir le <script> ajouté en tête de page),
+    // et mot-tooltip.js échouait donc à chaque clic sur un mot. Cet
+    // appel est exactement celui documenté en tête de progression.js
+    // comme requis pour "toute future leçon" — oublié à la création de
+    // cette page. Best-effort (jamais d'exception qui bloque la leçon,
+    // voir le try/catch interne de restaurerSessionEtProfil()) : un
+    // élève resté invité continue de fonctionner normalement, avec un
+    // client Supabase anonyme quand même disponible pour les lectures
+    // publiques (dictionnaire de mots).
+    if (window.KebBekProgression) {
+      await window.KebBekProgression.restaurerSessionEtProfil().catch(function (e) {
+        console.warn('lecon-01-rencontre.html : échec de restaurerSessionEtProfil.', e);
+      });
+    }
+
     const dejaChoisi = window.KebBekProgression
       ? await window.KebBekProgression.lirePersonnageChoisi().catch(function () { return null; })
       : null;

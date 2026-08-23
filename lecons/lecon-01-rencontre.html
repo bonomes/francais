@@ -108,6 +108,7 @@
      ================================================================== -->
 <link rel="stylesheet" href="../sac-a-dos.css">
 <link rel="stylesheet" href="../mot-tooltip.css">
+<link rel="stylesheet" href="../felicitations.css">
 <!-- 🆕 lecon-intro.css / .js volontairement NON chargés ici — cette
      leçon a sa propre séquence d'ouverture plein écran auto-suffisante
      (voir #introPleinEcran, GENESE, jouerGenese() plus bas), fond noir,
@@ -1491,6 +1492,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script src="../progression.js"></script>
 <script src="../mot-tooltip.js"></script>
+<script src="../felicitations.js"></script>
 <script>
 (function () {
   'use strict';
@@ -2681,10 +2683,24 @@
     });
   }
 
+  // 🆕 (retour Raphaël, 23-08-2026) Autocollant de félicitation plein
+  // écran — voir felicitations.js. `piasses` vient déjà du bon calcul
+  // ailleurs (2 = réussi du premier coup, 1 = du deuxième coup, jamais
+  // appelé au-delà) donc c'est directement le paramètre `coup` attendu
+  // par feter(). `reponses.genreEleve` peut être déjà connu même avant
+  // l'étape 'genre' de CETTE leçon si l'élève est un·e habitué·e — voir
+  // le préchargement silencieux ajouté dans demarrerLecon().
   function accorderRecompenseExercice(def, piasses) {
     if (window.KebBekProgression && def.recompense_id) {
       window.KebBekProgression.attribuerRecompensePremiereFois(def.recompense_id, piasses, 0)
         .catch(function (e) { console.warn('lecon-01-rencontre.html : récompense d\u2019exercice a échoué.', e); });
+    }
+    if (window.KebBekFelicitations && (piasses === 1 || piasses === 2)) {
+      window.KebBekFelicitations.feter({
+        personnage: personnageChoisi,
+        coup: piasses,
+        genre: reponses.genreEleve
+      });
     }
   }
 
@@ -3048,6 +3064,21 @@
       await window.KebBekProgression.restaurerSessionEtProfil().catch(function (e) {
         console.warn('lecon-01-rencontre.html : échec de restaurerSessionEtProfil.', e);
       });
+    }
+
+    // 🆕 (retour Raphaël, 23-08-2026) Précharge silencieusement le genre
+    // de l'élève, SI déjà connu (élève qui revient), pour que les
+    // félicitations "exclusif-m/f" (voir felicitations.js et
+    // accorderRecompenseExercice()) puissent s'appliquer dès le tout
+    // premier exercice de la leçon — pas seulement après l'étape 'genre'
+    // de CETTE leçon en particulier, qui vient tard dans le scénario.
+    // Best-effort, comme le reste : un échec ici n'empêche jamais la
+    // leçon de démarrer, l'élève retombe simplement sur les autocollans
+    // non genrés (voir reponses.genreEleve, déjà null par défaut).
+    if (window.KebBekProgression) {
+      window.KebBekProgression.lireIdentite().then(function (identite) {
+        if (identite && identite.genre) reponses.genreEleve = identite.genre;
+      }).catch(function () {});
     }
 
     const dejaChoisi = window.KebBekProgression

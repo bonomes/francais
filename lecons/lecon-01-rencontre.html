@@ -1082,22 +1082,27 @@
     .main-geste { right: 3%; bottom: 8%; }
   }
 
-  /* 🆕 (retour Raphaël) Nuage de réflexion — remplace .scene-tap-
-     indicateur pour l'étape 'prenom' (voir def.reflexion dans
-     rendreEtape()). Positionné en HAUT, dans la marge (même logique de
-     ~30% de marge de chaque côté d'un portrait haut/étroit en
-     object-fit:contain que .main-geste — voir son commentaire détaillé
-     plus haut), donc toujours près de la tête sans jamais la couvrir,
-     quel que soit le portrait. Flotte doucement plutôt que de trembler
-     (secousse déjà prise par la main "Non") — un nuage de pensée qui
-     s'agite nerveusement serait un contresens. */
+  /* 🆕 (retour Raphaël, 23-08-2026, correctif position) Nuage de
+     réflexion — remplace .scene-tap-indicateur pour l'étape 'prenom'
+     (voir def.reflexion dans rendreEtape()). Repositionné en BAS, au
+     MÊME endroit que .main-geste (voir son commentaire détaillé plus
+     haut) — plus haut, dans la marge du haut, la bulle flottait sans
+     aucun ancrage visuel évident ("on ne sait pas pourquoi elle se
+     trouve là", retour Raphaël). En bas, dans la même zone que la main
+     "Non", l'élève associe déjà cet endroit à "il y a quelque chose
+     d'interactif ici" — cohérence entre les deux exercices plutôt
+     qu'une nouvelle zone à apprendre. Le "?" dans le nuage a aussi été
+     retiré : l'image elle-même (nuage de pensée) porte déjà tout le
+     sens, le "?" surimposé était redondant. Flotte doucement plutôt que
+     de trembler (secousse déjà prise par la main "Non") — un nuage de
+     pensée qui s'agite nerveusement serait un contresens. */
   .main-reflexion {
     all: unset;
     box-sizing: border-box;
     position: absolute;
     z-index: 4;
     right: 4%;
-    top: 6%;
+    bottom: 10%;
     width: min(23vw, 110px);
     cursor: pointer;
     opacity: 0;
@@ -1111,22 +1116,6 @@
     animation: reflexionFlotte 2.6s ease-in-out infinite;
   }
   .main-reflexion-inner img { width: 100%; display: block; filter: drop-shadow(2px 4px 8px var(--ombre)); }
-  /* Le "?" flotte au centre optique de la forme du nuage, pas du cadre
-     image complet (qui inclut la petite traîne de bulles en bas) — d'où
-     le padding-bottom qui recentre visuellement vers le haut du visuel. */
-  .main-reflexion-inner::after {
-    content: '?';
-    position: absolute;
-    inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding-bottom: 16%;
-    font-family: 'Baloo 2', sans-serif;
-    font-weight: 800;
-    font-size: 1.7rem;
-    color: var(--peche-fonce);
-  }
   @keyframes reflexionFlotte {
     0%, 100% { transform: translateY(0); }
     50% { transform: translateY(-7px); }
@@ -1135,7 +1124,7 @@
     .main-reflexion-inner { animation: none; }
   }
   @media (max-width: 460px) {
-    .main-reflexion { right: 3%; top: 5%; width: min(25vw, 96px); }
+    .main-reflexion { right: 3%; bottom: 8%; width: min(25vw, 96px); }
   }
 
   @media (max-width: 460px) {
@@ -1680,7 +1669,16 @@
       // champ "prénom" nu. Voir rendreEtape()/soumettrePrenom() plus bas.
       { type: 'prenom', cle_reponse: 'prenom', recompense_id: 'r1_ex_prenom',
         img: imagePerso('alors_tu_es_qui_attente'), reflexion: true,
-        consigne: { fr: 'Comment dit-on « My name is\u2026 » en fran\u00e7ais\u00a0? \u00c9cris la phrase compl\u00e8te.', en: 'How do you say \u201cMy name is\u2026\u201d in French? Write the full sentence.' } },
+        // 🆕 (retour Raphaël, 23-08-2026) Consigne clarifiée : la formulation
+        // précédente ("Écris la phrase complète") laissait croire qu'il
+        // s'agissait d'un simple exercice de traduction — un·e élève
+        // pouvait légitimement traduire mot à mot avec le prénom du
+        // PERSONNAGE ("Je m'appelle Keb") sans comprendre qu'on attend
+        // SON PROPRE prénom à lui/elle (voir extrairePrenomDeTraduction()
+        // plus haut, qui accepte n'importe quel prénom dans le patron —
+        // mécaniquement ça "marchait" déjà, mais le sens de l'exercice
+        // n'était pas clair). Désormais explicite dans les deux langues.
+        consigne: { fr: 'Comment dit-on « My name is\u2026 » en fran\u00e7ais\u00a0? \u00c9cris la phrase compl\u00e8te, avec TON vrai pr\u00e9nom \u00e0 toi\u00a0!', en: 'How do you say \u201cMy name is\u2026\u201d in French? Write the full sentence \u2014 using YOUR OWN real name!' } },
       { type: 'texte', speaker: perso, texte: function (r) { return (r.prenom || '') + ", " + (r.prenom || '') + ", tu parles fran\u00e7ais ?"; },
         trad: { en: function (r) { return (r.prenom || '') + ", " + (r.prenom || '') + ", do you speak French?"; } } },
       { type: 'binaire', cle_reponse: 'parleFrancais' },

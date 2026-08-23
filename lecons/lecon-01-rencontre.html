@@ -1082,6 +1082,62 @@
     .main-geste { right: 3%; bottom: 8%; }
   }
 
+  /* 🆕 (retour Raphaël) Nuage de réflexion — remplace .scene-tap-
+     indicateur pour l'étape 'prenom' (voir def.reflexion dans
+     rendreEtape()). Positionné en HAUT, dans la marge (même logique de
+     ~30% de marge de chaque côté d'un portrait haut/étroit en
+     object-fit:contain que .main-geste — voir son commentaire détaillé
+     plus haut), donc toujours près de la tête sans jamais la couvrir,
+     quel que soit le portrait. Flotte doucement plutôt que de trembler
+     (secousse déjà prise par la main "Non") — un nuage de pensée qui
+     s'agite nerveusement serait un contresens. */
+  .main-reflexion {
+    all: unset;
+    box-sizing: border-box;
+    position: absolute;
+    z-index: 4;
+    right: 4%;
+    top: 6%;
+    width: min(23vw, 110px);
+    cursor: pointer;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.4s ease;
+  }
+  .main-reflexion.visible { opacity: 1; pointer-events: auto; }
+  .main-reflexion-inner {
+    display: block;
+    position: relative;
+    animation: reflexionFlotte 2.6s ease-in-out infinite;
+  }
+  .main-reflexion-inner img { width: 100%; display: block; filter: drop-shadow(2px 4px 8px var(--ombre)); }
+  /* Le "?" flotte au centre optique de la forme du nuage, pas du cadre
+     image complet (qui inclut la petite traîne de bulles en bas) — d'où
+     le padding-bottom qui recentre visuellement vers le haut du visuel. */
+  .main-reflexion-inner::after {
+    content: '?';
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-bottom: 16%;
+    font-family: 'Baloo 2', sans-serif;
+    font-weight: 800;
+    font-size: 1.7rem;
+    color: var(--peche-fonce);
+  }
+  @keyframes reflexionFlotte {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-7px); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .main-reflexion-inner { animation: none; }
+  }
+  @media (max-width: 460px) {
+    .main-reflexion { right: 3%; top: 5%; width: min(25vw, 96px); }
+  }
+
   @media (max-width: 460px) {
     .exercice-mot { font-size: 1.2rem; padding: 5px 18px; }
     .exercice-consigne { font-size: 0.92rem; }
@@ -1310,6 +1366,20 @@
     <div class="main-geste" id="mainGeste" aria-hidden="true">
       <span class="main-geste-bulle" id="mainGesteBulle"></span>
       <span class="main-geste-inner" id="imageMainGeste"></span>
+    </div>
+    <!-- 🆕 (retour Raphaël) Même esprit que .main-geste ci-dessus, mais
+         pour un tout autre besoin : signaler "le personnage attend ta
+         réponse" (étape 'prenom') plutôt que "voici un mot à tester".
+         Un nuage de réflexion vaut mieux ici qu'une main pointée — il
+         n'y a pas UN mot précis à désigner, juste une question en
+         suspens. Voir .main-reflexion en CSS/le commentaire détaillé
+         dans rendreEtape() pour pourquoi ceci remplace aussi
+         .scene-tap-indicateur pour cette étape précise (le rond pulsé
+         générique, centré, tombait mal sur ces portraits pleine
+         hauteur — voir capture fournie par Raphaël, cercle atterrissant
+         entre les jambes du personnage). -->
+    <div class="main-reflexion" id="mainReflexion" aria-hidden="true">
+      <span class="main-reflexion-inner" id="imageMainReflexion"></span>
     </div>
     <!-- 🆕 (Raphaël, 22-08-2026, soir) Indicateur "il y a quelque chose à
          effleurer ici" — affiché UNIQUEMENT le temps qu'un exercice
@@ -1609,6 +1679,7 @@
       // extrairePrenomDeTraduction()) qui fournit le prénom, jamais un
       // champ "prénom" nu. Voir rendreEtape()/soumettrePrenom() plus bas.
       { type: 'prenom', cle_reponse: 'prenom', recompense_id: 'r1_ex_prenom',
+        img: imagePerso('alors_tu_es_qui_attente'), reflexion: true,
         consigne: { fr: 'Comment dit-on « My name is\u2026 » en fran\u00e7ais\u00a0? \u00c9cris la phrase compl\u00e8te.', en: 'How do you say \u201cMy name is\u2026\u201d in French? Write the full sentence.' } },
       { type: 'texte', speaker: perso, texte: function (r) { return (r.prenom || '') + ", " + (r.prenom || '') + ", tu parles fran\u00e7ais ?"; },
         trad: { en: function (r) { return (r.prenom || '') + ", " + (r.prenom || '') + ", do you speak French?"; } } },
@@ -1736,14 +1807,20 @@
     // d'être désorienté. Voir BEATS_DESORIENTATION plus bas (nouveau
     // premier beat, avec rejeu de l'éclat de #flashApparition juste
     // avant lui) et jouerEclatLumineux(). Images fournies par Raphaël.
-    keb: { neutre: 'keb_neutre_01.webp', genere: 'keb_généré_01.webp', bonjour: 'l1_keb_bonjour_01.webp', ebloui: 'l1_keb_ebloui_01.webp', confus: 'l1_keb_confus_01.webp', je_suis_ou: 'l1_keb_je-suis-ou_01.webp', ou_est_ami: 'l1_keb_ou-est-bek_01.webp', appelle_ami: 'l1_keb_bek-bek_01.webp', interpelle: 'l1_keb_interpellé_02.webp', je_mappelle: 'l1_keb_je-m-appelle-Keb_01.webp', maman_papa: 'l1_keb_maman-papa_01.webp', attend: 'l1_keb_attend-r1_01.webp', alors_tu_es_qui: 'l1_keb_alors-tu-es-qui_01.webp' },
+    keb: { neutre: 'keb_neutre_01.webp', genere: 'keb_généré_01.webp', bonjour: 'l1_keb_bonjour_01.webp', ebloui: 'l1_keb_ebloui_01.webp', confus: 'l1_keb_confus_01.webp', je_suis_ou: 'l1_keb_je-suis-ou_01.webp', ou_est_ami: 'l1_keb_ou-est-bek_01.webp', appelle_ami: 'l1_keb_bek-bek_01.webp', interpelle: 'l1_keb_interpellé_02.webp', je_mappelle: 'l1_keb_je-m-appelle-Keb_01.webp', maman_papa: 'l1_keb_maman-papa_01.webp', attend: 'l1_keb_attend-r1_01.webp', alors_tu_es_qui: 'l1_keb_alors-tu-es-qui_01.webp', alors_tu_es_qui_attente: 'l1_keb_alors-tu-es-qui_attente-rp_01.webp' },
     // 🆕 (Raphaël, 22-08-2026) neutre bek_neutre_03.webp (remplace
     // bek_neutre_01.webp — nouvelle version fournie).
-    bek: { neutre: 'bek_neutre_03.webp', genere: 'bek_générée_01.webp', bonjour: 'l1_bek_bonjour_01.webp', ebloui: 'l1_bek_eblouie_01.webp', confus: 'l1_bek_confuse_01.webp', je_suis_ou: 'l1_bek_je-suis-ou_01.webp', ou_est_ami: 'l1_bek_ou-est-keb_01.webp', appelle_ami: 'l1_bek_keb-keb_01.webp', interpelle: 'l1_bek_interpellée_01.webp', je_mappelle: 'l1_bek_je-m-appelle-Bek_01.webp', maman_papa: 'l1_bek_maman-papa_01.webp', attend: 'l1_bek_attend-r1_01.webp', alors_tu_es_qui: 'l1_bek_alors-tu-es-qui_01.webp' }
+    bek: { neutre: 'bek_neutre_03.webp', genere: 'bek_générée_01.webp', bonjour: 'l1_bek_bonjour_01.webp', ebloui: 'l1_bek_eblouie_01.webp', confus: 'l1_bek_confuse_01.webp', je_suis_ou: 'l1_bek_je-suis-ou_01.webp', ou_est_ami: 'l1_bek_ou-est-keb_01.webp', appelle_ami: 'l1_bek_keb-keb_01.webp', interpelle: 'l1_bek_interpellée_01.webp', je_mappelle: 'l1_bek_je-m-appelle-Bek_01.webp', maman_papa: 'l1_bek_maman-papa_01.webp', attend: 'l1_bek_attend-r1_01.webp', alors_tu_es_qui: 'l1_bek_alors-tu-es-qui_01.webp', alors_tu_es_qui_attente: 'l1_bek_alors-tu-es-qui_attente-rp_01.webp' }
     // 🆕 (23-08-2026) clé 'attend' — pose du personnage qui patiente,
     // mains jointes sur la poitrine, PENDANT que l'élève répond à
     // l'exercice QCM "qui parle ?" (voir etapesDialogue()) — remplace la
     // main générique déconnectée qui servait de repli jusqu'ici.
+    // 🆕 (retour Raphaël) clé 'alors_tu_es_qui_attente' — pose "attente
+    // de réponse" (main sur la poitrine, sourcils froncés), utilisée
+    // PENDANT l'exercice 'prenom' (voir etapesDialogue()) — remplace le
+    // rond pulsé générique centré, qui tombait mal sur ces portraits
+    // pleine hauteur (voir .main-reflexion en CSS/le correctif détaillé
+    // dans rendreEtape()).
   };
   function imagePerso(cle) {
     const jeu = IMAGES_PERSO[personnageChoisi === 'Bek' ? 'bek' : 'keb'];
@@ -1783,6 +1860,9 @@
   const elMainGeste = document.getElementById('mainGeste');
   const elImageMainGeste = document.getElementById('imageMainGeste');
   const elMainGesteBulle = document.getElementById('mainGesteBulle');
+  const elMainReflexion = document.getElementById('mainReflexion');
+  const elImageMainReflexion = document.getElementById('imageMainReflexion');
+  const NUAGE_REFLEXION_FICHIER = 'nuage-reflexion.webp';
   const elReponseGenre = document.getElementById('reponseGenre');
 
   // 🆕 (23-08-2026) Panneau exercice + indicateur de tap — voir
@@ -2358,15 +2438,39 @@
     // 🆕 (23-08-2026, correctif) Le rond pulsé générique s'efface au
     // profit de .main-geste quand l'étape en a un — les deux ne
     // portent jamais l'affordance "tapez ici" en même temps.
-    elSceneTapIndicateur.style.display = (estExercice && !def.geste) ? 'block' : 'none';
+    // 🆕 (retour Raphaël) même règle étendue à .main-reflexion (def.
+    // reflexion) : le rond pulsé générique, centré, tombait mal sur les
+    // portraits pleine hauteur de l'étape 'prenom' (atterrissait entre
+    // les jambes du personnage — voir capture fournie).
+    elSceneTapIndicateur.style.display = (estExercice && !def.geste && !def.reflexion) ? 'block' : 'none';
     if (def.geste) {
       elImageMainGeste.innerHTML = '';
       elImageMainGeste.appendChild(creerImage(def.geste.img));
-      elMainGesteBulle.innerHTML = def.geste.mot +
-        (def.geste.trad ? '<span class="main-geste-bulle-trad">' + def.geste.trad + '</span>' : '');
+      // 🐛 CORRIGÉ (retour Raphaël) : la traduction (def.geste.trad,
+      // "No!") s'affichait ICI, sous le mot français, AVANT même que
+      // l'élève ait répondu au QCM "Que veut dire ce mot ?" — l'exercice
+      // qui suit devenait donc vide de sens, la réponse étant déjà
+      // donnée gratuitement dans la bulle du geste. Seul le mot FR est
+      // affiché tant que l'exercice n'est pas résolu ; la traduction
+      // n'apparaît qu'APRÈS une bonne réponse, comme confirmation — voir
+      // reveleerTraductionGeste() dans repondreQcm().
+      elMainGesteBulle.innerHTML = '';
+      elMainGesteBulle.textContent = def.geste.mot;
       elMainGeste.classList.add('visible');
     } else {
       elMainGeste.classList.remove('visible');
+    }
+    // 🆕 (retour Raphaël) Nuage de réflexion — voir .main-reflexion en
+    // CSS. Un seul visuel générique (pas un par personnage, contrairement
+    // à .main-geste) : image posée une seule fois suffit, jamais besoin
+    // de la reconstruire à chaque étape puisqu'elle ne change jamais.
+    if (def.reflexion) {
+      if (!elImageMainReflexion.firstChild) {
+        elImageMainReflexion.appendChild(creerImage(NUAGE_REFLEXION_FICHIER));
+      }
+      elMainReflexion.classList.add('visible');
+    } else {
+      elMainReflexion.classList.remove('visible');
     }
     elExercicePanneau.style.display = 'none';
     elExercicePanneau.classList.remove('in');
@@ -2586,6 +2690,21 @@
     }
   }
 
+  // 🆕 (retour Raphaël) Révèle la traduction du mot du geste (ex. "No!"
+  // sous "Non !") seulement une fois l'exercice résolu — jamais avant,
+  // voir le correctif dans rendreEtape(). Confirmation, pas indice :
+  // l'élève vient de prouver qu'il connaît déjà le mot, la traduction
+  // ne fait que le récompenser/le rassurer, elle n'aide plus personne à
+  // deviner à ce stade. Best-effort silencieux si l'étape n'a pas de
+  // geste (ex. une déduction) ou pas de traduction définie.
+  function reveleerTraductionGeste(def) {
+    if (!def.geste || !def.geste.trad || !elMainGesteBulle) return;
+    const elTrad = document.createElement('span');
+    elTrad.className = 'main-geste-bulle-trad';
+    elTrad.textContent = def.geste.trad;
+    elMainGesteBulle.appendChild(elTrad);
+  }
+
   function repondreQcm(def, choix, btn) {
     if (def.etatExercice.resolu) return;
     if (choix.blague) {
@@ -2598,6 +2717,7 @@
       btn.classList.add('qcm-correct');
       elQcmChoix.querySelectorAll('.bouton-choix').forEach(function (b) { b.disabled = true; });
       accorderRecompenseExercice(def, def.etatExercice.tentatives === 0 ? 2 : 1);
+      reveleerTraductionGeste(def);
       setTimeout(suivant, 650);
     } else {
       def.etatExercice.tentatives += 1;

@@ -745,6 +745,36 @@
     transition: opacity 0.32s ease, transform 0.4s cubic-bezier(.2,.8,.3,1.2);
   }
   .bulle-dialogue.in { opacity: 1; transform: translateY(0) scale(1); }
+
+  /* 🆕 (retour Raphaël, 23-08-2026, capture d'écran réelle sur téléphone)
+     Système différent sur mobile : ancrer la bulle en HAUT fonctionne
+     tant que le cadre a assez de marge au-dessus de la tête du
+     personnage — ce qui n'est PLUS le cas sur un écran étroit. Le cadre
+     garde toujours le même ratio large (aspect-ratio: 1408/768, voir
+     .cadre-scene), mais sur mobile il occupe presque toute la largeur de
+     l'écran ; comme les portraits sont hauts/étroits et calés en
+     object-fit:contain sur la HAUTEUR du cadre, le personnage remplit
+     alors le cadre de haut en bas — sa tête touche quasiment le bord
+     supérieur, exactement là où la bulle est ancrée (padding-top: 7%).
+     Conséquence vue en vrai sur téléphone : le texte recouvre carrément
+     le visage, sans jamais laisser voir l'expression du personnage.
+     Solution : sur mobile, ancrer la bulle en BAS du cadre plutôt qu'en
+     haut. Le bas du portrait, c'est les jambes/les pieds — zone sans
+     aucune valeur expressive, contrairement au visage. Le glissement
+     d'entrée (translateY) est inversé en conséquence : la bulle glisse
+     désormais depuis le BAS plutôt que depuis le haut. Placé APRÈS
+     .bulle-dialogue.in dans la cascade — sinon cette dernière (même
+     spécificité, mais déclarée après) écraserait le transform ci-dessous. */
+  @media (max-width: 460px) {
+    .zone-bulle-overlay {
+      top: auto;
+      bottom: 0;
+      align-items: flex-end;
+      padding: 0 6% 6%;
+    }
+    .bulle-dialogue { transform: translateY(10px) scale(0.94); }
+  }
+
   /* Ancres gauche/droite prêtes pour plus tard (voir note ci-dessus) —
      vraiment inertes maintenant tant que .perso-decale n'est pas posé. */
   .bulle-dialogue.perso-decale.cote-bek { text-align: right; align-items: flex-end; margin-left: auto; }

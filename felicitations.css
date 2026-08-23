@@ -1,0 +1,143 @@
+/* felicitations.css — voir felicitations.js pour la logique. Reprend le
+   vocabulaire de couleurs des leçons (--peche, --peche-fonce, --ombre…)
+   pour rester cohérent visuellement d'une leçon à l'autre. Ce fichier
+   suppose que ces variables sont déjà définies sur :root par la page
+   hôte (c'est le cas de toutes les leçons, voir leur <style> d'entête) ;
+   à défaut, des valeurs de repli raisonnables sont fournies ci-dessous. */
+
+:root {
+  --felicitations-peche-repli: #F0A98B;
+  --felicitations-ombre-repli: rgba(102, 80, 69, 0.16);
+}
+
+.felicitations-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: transparent;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.35s ease, background 0.35s ease;
+}
+.felicitations-overlay.felicitations-visible {
+  opacity: 1;
+  pointer-events: auto;
+  background: radial-gradient(circle,
+    rgba(255, 255, 255, 0.82) 0%,
+    rgba(255, 255, 255, 0.42) 40%,
+    rgba(255, 255, 255, 0) 72%);
+}
+.felicitations-overlay.felicitations-fermeture {
+  opacity: 0;
+  transition: opacity 0.45s ease 0.05s;
+}
+
+/* Rayons de lumière — un simple conic-gradient tournant qui grossit et
+   s'efface, pour l'« effet d'éclat » demandé, sans dizaines d'éléments
+   DOM à animer individuellement. */
+.felicitations-rayons {
+  position: absolute;
+  z-index: 1;
+  width: min(140vw, 1100px);
+  height: min(140vw, 1100px);
+  border-radius: 50%;
+  background: repeating-conic-gradient(
+    from 0deg,
+    var(--peche, var(--felicitations-peche-repli)) 0deg 6deg,
+    transparent 6deg 20deg
+  );
+  opacity: 0;
+  transform: scale(0.25) rotate(0deg);
+  pointer-events: none;
+}
+.felicitations-visible .felicitations-rayons {
+  animation: felicitationsRayons 1.3s cubic-bezier(.2, .7, .3, 1) forwards;
+}
+@keyframes felicitationsRayons {
+  0%   { opacity: 0;    transform: scale(0.25) rotate(0deg); }
+  25%  { opacity: 0.55; }
+  100% { opacity: 0;    transform: scale(1) rotate(28deg); }
+}
+
+/* Petites étincelles qui giclent depuis le centre, une par direction. */
+.felicitations-particules {
+  position: absolute;
+  z-index: 2;
+  inset: 0;
+  pointer-events: none;
+}
+.felicitations-particules span {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 10px;
+  height: 10px;
+  margin: -5px 0 0 -5px;
+  background: var(--peche-fonce, var(--felicitations-peche-repli));
+  clip-path: polygon(50% 0%, 61% 39%, 100% 50%, 61% 61%, 50% 100%, 39% 61%, 0% 50%, 39% 39%);
+  opacity: 0;
+  transform: translate(0, 0) scale(0.4);
+}
+.felicitations-visible .felicitations-particules span {
+  animation: felicitationsEtincelle 0.9s ease-out forwards;
+}
+/* Une direction par étincelle (8 directions autour du centre), avec un
+   petit décalage pour que ça parte en cascade plutôt que d'un coup. */
+.felicitations-particules span:nth-child(1) { --a: 0deg;   animation-delay: 0.02s; }
+.felicitations-particules span:nth-child(2) { --a: 45deg;  animation-delay: 0.06s; }
+.felicitations-particules span:nth-child(3) { --a: 90deg;  animation-delay: 0.00s; }
+.felicitations-particules span:nth-child(4) { --a: 135deg; animation-delay: 0.08s; }
+.felicitations-particules span:nth-child(5) { --a: 180deg; animation-delay: 0.03s; }
+.felicitations-particules span:nth-child(6) { --a: 225deg; animation-delay: 0.10s; }
+.felicitations-particules span:nth-child(7) { --a: 270deg; animation-delay: 0.05s; }
+.felicitations-particules span:nth-child(8) { --a: 315deg; animation-delay: 0.01s; }
+@keyframes felicitationsEtincelle {
+  0%   { opacity: 0;   transform: rotate(var(--a)) translateX(0) scale(0.3); }
+  30%  { opacity: 1;   transform: rotate(var(--a)) translateX(60px) scale(1); }
+  100% { opacity: 0;   transform: rotate(var(--a)) translateX(150px) scale(0.5); }
+}
+
+/* L'autocollant lui-même — surgit avec un petit rebond ("ouverture"),
+   plutôt qu'un simple fondu, pour que ça se sente vivant. */
+.felicitations-image {
+  position: relative;
+  z-index: 3;
+  width: min(60vw, 300px);
+  filter: drop-shadow(0 12px 26px var(--ombre, var(--felicitations-ombre-repli)));
+  opacity: 0;
+  transform: scale(0.2) rotate(-10deg);
+}
+.felicitations-visible .felicitations-image {
+  animation: felicitationsPop 0.6s cubic-bezier(.24, 1.5, .38, 1) forwards;
+  animation-delay: 0.05s;
+}
+.felicitations-fermeture .felicitations-image {
+  animation: felicitationsFerme 0.4s ease forwards;
+}
+@keyframes felicitationsPop {
+  0%   { opacity: 0; transform: scale(0.2) rotate(-10deg); }
+  60%  { opacity: 1; transform: scale(1.1) rotate(4deg); }
+  80%  { transform: scale(0.96) rotate(-2deg); }
+  100% { opacity: 1; transform: scale(1) rotate(0deg); }
+}
+@keyframes felicitationsFerme {
+  0%   { opacity: 1; transform: scale(1) rotate(0deg); }
+  100% { opacity: 0; transform: scale(0.7) rotate(6deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .felicitations-rayons,
+  .felicitations-particules span,
+  .felicitations-image {
+    animation: none !important;
+  }
+  .felicitations-visible .felicitations-image { opacity: 1; transform: none; }
+}
+
+@media (max-width: 460px) {
+  .felicitations-image { width: min(70vw, 260px); }
+}

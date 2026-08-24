@@ -2082,6 +2082,89 @@
     });
   }
 
+  // ==================================================================
+  // 🆕 (demande de Raphaël) Repositionnement du sélecteur de langue selon
+  // l'écran actif :
+  //   - Menu principal : coin supérieur droit, juste à gauche du widget
+  //     "Cours en direct" (#kbwWidget, widget-session-prof.js) s'il existe
+  //     (comptes profs uniquement — sa propre garde interne le crée ou non),
+  //     sinon dans le coin lui-même. Avant ce correctif, le bouton flottait
+  //     à sa position par défaut (left:20px/top:280px, pensée pour l'écran
+  //     d'accueil) au milieu du menu, sans rien à côté de lui.
+  //   - Écran d'accueil : rapproché des personnages plutôt que planté à
+  //     20px du bord de la FENÊTRE — sur un écran large, .personnages-groupe
+  //     (max-width: 900px) est centré dans le viewport, donc l'ancien
+  //     left:20px fixe se retrouvait très loin des personnages, eux
+  //     centrés. Position mesurée dynamiquement via getBoundingClientRect()
+  //     plutôt que recalculée en CSS pur (calc/min) : .personnages-groupe
+  //     est une grille 1fr/auto/1fr dont la répartition exacte des deux
+  //     pistes 1fr dépend du contenu réel de .connexion-choix (voir CSS),
+  //     donc une formule CSS statique se serait vite désynchronisée du
+  //     rendu réel.
+  //   - Séquence identité / mode professeur : position par défaut
+  //     d'origine, inchangée (déjà mesurée pour ces écrans — voir le long
+  //     commentaire CSS sur .selecteur-langue).
+  // Recalculé au redimensionnement de la fenêtre, ainsi qu'à chaque
+  // apparition/disparition du menu, de l'accueil, ou du widget "Cours en
+  // direct" — observé (MutationObserver) plutôt que rappelé explicitement à
+  // chacun des multiples endroits qui bascule ces affichages
+  // (allerAuMenuPrincipal, onRetourAccueil, allerAuModeProfesseur,
+  // demarrerIdentiteSiPremiereFois, demarrerReconnexionDepuisIndex, leurs
+  // onQuitter respectifs…) : plus sûr, ne peut pas être oublié si un futur
+  // endroit vient s'ajouter à cette liste.
+  // ==================================================================
+  const MENU_PRINCIPAL_EL = document.getElementById('menuPrincipal');
+
+  function repositionnerSelecteurLangue() {
+    const menuVisible = MENU_PRINCIPAL_EL.style.display !== 'none';
+    const accueilVisible = sceneRangee.style.display !== 'none';
+
+    zoneApercuGauche.style.left = '';
+
+    if (menuVisible) {
+      const MARGE = 12;
+      const ECART = 10;
+      const widget = document.getElementById('kbwWidget');
+      const decalage = (widget && widget.offsetParent !== null)
+        ? MARGE + widget.getBoundingClientRect().width + ECART
+        : MARGE;
+      zone.style.top = MARGE + 'px';
+      zone.style.left = 'auto';
+      zone.style.right = decalage + 'px';
+    } else if (accueilVisible) {
+      const MARGE = 20;
+      const ECART = 14;
+      const rectPersonnages = personnages.getBoundingClientRect();
+      const gauche = Math.max(MARGE, rectPersonnages.left - ECART - zone.offsetWidth);
+      zone.style.top = '280px';
+      zone.style.right = 'auto';
+      zone.style.left = gauche + 'px';
+      // .zone-apercu-gauche (anneau de survol élargi, voir HTML/CSS) garde
+      // le même rapport -40px que sa position CSS d'origine par rapport au
+      // déclencheur — sans ça, il resterait planté à son ancien left:20px
+      // pendant que le bouton visible, lui, se serait déplacé : l'anneau
+      // ne recouvrirait plus le bouton qu'il est censé élargir.
+      zoneApercuGauche.style.left = (gauche - 40) + 'px';
+    } else {
+      zone.style.top = '';
+      zone.style.left = '';
+      zone.style.right = '';
+    }
+  }
+
+  new MutationObserver(repositionnerSelecteurLangue)
+    .observe(MENU_PRINCIPAL_EL, { attributes: true, attributeFilter: ['style'] });
+  new MutationObserver(repositionnerSelecteurLangue)
+    .observe(sceneRangee, { attributes: true, attributeFilter: ['style'] });
+  // #kbwWidget est ajouté au <body> de façon asynchrone (voir
+  // KebBekWidgetSessionProf.initialiser(), appelé sans await depuis
+  // allerAuMenuPrincipal) — observé pour recaler le sélecteur dès son
+  // apparition, pas seulement au chargement initial de la page.
+  new MutationObserver(repositionnerSelecteurLangue)
+    .observe(document.body, { childList: true });
+  window.addEventListener('resize', repositionnerSelecteurLangue);
+  repositionnerSelecteurLangue();
+
   // 🆕 Petite séquence animée au survol de "Non" : posture normale (01)
   // → bras levé façon salut (02) pendant un court instant → retour à la
   // posture normale (01), pour imiter un mouvement de salutation plutôt

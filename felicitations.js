@@ -34,13 +34,26 @@ window.KebBekFelicitations = (function () {
   // d'autre à toucher).
   const PLAGE_STANDARD = { 1: 9, 2: 8 };
 
+  // 🆕 (retour Raphaël, 24-08-2026, bug repéré en vrai) Numéros qui
+  // MANQUENT dans la plage "standard" ci-dessus malgré la numérotation
+  // continue attendue — évite de générer un lien mort. Repéré : Bek_04
+  // (premier coup) absent du dépôt alors que 01-09 sont sinon complets.
+  // À vider/ajuster si le fichier est un jour ajouté.
+  const MANQUANTS_STANDARD = {
+    1: { Bek: [4], Keb: [] },
+    2: { Bek: [], Keb: [] }
+  };
+
   // Numéros exacts des variantes genrées actuellement dans le dépôt
   // (irrégulier — pas de 01 à 09 propre comme le pool standard, d'où une
   // liste explicite plutôt qu'une simple plage). À compléter au fur et à
   // mesure que de nouvelles variantes sont ajoutées.
+  // 🐛 CORRIGÉ (24-08-2026) : Keb.m était [2, 3] — inversé par erreur
+  // avec les vrais numéros du dépôt, qui sont [1, 3] (le 02 n'existe
+  // pas). Repéré via une capture du dépôt GitHub montrant le lien mort.
   const EXCLUSIF_PREMIER = {
     Bek: { f: [1, 2, 3], m: [] },
-    Keb: { f: [1], m: [2, 3] }
+    Keb: { f: [1], m: [1, 3] }
   };
 
   function pad2(n) { return String(n).padStart(2, '0'); }
@@ -50,8 +63,10 @@ window.KebBekFelicitations = (function () {
     const dossier = coup === 1 ? 'premier' : 'deuxieme';
     const motCoup = coup === 1 ? 'premier-coup' : 'deuxi\u00e8me-coup';
     const n = PLAGE_STANDARD[coup] || 0;
+    const manquants = (MANQUANTS_STANDARD[coup] && MANQUANTS_STANDARD[coup][personnage]) || [];
     const fichiers = [];
     for (let i = 1; i <= n; i++) {
+      if (manquants.indexOf(i) !== -1) continue;
       fichiers.push(dossier + '/bravo_' + motCoup + '_' + personnage + '_' + pad2(i) + '.webp');
     }
     if (coup === 1 && (genre === 'm' || genre === 'f')) {
@@ -109,13 +124,32 @@ window.KebBekFelicitations = (function () {
   function feter(opts) {
     opts = opts || {};
     const pool = construirePool(opts.personnage, opts.coup, opts.genre);
+    if (!pool.length) return; // best-effort : rien à montrer, on n'interrompt rien
     const cle = opts.personnage + '-' + opts.coup;
-    const chemin = tirer(pool, cle);
-    if (!chemin) return; // best-effort : rien à montrer, on n'interrompt rien
+    const premierChoix = tirer(pool, cle);
 
     const overlay = assurerOverlay();
     const img = overlay.querySelector('.felicitations-image');
-    img.src = DOSSIER_BASE + chemin;
+
+    // 🆕 (retour Raphaël, 24-08-2026, bug repéré en vrai) Filet de
+    // sécurité : si le fichier choisi n'existe finalement pas (trou dans
+    // la numérotation côté dépôt — déjà arrivé avec Bek_04 et
+    // Keb_exclusif-m_02, voir MANQUANTS_STANDARD/EXCLUSIF_PREMIER
+    // ci-dessus), on ne laisse JAMAIS l'élève face à un autocollant
+    // invisible : l'image en échec est retirée du tirage et une autre
+    // est retentée, jusqu'à épuisement du pool. Protège contre tout
+    // futur trou qu'on n'aurait pas encore repéré, pas seulement ceux
+    // corrigés aujourd'hui.
+    let restant = pool.slice();
+    img.onerror = function () {
+      restant = restant.filter(function (chemin) { return chemin !== img.dataset.cheminActuel; });
+      if (!restant.length) { img.onerror = null; return; }
+      const suivant = restant[Math.floor(Math.random() * restant.length)];
+      img.dataset.cheminActuel = suivant;
+      img.src = DOSSIER_BASE + suivant;
+    };
+    img.dataset.cheminActuel = premierChoix;
+    img.src = DOSSIER_BASE + premierChoix;
 
     clearTimeout(minuteurFermeture);
     overlay.classList.remove('felicitations-fermeture');

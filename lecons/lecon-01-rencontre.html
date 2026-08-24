@@ -1619,13 +1619,16 @@
   // ?"/"la vraie ?") ou animaux (réaction encore plus précise, propre à
   // chacun). Kaleb et Rebekah restent un cas à part (le "moi dans la
   // vraie vie" derrière Keb/Bek eux-mêmes), avec leur réplique dictée
-  // mot pour mot par Raphaël. TOUT le reste de l'entourage que Bek a pu
-  // dessiner un jour (Victoria, Kloé... même le reste du "trio" au-delà
-  // de la liste ci-dessous) n'a pas de réplique dédiée : Raphaël a
-  // volontairement choisi une réaction générale et unique pour "tous les
-  // noms, sauf exceptions" plutôt que d'improviser des dizaines de
-  // répliques individuelles sur un univers aussi personnel — voir le
-  // repli générique dans texteReflexionNom() plus bas.
+  // mot pour mot par Raphaël.
+  //
+  // 🐛 CORRIGÉ (24-08-2026, retour Raphaël sur un vrai test avec un nom
+  // aléatoire "Baba") : "Ça me dit de quoi… !" N'EST PAS le message par
+  // défaut pour n'importe quel prénom — c'était une mauvaise lecture de
+  // ma part. C'est la réaction pour la liste précise ci-dessous (le
+  // reste de l'entourage que Bek a déjà dessiné, mais dont le souvenir
+  // est plus flou — Victoria, Silvia, etc.). Pour TOUT AUTRE prénom, qui
+  // n'est dans AUCUNE des deux listes, le message reste "Ça ne me dit
+  // rien." — voir texteReflexionNom() plus bas.
   //
   // 🆕 IMPORTANT (retour Raphaël) : la réaction ne redit JAMAIS le
   // prénom lui-même (jamais "Rebecca" en haut puis "Rebekah" en bas —
@@ -1665,6 +1668,16 @@
     { variantes: ['kapitaine'], reaction: { keb: 'Le chien de Keb\u00a0?', bek: 'Le chien de Keb\u00a0?' } }
   ];
 
+  // 🆕 (retour Raphaël, 24-08-2026) Reste de l'entourage que Bek a déjà
+  // dessiné un jour, mais dont le souvenir est plus lointain/flou — pas
+  // de réplique dédiée pour chacun, juste la réaction générique "Ça me
+  // dit de quoi\u2026\u00a0!" (voir texteReflexionNom()). Whoever n'est
+  // dans NI cette liste NI UNIVERS_REBEKAH ci-dessus retombe sur "Ça ne
+  // me dit rien." — le vrai message par défaut.
+  const UNIVERS_REBEKAH_VAGUE = [
+    'victoria', 'silvia', 'hratch', 'giulia', 'alissa', 'olivia', 'alex', 'nagar', 'gregoire'
+  ];
+
   function normaliserNomPourComparaison(valeur) {
     return (valeur || '')
       .normalize('NFD').replace(/[\u0300-\u036f]/g, '') // enlève les accents
@@ -1674,12 +1687,6 @@
   // Renvoie le texte de la légende de pensée (#penseeLegende) pour
   // l'étape `pensee: true` : reconnaît (ou non) le prénom déjà donné par
   // l'élève (reponses.prenom, capturé à l'étape 'prenom' plus tôt).
-  // 🆕 (retour Raphaël) Repli générique — remplace l'ancien "Ça ne me dit
-  // rien." : pour TOUT prénom qui n'est pas une des exceptions précises
-  // ci-dessus, "Ça me dit de quoi\u2026\u00a0!" (souvenir vague plutôt
-  // qu'un refus catégorique) couvre "tous les noms, sauf exceptions",
-  // comme demandé — sans avoir à lister individuellement chaque
-  // personnage secondaire de l'entourage de Bek.
   function texteReflexionNom(r) {
     const nom = normaliserNomPourComparaison(r.prenom);
     if (nom) {
@@ -1690,8 +1697,11 @@
           return reaction + ' \u2026 mais \u00e7a m\u2019\u00e9tonnerait\u00a0!';
         }
       }
+      if (UNIVERS_REBEKAH_VAGUE.indexOf(nom) !== -1) {
+        return '\u00c7a me dit de quoi\u2026\u00a0!';
+      }
     }
-    return '\u00c7a me dit de quoi\u2026\u00a0!';
+    return '\u00c7a ne me dit rien.';
   }
 
   // 🆕 (retour Raphaël, 22-08-2026) Dialogue reconstruit en profondeur :

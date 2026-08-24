@@ -2125,7 +2125,12 @@
       const MARGE = 12;
       const ECART = 10;
       const widget = document.getElementById('kbwWidget');
-      const decalage = (widget && widget.offsetParent !== null)
+      // ⚠️ offsetParent est TOUJOURS null pour un élément position:fixed
+      // (comme #kbwWidget), qu'il soit visible ou non — ce n'est donc pas
+      // un test de visibilité fiable ici. display est vérifié directement
+      // à la place, cohérent avec masquer()/afficher() (widget-session-prof.js),
+      // qui basculent justement ce widget via style.display.
+      const decalage = (widget && widget.style.display !== 'none')
         ? MARGE + widget.getBoundingClientRect().width + ECART
         : MARGE;
       zone.style.top = MARGE + 'px';

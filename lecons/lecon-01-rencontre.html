@@ -1317,6 +1317,53 @@
      s'adresse directement à l'élève, ni Keb ni Bek — cercle neutre. */
   .pile-item.question { --c: var(--brun-clair); }
 
+  /* 🆕 (retour Raphaël, 24-08-2026) Ligne "élève" — les réponses que
+     l'élève lui-même donne (prénom, oui/non, niveau, genre, choix
+     d'exercice) apparaissent maintenant dans "Ce qui a été dit" au même
+     titre que les répliques du personnage, pour suivre le fil de
+     l'histoire sans avoir à se souvenir de ce qu'on a répondu. Couleur
+     volontairement DIFFÉRENTE de --keb-couleur/--bek-couleur (jamais
+     confondre "ce que dit le personnage" et "ce que j'ai répondu").
+     Alignée à DROITE façon messagerie — signal visuel immédiat de qui
+     parle, sans même lire l'étiquette. */
+  .pile-item.eleve { flex-direction: row-reverse; text-align: right; }
+  .pile-item.eleve { --c: var(--peche-fonce); }
+  .pile-item.eleve .pile-corps { display: flex; flex-direction: column; align-items: flex-end; }
+  .pile-item.eleve .pile-texte {
+    background: var(--peche-pale);
+    border-radius: 14px 14px 4px 14px;
+    padding: 6px 12px;
+    display: inline-block;
+    cursor: default;
+  }
+
+  /* 🆕 (retour Raphaël, 24-08-2026) Étiquette "Exercice" — posée sur la
+     réplique du PERSONNAGE qui introduit un exercice noté (qcm/prenom/
+     déduction ; pas binaire/niveau/genre, qui ne sont pas notés). Toute
+     la ligne devient cliquable : ramène directement à cette étape (voir
+     allerAEtape()), pratique pour retrouver "où" un exercice précis a eu
+     lieu sans dérouler tout le fil. Un petit ↦ signale la clique-abilité
+     sans avoir à deviner. */
+  .pile-item.cliquable { cursor: pointer; border-radius: 10px; transition: background 0.15s ease; margin: 3px -6px !important; padding: 3px 6px; }
+  .pile-item.cliquable:hover { background: var(--peche-pale); }
+  .pile-item.cliquable:hover .pile-texte { text-decoration: underline; text-decoration-color: var(--peche); text-underline-offset: 3px; }
+  .badge-exercice {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    color: var(--peche-fonce);
+    background: var(--peche-pale-vif);
+    border-radius: 999px;
+    padding: 1px 8px 1px 7px;
+    margin-left: 6px;
+    vertical-align: middle;
+  }
+  .badge-exercice::after { content: '\21A6'; font-size: 0.75rem; }
+
   .pile-corps { flex: 1; min-width: 0; }
   .pile-qui { display: block; font-size: 0.68rem; font-weight: 700; color: var(--c, var(--brun)); margin-bottom: 1px; }
   .pile-texte { font-size: 0.92rem; line-height: 1.35; cursor: pointer; }
@@ -2085,8 +2132,23 @@
   // désormais dans tout le dialogue (voir etapesDialogue()), jamais
   // d'étape 'question'. Laissée inoffensive plutôt que retirée, au cas
   // où une future leçon en aurait besoin.
-  const NOMS = { keb: 'Keb', bek: 'Bek', question: '' };
-  const INITIALES = { keb: 'K', bek: 'B', question: '?' };
+  const NOMS = { keb: 'Keb', bek: 'Bek', question: '', eleve: '' };
+  const INITIALES = { keb: 'K', bek: 'B', question: '?', eleve: '\u2022' };
+
+  // 🆕 (retour Raphaël, 24-08-2026) Historique COMPLET de "Ce qui a été
+  // dit" — dialogue du personnage ET réponses de l'élève, dans l'ordre
+  // chronologique réel, chacune associée à l'index d'étape qui l'a
+  // produite. Sert à reconstruire fidèlement la pile #pileDialogue quel
+  // que soit le point de la leçon où on se trouve (retour arrière, ou
+  // clic sur un exercice passé — voir allerAEtape()) SANS avoir à
+  // redériver les réponses depuis `reponses` (fragile : `reponses` ne
+  // garde que la DERNIÈRE valeur, pas le texte exact affiché à l'écran).
+  let historiquePile = [];
+
+  function enregistrerHistorique(entree) {
+    entree.etapeIndex = etape;
+    historiquePile.push(entree);
+  }
 
   // Même logique que dialogues/d1/index.html : dict.trad n'a pas de clé
   // 'fr' (le français est la langue source du dialogue lui-même) — repli
@@ -2111,44 +2173,139 @@
   // toucher à ce réglage global (même mécanique que d1).
   let traductionsVisiblesParDefaut = false;
 
-  function ajouterLigneDialogue(def) {
+  // 🆕 (retour Raphaël, 24-08-2026) Généralisée pour accepter soit une
+  // étape 'texte' du personnage (comme avant), soit une ligne "élève"/
+  // "exercice" construite à la volée par ajouterLigneEleve()/
+  // ajouterLigneExercice() ci-dessous — même rendu visuel, juste des
+  // données d'entrée différentes. `ligne` attend : { speaker, texte,
+  // trad, exercice (booléen), etapeCible (index à atteindre au clic si
+  // exercice) }.
+  function creerLigneGenerique(ligne) {
     const div = document.createElement('div');
-    div.className = 'pile-item ' + def.speaker;
-    const trad = traductionPhrase(def);
+    div.className = 'pile-item ' + ligne.speaker + (ligne.exercice ? ' cliquable' : '');
     const avatar = document.createElement('button');
     avatar.type = 'button';
     avatar.className = 'pile-avatar';
     avatar.setAttribute('aria-label', texteInterface('afficherTrad'));
-    avatar.textContent = INITIALES[def.speaker] || '?';
+    avatar.textContent = INITIALES[ligne.speaker] || '?';
     const corps = document.createElement('div');
     corps.className = 'pile-corps';
-    if (NOMS[def.speaker]) {
+    if (NOMS[ligne.speaker] || ligne.exercice) {
       const qui = document.createElement('span');
       qui.className = 'pile-qui';
-      qui.textContent = NOMS[def.speaker];
+      qui.textContent = NOMS[ligne.speaker] || '';
+      if (ligne.exercice) {
+        const badge = document.createElement('span');
+        badge.className = 'badge-exercice';
+        badge.textContent = texteInterface('exercice');
+        qui.appendChild(badge);
+      }
       corps.appendChild(qui);
     }
     const texte = document.createElement('div');
     texte.className = 'pile-texte';
-    texte.textContent = texteEtape(def);
+    texte.textContent = ligne.texte;
     corps.appendChild(texte);
     let elTrad = null;
-    if (trad) {
+    if (ligne.trad) {
       elTrad = document.createElement('div');
       elTrad.className = 'pile-trad';
-      elTrad.textContent = trad;
+      elTrad.textContent = ligne.trad;
       if (traductionsVisiblesParDefaut) elTrad.classList.add('visible');
       corps.appendChild(elTrad);
     }
     div.appendChild(avatar);
     div.appendChild(corps);
     if (elTrad) {
-      const bascule = () => elTrad.classList.toggle('visible');
+      const bascule = (e) => { e.stopPropagation(); elTrad.classList.toggle('visible'); };
       avatar.addEventListener('click', bascule);
       texte.addEventListener('click', bascule);
     }
-    elPileDialogue.appendChild(div);
-    requestAnimationFrame(() => requestAnimationFrame(() => div.classList.add('in')));
+    if (ligne.exercice) {
+      div.addEventListener('click', function () { allerAEtape(ligne.etapeCible); });
+    }
+    return div;
+  }
+
+  function ajouterLigneDialogue(def) {
+    const ligne = { speaker: def.speaker, texte: texteEtape(def), trad: traductionPhrase(def) };
+    // 🐛 CORRIGÉ (retour Raphaël, 24-08-2026) : `elPileDialogue.
+    // lastElementChild` était lu PARESSEUSEMENT à l'intérieur du rAF —
+    // si une deuxième ligne est ajoutée juste après (exercice + réponse
+    // de l'élève, coup sur coup), les deux rAF finissaient par cibler le
+    // MÊME dernier élément (le second), et le premier restait invisible
+    // (jamais sa classe .in). On capture maintenant une référence directe
+    // à SON PROPRE élément avant de programmer le rAF.
+    const elLigne = creerLigneGenerique(ligne);
+    elPileDialogue.appendChild(elLigne);
+    enregistrerHistorique(ligne);
+    requestAnimationFrame(() => requestAnimationFrame(() => elLigne.classList.add('in')));
+  }
+
+  // 🆕 (retour Raphaël, 24-08-2026) Ligne "élève" — la réponse donnée
+  // par l'élève (prénom tapé, oui/non, niveau, genre, choix d'exercice),
+  // affichée dans "Ce qui a été dit" pour suivre le fil de la
+  // conversation. `texte` doit être EXACTEMENT ce que l'élève a
+  // écrit/choisi — jamais une reformulation (même principe que la
+  // légende de pensée : ne jamais réinventer les mots de l'élève).
+  function ajouterLigneEleve(texte) {
+    const ligne = { speaker: 'eleve', texte: texte };
+    const elLigne = creerLigneGenerique(ligne);
+    elPileDialogue.appendChild(elLigne);
+    enregistrerHistorique(ligne);
+    requestAnimationFrame(() => requestAnimationFrame(() => elLigne.classList.add('in')));
+  }
+
+  // 🆕 (retour Raphaël, 24-08-2026) Ligne "exercice" — la consigne/le mot
+  // testé d'un exercice NOTÉ (qcm/prenom/déduction ; pas binaire/niveau/
+  // genre, jamais notés) une fois résolu. Marquée du badge "Exercice" et
+  // cliquable pour y revenir directement (voir allerAEtape()).
+  function ajouterLigneExercice(def, texte) {
+    // 🆕 (retour Raphaël, 24-08-2026, bug repéré) def.speaker n'existe
+    // QUE sur les étapes 'texte' — les étapes qcm/prenom/déduction n'en
+    // ont jamais eu besoin jusqu'ici (rien ne les affichait dans le fil
+    // avant ce mécanisme). On retombe donc sur le personnage actif
+    // (personnageChoisi), sinon l'avatar affichait "?" au lieu de K/B.
+    const speaker = def.speaker || (personnageChoisi === 'Bek' ? 'bek' : 'keb');
+    const ligne = { speaker: speaker, texte: texte, exercice: true, etapeCible: etape };
+    const elLigne = creerLigneGenerique(ligne);
+    elPileDialogue.appendChild(elLigne);
+    enregistrerHistorique(ligne);
+    requestAnimationFrame(() => requestAnimationFrame(() => elLigne.classList.add('in')));
+  }
+
+  // 🆕 (retour Raphaël, 24-08-2026) Reconstruit #pileDialogue à partir de
+  // historiquePile, en ne gardant que les lignes produites À ou AVANT
+  // l'étape indexMax — factorisé pour être partagé entre precedent() et
+  // allerAEtape() (clic sur un exercice passé dans le fil).
+  function reconstruirePileJusqua(indexMax) {
+    elPileDialogue.innerHTML = '';
+    historiquePile.filter(function (ligne) { return ligne.etapeIndex <= indexMax; })
+      .forEach(function (ligne) { elPileDialogue.appendChild(creerLigneGenerique(ligne)); });
+    elPileDialogue.querySelectorAll('.pile-item').forEach(el => el.classList.add('in'));
+  }
+
+  // 🆕 (retour Raphaël, 24-08-2026) Clic sur une ligne d'exercice dans le
+  // fil "Ce qui a été dit" — ramène directement à cette étape, même
+  // mécanique que precedent() (élague aussi historiquePile/reponses
+  // au-delà, pour rester cohérent si l'élève avance différemment
+  // ensuite). Ne va JAMAIS en avant au-delà de l'étape courante (le fil
+  // ne montre de toute façon que des étapes déjà vécues).
+  function allerAEtape(indexCible) {
+    if (!navigationActive) return;
+    if (indexCible < 0 || indexCible > etape) return;
+    etape = indexCible;
+    elPileGrammaire.innerHTML = '';
+    blocGrammaire.style.display = 'none';
+    reconstructionEnCours = true;
+    reconstruirePileJusqua(etape);
+    for (let j = 0; j <= etape; j++) {
+      if (ETAPES[j].type === 'texte' && etapeApplicable(ETAPES[j])) ajouterNoteGrammaire(ETAPES[j]);
+    }
+    elPileGrammaire.querySelectorAll('.grammaire-item').forEach(el => el.classList.add('in'));
+    rendreEtape();
+    reconstructionEnCours = false;
+    sauvegarderPosition();
   }
 
   // 🆕 Mécanisme PRÊT (voir .grammaire-item en CSS), mais aucune étape de
@@ -2846,22 +3003,7 @@
     let i = etape - 1;
     while (i >= 0 && !etapeApplicable(ETAPES[i])) i -= 1;
     if (i < 0) return;
-    etape = i;
-    elPileDialogue.innerHTML = '';
-    elPileGrammaire.innerHTML = '';
-    blocGrammaire.style.display = 'none';
-    reconstructionEnCours = true;
-    for (let j = 0; j <= etape; j++) {
-      if (ETAPES[j].type === 'texte' && etapeApplicable(ETAPES[j])) {
-        ajouterLigneDialogue(ETAPES[j]);
-        ajouterNoteGrammaire(ETAPES[j]);
-      }
-    }
-    elPileDialogue.querySelectorAll('.pile-item').forEach(el => el.classList.add('in'));
-    elPileGrammaire.querySelectorAll('.grammaire-item').forEach(el => el.classList.add('in'));
-    rendreEtape();
-    reconstructionEnCours = false;
-    sauvegarderPosition();
+    allerAEtape(i);
   }
 
   function suivant() {
@@ -2970,6 +3112,11 @@
       elQcmChoix.querySelectorAll('.bouton-choix').forEach(function (b) { b.disabled = true; });
       accorderRecompenseExercice(def, def.etatExercice.tentatives === 0 ? 2 : 1);
       reveleerTraductionGeste(def);
+      // 🆕 (retour Raphaël, 24-08-2026) Journalise l'exercice + la
+      // réponse de l'élève dans "Ce qui a été dit" — voir
+      // ajouterLigneExercice()/ajouterLigneEleve().
+      ajouterLigneExercice(def, def.mot_cible);
+      ajouterLigneEleve(btn.textContent);
       setTimeout(suivant, 650);
     } else {
       def.etatExercice.tentatives += 1;
@@ -2998,6 +3145,8 @@
       elChampReponseLibre.classList.remove('qcm-mauvais');
       document.getElementById('btnValiderReponseLibre').disabled = true;
       accorderRecompenseExercice(def, def.etatExercice.tentatives === 0 ? 2 : 1);
+      ajouterLigneExercice(def, def.consigne[langueActuelle()] || def.consigne.en);
+      ajouterLigneEleve(valeur);
       setTimeout(suivant, 500);
     } else {
       def.etatExercice.tentatives += 1;
@@ -3046,6 +3195,7 @@
         window.KebBekProgression.enregistrerIdentite(genre, undefined, undefined, undefined)
           .catch(function (e) { console.warn('lecon-01-rencontre.html : échec de l\u2019enregistrement du genre.', e); });
       }
+      ajouterLigneEleve(btn.textContent);
       setTimeout(suivant, 400);
     });
   });
@@ -3056,6 +3206,7 @@
     btn.addEventListener('click', function () {
       const def = ETAPES[etape];
       reponses[def.cle_reponse] = btn.dataset.valeur;
+      ajouterLigneEleve(btn.textContent);
       suivant();
     });
   });
@@ -3072,6 +3223,7 @@
       btn.addEventListener('click', function () {
         const def = ETAPES[etape];
         reponses[def.cle_reponse] = niv.id;
+        ajouterLigneEleve(btn.textContent);
         suivant();
       });
       elReponseNiveau.appendChild(btn);
@@ -3237,6 +3389,8 @@
     document.getElementById('btnValiderPrenom').disabled = true;
     reponses.prenom = prenomExtrait;
     accorderRecompenseExercice(def, def.etatExercice.tentatives === 0 ? 2 : 1);
+    ajouterLigneExercice(def, def.consigne[langueActuelle()] || def.consigne.en);
+    ajouterLigneEleve(valeur);
 
     if (window.KebBekProgression) {
       window.KebBekProgression

@@ -2428,19 +2428,6 @@
             personnageChoisi = personnage; // jamais bloquer l'histoire pour un souci réseau
           })
           .then(function () {
-            // 🆕 (retour Raphaël, 24-08-2026) Inscrit ce personnage comme
-            // "débloqué" — voir debloquer_personnage() côté Supabase
-            // (proposition non testée par mes soins : voir
-            // supabase_debloquer_personnages.sql, à appliquer par Raphaël).
-            // Best-effort et non bloquant, comme le reste : une future
-            // leçon qui exigerait tel ou tel personnage débloqué pourra
-            // vérifier via KebBekProgression.lirePersonnagesDebloques().
-            if (window.KebBekProgression && window.KebBekProgression.debloquerPersonnage) {
-              window.KebBekProgression.debloquerPersonnage(personnageChoisi, 'choix_initial')
-                .catch(function (err) {
-                  console.warn('lecon-01-rencontre.html : debloquerPersonnage a échoué.', err);
-                });
-            }
             elEcranChoix.classList.remove('visible');
             resolve();
           });

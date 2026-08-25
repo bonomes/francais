@@ -1337,31 +1337,35 @@
     cursor: default;
   }
 
-  /* 🆕 (retour Raphaël, 24-08-2026) Étiquette "Exercice" — posée sur la
-     réplique du PERSONNAGE qui introduit un exercice noté (qcm/prenom/
-     déduction ; pas binaire/niveau/genre, qui ne sont pas notés). Toute
-     la ligne devient cliquable : ramène directement à cette étape (voir
-     allerAEtape()), pratique pour retrouver "où" un exercice précis a eu
-     lieu sans dérouler tout le fil. Un petit ↦ signale la clique-abilité
-     sans avoir à deviner. */
-  .pile-item.cliquable { cursor: pointer; border-radius: 10px; transition: background 0.15s ease; margin: 3px -6px !important; padding: 3px 6px; }
-  .pile-item.cliquable:hover { background: var(--peche-pale); }
-  .pile-item.cliquable:hover .pile-texte { text-decoration: underline; text-decoration-color: var(--peche); text-underline-offset: 3px; }
+  /* 🐛 CORRIGÉ (retour Raphaël, 25-08-2026) : c'était toute la ligne
+     (.pile-item.cliquable) qui écoutait le clic pour allerAEtape() — un
+     clic n'importe où sur une réplique d'exercice (y compris pour voir
+     sa traduction) retombait donc systématiquement sur la navigation.
+     Le "touché" navigation est maintenant isolé sur le badge lui-même
+     (voir <button class="badge-exercice"> en JS) : reset des styles de
+     bouton par défaut du navigateur, puis mêmes couleurs qu'avant. Le
+     ↦ dans ::after et le survol signalent maintenant CE petit bouton
+     précisément comme le déclencheur, pas toute la ligne. */
   .badge-exercice {
     display: inline-flex;
     align-items: center;
     gap: 3px;
+    font-family: inherit;
     font-size: 0.62rem;
     font-weight: 700;
     letter-spacing: 0.02em;
     text-transform: uppercase;
     color: var(--peche-fonce);
     background: var(--peche-pale-vif);
+    border: none;
     border-radius: 999px;
     padding: 1px 8px 1px 7px;
     margin-left: 6px;
     vertical-align: middle;
+    cursor: pointer;
+    transition: background 0.15s ease;
   }
+  .badge-exercice:hover { background: var(--peche); color: #FFFFFF; }
   .badge-exercice::after { content: '\21A6'; font-size: 0.75rem; }
 
   .pile-corps { flex: 1; min-width: 0; }
@@ -2182,7 +2186,7 @@
   // exercice) }.
   function creerLigneGenerique(ligne) {
     const div = document.createElement('div');
-    div.className = 'pile-item ' + ligne.speaker + (ligne.exercice ? ' cliquable' : '');
+    div.className = 'pile-item ' + ligne.speaker;
     const avatar = document.createElement('button');
     avatar.type = 'button';
     avatar.className = 'pile-avatar';
@@ -2190,12 +2194,21 @@
     avatar.textContent = INITIALES[ligne.speaker] || '?';
     const corps = document.createElement('div');
     corps.className = 'pile-corps';
+    let badge = null;
     if (NOMS[ligne.speaker] || ligne.exercice) {
       const qui = document.createElement('span');
       qui.className = 'pile-qui';
       qui.textContent = NOMS[ligne.speaker] || '';
       if (ligne.exercice) {
-        const badge = document.createElement('span');
+        // 🐛 CORRIGÉ (retour Raphaël, 25-08-2026) : c'était toute la LIGNE
+        // (div) qui écoutait le clic pour allerAEtape() — un clic sur le
+        // texte pour voir la traduction retombait donc systématiquement
+        // sur la navigation, jamais sur la bascule. Un <button> DÉDIÉ,
+        // portant lui seul le handler + stopPropagation, isole vraiment
+        // le "touché" de la navigation du reste de l'espace de la ligne
+        // (qui, lui, reste réservé à la traduction — voir plus bas).
+        badge = document.createElement('button');
+        badge.type = 'button';
         badge.className = 'badge-exercice';
         badge.textContent = texteInterface('exercice');
         qui.appendChild(badge);
@@ -2221,8 +2234,11 @@
       avatar.addEventListener('click', bascule);
       texte.addEventListener('click', bascule);
     }
-    if (ligne.exercice) {
-      div.addEventListener('click', function () { allerAEtape(ligne.etapeCible); });
+    if (badge) {
+      badge.addEventListener('click', function (e) {
+        e.stopPropagation();
+        allerAEtape(ligne.etapeCible);
+      });
     }
     return div;
   }
@@ -2267,7 +2283,15 @@
     // avant ce mécanisme). On retombe donc sur le personnage actif
     // (personnageChoisi), sinon l'avatar affichait "?" au lieu de K/B.
     const speaker = def.speaker || (personnageChoisi === 'Bek' ? 'bek' : 'keb');
-    const ligne = { speaker: speaker, texte: texte, exercice: true, etapeCible: etape };
+    // 🆕 (retour Raphaël, 25-08-2026) Traduction du mot testé, quand
+    // disponible (QCM "Non." → def.geste.trad = 'No!', déjà utilisée sous
+    // la bulle de main) : sans elle, le reste de la ligne (hors badge)
+    // n'aurait rien à révéler au clic. Les lignes basées sur une
+    // consigne (déduction/prénom) restent sans trad ici : leur texte est
+    // déjà dans la langue de l'élève (def.consigne[langueActuelle()]),
+    // pas du français à traduire.
+    const trad = (def.geste && def.geste.trad) ? def.geste.trad : '';
+    const ligne = { speaker: speaker, texte: texte, trad: trad, exercice: true, etapeCible: etape };
     const elLigne = creerLigneGenerique(ligne);
     elPileDialogue.appendChild(elLigne);
     enregistrerHistorique(ligne);

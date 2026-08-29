@@ -171,6 +171,38 @@
     box-shadow: 2px 2px 8px var(--ombre);
   }
 
+  /* 🆕 (demande de Raphaël, 29-08-2026) Bouton "Recommencer la leçon" —
+     même gabarit que .retour ci-dessus (cercle pêche, même taille/ombre),
+     mais à DROITE plutôt qu'à gauche, et <button> plutôt que <a> : ce
+     n'est pas une navigation vers une autre page, juste une action sur
+     celle-ci (déclenche la modale de confirmation, voir plus bas). Reste
+     visible même pendant l'intro/désorientation (aucune classe
+     .intro-cachee ne le cible) — délibéré : une leçon bloquée par un bug
+     imprévu à CE moment précis (voir le correctif de jouerBeats() plus
+     haut) doit quand même laisser un moyen de s'en sortir. */
+  .btn-recommencer {
+    position: fixed;
+    top: 14px;
+    right: 14px;
+    z-index: 300;
+    width: 38px;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: #FFFFFF;
+    border: 1.5px solid var(--peche);
+    color: var(--peche-fonce);
+    font-size: 1.15rem;
+    line-height: 1;
+    cursor: pointer;
+    box-shadow: 2px 2px 8px var(--ombre);
+    transition: transform 0.2s cubic-bezier(.34,1.6,.4,1);
+  }
+  .btn-recommencer:hover { transform: rotate(-25deg); }
+  .btn-recommencer:active { transform: rotate(-45deg) scale(0.92); }
+
   /* ==================================================================
      Scène — contenu masqué (visibility:hidden, pas display:none : garde
      sa place dans la mise en page pour que rien ne saute une fois révélé)
@@ -1418,6 +1450,7 @@
 <body>
 
 <a class="retour" href="../parcours.html" aria-label="Retour au parcours">‹</a>
+<button type="button" class="btn-recommencer" id="btnRecommencer" aria-label="Recommencer la leçon">↺</button>
 
 <!-- 🆕 Séquence d'ouverture (carte titre + genèse muette) — plein écran,
      complètement hors de la structure habituelle d'une leçon (voir
@@ -1946,8 +1979,8 @@
   }
 
   const INTERFACE = {
-    fr: { precedent: "Précédent", continuer: "Continuer", terminer: "Terminer", placeholderPrenom: "Ton prénom", messageFin: "Enchanté, {prenom} !", ceQuiAEteDit: "Ce qui a été dit", aRetenir: "À retenir", afficherTrad: "Afficher la traduction", cacherTrad: "Cacher la traduction", choixPersonnage: "Qui veux-tu faire apparaître en premier ?", prixChoixInitial: "0 P$ / 0 PB", exercice: "Exercice" },
-    en: { precedent: "Back", continuer: "Continue", terminer: "Finish", placeholderPrenom: "Your first name", messageFin: "Nice to meet you, {prenom}!", ceQuiAEteDit: "What was said", aRetenir: "Good to know", afficherTrad: "Show translation", cacherTrad: "Hide translation", choixPersonnage: "Who do you want to bring to life first?", prixChoixInitial: "0 P$ / 0 PB", exercice: "Exercise" },
+    fr: { precedent: "Précédent", continuer: "Continuer", terminer: "Terminer", placeholderPrenom: "Ton prénom", messageFin: "Enchanté, {prenom} !", ceQuiAEteDit: "Ce qui a été dit", aRetenir: "À retenir", afficherTrad: "Afficher la traduction", cacherTrad: "Cacher la traduction", choixPersonnage: "Qui veux-tu faire apparaître en premier ?", prixChoixInitial: "0 P$ / 0 PB", exercice: "Exercice", recommencer: "Recommencer la leçon", recommencerMessage: "Recommencer cette leçon depuis le début ? Tes points et tes récompenses déjà gagnés restent acquis — seule ta position dans la leçon revient au début.", recommencerConfirmer: "Recommencer", recommencerAnnuler: "Annuler" },
+    en: { precedent: "Back", continuer: "Continue", terminer: "Finish", placeholderPrenom: "Your first name", messageFin: "Nice to meet you, {prenom}!", ceQuiAEteDit: "What was said", aRetenir: "Good to know", afficherTrad: "Show translation", cacherTrad: "Hide translation", choixPersonnage: "Who do you want to bring to life first?", prixChoixInitial: "0 P$ / 0 PB", exercice: "Exercise", recommencer: "Restart the lesson", recommencerMessage: "Restart this lesson from the beginning? Any points and rewards you’ve already earned stay yours — only your position in the lesson goes back to the start.", recommencerConfirmer: "Restart", recommencerAnnuler: "Cancel" },
     es: { precedent: "Atrás", continuer: "Continuar", terminer: "Terminar", placeholderPrenom: "Tu nombre", messageFin: "¡Encantados, {prenom}!", ceQuiAEteDit: "Lo que se dijo", aRetenir: "Para recordar", afficherTrad: "Mostrar traducción", cacherTrad: "Ocultar traducción", choixPersonnage: "¿A quién quieres dar vida primero?", prixChoixInitial: "0 P$ / 0 PB", exercice: "Ejercicio" },
     it: { precedent: "Indietro", continuer: "Continua", terminer: "Fine", placeholderPrenom: "Il tuo nome", messageFin: "Piacere, {prenom}!", ceQuiAEteDit: "Cosa è stato detto", aRetenir: "Da ricordare", afficherTrad: "Mostra traduzione", cacherTrad: "Nascondi traduzione", choixPersonnage: "Chi vuoi far apparire per primo?", prixChoixInitial: "0 P$ / 0 PB", exercice: "Esercizio" },
     pt: { precedent: "Voltar", continuer: "Continuar", terminer: "Terminar", placeholderPrenom: "O teu nome", messageFin: "Prazer, {prenom}!", ceQuiAEteDit: "O que foi dito", aRetenir: "A reter", afficherTrad: "Mostrar tradução", cacherTrad: "Ocultar tradução", choixPersonnage: "Quem queres criar primeiro?", prixChoixInitial: "0 P$ / 0 PB", exercice: "Exercício" },
@@ -2679,6 +2712,22 @@
   function jouerBeats(nomAutre, indexDepart) {
     return new Promise(function (resolve) {
       const indexInitial = indexDepart || 0;
+      // 🐛 CORRIGÉ (retour Raphaël, 29-08-2026) : quand indexInitial ==
+      // BEATS_DESORIENTATION.length (désorientation déjà terminée à la
+      // sortie précédente, il ne restait que le salut — voir le
+      // commentaire de reveilPersonnageResume() plus haut, qui décrivait
+      // déjà ce cas), rendreBeat() était quand même appelé et indexait
+      // BEATS_DESORIENTATION[length] → undefined → plantage sur
+      // `beat.flash`. La promesse ne se résolvait alors JAMAIS :
+      // reveilPersonnageResume()/attendreSalutMain() restaient bloqués
+      // en attente, la leçon figée sur la pose désorientée pour de bon,
+      // sans main ni bouton pour en sortir. Ce cas est maintenant traité
+      // à part, sans jamais indexer le tableau hors bornes.
+      if (indexInitial >= BEATS_DESORIENTATION.length) {
+        beatsControleur = null;
+        resolve();
+        return;
+      }
       beatsControleur = { index: indexInitial, nomAutre: nomAutre, enTransition: true, resolve: resolve };
       rendreBeat(nomAutre, indexInitial).then(function () {
         if (beatsControleur) beatsControleur.enTransition = false;
@@ -3021,6 +3070,121 @@
     window.KebBekProgression.enregistrerPositionLecon(CHAPITRE_ID, etape, reponses)
       .catch(function (e) { console.warn('lecon-01-rencontre.html : échec de la sauvegarde de position.', e); });
   }
+
+  // 🆕 (demande de Raphaël, 29-08-2026) "Recommencer la leçon" — remet la
+  // POSITION dans la leçon au tout début (étape 0, "Bonjour... ?"),
+  // jamais les points/récompenses déjà gagnés : ceux-ci passent par
+  // attribuer_recompense_premiere_fois (voir plus haut, def.recompense_id),
+  // idempotent côté Supabase, donc rejouer un exercice déjà réussi ne
+  // peut de toute façon jamais le retoucher une deuxième fois — aucune
+  // action supplémentaire n'est nécessaire ici pour les protéger.
+  //
+  // "Le tout début" choisi ici = le début du VRAI dialogue (ETAPES[0]),
+  // PAS la matérialisation/désorientation d'ouverture (flash + "Hmm... ?
+  // Je suis où ?"...) : ces beats répètent le moment précis où le
+  // personnage "naît"/se réveille, déjà traité ailleurs dans ce fichier
+  // comme un événement vécu UNE SEULE fois (voir reveilPersonnageResume(),
+  // "ce serait lui faire revivre une naissance déjà arrivée") — les
+  // rejouer à chaque "Recommencer" contredirait cette même logique. Le
+  // choix du personnage (achat unique) n'est de toute façon jamais
+  // remis en jeu par ce bouton.
+  function recommencerLecon() {
+    if (window.KebBekProgression) {
+      window.KebBekProgression.effacerPositionLecon(CHAPITRE_ID).catch(function () {});
+      window.KebBekProgression.effacerPositionLecon(CHAPITRE_ID + '_intro').catch(function () {});
+    }
+
+    window.KebBekMotTooltip.fermer();
+    clearTimeout(minuteurBulle);
+    clearTimeout(minuteurPensee);
+
+    etape = 0;
+    reponses.prenom = null;
+    reponses.parleFrancais = null;
+    reponses.niveau = null;
+    reponses.quiParle = null;
+    reponses.pronomDeduit = null;
+    reponses.genreEleve = null;
+    // Même repli que dans demarrerLecon() : si le genre est déjà connu
+    // ailleurs sur le site (identite-eleve.js), on le reprend tout de
+    // suite plutôt que de reposer la question — best-effort, sans
+    // bloquer le reste de la réinitialisation.
+    if (window.KebBekProgression) {
+      window.KebBekProgression.lireIdentite().then(function (identite) {
+        if (identite && identite.genre) reponses.genreEleve = identite.genre;
+      }).catch(function () {});
+    }
+
+    historiquePile = [];
+    elPileDialogue.innerHTML = '';
+    elPileGrammaire.innerHTML = '';
+
+    navigationActive = true;
+    elEtapeFin.style.display = 'none';
+
+    rendreEtape();
+    sauvegarderPosition();
+  }
+
+  // 🆕 (demande de Raphaël, 29-08-2026) Modale de confirmation — même
+  // patron visuel que demanderConfirmationVider() dans sac-a-dos.js
+  // (classes .sac-modal-*, déjà chargées via sac-a-dos.css sur cette
+  // page), en plus simple (deux boutons, pas de "copier avant" : rien
+  // ici ne se perd au sens du sac à dos, voir le commentaire de
+  // recommencerLecon() ci-dessus).
+  function demanderConfirmationRecommencer() {
+    const ancienne = document.getElementById('leconModalOverlay');
+    if (ancienne) ancienne.remove();
+
+    const overlay = document.createElement('div');
+    overlay.id = 'leconModalOverlay';
+    overlay.className = 'sac-modal-overlay';
+
+    const modal = document.createElement('div');
+    modal.className = 'sac-modal';
+    modal.setAttribute('role', 'alertdialog');
+    modal.setAttribute('aria-modal', 'true');
+
+    const texteMsg = document.createElement('p');
+    texteMsg.className = 'sac-modal-message';
+    texteMsg.textContent = texteInterface('recommencerMessage');
+    modal.appendChild(texteMsg);
+
+    const actions = document.createElement('div');
+    actions.className = 'sac-modal-actions';
+
+    function fermer() { overlay.remove(); }
+
+    const btnConfirmer = document.createElement('button');
+    btnConfirmer.type = 'button';
+    btnConfirmer.className = 'sac-modal-btn sac-modal-btn-vider';
+    btnConfirmer.textContent = texteInterface('recommencerConfirmer');
+    btnConfirmer.addEventListener('click', function () {
+      fermer();
+      recommencerLecon();
+    });
+
+    const btnAnnuler = document.createElement('button');
+    btnAnnuler.type = 'button';
+    btnAnnuler.className = 'sac-modal-btn sac-modal-btn-annuler';
+    btnAnnuler.textContent = texteInterface('recommencerAnnuler');
+    btnAnnuler.addEventListener('click', fermer);
+
+    actions.appendChild(btnConfirmer);
+    actions.appendChild(btnAnnuler);
+    modal.appendChild(actions);
+    overlay.appendChild(modal);
+
+    overlay.addEventListener('click', function (e) { if (e.target === overlay) fermer(); });
+    document.addEventListener('keydown', function echapUneFois(e) {
+      if (e.key === 'Escape') { fermer(); document.removeEventListener('keydown', echapUneFois); }
+    });
+
+    document.body.appendChild(overlay);
+    btnAnnuler.focus();
+  }
+
+  document.getElementById('btnRecommencer').addEventListener('click', demanderConfirmationRecommencer);
 
   function precedent() {
     if (!navigationActive) return;

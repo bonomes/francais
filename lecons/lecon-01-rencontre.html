@@ -180,10 +180,17 @@
      .intro-cachee ne le cible) — délibéré : une leçon bloquée par un bug
      imprévu à CE moment précis (voir le correctif de jouerBeats() plus
      haut) doit quand même laisser un moyen de s'en sortir. */
+  /* 🆕 (retour Raphaël, 29-08-2026) left: 60px plutôt que right: 14px —
+     le coin supérieur droit accueille parfois d'autres éléments propres
+     à la page hôte (sac à dos, widget "Cours en direct" pour un compte
+     prof) : mieux vaut regrouper les deux actions de navigation de la
+     leçon (retour, recommencer) ensemble à gauche que risquer une
+     collision à droite. 60px = 14px (position de .retour) + 38px (sa
+     largeur) + 8px d'écart visuel entre les deux pastilles. */
   .btn-recommencer {
     position: fixed;
     top: 14px;
-    right: 14px;
+    left: 60px;
     z-index: 300;
     width: 38px;
     height: 38px;
@@ -1090,6 +1097,47 @@
     text-align: center;
   }
 
+  /* 🆕 (demande de Raphaël, 29-08-2026) Bouton "Indice" — discret (texte
+     souligné en pointillés façon lien, pas un bouton-pilule plein comme
+     .exercice-etiquette/.badge-exercice) : c'est une AIDE optionnelle,
+     jamais une étape de plus dans le flot normal de l'exercice, ne doit
+     donc pas concurrencer visuellement la consigne ni la zone de
+     réponse. */
+  .btn-indice {
+    font-family: inherit;
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--brun-clair, #8A7364);
+    background: none;
+    border: none;
+    text-decoration: underline;
+    text-decoration-style: dotted;
+    text-underline-offset: 3px;
+    cursor: pointer;
+    padding: 2px 4px;
+  }
+  .btn-indice:hover { color: var(--peche-fonce); }
+
+  .indice-texte {
+    font-size: 0.86rem;
+    color: var(--brun-fonce, var(--brun));
+    background: var(--peche-pale, rgba(240, 169, 139, 0.16));
+    border-radius: 12px;
+    padding: 10px 14px;
+    line-height: 1.4;
+    text-align: center;
+  }
+
+  /* 🆕 Flash bref sur la bulle du dialogue visée par l'indice — attire
+     l'œil sans rester marqué en permanence (contrairement à .in, qui
+     reste). Répété deux fois puis s'arrête (voir .pile-item-flash en
+     JS, qui retire la classe après coup). */
+  @keyframes pileFlash {
+    0%, 100% { background: transparent; }
+    25%, 75% { background: var(--peche-pale-vif, rgba(240, 169, 139, 0.30)); }
+  }
+  .pile-item-flash { animation: pileFlash 1s ease-in-out 2; border-radius: 10px; }
+
   /* 🆕 Indicateur "quelque chose à effleurer ici" — anneaux pulsés
      concentriques, jamais de texte (la scène reste propre). Centré par
      défaut ; positionnement fin possible plus tard par étape si un
@@ -1237,6 +1285,9 @@
   }
   @media (prefers-reduced-motion: reduce) {
     .main-reflexion-inner { animation: none; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .pile-item-flash { animation: none; background: var(--peche-pale-vif, rgba(240, 169, 139, 0.30)); }
   }
   @media (max-width: 460px) {
     .main-reflexion { right: 3%; bottom: 8%; width: min(25vw, 96px); }
@@ -1590,6 +1641,18 @@
     <div class="exercice-etiquette" id="exerciceEtiquette">Exercice</div>
     <div class="exercice-mot" id="exerciceMot" style="display: none;"></div>
     <div class="exercice-consigne" id="exerciceConsigne"></div>
+    <!-- 🆕 (demande de Raphaël, 29-08-2026) Bouton "Indice" — masqué par
+         défaut, révélé seulement pour les exercices qui définissent
+         def.indice (voir revelerExercice() en JS). Renvoie vers une
+         bulle précise de "Ce qui a été dit" plutôt que de donner la
+         réponse directement : présente formellement cette
+         fonctionnalité (cliquer une bulle affiche sa traduction) à
+         travers un cas d'usage concret, réutilisable pour de futures
+         notions de grammaire/vocabulaire, pas seulement pour ce prénom. -->
+    <button type="button" class="btn-indice" id="btnIndice" style="display:none;">
+      💡 <span id="txtBtnIndice">Indice</span>
+    </button>
+    <div class="indice-texte" id="indiceTexte" style="display:none;"></div>
     <div class="zone-reponse" id="reponseLibre" style="display: none;">
       <input type="text" class="champ-prenom" id="champReponseLibre" autocomplete="off">
       <button type="button" class="nav-bouton nav-bouton-suivant" id="btnValiderReponseLibre">Continuer</button>
@@ -1908,6 +1971,10 @@
     // es qui ?"), distincte de imgJeMappelle qui reste utilisée pour le
     // second ("Hmm... moi, je m'appelle...").
     const imgAlorsTuEsQui = imagePerso('alors_tu_es_qui');
+    // 🆕 (demande de Raphaël, 29-08-2026) Déclarée ici pour être assignée
+    // en ligne dans le tableau ci-dessous (voir ligneJeMappelle) puis
+    // référencée par def.indice sur l'exercice 'prenom', juste après.
+    let ligneJeMappelle;
     return [
       { type: 'texte', speaker: perso, img: imgBonjour, texte: "Bonjour... ?", trad: { en: "Hello...?" } },
       { type: 'texte', speaker: perso, img: imgInterpelle, texte: "Qui... qui parle ?", trad: { en: "Who... who's there?" } },
@@ -1929,7 +1996,14 @@
         ] },
       { type: 'texte', speaker: perso, img: imgAlorsTuEsQui, texte: "Alors, tu es qui ?",
         trad: { en: "So, who are you?" } },
-      { type: 'texte', speaker: perso, img: imgJeMappelle, texte: "Hmm\u2026 moi, je m\u2019appelle " + nomPerso + ". Toi ?",
+      // 🆕 (demande de Raphaël, 29-08-2026) Extraite en variable nommée
+      // (ligneJeMappelle) — au lieu d'un objet littéral perdu dans le
+      // tableau — pour que l'exercice 'prenom' juste en dessous puisse
+      // la référencer directement dans son indice (voir def.indice,
+      // "Keb t'a déjà montré comment te présenter"). Une référence
+      // d'objet plutôt qu'un index numérique fixe : reste correcte même
+      // si l'ordre du tableau change un jour.
+      ligneJeMappelle = { type: 'texte', speaker: perso, img: imgJeMappelle, texte: "Hmm\u2026 moi, je m\u2019appelle " + nomPerso + ". Toi ?",
         trad: { en: "Hmm\u2026 my name is " + nomPerso + ". You?" } },
       // 🆕 (session 22-08-2026, suite) Exercice de traduction longue —
       // pas une simple saisie du prénom : l'élève traduit "My name
@@ -1947,7 +2021,23 @@
         // plus haut, qui accepte n'importe quel prénom dans le patron —
         // mécaniquement ça "marchait" déjà, mais le sens de l'exercice
         // n'était pas clair). Désormais explicite dans les deux langues.
-        consigne: { fr: 'Comment dit-on « My name is\u2026 » en fran\u00e7ais\u00a0? \u00c9cris la phrase compl\u00e8te, avec TON vrai pr\u00e9nom \u00e0 toi\u00a0!', en: 'How do you say \u201cMy name is\u2026\u201d in French? Write the full sentence \u2014 using YOUR OWN real name!' } },
+        consigne: { fr: 'Comment dit-on « My name is\u2026 » en fran\u00e7ais\u00a0? \u00c9cris la phrase compl\u00e8te, avec TON vrai pr\u00e9nom \u00e0 toi\u00a0!', en: 'How do you say \u201cMy name is\u2026\u201d in French? Write the full sentence \u2014 using YOUR OWN real name!' },
+        // 🆕 (demande de Raphaël, 29-08-2026) Premier exercice à définir
+        // un indice — présente formellement la fonctionnalité "cliquer
+        // une bulle pour voir sa traduction" (déjà là depuis le
+        // 24-08-2026, mais jamais explicitement montrée à l'élève avant
+        // ce jour) à travers un cas concret : Keb/Bek vient JUSTEMENT de
+        // se présenter juste au-dessus (ligneJeMappelle) — plutôt que de
+        // donner la réponse, l'indice y renvoie, et rappelle explicitement
+        // que l'élève peut aussi bien reprendre la même structure
+        // qu'essayer une formulation apprise ailleurs.
+        indice: {
+          etapeCibleRef: ligneJeMappelle,
+          texte: {
+            fr: 'Tu ne sais plus comment te présenter\u00a0? Regarde plus bas dans « Ce qui a été dit » et clique sur la bulle où ' + nomPerso + ' t\u2019a déjà montré comment se présenter, pour voir sa traduction. Tu peux reprendre exactement la même structure\u2026 ou essayer une autre façon de le dire, si tu la connais déjà\u00a0!',
+            en: 'Forgot how to introduce yourself? Look below in "What was said" and click the bubble where ' + nomPerso + ' already showed you how to introduce themself, to see its translation. You can reuse the exact same structure\u2026 or try another way to say it, if you already know one!'
+          }
+        } },
       // 🆕 (retour Raphaël, 23-08-2026, "capacité de penser") Étape
       // scindée en deux, à la demande de Raphaël : Keb/Bek répète
       // d'abord le prénom donné (pensée, pas encore une vraie question
@@ -1956,7 +2046,7 @@
       // légende #penseeLegende (voir texteReflexionNom()/rendreEtape()).
       { type: 'texte', speaker: perso, pensee: true, img: imagePerso('prenom_prenom'),
         texte: function (r) { return (r.prenom || '') + ", " + (r.prenom || '') + "\u2026"; } },
-      { type: 'texte', speaker: perso, texte: function (r) { return (r.prenom || '') + ", " + (r.prenom || '') + ", tu parles fran\u00e7ais ?"; },
+      { type: 'texte', speaker: perso, img: imagePerso('parles_tu_francais'), texte: function (r) { return (r.prenom || '') + ", " + (r.prenom || '') + ", tu parles fran\u00e7ais ?"; },
         trad: { en: function (r) { return (r.prenom || '') + ", " + (r.prenom || '') + ", do you speak French?"; } } },
       { type: 'binaire', cle_reponse: 'parleFrancais' },
       { type: 'niveau', cle_reponse: 'niveau', condition: function (r) { return r.parleFrancais === 'oui'; } },
@@ -1979,8 +2069,8 @@
   }
 
   const INTERFACE = {
-    fr: { precedent: "Précédent", continuer: "Continuer", terminer: "Terminer", placeholderPrenom: "Ton prénom", messageFin: "Enchanté, {prenom} !", ceQuiAEteDit: "Ce qui a été dit", aRetenir: "À retenir", afficherTrad: "Afficher la traduction", cacherTrad: "Cacher la traduction", choixPersonnage: "Qui veux-tu faire apparaître en premier ?", prixChoixInitial: "0 P$ / 0 PB", exercice: "Exercice", recommencer: "Recommencer la leçon", recommencerMessage: "Recommencer cette leçon depuis le début ? Tes points et tes récompenses déjà gagnés restent acquis — seule ta position dans la leçon revient au début.", recommencerConfirmer: "Recommencer", recommencerAnnuler: "Annuler" },
-    en: { precedent: "Back", continuer: "Continue", terminer: "Finish", placeholderPrenom: "Your first name", messageFin: "Nice to meet you, {prenom}!", ceQuiAEteDit: "What was said", aRetenir: "Good to know", afficherTrad: "Show translation", cacherTrad: "Hide translation", choixPersonnage: "Who do you want to bring to life first?", prixChoixInitial: "0 P$ / 0 PB", exercice: "Exercise", recommencer: "Restart the lesson", recommencerMessage: "Restart this lesson from the beginning? Any points and rewards you’ve already earned stay yours — only your position in the lesson goes back to the start.", recommencerConfirmer: "Restart", recommencerAnnuler: "Cancel" },
+    fr: { precedent: "Précédent", continuer: "Continuer", terminer: "Terminer", placeholderPrenom: "Ton prénom", messageFin: "Enchanté, {prenom} !", ceQuiAEteDit: "Ce qui a été dit", aRetenir: "À retenir", afficherTrad: "Afficher la traduction", cacherTrad: "Cacher la traduction", choixPersonnage: "Qui veux-tu faire apparaître en premier ?", prixChoixInitial: "0 P$ / 0 PB", exercice: "Exercice", recommencer: "Recommencer la leçon", recommencerMessage: "Recommencer cette leçon depuis le début ? Tes points et tes récompenses déjà gagnés restent acquis — seule ta position dans la leçon revient au début.", recommencerConfirmer: "Recommencer", recommencerAnnuler: "Annuler", indice: "Indice" },
+    en: { precedent: "Back", continuer: "Continue", terminer: "Finish", placeholderPrenom: "Your first name", messageFin: "Nice to meet you, {prenom}!", ceQuiAEteDit: "What was said", aRetenir: "Good to know", afficherTrad: "Show translation", cacherTrad: "Hide translation", choixPersonnage: "Who do you want to bring to life first?", prixChoixInitial: "0 P$ / 0 PB", exercice: "Exercise", recommencer: "Restart the lesson", recommencerMessage: "Restart this lesson from the beginning? Any points and rewards you’ve already earned stay yours — only your position in the lesson goes back to the start.", recommencerConfirmer: "Restart", recommencerAnnuler: "Cancel", indice: "Hint" },
     es: { precedent: "Atrás", continuer: "Continuar", terminer: "Terminar", placeholderPrenom: "Tu nombre", messageFin: "¡Encantados, {prenom}!", ceQuiAEteDit: "Lo que se dijo", aRetenir: "Para recordar", afficherTrad: "Mostrar traducción", cacherTrad: "Ocultar traducción", choixPersonnage: "¿A quién quieres dar vida primero?", prixChoixInitial: "0 P$ / 0 PB", exercice: "Ejercicio" },
     it: { precedent: "Indietro", continuer: "Continua", terminer: "Fine", placeholderPrenom: "Il tuo nome", messageFin: "Piacere, {prenom}!", ceQuiAEteDit: "Cosa è stato detto", aRetenir: "Da ricordare", afficherTrad: "Mostra traduzione", cacherTrad: "Nascondi traduzione", choixPersonnage: "Chi vuoi far apparire per primo?", prixChoixInitial: "0 P$ / 0 PB", exercice: "Esercizio" },
     pt: { precedent: "Voltar", continuer: "Continuar", terminer: "Terminar", placeholderPrenom: "O teu nome", messageFin: "Prazer, {prenom}!", ceQuiAEteDit: "O que foi dito", aRetenir: "A reter", afficherTrad: "Mostrar tradução", cacherTrad: "Ocultar tradução", choixPersonnage: "Quem queres criar primeiro?", prixChoixInitial: "0 P$ / 0 PB", exercice: "Exercício" },
@@ -2083,10 +2173,10 @@
     // d'être désorienté. Voir BEATS_DESORIENTATION plus bas (nouveau
     // premier beat, avec rejeu de l'éclat de #flashApparition juste
     // avant lui) et jouerEclatLumineux(). Images fournies par Raphaël.
-    keb: { neutre: 'keb_neutre_01.webp', genere: 'keb_généré_01.webp', bonjour: 'l1_keb_bonjour_01.webp', ebloui: 'l1_keb_ebloui_01.webp', confus: 'l1_keb_confus_01.webp', je_suis_ou: 'l1_keb_je-suis-ou_01.webp', ou_est_ami: 'l1_keb_ou-est-bek_01.webp', appelle_ami: 'l1_keb_bek-bek_01.webp', interpelle: 'l1_keb_interpellé_02.webp', je_mappelle: 'l1_keb_je-m-appelle-Keb_01.webp', maman_papa: 'l1_keb_maman-papa_01.webp', attend: 'l1_keb_attend-r1_01.webp', alors_tu_es_qui: 'l1_keb_alors-tu-es-qui_01.webp', alors_tu_es_qui_attente: 'l1_keb_alors-tu-es-qui_attente-rp_01.webp', prenom_prenom: 'l1_keb_prenom-prenom_01.webp' },
+    keb: { neutre: 'keb_neutre_01.webp', genere: 'keb_généré_01.webp', bonjour: 'l1_keb_bonjour_01.webp', ebloui: 'l1_keb_ebloui_01.webp', confus: 'l1_keb_confus_01.webp', je_suis_ou: 'l1_keb_je-suis-ou_01.webp', ou_est_ami: 'l1_keb_ou-est-bek_01.webp', appelle_ami: 'l1_keb_bek-bek_01.webp', interpelle: 'l1_keb_interpellé_02.webp', je_mappelle: 'l1_keb_je-m-appelle-Keb_01.webp', maman_papa: 'l1_keb_maman-papa_01.webp', attend: 'l1_keb_attend-r1_01.webp', alors_tu_es_qui: 'l1_keb_alors-tu-es-qui_01.webp', alors_tu_es_qui_attente: 'l1_keb_alors-tu-es-qui_attente-rp_01.webp', prenom_prenom: 'l1_keb_prenom-prenom_01.webp', parles_tu_francais: 'l1_keb_parles-tu-francais_01.webp' },
     // 🆕 (Raphaël, 22-08-2026) neutre bek_neutre_03.webp (remplace
     // bek_neutre_01.webp — nouvelle version fournie).
-    bek: { neutre: 'bek_neutre_03.webp', genere: 'bek_générée_01.webp', bonjour: 'l1_bek_bonjour_01.webp', ebloui: 'l1_bek_eblouie_01.webp', confus: 'l1_bek_confuse_01.webp', je_suis_ou: 'l1_bek_je-suis-ou_01.webp', ou_est_ami: 'l1_bek_ou-est-keb_01.webp', appelle_ami: 'l1_bek_keb-keb_01.webp', interpelle: 'l1_bek_interpellée_01.webp', je_mappelle: 'l1_bek_je-m-appelle-Bek_01.webp', maman_papa: 'l1_bek_maman-papa_01.webp', attend: 'l1_bek_attend-r1_01.webp', alors_tu_es_qui: 'l1_bek_alors-tu-es-qui_01.webp', alors_tu_es_qui_attente: 'l1_bek_alors-tu-es-qui_attente-rp_01.webp', prenom_prenom: 'l1_bek_prenom-prenom_01.webp' }
+    bek: { neutre: 'bek_neutre_03.webp', genere: 'bek_générée_01.webp', bonjour: 'l1_bek_bonjour_01.webp', ebloui: 'l1_bek_eblouie_01.webp', confus: 'l1_bek_confuse_01.webp', je_suis_ou: 'l1_bek_je-suis-ou_01.webp', ou_est_ami: 'l1_bek_ou-est-keb_01.webp', appelle_ami: 'l1_bek_keb-keb_01.webp', interpelle: 'l1_bek_interpellée_01.webp', je_mappelle: 'l1_bek_je-m-appelle-Bek_01.webp', maman_papa: 'l1_bek_maman-papa_01.webp', attend: 'l1_bek_attend-r1_01.webp', alors_tu_es_qui: 'l1_bek_alors-tu-es-qui_01.webp', alors_tu_es_qui_attente: 'l1_bek_alors-tu-es-qui_attente-rp_01.webp', prenom_prenom: 'l1_bek_prenom-prenom_01.webp', parles_tu_francais: 'l1_bek_parles-tu-francais_01.webp' }
     // 🆕 (23-08-2026) clé 'attend' — pose du personnage qui patiente,
     // mains jointes sur la poitrine, PENDANT que l'élève répond à
     // l'exercice QCM "qui parle ?" (voir etapesDialogue()) — remplace la
@@ -2101,6 +2191,11 @@
     // train de réfléchir au prénom qu'on vient de lui donner" (doigt sur
     // la joue pour Keb, sourcils froncés pour Bek), utilisée pour
     // l'étape `pensee: true` de etapesDialogue() (voir img plus bas).
+    // 🆕 (Raphaël, 29-08-2026) clé 'parles_tu_francais' — pose "perplexe,
+    // qui hausse les épaules/pointe son propre menton" pour la question
+    // "[prénom], [prénom], tu parles français ?" (voir etapesDialogue()
+    // plus bas) — cette étape n'avait jusqu'ici aucune image dédiée,
+    // retombant silencieusement sur la pose neutre par défaut.
   };
   function imagePerso(cle) {
     const jeu = IMAGES_PERSO[personnageChoisi === 'Bek' ? 'bek' : 'keb'];
@@ -2151,6 +2246,8 @@
   const elExerciceEtiquette = document.getElementById('exerciceEtiquette');
   const elExerciceMot = document.getElementById('exerciceMot');
   const elExerciceConsigne = document.getElementById('exerciceConsigne');
+  const elBtnIndice = document.getElementById('btnIndice');
+  const elIndiceTexte = document.getElementById('indiceTexte');
   const elSceneTapIndicateur = document.getElementById('sceneTapIndicateur');
 
   // 🆕 (retour Raphaël, 21-08-2026) Pile "Ce qui a été dit" + notes
@@ -2220,6 +2317,14 @@
   function creerLigneGenerique(ligne) {
     const div = document.createElement('div');
     div.className = 'pile-item ' + ligne.speaker;
+    // 🆕 (demande de Raphaël, 29-08-2026) data-etape-index — pour
+    // pouvoir retrouver CETTE bulle précise plus tard (voir
+    // afficherIndice()/allerVoirLaBulle()), sans dépendre de sa
+    // position dans la liste (qui varie : navigation arrière,
+    // reconstruction de la pile...). Absent (undefined) pour les
+    // lignes "élève" reconstruites sans etapeIndex connu — inoffensif,
+    // querySelector ne les ciblera simplement jamais.
+    if (Number.isInteger(ligne.etapeIndex)) div.dataset.etapeIndex = ligne.etapeIndex;
     const avatar = document.createElement('button');
     avatar.type = 'button';
     avatar.className = 'pile-avatar';
@@ -2285,9 +2390,9 @@
     // MÊME dernier élément (le second), et le premier restait invisible
     // (jamais sa classe .in). On capture maintenant une référence directe
     // à SON PROPRE élément avant de programmer le rAF.
+    enregistrerHistorique(ligne);
     const elLigne = creerLigneGenerique(ligne);
     elPileDialogue.appendChild(elLigne);
-    enregistrerHistorique(ligne);
     requestAnimationFrame(() => requestAnimationFrame(() => elLigne.classList.add('in')));
   }
 
@@ -2299,9 +2404,9 @@
   // légende de pensée : ne jamais réinventer les mots de l'élève).
   function ajouterLigneEleve(texte) {
     const ligne = { speaker: 'eleve', texte: texte };
+    enregistrerHistorique(ligne);
     const elLigne = creerLigneGenerique(ligne);
     elPileDialogue.appendChild(elLigne);
-    enregistrerHistorique(ligne);
     requestAnimationFrame(() => requestAnimationFrame(() => elLigne.classList.add('in')));
   }
 
@@ -2325,9 +2430,9 @@
     // pas du français à traduire.
     const trad = (def.geste && def.geste.trad) ? def.geste.trad : '';
     const ligne = { speaker: speaker, texte: texte, trad: trad, exercice: true, etapeCible: etape };
+    enregistrerHistorique(ligne);
     const elLigne = creerLigneGenerique(ligne);
     elPileDialogue.appendChild(elLigne);
-    enregistrerHistorique(ligne);
     requestAnimationFrame(() => requestAnimationFrame(() => elLigne.classList.add('in')));
   }
 
@@ -2336,9 +2441,32 @@
   // l'étape indexMax — factorisé pour être partagé entre precedent() et
   // allerAEtape() (clic sur un exercice passé dans le fil).
   function reconstruirePileJusqua(indexMax) {
+    // 🐛 CORRIGÉ (retour Raphaël, 29-08-2026) : ne filtrait QUE
+    // l'affichage (elPileDialogue), sans jamais élaguer historiquePile
+    // lui-même — pourtant déjà décrit comme l'intention dans le
+    // commentaire d'allerAEtape() ci-dessous, jamais vraiment codé. En
+    // reprenant un exercice après être revenu en arrière, la NOUVELLE
+    // tentative (nouvel appel à enregistrerHistorique()) s'ajoutait donc
+    // par-dessus l'ANCIENNE, jamais retirée — les deux se retrouvaient
+    // mélangées dans "Ce qui a été dit" à la moindre reconstruction
+    // suivante, dans un ordre incohérent (ordre de création, pas
+    // d'étape). Le tableau source est maintenant vraiment élagué, pas
+    // seulement sa vue affichée.
+    // La ligne de l'étape CIBLE elle-même (etapeIndex === indexMax) n'est
+    // gardée que si c'est un type 'texte' — sa ligne n'est alors JAMAIS
+    // régénérée en revenant dessus (voir le garde `reconstructionEnCours`
+    // dans rendreEtape()), il faut donc la conserver ici ou elle
+    // disparaîtrait purement et simplement. Pour un exercice
+    // (qcm/déduction/prénom) ou un binaire/niveau/genre, à l'inverse,
+    // revenir dessus signifie vouloir le refaire : sa éventuelle
+    // ancienne réponse doit partir, une nouvelle sera ajoutée à la
+    // soumission suivante — sinon l'ancienne et la nouvelle coexistent.
+    const etapeCibleEstTexte = ETAPES[indexMax] && ETAPES[indexMax].type === 'texte';
+    historiquePile = historiquePile.filter(function (ligne) {
+      return ligne.etapeIndex < indexMax || (etapeCibleEstTexte && ligne.etapeIndex === indexMax);
+    });
     elPileDialogue.innerHTML = '';
-    historiquePile.filter(function (ligne) { return ligne.etapeIndex <= indexMax; })
-      .forEach(function (ligne) { elPileDialogue.appendChild(creerLigneGenerique(ligne)); });
+    historiquePile.forEach(function (ligne) { elPileDialogue.appendChild(creerLigneGenerique(ligne)); });
     elPileDialogue.querySelectorAll('.pile-item').forEach(el => el.classList.add('in'));
   }
 
@@ -3022,6 +3150,19 @@
     elExerciceEtiquette.textContent = texteInterface('exercice');
     elExerciceConsigne.textContent = (def.consigne[langueActuelle()] || def.consigne.en);
 
+    // 🆕 (demande de Raphaël, 29-08-2026) Bouton "Indice" — visible
+    // seulement si CET exercice en définit un (def.indice). Toujours
+    // replié à la révélation, même s'il avait été ouvert la dernière
+    // fois qu'on est passé par ici (retour en arrière, reconstruction).
+    if (def.indice) {
+      elBtnIndice.style.display = '';
+      document.getElementById('txtBtnIndice').textContent = texteInterface('indice');
+    } else {
+      elBtnIndice.style.display = 'none';
+    }
+    elIndiceTexte.style.display = 'none';
+    elIndiceTexte.textContent = '';
+
     if (def.type === 'qcm') {
       elExerciceMot.style.display = 'block';
       elExerciceMot.textContent = def.mot_cible;
@@ -3185,6 +3326,39 @@
   }
 
   document.getElementById('btnRecommencer').addEventListener('click', demanderConfirmationRecommencer);
+
+  // 🆕 (demande de Raphaël, 29-08-2026) Clic sur "Indice" — affiche le
+  // texte d'aide, PUIS va chercher la bulle visée (def.indice.etapeCibleRef,
+  // résolu en index via ETAPES.indexOf() plutôt qu'un numéro figé — voir
+  // le commentaire sur ligneJeMappelle plus haut) dans "Ce qui a été
+  // dit", la fait défiler en vue et flasher brièvement pour attirer
+  // l'œil, et révèle directement sa traduction — pas la peine de faire
+  // deviner un second clic à l'élève qui vient tout juste d'être guidé
+  // jusque-là.
+  function afficherIndice() {
+    const def = ETAPES[etape];
+    if (!def || !def.indice) return;
+
+    const dejaOuvert = elIndiceTexte.style.display !== 'none';
+    if (dejaOuvert) { elIndiceTexte.style.display = 'none'; return; }
+    elIndiceTexte.textContent = (def.indice.texte[langueActuelle()] || def.indice.texte.en);
+    elIndiceTexte.style.display = 'block';
+
+    if (def.indice.etapeCibleRef) {
+      const indexCible = ETAPES.indexOf(def.indice.etapeCibleRef);
+      if (indexCible === -1) return; // ne devrait jamais arriver, mais on ne casse rien si ça arrive
+      const elCible = elPileDialogue.querySelector('[data-etape-index="' + indexCible + '"]');
+      if (!elCible) return; // ex. bulle pas encore dans le fil si l'indice est cliqué avant que l'étape référencée ait été jouée
+      const reduireMouvement = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      elCible.scrollIntoView({ behavior: reduireMouvement ? 'auto' : 'smooth', block: 'center' });
+      elCible.classList.remove('pile-item-flash');
+      void elCible.offsetWidth; // force le navigateur à "oublier" l'animation précédente avant de la relancer (sinon un second clic sur Indice ne relance rien si la classe était déjà présente)
+      elCible.classList.add('pile-item-flash');
+      const elTradCible = elCible.querySelector('.pile-trad');
+      if (elTradCible) elTradCible.classList.add('visible');
+    }
+  }
+  elBtnIndice.addEventListener('click', afficherIndice);
 
   function precedent() {
     if (!navigationActive) return;

@@ -975,14 +975,15 @@
   }
   .champ-prenom {
     font-family: inherit;
-    font-size: 1.1rem;
+    font-size: 1.15rem;
     text-align: center;
-    padding: 12px 20px;
+    padding: 14px 22px;
     border-radius: 999px;
     border: 1.5px solid var(--peche);
     width: min(80%, 320px);
+    transition: box-shadow 0.15s ease;
   }
-  .champ-prenom:focus { outline: 2px solid var(--peche-fonce); outline-offset: 2px; }
+  .champ-prenom:focus { outline: none; box-shadow: 0 0 0 4px rgba(224, 136, 103, 0.22); }
 
   /* ---------- Panneaux de réponse (saisie libre / oui-non / niveau) ----------
      🆕 (retour Raphaël, 22-08-2026) Remplacent #navDialogue le temps
@@ -1053,6 +1054,7 @@
      confondue avec une réplique de dialogue.
      ================================================================== */
   .exercice-panneau {
+    position: relative;
     width: 100%;
     background: #FFFFFF;
     border: 1.5px solid var(--peche);
@@ -1069,12 +1071,19 @@
   }
   .exercice-panneau.in { opacity: 1; transform: translateY(0) scale(1); }
 
+  /* 🆕 (retour Raphaël, 30-08-2026) Badge pastel plutôt qu'un simple
+     texte nu — reprend le même patron que .kbw-badge-erreurs/.badge-
+     exercice ailleurs sur le site (fond pêche très pâle, pilule), pour
+     mieux se détacher visuellement en tête de carte. */
   .exercice-etiquette {
     font-size: 0.72rem;
     font-weight: 700;
     letter-spacing: 0.06em;
     text-transform: uppercase;
     color: var(--peche-fonce);
+    background: var(--peche-pale, rgba(240, 169, 139, 0.16));
+    border-radius: 999px;
+    padding: 3px 12px;
   }
 
   /* Le mot testé — SEULEMENT pour le QCM (def.mot_cible), affiché ICI,
@@ -1103,20 +1112,32 @@
      jamais une étape de plus dans le flot normal de l'exercice, ne doit
      donc pas concurrencer visuellement la consigne ni la zone de
      réponse. */
+  /* 🆕 (retour Raphaël, 30-08-2026) Pastille ronde plutôt qu'un lien
+     texte souligné — ancrée sur #exercicePanneau (position: relative),
+     coin supérieur droit de LA CARTE, pas de la fenêtre (contrairement
+     à .retour/.btn-recommencer, ancrés sur l'écran entier : celle-ci
+     doit rester collée à la carte d'exercice où qu'elle scrolle). Fond
+     jaune très pâle façon post-it, distinct de la famille pêche/brun du
+     reste du site — signale "aide" plutôt qu'une action de navigation. */
   .btn-indice {
-    font-family: inherit;
-    font-size: 0.82rem;
-    font-weight: 700;
-    color: var(--brun-clair, #8A7364);
-    background: none;
-    border: none;
-    text-decoration: underline;
-    text-decoration-style: dotted;
-    text-underline-offset: 3px;
+    position: absolute;
+    top: -10px;
+    right: -10px;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    background: #FFF9E6;
+    border: 1.5px solid #E8D98A;
+    border-radius: 50%;
+    box-shadow: 2px 2px 8px var(--ombre);
     cursor: pointer;
-    padding: 2px 4px;
+    transition: transform 0.2s cubic-bezier(.34,1.6,.4,1);
   }
-  .btn-indice:hover { color: var(--peche-fonce); }
+  .btn-indice:hover { transform: scale(1.08) rotate(-8deg); }
+  .btn-indice:active { transform: scale(0.94); }
 
   .indice-texte {
     font-size: 0.86rem;
@@ -1638,20 +1659,26 @@
        genre restent des cases prédéterminées hors de ce panneau, comme
        avant (pas des exercices au sens de Raphaël). -->
   <div class="exercice-panneau" id="exercicePanneau" style="display: none;">
+    <!-- 🆕 (retour Raphaël, 30-08-2026) Icône "Indice" — sortie du flux
+         vertical normal (elle cassait la lecture entre la consigne et le
+         champ de réponse), remplacée par une pastille ronde fixe en coin
+         supérieur droit de la carte, masquée par défaut, révélée
+         seulement pour les exercices qui définissent def.indice (voir
+         revelerExercice() en JS). Même langage visuel que .retour/
+         .btn-recommencer ailleurs sur cette page : une pastille ronde en
+         coin pour une action secondaire, pas un lien texte dans le
+         corps. Ancrée sur #exercicePanneau (position: relative, voir
+         CSS) plutôt qu'en position: fixed sur l'écran entier : reste
+         collée à CETTE carte précisément, pas à la fenêtre. -->
+    <button type="button" class="btn-indice" id="btnIndice" style="display:none;" aria-label="Indice">💡</button>
     <div class="exercice-etiquette" id="exerciceEtiquette">Exercice</div>
     <div class="exercice-mot" id="exerciceMot" style="display: none;"></div>
     <div class="exercice-consigne" id="exerciceConsigne"></div>
-    <!-- 🆕 (demande de Raphaël, 29-08-2026) Bouton "Indice" — masqué par
-         défaut, révélé seulement pour les exercices qui définissent
-         def.indice (voir revelerExercice() en JS). Renvoie vers une
-         bulle précise de "Ce qui a été dit" plutôt que de donner la
-         réponse directement : présente formellement cette
+    <!-- Renvoie vers une bulle précise de "Ce qui a été dit" plutôt que
+         de donner la réponse directement : présente formellement cette
          fonctionnalité (cliquer une bulle affiche sa traduction) à
          travers un cas d'usage concret, réutilisable pour de futures
          notions de grammaire/vocabulaire, pas seulement pour ce prénom. -->
-    <button type="button" class="btn-indice" id="btnIndice" style="display:none;">
-      💡 <span id="txtBtnIndice">Indice</span>
-    </button>
     <div class="indice-texte" id="indiceTexte" style="display:none;"></div>
     <div class="zone-reponse" id="reponseLibre" style="display: none;">
       <input type="text" class="champ-prenom" id="champReponseLibre" autocomplete="off">
@@ -2046,8 +2073,8 @@
       // légende #penseeLegende (voir texteReflexionNom()/rendreEtape()).
       { type: 'texte', speaker: perso, pensee: true, img: imagePerso('prenom_prenom'),
         texte: function (r) { return (r.prenom || '') + ", " + (r.prenom || '') + "\u2026"; } },
-      { type: 'texte', speaker: perso, img: imagePerso('parles_tu_francais'), texte: function (r) { return (r.prenom || '') + ", " + (r.prenom || '') + ", tu parles fran\u00e7ais ?"; },
-        trad: { en: function (r) { return (r.prenom || '') + ", " + (r.prenom || '') + ", do you speak French?"; } } },
+      { type: 'texte', speaker: perso, img: imagePerso('parles_tu_francais'), texte: function (r) { return (r.prenom || '') + ", tu parles fran\u00e7ais ?"; },
+        trad: { en: function (r) { return (r.prenom || '') + ", do you speak French?"; } } },
       { type: 'binaire', cle_reponse: 'parleFrancais' },
       { type: 'niveau', cle_reponse: 'niveau', condition: function (r) { return r.parleFrancais === 'oui'; } },
       { type: 'texte', speaker: perso, texte: "Je vois...", trad: { en: "I see..." } },
@@ -2069,26 +2096,26 @@
   }
 
   const INTERFACE = {
-    fr: { precedent: "Précédent", continuer: "Continuer", terminer: "Terminer", placeholderPrenom: "Ton prénom", messageFin: "Enchanté, {prenom} !", ceQuiAEteDit: "Ce qui a été dit", aRetenir: "À retenir", afficherTrad: "Afficher la traduction", cacherTrad: "Cacher la traduction", choixPersonnage: "Qui veux-tu faire apparaître en premier ?", prixChoixInitial: "0 P$ / 0 PB", exercice: "Exercice", recommencer: "Recommencer la leçon", recommencerMessage: "Recommencer cette leçon depuis le début ? Tes points et tes récompenses déjà gagnés restent acquis — seule ta position dans la leçon revient au début.", recommencerConfirmer: "Recommencer", recommencerAnnuler: "Annuler", indice: "Indice" },
-    en: { precedent: "Back", continuer: "Continue", terminer: "Finish", placeholderPrenom: "Your first name", messageFin: "Nice to meet you, {prenom}!", ceQuiAEteDit: "What was said", aRetenir: "Good to know", afficherTrad: "Show translation", cacherTrad: "Hide translation", choixPersonnage: "Who do you want to bring to life first?", prixChoixInitial: "0 P$ / 0 PB", exercice: "Exercise", recommencer: "Restart the lesson", recommencerMessage: "Restart this lesson from the beginning? Any points and rewards you’ve already earned stay yours — only your position in the lesson goes back to the start.", recommencerConfirmer: "Restart", recommencerAnnuler: "Cancel", indice: "Hint" },
-    es: { precedent: "Atrás", continuer: "Continuar", terminer: "Terminar", placeholderPrenom: "Tu nombre", messageFin: "¡Encantados, {prenom}!", ceQuiAEteDit: "Lo que se dijo", aRetenir: "Para recordar", afficherTrad: "Mostrar traducción", cacherTrad: "Ocultar traducción", choixPersonnage: "¿A quién quieres dar vida primero?", prixChoixInitial: "0 P$ / 0 PB", exercice: "Ejercicio" },
-    it: { precedent: "Indietro", continuer: "Continua", terminer: "Fine", placeholderPrenom: "Il tuo nome", messageFin: "Piacere, {prenom}!", ceQuiAEteDit: "Cosa è stato detto", aRetenir: "Da ricordare", afficherTrad: "Mostra traduzione", cacherTrad: "Nascondi traduzione", choixPersonnage: "Chi vuoi far apparire per primo?", prixChoixInitial: "0 P$ / 0 PB", exercice: "Esercizio" },
-    pt: { precedent: "Voltar", continuer: "Continuar", terminer: "Terminar", placeholderPrenom: "O teu nome", messageFin: "Prazer, {prenom}!", ceQuiAEteDit: "O que foi dito", aRetenir: "A reter", afficherTrad: "Mostrar tradução", cacherTrad: "Ocultar tradução", choixPersonnage: "Quem queres criar primeiro?", prixChoixInitial: "0 P$ / 0 PB", exercice: "Exercício" },
-    ca: { precedent: "Enrere", continuer: "Continua", terminer: "Acaba", placeholderPrenom: "El teu nom", messageFin: "Encantats, {prenom}!", ceQuiAEteDit: "El que s’ha dit", aRetenir: "Per recordar", afficherTrad: "Mostra la traducció", cacherTrad: "Amaga la traducció", choixPersonnage: "A qui vols fer aparèixer primer?", prixChoixInitial: "0 P$ / 0 PB", exercice: "Exercici" },
-    eo: { precedent: "Reen", continuer: "Daŭrigi", terminer: "Fini", placeholderPrenom: "Via nomo", messageFin: "Pleĝas, {prenom}!", ceQuiAEteDit: "Kio estis dirita", aRetenir: "Por memori", afficherTrad: "Montri tradukon", cacherTrad: "Kaŝi tradukon", choixPersonnage: "Kiun vi volas unue aperigi?", prixChoixInitial: "0 P$ / 0 PB", exercice: "Ekzerco" },
-    zh: { precedent: "返回", continuer: "继续", terminer: "完成", placeholderPrenom: "你的名字", messageFin: "很高兴认识你，{prenom}！", ceQuiAEteDit: "已说内容", aRetenir: "记住这个", afficherTrad: "显示翻译", cacherTrad: "隐藏翻译", choixPersonnage: "你想先创造谁？", prixChoixInitial: "0 P$ / 0 PB", exercice: "练习" },
-    ja: { precedent: "戻る", continuer: "続ける", terminer: "終了", placeholderPrenom: "お前の名前", messageFin: "会えて嫌しい、{prenom}！", ceQuiAEteDit: "話されたこと", aRetenir: "覚えておこう", afficherTrad: "翻訳を表示", cacherTrad: "翻訳を隠す", choixPersonnage: "最初に誰を登場させたい？", prixChoixInitial: "0 P$ / 0 PB", exercice: "練習" },
-    ko: { precedent: "뒤로", continuer: "계속", terminer: "완료", placeholderPrenom: "네 이름", messageFin: "만나서 반가워, {prenom}!", ceQuiAEteDit: "나눈 이야기", aRetenir: "기억해두기", afficherTrad: "번역 보기", cacherTrad: "번역 숨기기", choixPersonnage: "누구를 먼저 나타나게 하고 싶어?", prixChoixInitial: "0 P$ / 0 PB", exercice: "연습" },
-    vi: { precedent: "Quay lại", continuer: "Tiếp tục", terminer: "Hoàn thành", placeholderPrenom: "Tên của bạn", messageFin: "Rất vui được gặp bạn, {prenom}!", ceQuiAEteDit: "Những gì đã nói", aRetenir: "Ghi nhớ", afficherTrad: "Hiện bản dịch", cacherTrad: "Ẩn bản dịch", choixPersonnage: "Bạn muốn ai xuất hiện trước?", prixChoixInitial: "0 P$ / 0 PB", exercice: "Bài tập" },
-    ht: { precedent: "Tounen", continuer: "Kontinye", terminer: "Fini", placeholderPrenom: "Non ou", messageFin: "Kontan konnen w, {prenom}!", ceQuiAEteDit: "Sa ki te di", aRetenir: "Pou sonje", afficherTrad: "Montre tradiksyon", cacherTrad: "Kache tradiksyon", choixPersonnage: "Ki moun ou vle fè parèt an premye?", prixChoixInitial: "0 P$ / 0 PB", exercice: "Egzèsis" },
-    tl: { precedent: "Bumalik", continuer: "Magpatuloy", terminer: "Tapusin", placeholderPrenom: "Ang pangalan mo", messageFin: "Ikinagagalak kitang makilala, {prenom}!", ceQuiAEteDit: "Ang nasabi na", aRetenir: "Dapat tandaan", afficherTrad: "Ipakita ang salin", cacherTrad: "Itago ang salin", choixPersonnage: "Sino ang gusto mong lumitaw muna?", prixChoixInitial: "0 P$ / 0 PB", exercice: "Ehersisyo" },
-    id: { precedent: "Kembali", continuer: "Lanjut", terminer: "Selesai", placeholderPrenom: "Namamu", messageFin: "Senang berkenalan denganmu, {prenom}!", ceQuiAEteDit: "Yang sudah dikatakan", aRetenir: "Perlu diingat", afficherTrad: "Tampilkan terjemahan", cacherTrad: "Sembunyikan terjemahan", choixPersonnage: "Siapa yang ingin kamu munculkan lebih dulu?", prixChoixInitial: "0 P$ / 0 PB", exercice: "Latihan" },
-    nl: { precedent: "Terug", continuer: "Verder", terminer: "Klaar", placeholderPrenom: "Je voornaam", messageFin: "Leuk je te ontmoeten, {prenom}!", ceQuiAEteDit: "Wat er gezegd is", aRetenir: "Om te onthouden", afficherTrad: "Vertaling tonen", cacherTrad: "Vertaling verbergen", choixPersonnage: "Wie wil je als eerste laten verschijnen?", prixChoixInitial: "0 P$ / 0 PB", exercice: "Oefening" },
-    de: { precedent: "Zurück", continuer: "Weiter", terminer: "Fertig", placeholderPrenom: "Dein Vorname", messageFin: "Freut mich, {prenom}!", ceQuiAEteDit: "Was gesagt wurde", aRetenir: "Zum Merken", afficherTrad: "Übersetzung anzeigen", cacherTrad: "Übersetzung ausblenden", choixPersonnage: "Wen möchtest du zuerst erscheinen lassen?", prixChoixInitial: "0 P$ / 0 PB", exercice: "Übung" },
-    fa: { precedent: "بازگشت", continuer: "ادامه", terminer: "پایان", placeholderPrenom: "اسم تو", messageFin: "از آشناییت خوشوقتم، {prenom}!", ceQuiAEteDit: "آنچه گفته شد", aRetenir: "نکته‌ی مهم", afficherTrad: "نمایش ترجمه", cacherTrad: "پنهان کردن ترجمه", choixPersonnage: "می‌خوای اول کی رو به وجود بیاری؟", prixChoixInitial: "0 P$ / 0 PB", exercice: "تمرین" },
-    sv: { precedent: "Tillbaka", continuer: "Fortsätt", terminer: "Klart", placeholderPrenom: "Ditt förnamn", messageFin: "Trevligt att träffas, {prenom}!", ceQuiAEteDit: "Vad som sagts", aRetenir: "Bra att veta", afficherTrad: "Visa översättning", cacherTrad: "Dölj översättning", choixPersonnage: "Vem vill du skapa först?", prixChoixInitial: "0 P$ / 0 PB", exercice: "Övning" },
-    no: { precedent: "Tilbake", continuer: "Fortsett", terminer: "Ferdig", placeholderPrenom: "Fornavnet ditt", messageFin: "Hyggelig å treffe deg, {prenom}!", ceQuiAEteDit: "Det som ble sagt", aRetenir: "Verdt å huske", afficherTrad: "Vis oversettelse", cacherTrad: "Skjul oversettelse", choixPersonnage: "Hvem vil du skape først?", prixChoixInitial: "0 P$ / 0 PB", exercice: "Øvelse" },
-    ru: { precedent: "Назад", continuer: "Далее", terminer: "Готово", placeholderPrenom: "Твоё имя", messageFin: "Приятно познакомиться, {prenom}!", ceQuiAEteDit: "Что было сказано", aRetenir: "Важно запомнить", afficherTrad: "Показать перевод", cacherTrad: "Скрыть перевод", choixPersonnage: "Кого ты хочешь создать первым?", prixChoixInitial: "0 P$ / 0 PB", exercice: "Упражнение" },
+    fr: { precedent: "Précédent", continuer: "Continuer", terminer: "Terminer", placeholderPrenom: "Je m’appelle…", messageFin: "Enchanté, {prenom} !", ceQuiAEteDit: "Ce qui a été dit", aRetenir: "À retenir", afficherTrad: "Afficher la traduction", cacherTrad: "Cacher la traduction", choixPersonnage: "Qui veux-tu faire apparaître en premier ?", prixChoixInitial: "0 P$ / 0 PB", exercice: "Exercice", recommencer: "Recommencer la leçon", recommencerMessage: "Recommencer cette leçon depuis le début ? Tes points et tes récompenses déjà gagnés restent acquis — seule ta position dans la leçon revient au début.", recommencerConfirmer: "Recommencer", recommencerAnnuler: "Annuler", indice: "Indice" },
+    en: { precedent: "Back", continuer: "Continue", terminer: "Finish", placeholderPrenom: "My name is…", messageFin: "Nice to meet you, {prenom}!", ceQuiAEteDit: "What was said", aRetenir: "Good to know", afficherTrad: "Show translation", cacherTrad: "Hide translation", choixPersonnage: "Who do you want to bring to life first?", prixChoixInitial: "0 P$ / 0 PB", exercice: "Exercise", recommencer: "Restart the lesson", recommencerMessage: "Restart this lesson from the beginning? Any points and rewards you’ve already earned stay yours — only your position in the lesson goes back to the start.", recommencerConfirmer: "Restart", recommencerAnnuler: "Cancel", indice: "Hint" },
+    es: { precedent: "Atrás", continuer: "Continuar", terminer: "Terminar", placeholderPrenom: "Me llamo…", messageFin: "¡Encantados, {prenom}!", ceQuiAEteDit: "Lo que se dijo", aRetenir: "Para recordar", afficherTrad: "Mostrar traducción", cacherTrad: "Ocultar traducción", choixPersonnage: "¿A quién quieres dar vida primero?", prixChoixInitial: "0 P$ / 0 PB", exercice: "Ejercicio" },
+    it: { precedent: "Indietro", continuer: "Continua", terminer: "Fine", placeholderPrenom: "Mi chiamo…", messageFin: "Piacere, {prenom}!", ceQuiAEteDit: "Cosa è stato detto", aRetenir: "Da ricordare", afficherTrad: "Mostra traduzione", cacherTrad: "Nascondi traduzione", choixPersonnage: "Chi vuoi far apparire per primo?", prixChoixInitial: "0 P$ / 0 PB", exercice: "Esercizio" },
+    pt: { precedent: "Voltar", continuer: "Continuar", terminer: "Terminar", placeholderPrenom: "Chamo-me…", messageFin: "Prazer, {prenom}!", ceQuiAEteDit: "O que foi dito", aRetenir: "A reter", afficherTrad: "Mostrar tradução", cacherTrad: "Ocultar tradução", choixPersonnage: "Quem queres criar primeiro?", prixChoixInitial: "0 P$ / 0 PB", exercice: "Exercício" },
+    ca: { precedent: "Enrere", continuer: "Continua", terminer: "Acaba", placeholderPrenom: "Em dic…", messageFin: "Encantats, {prenom}!", ceQuiAEteDit: "El que s’ha dit", aRetenir: "Per recordar", afficherTrad: "Mostra la traducció", cacherTrad: "Amaga la traducció", choixPersonnage: "A qui vols fer aparèixer primer?", prixChoixInitial: "0 P$ / 0 PB", exercice: "Exercici" },
+    eo: { precedent: "Reen", continuer: "Daŭrigi", terminer: "Fini", placeholderPrenom: "Mi nomiĝas…", messageFin: "Pleĝas, {prenom}!", ceQuiAEteDit: "Kio estis dirita", aRetenir: "Por memori", afficherTrad: "Montri tradukon", cacherTrad: "Kaŝi tradukon", choixPersonnage: "Kiun vi volas unue aperigi?", prixChoixInitial: "0 P$ / 0 PB", exercice: "Ekzerco" },
+    zh: { precedent: "返回", continuer: "继续", terminer: "完成", placeholderPrenom: "我叫…", messageFin: "很高兴认识你，{prenom}！", ceQuiAEteDit: "已说内容", aRetenir: "记住这个", afficherTrad: "显示翻译", cacherTrad: "隐藏翻译", choixPersonnage: "你想先创造谁？", prixChoixInitial: "0 P$ / 0 PB", exercice: "练习" },
+    ja: { precedent: "戻る", continuer: "続ける", terminer: "終了", placeholderPrenom: "わたしは…", messageFin: "会えて嫌しい、{prenom}！", ceQuiAEteDit: "話されたこと", aRetenir: "覚えておこう", afficherTrad: "翻訳を表示", cacherTrad: "翻訳を隠す", choixPersonnage: "最初に誰を登場させたい？", prixChoixInitial: "0 P$ / 0 PB", exercice: "練習" },
+    ko: { precedent: "뒤로", continuer: "계속", terminer: "완료", placeholderPrenom: "저는…", messageFin: "만나서 반가워, {prenom}!", ceQuiAEteDit: "나눈 이야기", aRetenir: "기억해두기", afficherTrad: "번역 보기", cacherTrad: "번역 숨기기", choixPersonnage: "누구를 먼저 나타나게 하고 싶어?", prixChoixInitial: "0 P$ / 0 PB", exercice: "연습" },
+    vi: { precedent: "Quay lại", continuer: "Tiếp tục", terminer: "Hoàn thành", placeholderPrenom: "Tôi tên là…", messageFin: "Rất vui được gặp bạn, {prenom}!", ceQuiAEteDit: "Những gì đã nói", aRetenir: "Ghi nhớ", afficherTrad: "Hiện bản dịch", cacherTrad: "Ẩn bản dịch", choixPersonnage: "Bạn muốn ai xuất hiện trước?", prixChoixInitial: "0 P$ / 0 PB", exercice: "Bài tập" },
+    ht: { precedent: "Tounen", continuer: "Kontinye", terminer: "Fini", placeholderPrenom: "Mwen rele…", messageFin: "Kontan konnen w, {prenom}!", ceQuiAEteDit: "Sa ki te di", aRetenir: "Pou sonje", afficherTrad: "Montre tradiksyon", cacherTrad: "Kache tradiksyon", choixPersonnage: "Ki moun ou vle fè parèt an premye?", prixChoixInitial: "0 P$ / 0 PB", exercice: "Egzèsis" },
+    tl: { precedent: "Bumalik", continuer: "Magpatuloy", terminer: "Tapusin", placeholderPrenom: "Ako si…", messageFin: "Ikinagagalak kitang makilala, {prenom}!", ceQuiAEteDit: "Ang nasabi na", aRetenir: "Dapat tandaan", afficherTrad: "Ipakita ang salin", cacherTrad: "Itago ang salin", choixPersonnage: "Sino ang gusto mong lumitaw muna?", prixChoixInitial: "0 P$ / 0 PB", exercice: "Ehersisyo" },
+    id: { precedent: "Kembali", continuer: "Lanjut", terminer: "Selesai", placeholderPrenom: "Namaku…", messageFin: "Senang berkenalan denganmu, {prenom}!", ceQuiAEteDit: "Yang sudah dikatakan", aRetenir: "Perlu diingat", afficherTrad: "Tampilkan terjemahan", cacherTrad: "Sembunyikan terjemahan", choixPersonnage: "Siapa yang ingin kamu munculkan lebih dulu?", prixChoixInitial: "0 P$ / 0 PB", exercice: "Latihan" },
+    nl: { precedent: "Terug", continuer: "Verder", terminer: "Klaar", placeholderPrenom: "Ik heet…", messageFin: "Leuk je te ontmoeten, {prenom}!", ceQuiAEteDit: "Wat er gezegd is", aRetenir: "Om te onthouden", afficherTrad: "Vertaling tonen", cacherTrad: "Vertaling verbergen", choixPersonnage: "Wie wil je als eerste laten verschijnen?", prixChoixInitial: "0 P$ / 0 PB", exercice: "Oefening" },
+    de: { precedent: "Zurück", continuer: "Weiter", terminer: "Fertig", placeholderPrenom: "Ich heiße…", messageFin: "Freut mich, {prenom}!", ceQuiAEteDit: "Was gesagt wurde", aRetenir: "Zum Merken", afficherTrad: "Übersetzung anzeigen", cacherTrad: "Übersetzung ausblenden", choixPersonnage: "Wen möchtest du zuerst erscheinen lassen?", prixChoixInitial: "0 P$ / 0 PB", exercice: "Übung" },
+    fa: { precedent: "بازگشت", continuer: "ادامه", terminer: "پایان", placeholderPrenom: "اسم من…", messageFin: "از آشناییت خوشوقتم، {prenom}!", ceQuiAEteDit: "آنچه گفته شد", aRetenir: "نکته‌ی مهم", afficherTrad: "نمایش ترجمه", cacherTrad: "پنهان کردن ترجمه", choixPersonnage: "می‌خوای اول کی رو به وجود بیاری؟", prixChoixInitial: "0 P$ / 0 PB", exercice: "تمرین" },
+    sv: { precedent: "Tillbaka", continuer: "Fortsätt", terminer: "Klart", placeholderPrenom: "Jag heter…", messageFin: "Trevligt att träffas, {prenom}!", ceQuiAEteDit: "Vad som sagts", aRetenir: "Bra att veta", afficherTrad: "Visa översättning", cacherTrad: "Dölj översättning", choixPersonnage: "Vem vill du skapa först?", prixChoixInitial: "0 P$ / 0 PB", exercice: "Övning" },
+    no: { precedent: "Tilbake", continuer: "Fortsett", terminer: "Ferdig", placeholderPrenom: "Jeg heter…", messageFin: "Hyggelig å treffe deg, {prenom}!", ceQuiAEteDit: "Det som ble sagt", aRetenir: "Verdt å huske", afficherTrad: "Vis oversettelse", cacherTrad: "Skjul oversettelse", choixPersonnage: "Hvem vil du skape først?", prixChoixInitial: "0 P$ / 0 PB", exercice: "Øvelse" },
+    ru: { precedent: "Назад", continuer: "Далее", terminer: "Готово", placeholderPrenom: "Меня зовут…", messageFin: "Приятно познакомиться, {prenom}!", ceQuiAEteDit: "Что было сказано", aRetenir: "Важно запомнить", afficherTrad: "Показать перевод", cacherTrad: "Скрыть перевод", choixPersonnage: "Кого ты хочешь создать первым?", prixChoixInitial: "0 P$ / 0 PB", exercice: "Упражнение" },
   };
 
   function texteInterface(cle) {
@@ -3156,7 +3183,7 @@
     // fois qu'on est passé par ici (retour en arrière, reconstruction).
     if (def.indice) {
       elBtnIndice.style.display = '';
-      document.getElementById('txtBtnIndice').textContent = texteInterface('indice');
+      elBtnIndice.setAttribute('aria-label', texteInterface('indice'));
     } else {
       elBtnIndice.style.display = 'none';
     }
@@ -3577,11 +3604,17 @@
   // change pas en cours de leçon), pas régénérés à chaque rendu.
   function construireBoutonsNiveau() {
     elReponseNiveau.innerHTML = '';
-    NIVEAUX.forEach(function (niv) {
+    NIVEAUX.forEach(function (niv, i) {
       const btn = document.createElement('button');
       btn.type = 'button';
       btn.className = 'bouton-choix';
-      btn.textContent = niv[langueActuelle()] || niv.fr;
+      // 🆕 (Raphaël, 30-08-2026) Seule la 1ʳᵉ option ("je commence")
+      // reste dans la langue de l'apprenant — logique, puisqu'il ne
+      // parle pas encore français à ce niveau. Les autres (un peu,
+      // assez bien, très bien, presque parfait) passent en français :
+      // quelqu'un qui coche "un peu" devrait justement pouvoir lire
+      // "un peu" en français à ce stade.
+      btn.textContent = (i === 0) ? (niv[langueActuelle()] || niv.fr) : niv.fr;
       btn.addEventListener('click', function () {
         const def = ETAPES[etape];
         reponses[def.cle_reponse] = niv.id;
@@ -3592,8 +3625,13 @@
     });
   }
 
+  // 🆕 (Raphaël, 30-08-2026) Toujours en français, quelle que soit la
+  // langue d'interface de l'apprenant : on lui demande justement s'il
+  // parle français, "oui"/"non" fait partie du vocabulaire minimal
+  // attendu à ce stade — traduire la réponse viderait la question de
+  // son sens.
   document.querySelectorAll('#reponseBinaire .bouton-choix').forEach(function (btn, i) {
-    btn.textContent = (OUI_NON[langueActuelle()] || OUI_NON.en)[i];
+    btn.textContent = OUI_NON.fr[i];
   });
 
   // 🆕 Navigation clavier (flèches gauche/droite) — ignorée si le focus
@@ -3784,6 +3822,12 @@
   });
 
   btnPrecedent.textContent = '‹ ' + texteInterface('precedent');
+  // 🐛 CORRIGÉ (retour Raphaël, 30-08-2026) : "Continuer" restait figé en
+  // dur en français dans le HTML de ces deux boutons, jamais traduit —
+  // visible en anglais (capture Raphaël) où tout le reste de l'exercice
+  // passait bien à l'anglais sauf ce bouton.
+  document.getElementById('btnValiderReponseLibre').textContent = texteInterface('continuer');
+  document.getElementById('btnValiderPrenom').textContent = texteInterface('continuer');
 
   // ---------- Démarrage ----------
   // 🆕 (retour Raphaël, 22-08-2026) Restructuré autour du choix du

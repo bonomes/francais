@@ -2075,8 +2075,8 @@
         texte: function (r) { return (r.prenom || '') + ", " + (r.prenom || '') + "\u2026"; } },
       { type: 'texte', speaker: perso, img: imagePerso('parles_tu_francais'), texte: function (r) { return (r.prenom || '') + ", tu parles fran\u00e7ais ?"; },
         trad: { en: function (r) { return (r.prenom || '') + ", do you speak French?"; } } },
-      { type: 'binaire', cle_reponse: 'parleFrancais' },
-      { type: 'niveau', cle_reponse: 'niveau', condition: function (r) { return r.parleFrancais === 'oui'; } },
+      { type: 'binaire', cle_reponse: 'parleFrancais', img: imagePerso('parles_tu_francais_attente') },
+      { type: 'niveau', cle_reponse: 'niveau', condition: function (r) { return r.parleFrancais === 'oui'; }, img: imagePerso('parles_tu_francais_attente') },
       { type: 'texte', speaker: perso, texte: "Je vois...", trad: { en: "I see..." } },
       { type: 'texte', speaker: perso, texte: "Eh ! Tu me vois ? Moi, je ne te vois pas.", trad: { en: "Hey! You can see me? I can\u2019t see you." } },
       { type: 'texte', speaker: perso, texte: "Moi, je suis " + (perso === 'keb' ? "un gar\u00e7on." : "une fille."),
@@ -2200,10 +2200,10 @@
     // d'être désorienté. Voir BEATS_DESORIENTATION plus bas (nouveau
     // premier beat, avec rejeu de l'éclat de #flashApparition juste
     // avant lui) et jouerEclatLumineux(). Images fournies par Raphaël.
-    keb: { neutre: 'keb_neutre_01.webp', genere: 'keb_généré_01.webp', bonjour: 'l1_keb_bonjour_01.webp', ebloui: 'l1_keb_ebloui_01.webp', confus: 'l1_keb_confus_01.webp', je_suis_ou: 'l1_keb_je-suis-ou_01.webp', ou_est_ami: 'l1_keb_ou-est-bek_01.webp', appelle_ami: 'l1_keb_bek-bek_01.webp', interpelle: 'l1_keb_interpellé_02.webp', je_mappelle: 'l1_keb_je-m-appelle-Keb_01.webp', maman_papa: 'l1_keb_maman-papa_01.webp', attend: 'l1_keb_attend-r1_01.webp', alors_tu_es_qui: 'l1_keb_alors-tu-es-qui_01.webp', alors_tu_es_qui_attente: 'l1_keb_alors-tu-es-qui_attente-rp_01.webp', prenom_prenom: 'l1_keb_prenom-prenom_01.webp', parles_tu_francais: 'l1_keb_parles-tu-francais_01.webp' },
+    keb: { neutre: 'keb_neutre_01.webp', genere: 'keb_généré_01.webp', bonjour: 'l1_keb_bonjour_01.webp', ebloui: 'l1_keb_ebloui_01.webp', confus: 'l1_keb_confus_01.webp', je_suis_ou: 'l1_keb_je-suis-ou_01.webp', ou_est_ami: 'l1_keb_ou-est-bek_01.webp', appelle_ami: 'l1_keb_bek-bek_01.webp', interpelle: 'l1_keb_interpellé_02.webp', je_mappelle: 'l1_keb_je-m-appelle-Keb_01.webp', maman_papa: 'l1_keb_maman-papa_01.webp', attend: 'l1_keb_attend-r1_01.webp', alors_tu_es_qui: 'l1_keb_alors-tu-es-qui_01.webp', alors_tu_es_qui_attente: 'l1_keb_alors-tu-es-qui_attente-rp_01.webp', prenom_prenom: 'l1_keb_prenom-prenom_01.webp', parles_tu_francais: 'l1_keb_parles-tu-francais_01.webp', parles_tu_francais_attente: 'l1_keb_parles-tu-francais_rep_01.webp' },
     // 🆕 (Raphaël, 22-08-2026) neutre bek_neutre_03.webp (remplace
     // bek_neutre_01.webp — nouvelle version fournie).
-    bek: { neutre: 'bek_neutre_03.webp', genere: 'bek_générée_01.webp', bonjour: 'l1_bek_bonjour_01.webp', ebloui: 'l1_bek_eblouie_01.webp', confus: 'l1_bek_confuse_01.webp', je_suis_ou: 'l1_bek_je-suis-ou_01.webp', ou_est_ami: 'l1_bek_ou-est-keb_01.webp', appelle_ami: 'l1_bek_keb-keb_01.webp', interpelle: 'l1_bek_interpellée_01.webp', je_mappelle: 'l1_bek_je-m-appelle-Bek_01.webp', maman_papa: 'l1_bek_maman-papa_01.webp', attend: 'l1_bek_attend-r1_01.webp', alors_tu_es_qui: 'l1_bek_alors-tu-es-qui_01.webp', alors_tu_es_qui_attente: 'l1_bek_alors-tu-es-qui_attente-rp_01.webp', prenom_prenom: 'l1_bek_prenom-prenom_01.webp', parles_tu_francais: 'l1_bek_parles-tu-francais_01.webp' }
+    bek: { neutre: 'bek_neutre_03.webp', genere: 'bek_générée_01.webp', bonjour: 'l1_bek_bonjour_01.webp', ebloui: 'l1_bek_eblouie_01.webp', confus: 'l1_bek_confuse_01.webp', je_suis_ou: 'l1_bek_je-suis-ou_01.webp', ou_est_ami: 'l1_bek_ou-est-keb_01.webp', appelle_ami: 'l1_bek_keb-keb_01.webp', interpelle: 'l1_bek_interpellée_01.webp', je_mappelle: 'l1_bek_je-m-appelle-Bek_01.webp', maman_papa: 'l1_bek_maman-papa_01.webp', attend: 'l1_bek_attend-r1_01.webp', alors_tu_es_qui: 'l1_bek_alors-tu-es-qui_01.webp', alors_tu_es_qui_attente: 'l1_bek_alors-tu-es-qui_attente-rp_01.webp', prenom_prenom: 'l1_bek_prenom-prenom_01.webp', parles_tu_francais: 'l1_bek_parles-tu-francais_01.webp', parles_tu_francais_attente: 'l1_bek_parles-tu-francais_rep_01.webp' }
     // 🆕 (23-08-2026) clé 'attend' — pose du personnage qui patiente,
     // mains jointes sur la poitrine, PENDANT que l'élève répond à
     // l'exercice QCM "qui parle ?" (voir etapesDialogue()) — remplace la
@@ -2223,6 +2223,11 @@
     // "[prénom], [prénom], tu parles français ?" (voir etapesDialogue()
     // plus bas) — cette étape n'avait jusqu'ici aucune image dédiée,
     // retombant silencieusement sur la pose neutre par défaut.
+    // 🆕 (Raphaël, 30-08-2026) clé 'parles_tu_francais_attente' — pose
+    // du personnage qui patiente pendant que l'élève choisit sa réponse
+    // (Oui/Non, puis niveau) — utilisée sur les étapes 'binaire' et
+    // 'niveau' juste après la question ci-dessus, qui n'avaient elles
+    // non plus aucune image dédiée jusqu'ici.
   };
   function imagePerso(cle) {
     const jeu = IMAGES_PERSO[personnageChoisi === 'Bek' ? 'bek' : 'keb'];

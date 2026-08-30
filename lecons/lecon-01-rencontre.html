@@ -3971,22 +3971,89 @@
     }
     while (etape < ETAPES.length && !etapeApplicable(ETAPES[etape])) etape += 1;
 
-    // Reconstruit la pile "Ce qui a été dit" + notes grammaticales pour
-    // toutes les répliques déjà passées, même patron que precedent() —
-    // sans ça, une reprise en cours de route afficherait la bonne étape
-    // mais un historique vide, comme si le dialogue venait de commencer.
-    if (etape > 0) {
-      reconstructionEnCours = true;
-      for (let j = 0; j < etape; j++) {
-        if (ETAPES[j].type === 'texte' && etapeApplicable(ETAPES[j])) {
-          ajouterLigneDialogue(ETAPES[j]);
-          ajouterNoteGrammaire(ETAPES[j]);
-        }
-      }
-      elPileDialogue.querySelectorAll('.pile-item').forEach(el => el.classList.add('in'));
-      elPileGrammaire.querySelectorAll('.grammaire-item').forEach(el => el.classList.add('in'));
-      reconstructionEnCours = false;
+  // 🐛 CORRIGÉ (Raphaël, 30-08-2026) : à la reprise d'une leçon commencée
+  // (rechargement de page, ou retour plus tard), seules les étapes
+  // 'texte' étaient rejouées dans historiquePile — les exercices résolus
+  // (qcm/prénom/déduction) ET les réponses de l'élève (oui/non, niveau,
+  // genre) ne l'étaient JAMAIS. "Ce qui a été dit" ressortait donc
+  // incomplet dès le rechargement (bulles d'exercice absentes, réponses
+  // de l'élève absentes) — et un retour en arrière ensuite (precedent()/
+  // allerAEtape(), qui reconstruisent TOUJOURS depuis historiquePile)
+  // ne faisait qu'exposer ce trou, donnant l'impression que tout venait
+  // d'être effacé. Seuls `etape` et `reponses` sont persistés (voir
+  // sauvegarderPosition()) — jamais le texte exact tapé par l'élève —
+  // donc ce rejeu reconstruit chaque ligne à partir de `reponses` plutôt
+  // que de la revivre telle quelle. Fidèle à 100% pour qcm/déduction/
+  // binaire/niveau/genre (leur texte affiché est toujours déterministe :
+  // soit l'option choisie dans def.choix, soit la valeur tapée elle-même
+  // pour la déduction). Approximatif pour 'prenom' UNIQUEMENT : la
+  // phrase complète tapée ("Je m'appelle Michel, et toi ?") n'est jamais
+  // sauvegardée, seul le prénom extrait (reponses.prenom) l'est — on
+  // reconstruit donc une phrase plausible à partir de l'amorce, faute de
+  // mieux.
+  function rejouerEtapePassee(def) {
+    if (def.type === 'texte') {
+      ajouterLigneDialogue(def);
+      return;
     }
+    if (def.type === 'qcm') {
+      const id = reponses[def.cle_reponse];
+      const choixTrouve = (id && def.choix) ? def.choix.find(function (c) { return c.id === id; }) : null;
+      if (!choixTrouve) return;
+      ajouterLigneExercice(def, def.mot_cible);
+      ajouterLigneEleve(choixTrouve[langueActuelle()] || choixTrouve.fr);
+      return;
+    }
+    if (def.type === 'deduction') {
+      const valeur = reponses[def.cle_reponse];
+      if (!valeur) return;
+      ajouterLigneExercice(def, def.consigne[langueActuelle()] || def.consigne.en);
+      ajouterLigneEleve(valeur);
+      return;
+    }
+    if (def.type === 'prenom') {
+      if (!reponses.prenom) return;
+      ajouterLigneExercice(def, def.consigne[langueActuelle()] || def.consigne.en);
+      ajouterLigneEleve(texteInterface('placeholderPrenom').replace('\u2026', ' ' + reponses.prenom + '.'));
+      return;
+    }
+    if (def.type === 'binaire') {
+      const val = reponses[def.cle_reponse];
+      if (val !== 'oui' && val !== 'non') return;
+      ajouterLigneEleve(OUI_NON.fr[val === 'oui' ? 0 : 1]);
+      return;
+    }
+    if (def.type === 'niveau') {
+      const niv = NIVEAUX.find(function (n) { return n.id === reponses[def.cle_reponse]; });
+      if (!niv) return;
+      const idx = NIVEAUX.indexOf(niv);
+      ajouterLigneEleve(idx === 0 ? (niv[langueActuelle()] || niv.fr) : niv.fr);
+      return;
+    }
+    if (def.type === 'genre') {
+      const val = reponses[def.cle_reponse];
+      if (val !== 'm' && val !== 'f') return;
+      ajouterLigneEleve(val === 'm' ? 'Un garçon' : 'Une fille');
+      return;
+    }
+  }
+
+  // Reconstruit la pile "Ce qui a été dit" + notes grammaticales pour
+  // toutes les répliques déjà passées, même patron que precedent() —
+  // sans ça, une reprise en cours de route afficherait la bonne étape
+  // mais un historique vide, comme si le dialogue venait de commencer.
+  if (etape > 0) {
+    reconstructionEnCours = true;
+    for (let j = 0; j < etape; j++) {
+      if (etapeApplicable(ETAPES[j])) {
+        rejouerEtapePassee(ETAPES[j]);
+        ajouterNoteGrammaire(ETAPES[j]);
+      }
+    }
+    elPileDialogue.querySelectorAll('.pile-item').forEach(el => el.classList.add('in'));
+    elPileGrammaire.querySelectorAll('.grammaire-item').forEach(el => el.classList.add('in'));
+    reconstructionEnCours = false;
+  }
 
     elIntroPleinEcran.classList.add('intro-cachee');
     rendreEtape();

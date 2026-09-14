@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="fr-CA">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Je ne te ferai plus jamais de sandwich — Répertoire Bek</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F2EDE3;
+    --paper-edge:#e8e0d1;
+    --ink:#2f2a22;
+    --ink-soft:#5b5240;
+    --navy:#2b3a52;
+    --mustard:#c99a3d;
+    --rule:#d8cdb8;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Source Serif 4', Georgia, serif;
+    line-height:1.75;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{ max-width:1180px; margin:0 auto; padding:3.5rem 1.5rem 6rem; }
+  .dateline{
+    text-align:center; font-size:0.95rem; letter-spacing:0.04em;
+    color:var(--ink-soft); margin-bottom:0.6rem;
+  }
+  h1{
+    font-family:'Caveat', cursive; font-weight:600; font-size:3.2rem;
+    line-height:1.05; text-align:center; margin:0 0 0.3rem; color:var(--navy);
+  }
+  .kicker{
+    text-align:center; font-style:italic; color:var(--ink-soft);
+    font-size:1.05rem; margin-bottom:2.2rem;
+  }
+
+  /* Level switcher */
+  .level-switcher{
+    display:flex; justify-content:center; gap:1rem; flex-wrap:wrap;
+    margin-bottom:1.4rem;
+  }
+  .level-btn{
+    font-family:'Source Serif 4', Georgia, serif;
+    background:rgba(255,255,255,0.4);
+    border:1.5px solid var(--rule);
+    border-radius:14px;
+    padding:0.7rem 1.4rem;
+    cursor:pointer;
+    text-align:left;
+    min-width:150px;
+    transition:border-color 0.15s ease, background 0.15s ease, transform 0.15s ease;
+  }
+  .level-btn:hover{ transform:translateY(-1px); }
+  .level-btn .lvl-tag{
+    display:block; font-family:'Caveat', cursive; font-size:1.5rem;
+    color:var(--navy); line-height:1;
+  }
+  .level-btn .lvl-sub{
+    display:block; font-size:0.78rem; color:var(--ink-soft); margin-top:0.25rem;
+  }
+  .level-btn.active{
+    background:var(--navy); border-color:var(--navy);
+  }
+  .level-btn.active .lvl-tag, .level-btn.active .lvl-sub{ color:#fff; }
+  .provisional-flag{
+    display:inline-block; font-size:0.68rem; letter-spacing:0.06em;
+    text-transform:uppercase; color:var(--mustard); margin-top:0.3rem;
+  }
+  .level-btn.active .provisional-flag{ color:#e7c777; }
+
+  .panel-toggle-row{ display:flex; justify-content:center; margin-bottom:2.2rem; }
+  .panel-toggle{
+    font-family:'Source Serif 4', Georgia, serif;
+    font-size:0.9rem; color:var(--ink-soft);
+    background:none; border:1px dashed var(--rule); border-radius:20px;
+    padding:0.45rem 1.1rem; cursor:pointer;
+  }
+  .panel-toggle:hover{ color:var(--navy); border-color:var(--mustard); }
+
+  /* Layout */
+  .layout{ display:block; }
+  .layout.panel-open{ display:grid; grid-template-columns:minmax(280px,44%) 1fr; gap:2.5rem; align-items:start; }
+  .side-panel{ display:none; }
+  .layout.panel-open .side-panel{
+    display:block;
+    position:sticky; top:1.5rem;
+    max-height:calc(100vh - 3rem);
+    overflow-y:auto;
+    background:rgba(255,255,255,0.4);
+    border:1px solid var(--rule);
+    border-radius:10px;
+    padding:1.6rem 1.6rem 1.8rem;
+  }
+  .story-pane{ max-width:640px; margin:0 auto; }
+  .layout.panel-open .story-pane{ max-width:none; margin:0; }
+
+  @media (max-width:880px){
+    .layout.panel-open{ display:block; }
+    .layout.panel-open .side-panel{
+      position:static; max-height:none; margin-bottom:2.5rem; width:100%;
+    }
+  }
+
+  /* Side panel tabs */
+  .side-tabs{ display:flex; gap:1.2rem; margin-bottom:1.4rem; flex-wrap:wrap; }
+  .side-tab-btn{
+    font-family:'Source Serif 4', Georgia, serif; font-size:0.92rem;
+    background:none; border:none; border-bottom:2px solid transparent;
+    color:var(--ink-soft); padding:0.3rem 0; cursor:pointer;
+  }
+  .side-tab-btn.active{ color:var(--navy); border-bottom-color:var(--mustard); }
+  .side-panel-content{ display:none; }
+  .side-panel-content.active{ display:block; }
+
+  /* Story */
+  p{ font-size:1.12rem; margin:0 0 1.3rem; text-align:left; max-width:62ch; }
+  .layout.panel-open p{ max-width:none; }
+  .story p:first-of-type::first-letter{
+    font-family:'Caveat', cursive; font-size:3rem; color:var(--navy);
+    float:left; line-height:0.8; padding-right:0.12em; padding-top:0.1em;
+  }
+  figure{ margin:2.6rem 0; }
+  figure img{ display:block; width:100%; max-width:420px; margin:0 auto; height:auto; border-radius:2px; }
+  figure.frame img{
+    background:#fff; padding:14px 14px 44px;
+    box-shadow:0 1px 2px rgba(0,0,0,0.06), 0 12px 28px rgba(43,58,82,0.12);
+    transform:rotate(-0.6deg);
+  }
+  figure.frame.tilt-right img{ transform:rotate(0.7deg); }
+  figcaption{ text-align:center; font-style:italic; color:var(--ink-soft); font-size:0.95rem; margin-top:0.9rem; }
+  .signoff{ margin-top:2.6rem; text-align:right; font-family:'Caveat', cursive; font-size:1.8rem; color:var(--navy); }
+  .version-meta{ text-align:left; font-style:italic; color:var(--ink-soft); font-size:0.95rem; margin-bottom:1.6rem; }
+  .provisional-banner{
+    display:inline-block; font-size:0.72rem; letter-spacing:0.07em; text-transform:uppercase;
+    color:var(--mustard); border:1px dashed var(--mustard); border-radius:999px;
+    padding:0.2rem 0.8rem; margin-bottom:1.2rem;
+  }
+
+  [data-level]{ display:none; }
+  body.level-a [data-level="a"]{ display:block; }
+  body.level-b [data-level="b"]{ display:block; }
+  body.level-c [data-level="c"]{ display:block; }
+
+  /* Mise en scène */
+  .scene-block{ margin-bottom:2.6rem; }
+  .scene-block h2{ font-family:'Caveat', cursive; font-weight:600; font-size:1.7rem; color:var(--navy); margin:0 0 0.8rem; }
+  .scene-meta{ display:flex; gap:1.8rem; flex-wrap:wrap; margin-bottom:0.5rem; }
+  .scene-meta div{ font-size:0.95rem; }
+  .scene-meta span{ display:block; font-size:0.75rem; text-transform:lowercase; color:var(--ink-soft); font-style:italic; margin-bottom:0.1rem; }
+  .characters{ display:flex; gap:1.6rem; flex-wrap:wrap; margin-top:1.2rem; }
+  .char-card{ flex:1 1 200px; min-width:180px; }
+  .char-portrait{ height:220px; display:flex; align-items:flex-end; justify-content:center; margin-bottom:0.8rem; }
+  .char-portrait img{ max-height:100%; max-width:190px; width:auto; height:auto; display:block; }
+  .char-card h3{ font-family:'Caveat', cursive; font-size:1.4rem; color:var(--navy); margin:0 0 0.2rem; text-align:center; }
+  .char-age{ text-align:center; font-style:italic; color:var(--ink-soft); font-size:0.85rem; margin-bottom:0.6rem; }
+  .char-note .opener{ font-family:'Caveat', cursive; font-size:1.2rem; color:var(--navy); margin:0 0 0.4rem; }
+  .char-note p{ font-size:0.88rem; }
+  .prompt-toggle{ margin-top:0.5rem; }
+  .prompt-toggle summary{ cursor:pointer; font-size:0.72rem; color:var(--rule); list-style:none; text-align:center; font-style:italic; }
+  .prompt-toggle summary::-webkit-details-marker{ display:none; }
+  .prompt-toggle summary:hover{ color:var(--ink-soft); }
+  .prompt-toggle[open] summary{ color:var(--ink-soft); margin-bottom:0.5rem; }
+  .prompt-toggle pre{
+    white-space:pre-wrap; font-family:ui-monospace, 'SF Mono', Menlo, monospace; font-size:0.68rem;
+    line-height:1.5; color:var(--ink-soft); background:var(--paper-edge); border-radius:3px;
+    padding:0.8rem; max-height:220px; overflow-y:auto;
+  }
+
+  /* Questions */
+  .qa-intro{ font-size:0.92rem; color:var(--ink-soft); font-style:italic; margin-bottom:1.4rem; }
+  .qa-block{ border:1px solid var(--rule); border-radius:6px; padding:0.9rem 1.1rem; margin-bottom:0.9rem; background:rgba(255,255,255,0.35); }
+  .qa-block summary{ cursor:pointer; list-style:none; font-family:'Caveat', cursive; font-size:1.3rem; color:var(--navy); }
+  .qa-block summary::-webkit-details-marker{ display:none; }
+  .qa-block summary::before{ content:'+ '; color:var(--mustard); font-family:'Source Serif 4', Georgia, serif; font-weight:600; }
+  .qa-block[open] summary::before{ content:'– '; }
+  .qa-block[open] summary{ margin-bottom:0.7rem; }
+  .qa-block ol{ margin:0; padding-left:1.15rem; }
+  .qa-block li{ font-size:0.92rem; margin-bottom:0.7rem; line-height:1.55; }
+  .qa-block li:last-child{ margin-bottom:0; }
+  .qa-flat{ margin:0 0 1.4rem; padding-left:1.15rem; }
+  .qa-flat li{ font-size:0.95rem; margin-bottom:0.7rem; line-height:1.55; }
+
+  /* Écriture */
+  .subtabs{ display:flex; gap:0.5rem; margin-bottom:1.6rem; flex-wrap:wrap; }
+  .subtab-btn{
+    font-family:'Source Serif 4', Georgia, serif; font-size:0.85rem; background:none;
+    border:1px solid var(--rule); border-radius:20px; color:var(--ink-soft);
+    padding:0.3rem 0.9rem; cursor:pointer;
+  }
+  .subtab-btn.active{ color:#fff; background:var(--navy); border-color:var(--navy); }
+  .subtab-panel{ display:none; }
+  .subtab-panel.active{ display:block; }
+  .exercise-block{ margin-bottom:1.8rem; }
+  .exercise-block .genre-tag{ display:inline-block; font-size:0.7rem; text-transform:uppercase; letter-spacing:0.05em; color:var(--mustard); margin-bottom:0.3rem; }
+  .exercise-block h4{ font-family:'Caveat', cursive; font-weight:600; font-size:1.4rem; color:var(--navy); margin:0 0 0.4rem; }
+  .exercise-block p{ font-size:0.9rem; }
+  .exercise-divider{ width:100%; height:1px; background:var(--rule); margin:1.6rem 0; border:none; }
+  .exo-simple-list{ margin:0; padding-left:1.15rem; }
+  .exo-simple-list li{ font-size:0.95rem; margin-bottom:0.8rem; line-height:1.55; }
+  .exo-title{ font-style:italic; color:var(--navy); }
+
+  .genre-tag-wrap{ display:inline-flex; align-items:center; gap:0.35rem; margin-bottom:0.3rem; }
+  .genre-tag-wrap .genre-tag{ margin-bottom:0; }
+  .genre-info-btn{ background:none; border:none; padding:0; cursor:pointer; color:var(--mustard); opacity:0.7; display:inline-flex; align-items:center; justify-content:center; transition:opacity 0.15s ease, transform 0.15s ease; }
+  .genre-info-btn:hover{ opacity:1; transform:scale(1.08); }
+  .genre-info-btn svg{ width:14px; height:14px; display:block; }
+  .genre-modal-overlay{ position:fixed; inset:0; background:rgba(47,42,34,0.45); display:none; align-items:center; justify-content:center; padding:1.5rem; z-index:1000; }
+  .genre-modal-overlay.open{ display:flex; }
+  .genre-modal{ background:var(--paper); border-radius:8px; max-width:480px; width:100%; max-height:80vh; overflow-y:auto; padding:1.8rem 1.8rem 1.5rem; position:relative; box-shadow:0 20px 50px rgba(0,0,0,0.28); }
+  .genre-modal-close{ position:absolute; top:0.6rem; right:0.9rem; background:none; border:none; font-size:1.4rem; line-height:1; cursor:pointer; color:var(--ink-soft); }
+  .genre-modal-close:hover{ color:var(--navy); }
+  .genre-modal .genre-modal-kicker{ text-transform:uppercase; letter-spacing:0.06em; font-size:0.72rem; color:var(--mustard); margin-bottom:0.3rem; }
+  .genre-modal h5{ font-family:'Caveat', cursive; font-weight:600; font-size:1.6rem; color:var(--navy); margin:0 0 0.7rem; }
+  .genre-modal p{ font-size:0.92rem; line-height:1.55; margin:0 0 0.9rem; }
+  .genre-modal .genre-modal-structure-title{ font-size:0.8rem; font-weight:600; text-transform:uppercase; letter-spacing:0.03em; color:var(--ink-soft); margin-bottom:0.5rem; }
+  .genre-modal ul{ margin:0; padding-left:1.05rem; font-size:0.88rem; line-height:1.55; }
+  .genre-modal ul li{ margin-bottom:0.4rem; }
+  .genre-modal .genre-modal-exemple-title{ font-size:0.8rem; font-weight:600; text-transform:uppercase; letter-spacing:0.03em; color:var(--ink-soft); margin:1rem 0 0.3rem; }
+  .genre-modal .genre-modal-exemple-note{ font-size:0.75rem; font-style:italic; color:var(--ink-soft); margin:0 0 0.6rem; }
+  .genre-modal-exemple{ background:var(--paper-edge); border-left:3px solid var(--mustard); border-radius:4px; padding:0.8rem 0.95rem; }
+  .genre-modal-exemple p{ font-size:0.85rem; line-height:1.5; margin:0 0 0.55rem; }
+  .genre-modal-exemple p:last-child{ margin-bottom:0; }
+</style>
+</head>
+<body class="level-c">
+  <div class="wrap">
+    <div class="dateline">20 novembre 2017 · Bek, 10 ans</div>
+    <h1>Je ne te ferai plus jamais de sandwich</h1>
+    <div class="kicker">Trois voix, un même souvenir</div>
+
+    <div class="level-switcher">
+      <button class="level-btn" data-level="a">
+        <span class="lvl-tag">Version A</span>
+        <span class="lvl-sub">Bek, 10 ans · 1re à 3e année</span>
+        <span class="provisional-flag">provisoire</span>
+      </button>
+      <button class="level-btn" data-level="b">
+        <span class="lvl-tag">Version B</span>
+        <span class="lvl-sub">Bek, 12 ans · 4e à 6e année</span>
+        <span class="provisional-flag">provisoire</span>
+      </button>
+      <button class="level-btn active" data-level="c">
+        <span class="lvl-tag">Version C</span>
+        <span class="lvl-sub">Version raffinée · Secondaire 1 à 3</span>
+      </button>
+    </div>
+
+    <div class="panel-toggle-row">
+      <button class="panel-toggle" id="panelToggle">☰ Mise en scène, questions et écriture</button>
+    </div>
+
+    <div class="layout" id="layout">
+
+      <aside class="side-panel" id="sidePanel">
+        <div class="side-tabs">
+          <button class="side-tab-btn active" data-side="scene">Mise en scène</button>
+          <button class="side-tab-btn" data-side="questions">Questions</button>
+          <button class="side-tab-btn" data-side="ecriture">Écriture</button>
+        </div>
+
+        <!-- MISE EN SCÈNE (partagée, ne dépend pas du niveau) -->
+        <div id="side-scene" class="side-panel-content active">
+          <div class="scene-block">
+            <h2>Le lieu et la date</h2>
+            <div class="scene-meta">
+              <div><span>date</span>20 novembre 2017</div>
+              <div><span>lieu</span>Cuisine de Bek, puis cafétéria du Collège Charlemoine</div>
+              <div><span>saison</span>Automne, 4e année du primaire</div>
+            </div>
+            <p>Bek prépare le sandwich chez elle avant l'école. La scène se déplace ensuite à la cafétéria du Collège Charlemoine, où elle et Keb dînent ensemble comme tous les midis.</p>
+          </div>
+
+          <div class="scene-block">
+            <h2>Les personnages</h2>
+            <div class="characters">
+              <div class="char-card">
+                <div class="char-portrait"><img src="../images/2017-11-20-uniforme-sans-soulier_01.webp" alt="Bek, portrait de référence, 20 novembre 2017"></div>
+                <h3>Bek</h3>
+                <div class="char-age">10 ans (née le 10 octobre 2007)</div>
+                <div class="char-note">
+                  <p class="opener">C'est moi, ça !</p>
+                  <p>Me voici quand j'avais 10 ans et un mois. Je portais mon uniforme (que je n'aimais pas particulièrement) de l'école Charlemoine, où je suis allée de la maternelle jusqu'à la cinquième année, puis du secondaire 2 jusqu'au secondaire 5. Je commençais à avoir le toupet un peu long et ça achalait ma mère, mais moi je trouvais que ça m'allait bien.</p>
+                </div>
+                <details class="prompt-toggle"><summary>invite</summary><pre>Illustration numérique de style animation haut de gamme, rendu peinture à l'huile richement texturée, proportions naturelles. FORMAT VERTICAL — plan corps entier, vue de face, légèrement de trois quarts. PERSONNAGE — Bek, fillette québécoise, 10 ans 1 mois, visage fin et délicat, traits doux et réguliers, peau claire saine. Regard lumineux, expression amicale. Taille : 142 cm. Petites boucles d'oreille discrètes (boutons). CHEVEUX — Blond platine naturel, lisses et soyeux. Longueur totale : 53 cm depuis le sommet du crâne. Queue de cheval mi-basse, latérale, sans flafla. Point d'attache à la nuque, ~18-19 cm du sommet du crâne ; mèche libre ~34 cm, pointes au bas-ventre (~3 cm sous le nombril). Toupet jusqu'au bas du menton, ramené d'un seul côté. TENUE — Polo blanc à col, deux boutons. Cardigan bleu marin bien boutonné, assorti au pantalon bleu marin. ARRIÈRE-PLAN — Fond uni beige pâle chaud (#F2EDE3), sans texture, sans dégradé. STYLE — peinture numérique richement texturée rappelant une peinture à l'huile.</pre></details>
+              </div>
+              <div class="char-card">
+                <div class="char-portrait"><img src="../images/2017-11-20_keb-uniforme-assis.webp" alt="Keb, portrait de référence, 20 novembre 2017"></div>
+                <h3>Keb</h3>
+                <div class="char-age">9 ans et 3 mois (né le 15 août 2008)</div>
+                <div class="char-note">
+                  <p class="opener">Keb, c'est mon meilleur ami depuis toujours.</p>
+                  <p>Je l'appelais parfois « mon petit frère », mais c'était unilatéral. On dirait qu'il ne s'est jamais peigné de sa vie. Il n'a jamais porté le cardigan de l'école, n'étant pas frileux.</p>
+                </div>
+                <details class="prompt-toggle"><summary>invite</summary><pre>Illustration numérique de style animation haut de gamme, rendu peinture à l'huile richement texturée, proportions naturelles. FORMAT VERTICAL — plan mi-corps, assis à une table. PERSONNAGE — Keb, garçon québécois, 9 ans et 3 mois. Visage fin, regard calme et direct. Peau claire, teint québécois naturel. Taille : 136 cm. CHEVEUX — châtain foncé, mi-long, naturellement ébouriffé, aucune coiffure intentionnelle. TENUE — Polo blanc à manches longues, col avec deux boutons (uniforme du Collège Charlemoine). Pantalon gris. ARRIÈRE-PLAN — Fond uni beige pâle chaud (#F2EDE3), sans texture, sans dégradé. Suggestion discrète du bord d'une table à l'avant-plan. STYLE — peinture numérique richement texturée rappelant une peinture à l'huile.</pre></details>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- QUESTIONS -->
+        <div id="side-questions" class="side-panel-content">
+
+          <div data-level="a">
+            <ul class="qa-flat">
+              <li>Pourquoi Bek est-elle fâchée contre Keb ?</li>
+              <li>Comment sais-tu que Bek était fière avant que Keb ne goûte au sandwich ?</li>
+              <li>Qu'est-ce que Bek découvre lorsqu'elle goûte le sandwich elle-même ?</li>
+              <li>Pourquoi continue-t-elle d'être fâchée même après avoir compris que Keb avait raison ?</li>
+            </ul>
+          </div>
+
+          <div data-level="b">
+            <ul class="qa-flat">
+              <li>Pourquoi la Bek de 12 ans trouve-t-elle que sa réaction, à l'époque, était exagérée ? Quels mots du texte le montrent ?</li>
+              <li>Compare ce que Bek ressent au moment de goûter le sandwich et ce qu'elle en pense en l'écrivant, plus tard.</li>
+              <li>Que comprend la Bek de 12 ans que la Bek de 10 ans ne comprenait pas encore ?</li>
+              <li>Pourquoi peut-on dire que ce souvenir lui apprend quelque chose sur elle-même ?</li>
+            </ul>
+          </div>
+
+          <div data-level="c">
+            <p class="qa-intro">Clique sur une catégorie pour l'ouvrir ou la refermer.</p>
+            <details class="qa-block" open>
+              <summary>Repérage</summary>
+              <ol>
+                <li>Depuis combien de temps Keb et Bek ont-ils l'habitude de manger ensemble, et pourquoi Keb insiste-t-il pour venir surtout les fins de semaine ?</li>
+                <li>Qu'est-ce qui pousse Bek à préparer elle-même un sandwich pour Keb, un jour ?</li>
+                <li>Quelle est la réaction de Keb en y goûtant ?</li>
+                <li>Pourquoi Keb est-il si surpris quand Bek lui annonce « Je ne te ferai plus jamais de sandwich ! » — que ne savait-il pas jusque-là ?</li>
+                <li>Que découvre Bek en goûtant à son tour le sandwich ?</li>
+              </ol>
+            </details>
+            <details class="qa-block">
+              <summary>Interprétation</summary>
+              <ol>
+                <li>Bek se demande, à la blague, si Keb l'aime « pour les sandwichs de ma mère ». Selon toi, les sandwichs ont-ils réellement contribué à renforcer leur amitié ? Justifie ta réponse à partir du texte.</li>
+                <li>La remarque « Ça goûte bizarre, aujourd'hui » est-elle inappropriée, selon toi ? Ta réponse serait-elle différente s'il avait su que Bek avait fait le sandwich ?</li>
+                <li>L'expression « le fruit de mes entrailles » pour parler du sandwich est-elle au sens propre ou figuré ? Quel effet cette exagération produit-elle ?</li>
+                <li>Comment le sentiment de Bek envers son sandwich évolue-t-il entre le moment où elle le sert et celui où elle y goûte elle-même ?</li>
+                <li>Pourquoi peut-on dire que « j'avais envie de le zigouiller » exprime plus une vexation passagère qu'une vraie colère ?</li>
+                <li>Pourquoi Bek reprend-elle elle-même une bouchée du sandwich plutôt que de simplement se fâcher ou d'ignorer la remarque de Keb ?</li>
+              </ol>
+            </details>
+            <details class="qa-block">
+              <summary>Réaction / discussion</summary>
+              <ol>
+                <li>As-tu déjà fait quelque chose « avec amour » pour quelqu'un et été déçu(e) de sa réaction ? Raconte.</li>
+                <li>Selon toi, comment Bek devrait-elle réagir dans cette situation ? Imagine ce qu'elle pourrait décider de faire ou de ne pas faire à l'avenir.</li>
+              </ol>
+            </details>
+            <details class="qa-block">
+              <summary>Appréciation des procédés</summary>
+              <ol>
+                <li>Quel effet produit le choix de raconter l'histoire sous forme de journal intime, à la première personne ?</li>
+                <li>Relève une hyperbole dans le texte et explique l'effet comique recherché.</li>
+                <li>En quoi la dernière phrase (« J'avais peut-être exagéré sur les épices. ») fait-elle office de chute — comment change-t-elle notre lecture de toute la scène ?</li>
+                <li>Pourquoi le titre « Je ne te ferai plus jamais de sandwich » fonctionne-t-il bien, alors que l'évènement raconté est plutôt banal ?</li>
+                <li>Relève l'expression « il est resté aux nues ». Quelle expression figée plus courante l'autrice détourne-t-elle ici, et à quel effet ?</li>
+                <li>Le texte alterne un vocabulaire très soutenu (« méticulosité », « le fruit de mes entrailles ») et des mots plus familiers, presque enfantins (« zigouiller », « cet impertinent »). Que produit ce télescopage de registres ?</li>
+                <li>Ce texte est un souvenir d'enfance retouché par une narratrice adulte. À quels endroits précis sent-on la voix de l'adulte percer sous celle de l'enfant qu'elle raconte ?</li>
+              </ol>
+            </details>
+          </div>
+        </div>
+
+        <!-- ÉCRITURE -->
+        <div id="side-ecriture" class="side-panel-content">
+
+          <div data-level="a">
+            <ul class="exo-simple-list">
+              <li><span class="exo-title">Le sandwich extraordinaire</span> — Dessine ton sandwich de rêve et écris deux phrases pour décrire ses ingrédients secrets.</li>
+              <li><span class="exo-title">Les mots doux</span> — Que pourrait dire Keb à Bek pour lui signaler gentiment que le sandwich est trop épicé, sans la fâcher ?</li>
+              <li><span class="exo-title">Petite colère</span> — Raconte une fois où tu as voulu faire quelque chose de gentil pour quelqu'un, et où cette personne n'a pas réagi comme tu l'espérais.</li>
+            </ul>
+          </div>
+
+          <div data-level="b">
+            <ul class="exo-simple-list">
+              <li><span class="exo-title">La version de Keb</span> — Écris la soirée de Keb après l'épisode du sandwich. Avait-il compris pourquoi Bek était si fâchée ?</li>
+              <li><span class="exo-title">Au-delà de « bizarre »</span> — Trouve quatre adjectifs précis pour décrire le goût ou la texture d'un plat raté (ex. âcre, piquant, trop cuit, écœurant).</li>
+              <li><span class="exo-title">Souvenir en deux temps</span> — Raconte un souvenir gênant en deux temps : d'abord ce que tu ressentais sur le coup, puis ce que tu en penses aujourd'hui.</li>
+            </ul>
+          </div>
+
+          <div data-level="c">
+            <div class="subtabs">
+              <button class="subtab-btn active" data-subtab="sec1">Secondaire 1</button>
+              <button class="subtab-btn" data-subtab="sec2">Secondaire 2</button>
+              <button class="subtab-btn" data-subtab="sec3">Secondaire 3</button>
+            </div>
+
+            <div id="sec1" class="subtab-panel active">
+              <div class="exercise-block">
+                <span class="genre-tag-wrap"><span class="genre-tag">Genre descriptif</span><button class="genre-info-btn" data-genre="descriptif" title="En savoir plus"><svg viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="9" stroke="currentColor" stroke-width="1.4"/><rect x="9.15" y="8.4" width="1.7" height="6" rx="0.6" fill="currentColor"/><rect x="9.15" y="5.4" width="1.7" height="1.7" rx="0.6" fill="currentColor"/></svg></button></span>
+                <h4>Le lieu où l'on mange</h4>
+                <p>Décris un lieu où tu as l'habitude de manger avec quelqu'un d'important pour toi. Utilise la description pour installer une ambiance — couleurs, odeurs, bruits — sans raconter d'histoire. Environ 150 à 200 mots.</p>
+              </div>
+              <hr class="exercise-divider">
+              <div class="exercise-block">
+                <span class="genre-tag-wrap"><span class="genre-tag">Genre justificatif</span><button class="genre-info-btn" data-genre="justificatif" title="En savoir plus"><svg viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="9" stroke="currentColor" stroke-width="1.4"/><rect x="9.15" y="8.4" width="1.7" height="6" rx="0.6" fill="currentColor"/><rect x="9.15" y="5.4" width="1.7" height="1.7" rx="0.6" fill="currentColor"/></svg></button></span>
+                <h4>La recette qui a mal tourné</h4>
+                <p>Invente la quatrième de couverture d'un roman où une recette ratée finit par rapprocher deux personnages. Résume l'intrigue en 3-4 phrases, puis un commentaire appréciatif d'au moins 3 phrases. Environ 100 à 130 mots.</p>
+              </div>
+              <hr class="exercise-divider">
+              <div class="exercise-block">
+                <span class="genre-tag-wrap"><span class="genre-tag">Genre narratif</span><button class="genre-info-btn" data-genre="narratif" title="En savoir plus"><svg viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="9" stroke="currentColor" stroke-width="1.4"/><rect x="9.15" y="8.4" width="1.7" height="6" rx="0.6" fill="currentColor"/><rect x="9.15" y="5.4" width="1.7" height="1.7" rx="0.6" fill="currentColor"/></svg></button></span>
+                <h4>Une surprise qui tourne mal</h4>
+                <p>Choisis un livre ou un film que tu aimes, avec une amitié. Raconte un épisode inédit où l'un des deux amis prépare une surprise qui ne se passe pas comme prévu. Environ 180 à 220 mots.</p>
+              </div>
+            </div>
+
+            <div id="sec2" class="subtab-panel">
+              <div class="exercise-block">
+                <span class="genre-tag-wrap"><span class="genre-tag">Genre narratif</span><button class="genre-info-btn" data-genre="narratif" title="En savoir plus"><svg viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="9" stroke="currentColor" stroke-width="1.4"/><rect x="9.15" y="8.4" width="1.7" height="6" rx="0.6" fill="currentColor"/><rect x="9.15" y="5.4" width="1.7" height="1.7" rx="0.6" fill="currentColor"/></svg></button></span>
+                <h4>Un geste qui tourne mal</h4>
+                <p>Raconte un moment où tu as voulu faire plaisir à quelqu'un et où les choses ne se sont pas déroulées comme prévu. Caractérise les personnages par leurs paroles et leurs réactions. Environ 220 à 280 mots.</p>
+              </div>
+              <hr class="exercise-divider">
+              <div class="exercise-block">
+                <span class="genre-tag-wrap"><span class="genre-tag">Genre descriptif</span><button class="genre-info-btn" data-genre="descriptif" title="En savoir plus"><svg viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="9" stroke="currentColor" stroke-width="1.4"/><rect x="9.15" y="8.4" width="1.7" height="6" rx="0.6" fill="currentColor"/><rect x="9.15" y="5.4" width="1.7" height="1.7" rx="0.6" fill="currentColor"/></svg></button></span>
+                <h4>Un repas qui compte</h4>
+                <p>Fais le compte rendu d'un repas où la nourriture a joué un rôle important dans ta vie. Décris le déroulement et explique pourquoi il t'a marqué(e). Environ 200 à 250 mots.</p>
+              </div>
+              <hr class="exercise-divider">
+              <div class="exercise-block">
+                <span class="genre-tag-wrap"><span class="genre-tag">Genre justificatif</span><button class="genre-info-btn" data-genre="justificatif" title="En savoir plus"><svg viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="9" stroke="currentColor" stroke-width="1.4"/><rect x="9.15" y="8.4" width="1.7" height="6" rx="0.6" fill="currentColor"/><rect x="9.15" y="5.4" width="1.7" height="1.7" rx="0.6" fill="currentColor"/></svg></button></span>
+                <h4>Une amitié mise à l'épreuve</h4>
+                <p>Choisis un livre ou un film mettant en scène une amitié marquée par un malentendu. Résume l'intrigue, puis justifie ton appréciation avec au moins deux arguments. Environ 200 à 250 mots.</p>
+              </div>
+            </div>
+
+            <div id="sec3" class="subtab-panel">
+              <div class="exercise-block">
+                <span class="genre-tag-wrap"><span class="genre-tag">Genre narratif</span><button class="genre-info-btn" data-genre="narratif" title="En savoir plus"><svg viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="9" stroke="currentColor" stroke-width="1.4"/><rect x="9.15" y="8.4" width="1.7" height="6" rx="0.6" fill="currentColor"/><rect x="9.15" y="5.4" width="1.7" height="1.7" rx="0.6" fill="currentColor"/></svg></button></span>
+                <h4>Le petit malentendu, version conte</h4>
+                <p>Transforme un petit malentendu du quotidien en un court conte moderne avec une morale. Environ 280 à 350 mots, en suivant le schéma du conte.</p>
+              </div>
+              <hr class="exercise-divider">
+              <div class="exercise-block">
+                <span class="genre-tag-wrap"><span class="genre-tag">Genre explicatif</span><button class="genre-info-btn" data-genre="explicatif" title="En savoir plus"><svg viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="9" stroke="currentColor" stroke-width="1.4"/><rect x="9.15" y="8.4" width="1.7" height="6" rx="0.6" fill="currentColor"/><rect x="9.15" y="5.4" width="1.7" height="1.7" rx="0.6" fill="currentColor"/></svg></button></span>
+                <h4>Nourriture et liens</h4>
+                <p>Trouve un court article sur la nourriture et les liens familiaux ou amicaux. Résume-le en 100 à 150 mots, en ne gardant que l'essentiel.</p>
+              </div>
+              <hr class="exercise-divider">
+              <div class="exercise-block">
+                <span class="genre-tag-wrap"><span class="genre-tag">Justificatif — oral</span><button class="genre-info-btn" data-genre="justificatif-oral" title="En savoir plus"><svg viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="9" stroke="currentColor" stroke-width="1.4"/><rect x="9.15" y="8.4" width="1.7" height="6" rx="0.6" fill="currentColor"/><rect x="9.15" y="5.4" width="1.7" height="1.7" rx="0.6" fill="currentColor"/></svg></button></span>
+                <h4>La morale, à quoi bon ?</h4>
+                <p>Discute avec tes pairs de l'intérêt de la morale dans les contes, en t'appuyant sur le conte écrit à l'exercice précédent.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <main class="story-pane" id="storyPane">
+
+        <!-- VERSION A -->
+        <div data-level="a">
+          <span class="provisional-banner">version provisoire</span>
+          <div class="version-meta">Bek, 10 ans — cahier de math, 20 novembre 2017</div>
+          <div class="story">
+            <p>Je ne ferai plus JAMAIS de sandwich à Keb. Jamais, jamais, jamais.</p>
+            <p>Il vient manger chez nous à peu près tout le temps. Le midi, à l'école, il regarde toujours dans ma gamelle pour voir s'il y a un sandwich de maman dedans. Elle en fait des tellement bons, avec de la viande fumée, du fromage et sa sauce. Il dit toujours que c'est le meilleur sandwich du monde et que c'est son jour de chance.</p>
+            <p>Aujourd'hui, j'ai voulu lui en faire un moi-même. Maman m'a montré comment faire et j'ai essayé de faire pareil. J'étais tellement contente.</p>
+            <p>Il a mordu dedans et il a fait une face bizarre.</p>
+            <p>« Ça goûte bizarre, aujourd'hui. »</p>
+            <p>Je capote. Je lui ai crié que je ne lui ferais plus jamais de sandwich et je le lui ai arraché des mains.</p>
+            <p>« C'est toi qui l'as fait ? » qu'il m'a demandé, tout surpris.</p>
+            <p>Ben oui, c'est moi ! Ça ne veut pas dire que c'est raté !</p>
+            <p>J'y ai goûté pour lui prouver qu'il avait tort.</p>
+            <p>Bon. C'était peut-être un peu fort en épices. Mais il n'était pas obligé de le dire comme ça, devant tout le monde. La prochaine fois, il mangera son sandwich ordinaire, na.</p>
+          </div>
+        </div>
+
+        <!-- VERSION B -->
+        <div data-level="b">
+          <span class="provisional-banner">version provisoire</span>
+          <div class="version-meta">Bek, 12 ans — journal intime, écrit à Florence</div>
+          <div class="story">
+            <p>Je commence à comprendre que mon journal ne sert pas juste à écrire ce qui m'arrive. Je pourrais aussi m'en servir pour comprendre pourquoi certaines choses me sont restées.</p>
+            <p>Il y a une image qui me revient souvent : Keb, penché au-dessus de ma gamelle, les midis, l'air presque solennel, comme si le sort du monde dépendait de ce qu'il y avait dedans. Ma mère faisait des sandwichs qu'il aurait pu manger tous les jours sans jamais s'en lasser.</p>
+            <p>Un midi, avant notre départ pour l'Italie, j'ai voulu en faire un moi-même. Je ne sais toujours pas exactement pourquoi ça me tenait tant à cœur. Peut-être que je voulais lui prouver que je pouvais faire aussi bien que ma mère. Peut-être, plus simplement, que je voulais être celle qu'on admire, pour une fois, plutôt que celle qui sert les compliments de quelqu'un d'autre.</p>
+            <p>Ça ne s'est pas passé comme je l'espérais.</p>
+            <p>Sa grimace, sa remarque — « bizarre » — et ma colère qui a explosé d'un coup, disproportionnée, presque comique vue d'ici. Je me revois lui arracher le sandwich des mains, jurer que je ne lui en referais plus jamais.</p>
+            <p>Ce que je trouve étrange, en l'écrivant aujourd'hui, ce n'est pas que le sandwich était raté. C'est que je le savais déjà, au fond, avant même d'y goûter moi-même pour lui prouver le contraire. Je voulais juste qu'il ait tort.</p>
+            <p>Je me demande encore pourquoi ça me dérangeait autant, à l'époque, qu'il n'aime pas ce que j'avais fait. Peut-être que ce n'était jamais vraiment une histoire de sandwich.</p>
+          </div>
+        </div>
+
+        <!-- VERSION C -->
+        <div data-level="c">
+          <div class="version-meta">Version raffinée de l'entrée originale dans mon cahier de math, datée du 20 novembre 2017</div>
+          <div class="story">
+            <p>Keb et moi dînons et soupons régulièrement à la maison de l'un et de l'autre, et ce, depuis des lustres. En fait, on n'a même plus besoin de « s'inviter » à manger. Si je me trouve à la maison de Keb en soirée, ses parents (une fois sa mère, une fois son père, les deux se divisant généralement les tâches de la maison) font automatiquement une quatrième portion. Ou bien — cela ne m'a jamais été parfaitement clair — ils retranchent simplement un peu de leur assiette habituelle pour m'en faire une, sachant de toute façon que, d'appétit, je n'en ai pas un gros.</p>
+            <p>Je crois que Keb a profité de cette entente tacite qu'avaient nos parents pour insister pour qu'on soit le plus souvent possible chez nous la fin de semaine, car ma mère avait l'habitude de faire des repas plus somptueux (et franchement délicieux) le samedi et le dimanche. Ma mère cuisine avec la même patience et la même méticulosité qu'elle peint, et le résultat est toujours à la hauteur. Bref…</p>
+            <p>Toutefois, le moment pour lequel Keb était le plus emballé était le dîner à l'école. Pourquoi ? Parce qu'il espérait tomber, dans MA gamelle, sur un des fameux sandwichs de ma mère. C'est tout comme s'il ne pouvait pas penser à autre chose du matin jusqu'au midi : de la viande fumée, de la moutarde, du fromage, une sauce spéciale entre deux tranches de pain de la meilleure boulangerie en ville. J'étais porteuse de ce précieux trésor au moins une fois par semaine. Son jour de chance.</p>
+            <p>(Parfois, je me demande si on n'est pas devenus de si bons amis à cause des sandwichs de ma mère. Il ne manquait jamais de s'asseoir à côté de moi les midis et me faisait toujours les beaux yeux. Ah, Keb ! Tu m'aimes pour les sandwichs de ma mère, c'est ça ?)</p>
+            <p>Un jour, j'ai voulu lui faire une surprise. J'ai demandé à ma mère si je pouvais moi-même faire le sandwich pour le partager avec lui. Elle m'a montré comment faire et je me suis exécutée… j'y ai mis du mien, j'y ai mis de l'amour. Et pourtant. Et pourtant !</p>
+
+            <figure class="frame">
+              <img src="../images/2017-11-20_bek-uniforme-fait-sandwich_01.webp" alt="Bek prépare le sandwich avec attention dans la cuisine">
+              <figcaption>Bek, toute à sa tâche, le jour du fameux sandwich</figcaption>
+            </figure>
+
+            <p>Je lui ai fait goûter mon sandwich, les yeux pétillants d'excitation, dans l'attente de le voir tomber des nues. C'est pourtant tout le contraire qui s'est produit. Il est resté aux nues.</p>
+            <p>« Ça goûte bizarre, aujourd'hui. »</p>
+            <p>J'avais envie de le zigouiller, cet impertinent ! Comment osait-il dénigrer le fruit de mes entrailles ? Le fruit de mon amour inconditionnel ?</p>
+            <p>« Je ne te ferai plus jamais de sandwich ! »</p>
+
+            <figure class="frame tilt-right">
+              <img src="../images/2017-11-20_keb-mange-bek-regarde_01.webp" alt="Keb mord dans le sandwich pendant que Bek le regarde, inquiète">
+              <figcaption>Le moment fatidique — Keb mord, Bek observe</figcaption>
+            </figure>
+
+            <p>Il m'a regardée d'un air interloqué :</p>
+            <p>« C'est toi qui l'as fait ? »</p>
+            <p>Ça m'était sorti tout seul. Je ne savais plus comment réagir, alors je le lui ai repris d'entre les mains. J'y ai pris une bouchée comme pour lui montrer que mon sandwich était parfaitement normal et excellent… mais cette première bouchée m'a fait ravaler ma pensée originelle.</p>
+            <p>Le goût était effectivement étrange.</p>
+            <p>J'avais peut-être exagéré sur les épices.</p>
+            <div class="signoff">— R. B.</div>
+          </div>
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <div class="genre-modal-overlay" id="genreModalOverlay">
+    <div class="genre-modal" role="dialog" aria-modal="true" aria-labelledby="genreModalTitle">
+      <button class="genre-modal-close" id="genreModalClose" aria-label="Fermer">&times;</button>
+      <div class="genre-modal-kicker" id="genreModalKicker"></div>
+      <h5 id="genreModalTitle"></h5>
+      <p id="genreModalDef"></p>
+      <div class="genre-modal-structure-title">Structure attendue au secondaire</div>
+      <ul id="genreModalStructure"></ul>
+      <div class="genre-modal-exemple-title">Exemple</div>
+      <p class="genre-modal-exemple-note">Sujet fictif, sans lien avec l'exercice — juste pour voir à quoi ça ressemble.</p>
+      <div class="genre-modal-exemple" id="genreModalExemple"></div>
+    </div>
+  </div>
+
+  <script>
+    var GENRE_INFO = {
+      descriptif: {
+        kicker: "Genre descriptif", titre: "Le texte descriptif",
+        definition: "Le texte descriptif présente en détail un lieu, un objet, une personne ou une scène, sans faire progresser une histoire dans le temps.",
+        structure: ["Une courte introduction qui situe ce qu'on va décrire.","Un développement organisé par aspects, un aspect par paragraphe.","Un vocabulaire précis : adjectifs, groupes du nom développés, comparaisons.","Une brève conclusion ou impression d'ensemble."],
+        exemple: "Le phare se dresse tout seul au bout de la pointe rocheuse, sa peinture blanche écaillée par des décennies de vent salé. De près, on remarque les fissures qui zèbrent sa base comme les rides d'un vieux visage. Plus haut, la lanterne vide fixe l'horizon, entourée de mouettes qui ont fait du rebord leur perchoir. Abandonné depuis des années, il garde pourtant une allure fière."
+      },
+      narratif: {
+        kicker: "Genre narratif", titre: "Le texte narratif",
+        definition: "Le texte narratif raconte une histoire : des personnages vivent des évènements, dans un temps et un lieu donnés, selon un schéma narratif clair.",
+        structure: ["Situation initiale : qui, où, quand.","Élément déclencheur.","Péripéties : actions et réactions.","Dénouement.","Situation finale.","Des temps de verbes cohérents (imparfait pour le contexte, passé composé pour les actions)."],
+        exemple: "Mathis regarde sa montre pour la troisième fois. Un bruit sourd le fait sursauter — son sac à dos vient de tomber et d'éparpiller ses cahiers. Le temps de tout ramasser, il se rue dehors juste à temps pour voir l'autobus disparaître au coin de la rue. Essoufflé, il court en agitant les bras ; le chauffeur, en le voyant, freine pour l'attendre."
+      },
+      justificatif: {
+        kicker: "Genre justificatif", titre: "Le texte justificatif",
+        definition: "Le texte justificatif défend un point de vue à l'aide d'arguments appuyés par des justifications ou des exemples.",
+        structure: ["Introduction qui présente le sujet et la thèse.","Développement en paragraphes argumentatifs : un argument par paragraphe.","Des organisateurs textuels (d'abord, de plus, enfin).","Conclusion qui reformule la thèse."],
+        exemple: "Les écoles secondaires devraient offrir un cours obligatoire d'éducation financière. D'abord, plusieurs jeunes quittent l'école sans savoir comment fonctionne un budget. De plus, un tel cours préviendrait l'endettement précoce. Pour ces raisons, il est temps que les écoles prennent ce virage."
+      },
+      explicatif: {
+        kicker: "Genre explicatif", titre: "Le texte explicatif",
+        definition: "Le texte explicatif cherche à faire comprendre un phénomène — il répond à un pourquoi ou un comment, sans chercher à convaincre.",
+        structure: ["Sujet amené, posé et divisé en introduction.","Développement organisé par aspects (causes, conséquences, étapes).","Des connecteurs explicatifs (parce que, ainsi, cela s'explique par).","Une conclusion qui résume l'explication."],
+        exemple: "Pourquoi bâille-t-on en voyant quelqu'un bâiller ? Des chercheurs l'expliquent par l'empathie : notre cerveau imiterait inconsciemment les gestes d'autrui. D'autres études pointent vers des zones cérébrales liées aux émotions. Ce phénomène reflèterait donc un lien social ancré dans notre cerveau."
+      },
+      "justificatif-oral": {
+        kicker: "Genre justificatif — à l'oral", titre: "La discussion",
+        definition: "La discussion est un échange oral où chaque personne présente son point de vue, l'appuie par des arguments, puis réagit à ceux des autres.",
+        structure: ["Présenter clairement son opinion dès le départ.","Appuyer son point de vue par un argument ou un exemple.","Écouter et réagir aux propos des autres.","Respecter les tours de parole et un ton respectueux."],
+        exemple: "— On ne devrait pas avoir de devoirs les fins de semaine.\n— Sans devoirs, plusieurs oublient la matière vue en semaine.\n— On pourrait trouver un compromis : des devoirs courts, seulement le vendredi.\n— Ça, je suis d'accord."
+      }
+    };
+
+    (function(){
+      var overlay = document.getElementById('genreModalOverlay');
+      var kicker = document.getElementById('genreModalKicker');
+      var titre = document.getElementById('genreModalTitle');
+      var def = document.getElementById('genreModalDef');
+      var structureList = document.getElementById('genreModalStructure');
+      var exempleBox = document.getElementById('genreModalExemple');
+      var closeBtn = document.getElementById('genreModalClose');
+
+      function openModal(key){
+        var info = GENRE_INFO[key];
+        if(!info) return;
+        kicker.textContent = info.kicker;
+        titre.textContent = info.titre;
+        def.textContent = info.definition;
+        structureList.innerHTML = '';
+        info.structure.forEach(function(item){
+          var li = document.createElement('li'); li.textContent = item; structureList.appendChild(li);
+        });
+        exempleBox.innerHTML = '';
+        if(info.exemple){
+          info.exemple.split('\n').forEach(function(ligne){
+            if(!ligne.trim()) return;
+            var p = document.createElement('p');
+            if(ligne.trim().charAt(0) === '\u2014'){ p.className = 'exemple-repl'; }
+            p.textContent = ligne;
+            exempleBox.appendChild(p);
+          });
+        }
+        overlay.classList.add('open');
+      }
+      function closeModal(){ overlay.classList.remove('open'); }
+      document.querySelectorAll('.genre-info-btn').forEach(function(btn){
+        btn.addEventListener('click', function(e){ e.preventDefault(); openModal(this.dataset.genre); });
+      });
+      closeBtn.addEventListener('click', closeModal);
+      overlay.addEventListener('click', function(e){ if(e.target === overlay) closeModal(); });
+      document.addEventListener('keydown', function(e){ if(e.key === 'Escape') closeModal(); });
+    })();
+
+    // Level switcher
+    document.querySelectorAll('.level-btn').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        document.querySelectorAll('.level-btn').forEach(function(b){ b.classList.remove('active'); });
+        btn.classList.add('active');
+        document.body.classList.remove('level-a','level-b','level-c');
+        document.body.classList.add('level-' + btn.dataset.level);
+      });
+    });
+
+    // Side panel toggle
+    var layout = document.getElementById('layout');
+    var panelToggle = document.getElementById('panelToggle');
+    panelToggle.addEventListener('click', function(){
+      layout.classList.toggle('panel-open');
+    });
+
+    // Side panel tabs
+    document.querySelectorAll('.side-tab-btn').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        document.querySelectorAll('.side-tab-btn').forEach(function(b){ b.classList.remove('active'); });
+        document.querySelectorAll('.side-panel-content').forEach(function(p){ p.classList.remove('active'); });
+        btn.classList.add('active');
+        document.getElementById('side-' + btn.dataset.side).classList.add('active');
+      });
+    });
+
+    // Écriture sub-tabs (sec1/2/3)
+    document.querySelectorAll('.subtab-btn').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        document.querySelectorAll('.subtab-btn').forEach(function(b){ b.classList.remove('active'); });
+        document.querySelectorAll('.subtab-panel').forEach(function(p){ p.classList.remove('active'); });
+        btn.classList.add('active');
+        document.getElementById(btn.dataset.subtab).classList.add('active');
+      });
+    });
+  </script>
+</body>
+</html>

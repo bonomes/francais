@@ -1,0 +1,245 @@
+/* ==================================================================
+   ecran-demarrage.css — habillage du module ecran-demarrage.js.
+
+   Tout premier écran du site, avant même le tutoriel/l'identité :
+   deux choix seulement (Commencer / Se connecter). Reprend le
+   langage visuel déjà établi (palette beige/brun/pêche, Baloo 2,
+   boutons-pilules avec relief 3D — voir menu-principal.css) mais en
+   plus grand et plus affirmé : avec seulement deux options à l'écran,
+   chacune doit occuper un vrai espace et donner envie de cliquer,
+   plutôt que de ressembler à deux lignes d'un menu plus long.
+   ================================================================== */
+
+#ecranDemarrage {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 22px;
+}
+
+.edem-titre-img {
+  width: min(88vw, 420px);
+  height: auto;
+  margin-bottom: -20px;
+}
+
+@media (max-width: 460px) {
+  .edem-titre-img { width: min(88vw, 300px); margin-bottom: -12px; }
+}
+
+.edem-carte {
+  width: min(92vw, 380px);
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  font-family: 'Baloo 2', sans-serif;
+}
+
+/* ---------- Entrée en cascade (même patron que .kbm-entree-cachee) ---------- */
+.edem-bloc {
+  transition: opacity 0.36s ease, transform 0.36s cubic-bezier(.2,.8,.3,1.2);
+}
+.edem-entree-cachee {
+  opacity: 0;
+  transform: translateY(10px);
+}
+
+/* ==================================================================
+   Bouton "Commencer" — l'action principale, celle qu'on veut que
+   presque tout le monde choisisse en premier. Grand, plein, avec le
+   même relief "bouton qu'on presse" que .kbm-bouton, mais poussé plus
+   loin : padding généreux, icône plus grande dans un médaillon, une
+   micro-animation de respiration au repos pour attirer l'œil sans
+   être criarde (s'arrête au survol/clic, ne concurrence jamais un
+   geste réel de l'élève).
+   ================================================================== */
+.edem-bouton-principal {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  border: none;
+  border-radius: 28px;
+  padding: 22px 24px;
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 1.15rem;
+  text-align: left;
+  color: #FFFFFF;
+  background: var(--peche-fonce);
+  cursor: pointer;
+  box-shadow: 0 5px 0 0 var(--brun-fonce, #4A3B33), 4px 6px 16px var(--ombre, rgba(102, 80, 69, 0.18));
+  animation: edemRespire 2.6s ease-in-out infinite;
+  transition: transform 0.18s cubic-bezier(.34,1.6,.4,1), box-shadow 0.15s ease, background 0.15s ease;
+}
+.edem-bouton-principal:hover {
+  background: #d97c5c;
+  transform: translateY(-2px) scale(1.01);
+  animation-play-state: paused;
+  box-shadow: 0 6px 0 0 var(--brun-fonce, #4A3B33), 5px 8px 18px var(--ombre, rgba(102, 80, 69, 0.18));
+}
+.edem-bouton-principal:active {
+  animation-play-state: paused;
+  transform: translateY(3px) scale(0.99);
+  box-shadow: 0 0 0 0 var(--brun-fonce, #4A3B33), 1px 1px 6px var(--ombre, rgba(102, 80, 69, 0.18));
+}
+
+@keyframes edemRespire {
+  0%, 100% { box-shadow: 0 5px 0 0 var(--brun-fonce, #4A3B33), 4px 6px 16px var(--ombre, rgba(102, 80, 69, 0.18)); }
+  50% { box-shadow: 0 5px 0 0 var(--brun-fonce, #4A3B33), 4px 10px 22px var(--ombre, rgba(102, 80, 69, 0.28)); }
+}
+
+.edem-icone-chip-principal {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.22);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.12);
+}
+.edem-icone-chip-principal svg {
+  width: 24px;
+  height: 24px;
+  stroke: #FFFFFF;
+  fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.edem-bouton-titre { font-size: 1.15rem; }
+
+/* ==================================================================
+   Bouton "Se connecter" — action secondaire, discrète mais toujours
+   invitante (contour pêche plutôt que fond plein, même famille que
+   .kbm-bouton). Au clic, se déplie en ligne pour révéler le champ
+   courriel plutôt que d'ouvrir un second écran — l'élève reste sur
+   la même carte, même patron que #kbmFichePanneau.
+   ================================================================== */
+.edem-bouton-secondaire {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  border: 1.5px solid var(--peche);
+  border-radius: 24px;
+  padding: 16px 20px;
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 0.98rem;
+  text-align: left;
+  color: var(--brun-fonce, var(--brun));
+  background: #FFFFFF;
+  cursor: pointer;
+  box-shadow: 0 3px 0 0 var(--peche), 2px 4px 10px var(--ombre);
+  transition: transform 0.18s cubic-bezier(.34,1.6,.4,1), box-shadow 0.15s ease, background 0.15s ease;
+}
+.edem-bouton-secondaire:hover {
+  background: var(--peche-pale, rgba(240, 169, 139, 0.16));
+  transform: translateY(-1px);
+}
+.edem-bouton-secondaire:active,
+.edem-bouton-secondaire.edem-ouvert {
+  transform: translateY(2px);
+  box-shadow: 0 0 0 0 var(--peche), 1px 1px 4px var(--ombre);
+}
+
+.edem-icone-chip-secondaire {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--peche-pale-vif, rgba(240, 169, 139, 0.30));
+  box-shadow: inset 0 1px 2px rgba(74, 59, 51, 0.12);
+}
+.edem-icone-chip-secondaire svg {
+  width: 18px;
+  height: 18px;
+  stroke: var(--peche-fonce);
+  fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.edem-chevron-secondaire {
+  margin-left: auto;
+  font-size: 0.75rem;
+  transition: transform 0.2s ease;
+}
+.edem-bouton-secondaire.edem-ouvert .edem-chevron-secondaire { transform: rotate(180deg); }
+
+/* ---------- Panneau courriel (déplié sous "Se connecter") ---------- */
+#edemPanneauCourriel {
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  background: var(--peche-pale, rgba(240, 169, 139, 0.16));
+  border-radius: 20px;
+  transition: max-height 0.32s ease, opacity 0.32s ease, margin-top 0.32s ease;
+}
+#edemPanneauCourriel.edem-ouvert {
+  max-height: 180px;
+  opacity: 1;
+  margin-top: -6px;
+}
+
+.edem-champ-courriel {
+  display: block;
+  width: calc(100% - 28px);
+  margin: 14px 14px 4px;
+  padding: 12px 14px;
+  font-family: inherit;
+  font-size: 0.92rem;
+  border: 1.5px solid var(--peche);
+  border-radius: 14px;
+  background: #FFFFFF;
+  color: var(--brun-fonce, var(--brun));
+}
+.edem-champ-courriel:focus {
+  outline: none;
+  border-color: var(--peche-fonce);
+  box-shadow: 0 0 0 3px rgba(240, 169, 139, 0.25);
+}
+
+.edem-envoi-courriel {
+  display: block;
+  width: calc(100% - 28px);
+  margin: 8px 14px 14px;
+  padding: 10px;
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 0.88rem;
+  border: none;
+  border-radius: 12px;
+  background: var(--peche-fonce);
+  color: #FFFFFF;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+}
+.edem-envoi-courriel:hover:not(:disabled) { opacity: 0.85; }
+.edem-envoi-courriel:disabled { opacity: 0.5; cursor: default; }
+
+.edem-erreur-courriel {
+  margin: 0 14px 10px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #b3452f;
+}
+
+@media (max-width: 460px) {
+  .edem-bouton-principal { padding: 18px 18px; font-size: 1.02rem; }
+  .edem-bouton-titre { font-size: 1.02rem; }
+  .edem-icone-chip-principal { width: 40px; height: 40px; }
+  .edem-icone-chip-principal svg { width: 21px; height: 21px; }
+  .edem-bouton-secondaire { padding: 14px 16px; font-size: 0.9rem; }
+}

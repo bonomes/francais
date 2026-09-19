@@ -1,0 +1,87 @@
+/* ==================================================================
+   barre-progression.css — habillage de barre-progression.js.
+
+   Barre de téléversement animée, même langage visuel que le reste du
+   site (palette peche/brun/beige, Baloo 2, pilules). Remplace l'idée
+   d'une image statique par un vrai remplissage animé en CSS : la
+   largeur transitionne, un reflet glisse dessus en boucle, et un
+   point lumineux suit le bord d'attaque du remplissage.
+   ================================================================== */
+
+.brtv-conteneur {
+  width: min(92vw, 340px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  font-family: 'Baloo 2', sans-serif;
+}
+
+.brtv-piste {
+  position: relative;
+  width: 100%;
+  height: 22px;
+  border-radius: 999px;
+  border: 1.5px solid var(--peche);
+  background: #FFFFFF;
+  overflow: hidden;
+  box-shadow: inset 0 1px 4px var(--ombre, rgba(102, 80, 69, 0.16));
+}
+
+.brtv-remplissage {
+  position: relative;
+  height: 100%;
+  width: 0%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--peche), var(--peche-fonce));
+  box-shadow: 0 0 12px 2px rgba(240, 169, 139, 0.55);
+  transition: width 0.3s linear;
+}
+
+/* Reflet qui glisse en boucle sur le remplissage */
+.brtv-remplissage::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(115deg, transparent 0%, rgba(255, 255, 255, 0.55) 45%, transparent 60%);
+  background-size: 250% 100%;
+  animation: brtvBrille 1.7s linear infinite;
+}
+
+@keyframes brtvBrille {
+  0% { background-position: 160% 0; }
+  100% { background-position: -60% 0; }
+}
+
+/* Point lumineux au bord d'attaque du remplissage */
+.brtv-remplissage::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  right: 7px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #FFFFFF;
+  box-shadow: 0 0 8px 3px rgba(255, 255, 255, 0.9), 0 0 16px 6px rgba(240, 169, 139, 0.6);
+  transform: translate(50%, -50%);
+  animation: brtvPouls 1s ease-in-out infinite;
+}
+
+@keyframes brtvPouls {
+  0%, 100% { opacity: 0.75; transform: translate(50%, -50%) scale(0.9); }
+  50% { opacity: 1; transform: translate(50%, -50%) scale(1.15); }
+}
+
+.brtv-etiquette {
+  font-weight: 700;
+  font-size: 0.88rem;
+  color: var(--brun-fonce, var(--brun));
+  min-height: 1.2em;
+  text-align: center;
+}
+
+.brtv-pourcent {
+  font-variant-numeric: tabular-nums;
+}

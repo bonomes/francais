@@ -3,7 +3,7 @@
    autres écrans : window.KebBekTeleversement.demarrerSequenceTeleversement
    (idConteneur, options, callbacks).
 
-   Dépend de barre-progression.js (window.KebBekProgression), chargé
+   Dépend de barre-progression.js (window.KebBekBarreProgression), chargé
    avant celui-ci.
 
    Déroulement :
@@ -45,7 +45,7 @@ function demarrerSequenceTeleversement(idConteneur, options, callbacks) {
 
   const conteneur = document.getElementById(idConteneur);
   if (!conteneur) return { arreter: function () {} };
-  if (!window.KebBekProgression) {
+  if (!window.KebBekBarreProgression) {
     console.warn('sequence-televersement : barre-progression.js doit être chargé avant.');
     return { arreter: function () {} };
   }
@@ -175,7 +175,7 @@ function demarrerSequenceTeleversement(idConteneur, options, callbacks) {
   }
   Promise.all(chemins.map(precharger)).then(function () {
     if (arrete) return;
-    barre = window.KebBekProgression.demarrerBarreProgression(
+    barre = window.KebBekBarreProgression.demarrerBarreProgression(
       'tvbkBarre',
       { cible: 100, duree: duree, etiquette: etiquette },
       { onProgres: surProgres }

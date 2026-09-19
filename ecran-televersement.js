@@ -38,10 +38,8 @@ function tTeleversementOuDefaut(cle, defaut) {
   return (dico && dico[cle]) || defaut;
 }
 
-// Icône générique de personnage (même famille que svgIconeDemarrage)
-function svgIconePersonnage() {
-  return '<svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4.4 3.6-8 8-8s8 3.6 8 8"/></svg>';
-}
+// Illustrations fournies par Raphaël (remplacent les anciennes icônes SVG
+// dessinées à la main) — voir images/symboles/ pour les fichiers sources.
 
 /**
  * Rend l'écran de choix de personnage (téléversement) dans le conteneur donné.
@@ -67,11 +65,11 @@ function demarrerEcranTeleversement(idConteneur, options, callbacks) {
 
         '<div class="telv-bloc telv-entree-cachee telv-choix">' +
           '<button type="button" class="telv-bouton-perso" id="telvBtnKeb">' +
-            '<span class="telv-icone-chip-perso">' + svgIconePersonnage() + '</span>' +
+            '<span class="telv-icone-chip-perso"><img src="images/accueil/symbole-garcon01.webp" alt=""></span>' +
             '<span>' + tTeleversementOuDefaut('keb', 'Keb') + '</span>' +
           '</button>' +
           '<button type="button" class="telv-bouton-perso" id="telvBtnBek">' +
-            '<span class="telv-icone-chip-perso">' + svgIconePersonnage() + '</span>' +
+            '<span class="telv-icone-chip-perso"><img src="images/accueil/symbole-fille01.webp" alt=""></span>' +
             '<span>' + tTeleversementOuDefaut('bek', 'Bek') + '</span>' +
           '</button>' +
         '</div>' +

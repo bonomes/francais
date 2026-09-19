@@ -1,0 +1,331 @@
+/* ==================================================================
+   sequence-televersement.css — habillage de sequence-televersement.js.
+
+   Couches, de bas en haut :
+     .tvbk-monde       étapes de Bek + barre de progression
+     .tvbk-eclat       éclat lumineux (halo, rayons, onde)
+     .tvbk-noir        assombrissement complet
+     .tvbk-revelation  fond crème + Bek, dévoilés par une ouverture
+                       circulaire de lumière (masque animé)
+
+   Les durées viennent de variables posées par le JS (--tvbk-*).
+   Une seule séquence par page (ids fixes, comme barre-progression).
+   ================================================================== */
+
+@property --tvbk-r {
+  syntax: '<percentage>';
+  inherits: false;
+  initial-value: 0%;
+}
+
+.tvbk-scene {
+  position: fixed;
+  inset: 0;
+  z-index: 9000;
+  overflow: hidden;
+  background: var(--beige, #FFF5E8);
+  font-family: 'Baloo 2', sans-serif;
+}
+.tvbk-scene--dans-conteneur { position: absolute; }
+
+/* ---------- Monde : étapes + barre ---------- */
+.tvbk-monde {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+}
+
+.tvbk-cadre {
+  position: relative;
+  height: min(68dvh, 132vw);
+  aspect-ratio: 2 / 3;
+}
+
+.tvbk-etape {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  opacity: 0;
+  transition: opacity 1s ease;
+  pointer-events: none;
+}
+.tvbk-etape.est-actif { opacity: 1; }
+
+.tvbk-barre-zone {
+  margin-top: -1dvh;
+  transition: opacity 0.25s ease;
+}
+
+/* ---------- Éclair (étape 5) ---------- */
+.tvbk-eclair .tvbk-etape.est-actif { opacity: 0; transition-duration: 0.3s; }
+.tvbk-eclair .tvbk-barre-zone { opacity: 0; }
+
+.tvbk-eclair .tvbk-etape--eclair {
+  opacity: 1;
+  transition: none;
+  animation: tvbkImpact var(--tvbk-eclat, 1300ms) ease-out both;
+}
+@keyframes tvbkImpact {
+  0%   { opacity: 0; transform: scale(0.94); }
+  10%  { opacity: 1; transform: scale(1.02); }
+  100% { opacity: 1; transform: scale(1.16); }
+}
+
+.tvbk-eclair .tvbk-monde {
+  animation: tvbkSecousse 480ms linear both;
+}
+@keyframes tvbkSecousse {
+  0%   { transform: translate(0, 0); }
+  8%   { transform: translate(-9px, 5px); }
+  20%  { transform: translate(8px, -6px); }
+  34%  { transform: translate(-6px, 4px); }
+  50%  { transform: translate(5px, -3px); }
+  70%  { transform: translate(-3px, 2px); }
+  100% { transform: translate(0, 0); }
+}
+
+/* ---------- Éclat lumineux ---------- */
+.tvbk-eclat {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+}
+.tvbk-eclair .tvbk-eclat {
+  opacity: 1;
+}
+
+.tvbk-eclat-halo {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  background: radial-gradient(circle at 50% 46%,
+    #FFFFFF 0%, #FFF8DC 18%, rgba(255, 228, 140, 0.9) 46%,
+    rgba(255, 214, 120, 0.55) 76%, rgba(255, 214, 120, 0.35) 100%);
+}
+.tvbk-eclair .tvbk-eclat-halo {
+  animation: tvbkHalo var(--tvbk-eclat, 1300ms) ease-out both;
+}
+@keyframes tvbkHalo {
+  0%   { opacity: 0; }
+  8%   { opacity: 1; }
+  26%  { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+.tvbk-eclat-rayons {
+  position: absolute;
+  left: 50%;
+  top: 46%;
+  width: 190vmax;
+  height: 190vmax;
+  margin: -95vmax 0 0 -95vmax;
+  opacity: 0;
+  background: repeating-conic-gradient(from 0deg,
+    rgba(255, 255, 255, 0.95) 0deg 2.5deg, transparent 2.5deg 11deg);
+  -webkit-mask-image: radial-gradient(circle, #000 0%, transparent 52%);
+          mask-image: radial-gradient(circle, #000 0%, transparent 52%);
+}
+.tvbk-eclair .tvbk-eclat-rayons {
+  animation: tvbkRayons calc(var(--tvbk-eclat, 1300ms) * 0.9) ease-out both;
+}
+@keyframes tvbkRayons {
+  0%   { opacity: 0;   transform: scale(0.15) rotate(0deg); }
+  12%  { opacity: 0.9; }
+  100% { opacity: 0;   transform: scale(0.75) rotate(28deg); }
+}
+
+.tvbk-eclat-onde {
+  position: absolute;
+  left: 50%;
+  top: 46%;
+  width: 22vmin;
+  height: 22vmin;
+  margin: -11vmin 0 0 -11vmin;
+  border-radius: 50%;
+  border: 0.9vmin solid rgba(255, 255, 255, 0.95);
+  box-shadow: 0 0 4vmin 1.5vmin rgba(255, 224, 130, 0.8);
+  opacity: 0;
+}
+.tvbk-eclair .tvbk-eclat-onde {
+  animation: tvbkOnde calc(var(--tvbk-eclat, 1300ms) * 0.75) cubic-bezier(0.1, 0.6, 0.3, 1) both;
+}
+@keyframes tvbkOnde {
+  0%   { opacity: 1; transform: scale(0.1); }
+  100% { opacity: 0; transform: scale(7); }
+}
+
+/* ---------- Assombrissement complet ---------- */
+.tvbk-noir {
+  position: absolute;
+  inset: 0;
+  background: #000;
+  opacity: 0;
+  transition: opacity var(--tvbk-noir, 700ms) ease-in;
+}
+.tvbk-noir-actif .tvbk-noir { opacity: 1; }
+
+/* ---------- Révélation : fond crème + Bek, dévoilés par une ouverture de lumière ---------- */
+.tvbk-revelation {
+  position: absolute;
+  inset: 0;
+  visibility: hidden;
+  background: var(--beige, #FFF5E8);
+  --tvbk-r: 0%;
+  -webkit-mask-image: radial-gradient(circle at 50% 66%,
+    #000 calc(var(--tvbk-r) - 16%), transparent var(--tvbk-r));
+          mask-image: radial-gradient(circle at 50% 66%,
+    #000 calc(var(--tvbk-r) - 16%), transparent var(--tvbk-r));
+}
+.tvbk-ouverture .tvbk-revelation {
+  visibility: visible;
+  animation: tvbkIris var(--tvbk-iris, 2600ms) cubic-bezier(0.45, 0, 0.25, 1) both;
+}
+@keyframes tvbkIris {
+  from { --tvbk-r: 0%; }
+  to   { --tvbk-r: 120%; }
+}
+
+/* Repli sans @property : simple fondu depuis le noir */
+.tvbk-sans-iris .tvbk-revelation {
+  -webkit-mask-image: none;
+          mask-image: none;
+  opacity: 0;
+}
+.tvbk-sans-iris.tvbk-ouverture .tvbk-revelation {
+  animation: tvbkFondu var(--tvbk-iris, 2600ms) ease-in-out both;
+}
+@keyframes tvbkFondu {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.tvbk-lueur {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 62%,
+    rgba(255, 232, 170, 0.6) 0%, rgba(255, 232, 170, 0.22) 38%, transparent 62%);
+}
+
+/* ---------- Bek : descente, balancement, atterrissage ---------- */
+.tvbk-bek-boite {
+  position: absolute;
+  left: 50%;
+  bottom: 3dvh;
+  height: min(84dvh, 132vw);
+  aspect-ratio: 2 / 3;
+  transform: translateX(-50%);
+}
+
+/* Les pieds de Bek touchent le sol à ~88 % de la hauteur de l'image */
+.tvbk-ombre {
+  position: absolute;
+  left: 50%;
+  top: 87%;
+  width: 36%;
+  height: 3.2%;
+  margin-left: -18%;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at center,
+    rgba(102, 80, 69, 0.42) 0%, rgba(102, 80, 69, 0.18) 55%, transparent 75%);
+  opacity: 0;
+}
+
+.tvbk-bek-descente,
+.tvbk-bek-balancier,
+.tvbk-bek-corps,
+.tvbk-bek-corps img {
+  width: 100%;
+  height: 100%;
+}
+.tvbk-bek-corps img { display: block; object-fit: contain; }
+
+.tvbk-bek-balancier { transform-origin: 50% 16%; }
+.tvbk-bek-corps { transform-origin: 50% 88%; }
+
+.tvbk-ouverture .tvbk-bek-descente {
+  animation: tvbkDescente var(--tvbk-descente, 4300ms) both;
+}
+.tvbk-ouverture .tvbk-bek-balancier {
+  animation: tvbkBalancement var(--tvbk-descente, 4300ms) ease-in-out both;
+}
+.tvbk-ouverture .tvbk-bek-corps {
+  animation: tvbkEcrasement var(--tvbk-descente, 4300ms) ease-out both;
+}
+.tvbk-ouverture .tvbk-ombre {
+  animation: tvbkOmbre var(--tvbk-descente, 4300ms) ease-out both;
+}
+
+/* Descente lente qui ralentit (flottement), puis petit rebond à l'arrivée */
+@keyframes tvbkDescente {
+  0%   { transform: translateY(-105dvh); animation-timing-function: cubic-bezier(0.32, 0.28, 0.55, 1); }
+  84%  { transform: translateY(0);       animation-timing-function: ease-out; }
+  92%  { transform: translateY(-1.6dvh); animation-timing-function: ease-in; }
+  100% { transform: translateY(0); }
+}
+
+/* Balancement de pendule qui s'éteint avant l'arrivée */
+@keyframes tvbkBalancement {
+  0%   { transform: translateX(0)       rotate(-5deg); }
+  18%  { transform: translateX(-4vmin)  rotate(4deg); }
+  36%  { transform: translateX(3.5vmin) rotate(-3.5deg); }
+  54%  { transform: translateX(-2.5vmin) rotate(2.5deg); }
+  70%  { transform: translateX(1.5vmin) rotate(-1.5deg); }
+  82%  { transform: translateX(0)       rotate(0deg); }
+  100% { transform: translateX(0)       rotate(0deg); }
+}
+
+/* Écrasement au contact, léger étirement au rebond, retour au calme */
+@keyframes tvbkEcrasement {
+  0%, 84% { transform: scale(1, 1); }
+  88%     { transform: scale(1.05, 0.93); }
+  92%     { transform: scale(0.98, 1.03); }
+  100%    { transform: scale(1, 1); }
+}
+
+/* L'ombre grandit à mesure que Bek approche, se resserre pendant le rebond */
+@keyframes tvbkOmbre {
+  0%   { opacity: 0;    transform: scale(0.2); }
+  84%  { opacity: 0.85; transform: scale(1); }
+  88%  { opacity: 1;    transform: scale(1.1); }
+  92%  { opacity: 0.7;  transform: scale(0.85); }
+  100% { opacity: 0.85; transform: scale(1); }
+}
+
+/* ---------- Fin : on libère les couches inutiles ---------- */
+.tvbk-fini .tvbk-monde,
+.tvbk-fini .tvbk-noir,
+.tvbk-fini .tvbk-eclat {
+  display: none;
+}
+
+/* ---------- Mouvement réduit : pas d'éclat vif ni de secousse, Bek apparaît en fondu ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .tvbk-eclair .tvbk-monde,
+  .tvbk-eclair .tvbk-eclat-rayons,
+  .tvbk-eclair .tvbk-eclat-onde,
+  .tvbk-eclair .tvbk-etape--eclair {
+    animation: none;
+  }
+  .tvbk-eclair .tvbk-eclat-halo {
+    animation: tvbkHaloDoux var(--tvbk-eclat, 1300ms) ease-in-out both;
+  }
+  @keyframes tvbkHaloDoux {
+    0%   { opacity: 0; }
+    35%  { opacity: 0.3; }
+    100% { opacity: 0; }
+  }
+  .tvbk-ouverture .tvbk-bek-descente,
+  .tvbk-ouverture .tvbk-bek-balancier,
+  .tvbk-ouverture .tvbk-bek-corps,
+  .tvbk-ouverture .tvbk-ombre {
+    animation: none;
+  }
+  .tvbk-ouverture .tvbk-ombre { opacity: 0.85; }
+}

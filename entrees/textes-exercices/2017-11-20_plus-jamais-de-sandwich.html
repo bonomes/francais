@@ -205,6 +205,22 @@
   .exo-simple-list li{ font-size:0.95rem; margin-bottom:0.8rem; line-height:1.55; }
   .exo-title{ font-style:italic; color:var(--navy); }
 
+  /* Vocabulaire et langue */
+  .rappel{ background:var(--paper-edge); border-left:3px solid var(--mustard); border-radius:4px; padding:0.9rem 1.1rem; margin:0 0 1rem; }
+  .rappel .label{ font-family:'Caveat', cursive; font-weight:600; font-size:1.15rem; color:var(--navy); display:block; margin:0 0 0.35rem; }
+  .rappel p{ font-size:0.9rem; margin:0 0 0.5rem; }
+  .rappel p:last-child{ margin-bottom:0; }
+  .corrige{ margin-top:0.6rem; }
+  .corrige summary{ cursor:pointer; list-style:none; font-size:0.78rem; font-style:italic; color:var(--ink-soft); }
+  .corrige summary::-webkit-details-marker{ display:none; }
+  .corrige summary::before{ content:'✓ '; font-style:normal; color:var(--mustard); }
+  .corrige[open] summary{ margin-bottom:0.55rem; color:var(--navy); }
+  .corrige .reponse{ font-size:0.88rem; background:rgba(255,255,255,0.5); border-radius:4px; padding:0.7rem 0.9rem; line-height:1.55; }
+  .corrige .reponse p{ margin:0 0 0.5rem; }
+  .corrige .reponse p:last-child{ margin-bottom:0; }
+  .term{ font-style:italic; color:var(--navy); font-weight:600; }
+  .lang-note{ font-size:0.85rem; color:var(--ink-soft); font-style:italic; margin-top:0.8rem; }
+
   .genre-tag-wrap{ display:inline-flex; align-items:center; gap:0.35rem; margin-bottom:0.3rem; }
   .genre-tag-wrap .genre-tag{ margin-bottom:0; }
   .genre-info-btn{ background:none; border:none; padding:0; cursor:pointer; color:var(--mustard); opacity:0.7; display:inline-flex; align-items:center; justify-content:center; transition:opacity 0.15s ease, transform 0.15s ease; }
@@ -252,7 +268,7 @@
     </div>
 
     <div class="panel-toggle-row">
-      <button class="panel-toggle" id="panelToggle">☰ Mise en scène, questions et écriture</button>
+      <button class="panel-toggle" id="panelToggle">☰ Mise en scène, questions, langue et écriture</button>
     </div>
 
     <div class="layout" id="layout">
@@ -261,6 +277,7 @@
         <div class="side-tabs">
           <button class="side-tab-btn active" data-side="scene">Mise en scène</button>
           <button class="side-tab-btn" data-side="questions">Questions</button>
+          <button class="side-tab-btn" data-side="langue">Vocabulaire et langue</button>
           <button class="side-tab-btn" data-side="ecriture">Écriture</button>
         </div>
 
@@ -313,6 +330,15 @@
               <li>Qu'est-ce que Bek découvre lorsqu'elle goûte le sandwich elle-même ?</li>
               <li>Pourquoi continue-t-elle d'être fâchée même après avoir compris que Keb avait raison ?</li>
             </ul>
+            <details class="corrige">
+              <summary>Voir les réponses</summary>
+              <div class="reponse">
+                <p>1. Parce que Keb dit que son sandwich « goûte bizarre », alors qu'elle avait tellement hâte de le lui faire goûter.</p>
+                <p>2. Elle écrit qu'elle était « tellement contente » d'avoir réussi à faire le sandwich toute seule, comme sa mère le lui avait montré.</p>
+                <p>3. Que c'était « peut-être un peu fort en épices » — Keb n'avait pas tort.</p>
+                <p>4. Parce qu'elle trouve qu'il n'était pas obligé de le dire « comme ça, devant tout le monde » — c'est sa fierté qui est blessée, pas seulement le goût du sandwich.</p>
+              </div>
+            </details>
           </div>
 
           <div data-level="b">
@@ -322,6 +348,15 @@
               <li>Que comprend la Bek de 12 ans que la Bek de 10 ans ne comprenait pas encore ?</li>
               <li>Pourquoi peut-on dire que ce souvenir lui apprend quelque chose sur elle-même ?</li>
             </ul>
+            <details class="corrige">
+              <summary>Voir les réponses</summary>
+              <div class="reponse">
+                <p>1. Elle qualifie elle-même sa colère de « disproportionnée » et « presque comique vue d'ici » ; elle admet aussi qu'elle savait déjà, au fond, que le sandwich était raté avant même d'y goûter — sa colère n'était donc pas vraiment justifiée.</p>
+                <p>2. Sur le coup : de la colère, une fierté blessée, le besoin de prouver que Keb avait tort. En l'écrivant aujourd'hui : du recul et de la lucidité — elle comprend que ce n'était jamais vraiment une histoire de sandwich.</p>
+                <p>3. Qu'elle voulait surtout être admirée — « être celle qu'on admire, pour une fois » — plutôt que de simplement réussir une recette.</p>
+                <p>4. Parce qu'en l'écrivant, elle découvre une motivation qu'elle ne voyait pas sur le coup (son besoin d'être admirée) ; le souvenir devient donc une occasion de mieux se comprendre elle-même.</p>
+              </div>
+            </details>
           </div>
 
           <div data-level="c">
@@ -335,6 +370,16 @@
                 <li>Pourquoi Keb est-il si surpris quand Bek lui annonce « Je ne te ferai plus jamais de sandwich ! » — que ne savait-il pas jusque-là ?</li>
                 <li>Que découvre Bek en goûtant à son tour le sandwich ?</li>
               </ol>
+              <details class="corrige">
+                <summary>Voir les réponses</summary>
+                <div class="reponse">
+                  <p>1. Depuis « des lustres », donc depuis très longtemps. Keb insiste pour venir surtout les fins de semaine parce que la mère de Bek prépare alors « des repas plus somptueux (et franchement délicieux) ».</p>
+                  <p>2. Elle veut lui faire une surprise : elle demande à sa mère de lui montrer comment faire, puis prépare elle-même le sandwich pour le partager avec lui, « avec amour ».</p>
+                  <p>3. Il fait une remarque déçue — « Ça goûte bizarre, aujourd'hui » — au lieu d'être impressionné comme Bek l'espérait (« il est resté aux nues » plutôt que d'en « tomber des nues »).</p>
+                  <p>4. Il ne savait pas que c'était Bek elle-même, et non sa mère, qui avait fait le sandwich cette fois — d'où sa question surprise, « C'est toi qui l'as fait ? », et son étonnement devant une réaction aussi vive.</p>
+                  <p>5. Elle découvre que Keb n'avait pas tort : le goût est « effectivement étrange », probablement parce qu'elle a « exagéré sur les épices ».</p>
+                </div>
+              </details>
             </details>
             <details class="qa-block">
               <summary>Interprétation</summary>
@@ -346,6 +391,18 @@
                 <li>Pourquoi peut-on dire que « j'avais envie de le zigouiller » exprime plus une vexation passagère qu'une vraie colère ?</li>
                 <li>Pourquoi Bek reprend-elle elle-même une bouchée du sandwich plutôt que de simplement se fâcher ou d'ignorer la remarque de Keb ?</li>
               </ol>
+              <details class="corrige">
+                <summary>Voir des pistes de réponse</summary>
+                <div class="reponse">
+                  <p>Ce sont des questions d'interprétation : il n'existe pas de réponse unique. Voici des pistes pour t'aider à construire une réponse complète, bien appuyée sur le texte.</p>
+                  <p>1. Réponse ouverte. Le texte accorde une grande place aux sandwichs (Keb est « le plus emballé » par le dîner, et ce passage est l'un des plus développés) — on peut donc défendre que oui, en partie. On peut aussi répondre que non, puisque leur amitié existe « depuis des lustres », bien avant cette habitude précise. L'important est de choisir une position et de la justifier avec un passage exact.</p>
+                  <p>2. Réponse ouverte. On peut soutenir que non, que dire la vérité sur le goût n'a rien de méchant en soi — mais aussi que la remarque est maladroite, faite devant les autres (dans la version A, Bek précise « devant tout le monde »). S'il avait su que c'était Bek qui l'avait fait, Keb aurait sans doute choisi ses mots plus délicatement, en connaissant l'effort qu'elle y avait mis.</p>
+                  <p>3. Sens figuré : ce n'est évidemment pas un fruit au sens propre. L'exagération — comparer un sandwich à un enfant qu'on aurait porté — produit un effet comique : elle montre, de façon amplifiée, à quel point Bek s'est investie dans ce sandwich.</p>
+                  <p>4. Elle passe de la fierté et de l'excitation (« les yeux pétillants d'excitation ») à la colère et à la vexation devant la remarque de Keb, puis à un doute grandissant lorsqu'elle y goûte elle-même, jusqu'à devoir « ravaler [sa] pensée originelle » en réalisant que Keb n'avait pas tort.</p>
+                  <p>5. « Zigouiller » est un mot familier et exagéré, presque comique dans ce contexte — personne ne pense vraiment à faire du mal à Keb. C'est une façon amplifiée d'exprimer un agacement passager, pas une véritable menace.</p>
+                  <p>6. Elle veut prouver que Keb a tort et défendre sa fierté blessée ; reprendre une bouchée lui permet d'agir, de se justifier par les faits, plutôt que de simplement subir la remarque ou de s'emporter sans preuve.</p>
+                </div>
+              </details>
             </details>
             <details class="qa-block">
               <summary>Réaction / discussion</summary>
@@ -353,6 +410,14 @@
                 <li>As-tu déjà fait quelque chose « avec amour » pour quelqu'un et été déçu(e) de sa réaction ? Raconte.</li>
                 <li>Selon toi, comment Bek devrait-elle réagir dans cette situation ? Imagine ce qu'elle pourrait décider de faire ou de ne pas faire à l'avenir.</li>
               </ol>
+              <details class="corrige">
+                <summary>Voir des pistes de réponse</summary>
+                <div class="reponse">
+                  <p>Questions personnelles : il n'y a pas de bonne réponse unique. Voici ce qu'une réponse complète devrait contenir.</p>
+                  <p>1. Un exemple concret et personnel, ce que tu ressentais avant la réaction de l'autre personne, puis après — et si tu le souhaites, un lien avec ce que Bek ressent dans le texte.</p>
+                  <p>2. Une suggestion d'action précise (par exemple : en parler calmement avec Keb, essayer une autre recette, ne pas s'en faire outre mesure) accompagnée d'une explication : pourquoi cette réaction serait-elle plus constructive que la colère initiale de Bek ?</p>
+                </div>
+              </details>
             </details>
             <details class="qa-block">
               <summary>Appréciation des procédés</summary>
@@ -365,7 +430,230 @@
                 <li>Le texte alterne un vocabulaire très soutenu (« méticulosité », « le fruit de mes entrailles ») et des mots plus familiers, presque enfantins (« zigouiller », « cet impertinent »). Que produit ce télescopage de registres ?</li>
                 <li>Ce texte est un souvenir d'enfance retouché par une narratrice adulte. À quels endroits précis sent-on la voix de l'adulte percer sous celle de l'enfant qu'elle raconte ?</li>
               </ol>
+              <details class="corrige">
+                <summary>Voir des pistes de réponse</summary>
+                <div class="reponse">
+                  <p>1. Le journal intime à la première personne crée une proximité avec les pensées et les émotions de Bek ; le lecteur a un accès direct à son point de vue subjectif, ce qui rend le ton plus spontané et complice.</p>
+                  <p>2. Par exemple « le fruit de mes entrailles » ou « j'avais envie de le zigouiller » : l'exagération contraste avec la banalité de l'évènement (une remarque sur un sandwich), ce qui crée un effet comique.</p>
+                  <p>3. La chute révèle que Bek avait tort d'être si fâchée — Keb avait raison depuis le début. Elle force à relire toute la scène avec un regard ironique : la colère de Bek, si sérieuse en apparence, se dégonfle d'un coup dans cette dernière phrase désinvolte.</p>
+                  <p>4. Le titre reprend telle quelle la phrase dramatique de Bek, ce qui capte d'emblée son ton mélodramatique ; le contraste entre cette déclaration solennelle et le sujet en apparence banal (un sandwich) crée un effet comique et pique la curiosité du lecteur.</p>
+                  <p>5. L'expression courante est « tomber des nues » (être extrêmement surpris). L'autrice la détourne en « rester aux nues » : au lieu d'être renversé d'admiration comme Bek l'espérait, Keb reste de marbre — un jeu de mots qui souligne, avec humour, sa déception.</p>
+                  <p>6. Ce mélange crée un effet comique et révèle la double voix du texte : le vocabulaire soutenu appartient à la narratrice adulte, qui raconte avec recul et un brin d'ironie, tandis que les mots familiers rappellent l'intensité toute enfantine des émotions vécues sur le moment.</p>
+                  <p>7. On la sent notamment dans les commentaires ironiques et les apartés (par exemple : « Tu m'aimes pour les sandwichs de ma mère, c'est ça ? »), dans le vocabulaire soutenu employé pour décrire une scène d'enfance, et surtout dans la dernière phrase, qui juge avec recul et un brin d'autodérision la réaction de la Bek de 10 ans.</p>
+                </div>
+              </details>
             </details>
+          </div>
+        </div>
+
+        <!-- VOCABULAIRE ET LANGUE -->
+        <div id="side-langue" class="side-panel-content">
+
+          <div data-level="a">
+            <p class="qa-intro">Quelques mots à explorer dans cette version du texte.</p>
+            <ul class="qa-flat">
+              <li><span class="term">gamelle</span> — Cherche ce mot dans le texte. Que met-on dans une gamelle ?</li>
+              <li><span class="term">à peu près</span> — Remplace cette expression par un synonyme, dans la phrase où elle apparaît.</li>
+              <li><span class="term">capoter</span> — Ce mot est très familier. Comment dirait-on la même chose de façon plus neutre ?</li>
+            </ul>
+          </div>
+
+          <div data-level="b">
+            <p class="qa-intro">Quelques mots à explorer dans cette version du texte.</p>
+            <ul class="qa-flat">
+              <li><span class="term">solennel</span> — À l'aide du contexte, explique ce mot dans tes propres mots.</li>
+              <li><span class="term">tenir à cœur</span> — Que veut dire cette expression ? Utilise-la dans une phrase qui parle de toi.</li>
+              <li><span class="term">disproportionnée</span> — Pourquoi la narratrice choisit-elle ce mot pour décrire sa propre réaction, plutôt que « grosse » ou « forte » ?</li>
+            </ul>
+          </div>
+
+          <div data-level="c">
+            <p class="qa-intro">Cette section s'appuie sur la version raffinée du texte (Version C). Clique sur une catégorie pour l'ouvrir ou la refermer.</p>
+
+            <details class="qa-block" open>
+              <summary>A · Comprendre les mots en contexte</summary>
+              <p class="lang-note" style="margin-top:0;margin-bottom:0.8rem;">À l'aide du contexte, explique dans tes propres mots le sens de chaque mot ou expression.</p>
+              <ul class="qa-flat">
+                <li><span class="term">depuis des lustres</span> — « Keb et moi dînons et soupons régulièrement... depuis des lustres. »</li>
+                <li><span class="term">une entente tacite</span> — « cette entente tacite qu'avaient nos parents »</li>
+                <li><span class="term">somptueux</span> — « des repas plus somptueux »</li>
+                <li><span class="term">la méticulosité</span> — « la même patience et la même méticulosité qu'elle peint »</li>
+                <li><span class="term">être à la hauteur</span> — « le résultat est toujours à la hauteur »</li>
+                <li><span class="term">être emballé</span> — « le moment pour lequel Keb était le plus emballé »</li>
+                <li><span class="term">s'exécuter</span> — « je me suis exécutée »</li>
+                <li><span class="term">mettre du sien</span> — « j'y ai mis du mien »</li>
+                <li><span class="term">dénigrer</span> — « Comment osait-il dénigrer le fruit de mes entrailles ? »</li>
+                <li><span class="term">interloqué</span> — « il m'a regardée d'un air interloqué »</li>
+                <li><span class="term">ravaler sa pensée</span> — « cette première bouchée m'a fait ravaler ma pensée originelle »</li>
+              </ul>
+              <details class="corrige">
+                <summary>Voir des définitions possibles</summary>
+                <div class="reponse">
+                  <p><strong>depuis des lustres</strong> : depuis très longtemps. <strong>une entente tacite</strong> : un accord non dit, jamais formulé à voix haute. <strong>somptueux</strong> : luxueux, très soigné. <strong>la méticulosité</strong> : le grand soin apporté aux détails. <strong>être à la hauteur</strong> : être aussi réussi qu'attendu.</p>
+                  <p><strong>être emballé</strong> : être très enthousiaste. <strong>s'exécuter</strong> : se mettre à faire ce qu'on a décidé ou ce qu'on nous demande. <strong>mettre du sien</strong> : faire des efforts, s'investir. <strong>dénigrer</strong> : dire du mal de quelque chose, le rabaisser. <strong>interloqué</strong> : surpris au point de ne plus savoir quoi dire. <strong>ravaler sa pensée</strong> : se raviser, retenir ce qu'on allait dire ou penser.</p>
+                </div>
+              </details>
+            </details>
+
+            <details class="qa-block">
+              <summary>B · Nuances de sens</summary>
+              <ul class="qa-flat">
+                <li>Classe ces mots de la surprise la plus légère à la plus forte : <span class="term">surpris</span>, <span class="term">interloqué</span>, <span class="term">étonné</span>, <span class="term">abasourdi</span>. Où placerais-tu le mot du texte sur cette échelle ?</li>
+                <li>Bek écrit que Keb était « le plus <span class="term">emballé</span> ». Quelle différence de nuance y a-t-il entre <em>content</em>, <em>enthousiaste</em> et <em>emballé</em> ?</li>
+                <li>Pourquoi une autrice choisit-elle un mot plus précis ou plus fort (comme <em>dénigrer</em>) plutôt qu'un mot plus neutre (comme <em>critiquer</em>) ? Appuie ta réponse sur un exemple tiré du texte.</li>
+              </ul>
+            </details>
+
+            <details class="qa-block">
+              <summary>C · Registres de langue</summary>
+              <p class="lang-note" style="margin-top:0;margin-bottom:0.8rem;">Dans ton cahier, classe chaque mot ou expression suivant dans une colonne <em>familier</em>, <em>neutre</em> ou <em>soutenu</em> : <span class="term">zigouiller</span>, <span class="term">gamelle</span>, <span class="term">dénigrer</span>, <span class="term">être à la hauteur</span>, <span class="term">méticulosité</span>, <span class="term">s'exécuter</span>, <span class="term">impertinent</span>, <span class="term">entente tacite</span>, <span class="term">somptueux</span>.</p>
+              <details class="corrige">
+                <summary>Voir une classification possible</summary>
+                <div class="reponse">
+                  <p><strong>Familier :</strong> zigouiller, gamelle.</p>
+                  <p><strong>Neutre :</strong> dénigrer, être à la hauteur.</p>
+                  <p><strong>Soutenu :</strong> méticulosité, s'exécuter, impertinent, entente tacite, somptueux.</p>
+                </div>
+              </details>
+              <p class="lang-note">Une fois le classement fait, retourne à la question sur le mélange des registres dans <em>Appréciation des procédés</em> (onglet Questions) : elle te demande d'expliquer l'effet que produit ce mélange sur la voix de Bek.</p>
+            </details>
+
+            <p class="qa-intro" style="margin-top:1.6rem;">Grammaire — choisis l'onglet qui correspond à ton année.</p>
+            <div class="subtabs">
+              <button class="subtab-btn active" data-subtab="gram-sec1">Secondaire 1</button>
+              <button class="subtab-btn" data-subtab="gram-sec2">Secondaire 2</button>
+              <button class="subtab-btn" data-subtab="gram-sec3">Secondaire 3</button>
+            </div>
+
+            <div id="gram-sec1" class="subtab-panel active">
+              <div class="exercise-block">
+                <h4>Les classes de mots</h4>
+                <p>Dans la phrase suivante, identifie la classe de chaque mot : déterminant, nom, pronom, verbe, adjectif ou préposition.</p>
+                <p style="font-style:italic;">« J'avais envie de le zigouiller, cet impertinent ! »</p>
+                <details class="corrige">
+                  <summary>Voir les réponses</summary>
+                  <div class="reponse"><p><strong>J'</strong> pronom · <strong>avais</strong> verbe · <strong>envie</strong> nom · <strong>de</strong> préposition · <strong>le</strong> pronom · <strong>zigouiller</strong> verbe (infinitif) · <strong>cet</strong> déterminant · <strong>impertinent</strong> nom (mis pour « ce garçon impertinent »).</p></div>
+                </details>
+              </div>
+              <hr class="exercise-divider">
+              <div class="exercise-block">
+                <h4>Le groupe du nom et ses expansions</h4>
+                <p>Pour chaque groupe du nom, trouve le noyau, puis explique ce que l'expansion ajoute comme information.</p>
+                <ul class="qa-flat">
+                  <li>un des fameux sandwichs de ma mère</li>
+                  <li>ce précieux trésor</li>
+                  <li>cette entente tacite qu'avaient nos parents</li>
+                </ul>
+                <details class="corrige">
+                  <summary>Voir les réponses</summary>
+                  <div class="reponse"><p><strong>sandwichs</strong> (noyau) — « de ma mère » précise qui les a faits ; « fameux » indique leur réputation. <strong>trésor</strong> (noyau) — « ce » et « précieux » montrent l'importance que Bek accorde au sandwich. <strong>entente</strong> (noyau) — « tacite » précise qu'elle n'était jamais formulée ; « qu'avaient nos parents » indique qui la partageait.</p></div>
+                </details>
+              </div>
+              <hr class="exercise-divider">
+              <div class="exercise-block">
+                <h4>La comparaison</h4>
+                <p style="font-style:italic;">« Ma mère cuisine avec la même patience et la même méticulosité qu'elle peint. »</p>
+                <ul class="qa-flat">
+                  <li>Quel outil de comparaison l'autrice utilise-t-elle ici ?</li>
+                  <li>Que compare-t-on (le comparé) à quoi (le comparant) ? Quel est le point commun entre les deux ?</li>
+                  <li>Crée à ton tour une comparaison pour décrire un talent que possède quelqu'un que tu connais.</li>
+                </ul>
+                <details class="corrige">
+                  <summary>Voir les réponses</summary>
+                  <div class="reponse"><p>Outil : <strong>la même... que</strong>. Comparé : la façon dont elle cuisine. Comparant : la façon dont elle peint. Point commun : la patience et la méticulosité.</p></div>
+                </details>
+              </div>
+            </div>
+
+            <div id="gram-sec2" class="subtab-panel">
+              <div class="exercise-block">
+                <h4>La métaphore</h4>
+                <ul class="qa-flat">
+                  <li><em>Repérer</em> — Dans « le fruit de mes entrailles », Bek parle-t-elle vraiment d'un fruit ?</li>
+                  <li><em>Interpréter</em> — Qu'est-ce que cette expression apprend sur l'importance que Bek accorde à son sandwich ?</li>
+                  <li><em>Transformer</em> — Remplace une formulation neutre comme « J'étais fière de mon sandwich » par une métaphore de ton invention.</li>
+                </ul>
+              </div>
+              <hr class="exercise-divider">
+              <div class="exercise-block">
+                <h4>Discours direct et discours indirect</h4>
+                <p style="font-style:italic;">« Il m'a regardée d'un air interloqué : « C'est toi qui l'as fait ? » »</p>
+                <ul class="qa-flat">
+                  <li>Relève la ponctuation qui annonce le discours direct dans ce passage.</li>
+                  <li>Transforme cet échange en discours indirect (ex. : <em>Keb lui demande, l'air interloqué, si c'est elle qui a fait le sandwich.</em>).</li>
+                  <li>Qu'est-ce que le discours direct permet de faire ressentir que le discours indirect ne permet pas ?</li>
+                </ul>
+              </div>
+              <hr class="exercise-divider">
+              <div class="exercise-block">
+                <h4>Les pronoms et leurs référents</h4>
+                <p style="font-style:italic;">« Je le lui ai repris d'entre les mains. »</p>
+                <ul class="qa-flat">
+                  <li>Trouve le référent de chaque pronom : <strong>le</strong> et <strong>lui</strong>.</li>
+                  <li>Trouve, ailleurs dans le texte, une phrase contenant au moins deux pronoms, puis fais le même travail.</li>
+                </ul>
+                <details class="corrige">
+                  <summary>Voir les réponses</summary>
+                  <div class="reponse"><p><strong>le</strong> = le sandwich. <strong>lui</strong> = Keb.</p></div>
+                </details>
+              </div>
+            </div>
+
+            <div id="gram-sec3" class="subtab-panel">
+              <div class="exercise-block">
+                <h4>La phrase complexe</h4>
+                <p style="font-style:italic;">« Je lui ai fait goûter mon sandwich, les yeux pétillants d'excitation, dans l'attente de le voir tomber des nues. »</p>
+                <ul class="qa-flat">
+                  <li>Quel est le verbe principal de cette phrase ?</li>
+                  <li>Quel groupe décrit l'état de Bek pendant l'action ?</li>
+                  <li>Quelle information ajoute « dans l'attente de le voir tomber des nues » ?</li>
+                  <li>Réécris l'idée en deux phrases distinctes, puis réécris-la une seconde fois en une seule phrase plus concise que l'originale.</li>
+                </ul>
+              </div>
+              <hr class="exercise-divider">
+              <div class="exercise-block">
+                <h4>Les reprises pronominales</h4>
+                <p style="font-style:italic;">« J'y ai pris une bouchée comme pour lui montrer que mon sandwich était parfaitement normal et excellent… mais cette première bouchée m'a fait ravaler ma pensée originelle. »</p>
+                <ul class="qa-flat">
+                  <li>Quelle fonction joue le pronom <strong>y</strong> dans cette phrase ? Que reprend-il ?</li>
+                  <li>Réécris la phrase en remplaçant <strong>y</strong> par ce qu'il désigne. L'effet est-il le même ?</li>
+                </ul>
+              </div>
+              <hr class="exercise-divider">
+              <div class="exercise-block">
+                <h4>Réécriture : précision et concision</h4>
+                <p>Pars de la phrase toute simple du texte : « Le goût était effectivement étrange. »</p>
+                <ul class="qa-flat">
+                  <li>Réécris-la pour la rendre plus précise, sans ajouter d'information nouvelle — seulement en choisissant des mots plus exacts.</li>
+                  <li>Réécris-la une seconde fois pour faire ressentir le dégoût sans jamais employer les mots « étrange », « mauvais » ou « dégoûtant ».</li>
+                </ul>
+              </div>
+            </div>
+
+            <details class="qa-block" style="margin-top:1.6rem;">
+              <summary>D · Révision — repère et corrige les erreurs</summary>
+              <p class="lang-note" style="margin-top:0;margin-bottom:0.8rem;">Chaque phrase contient au moins une erreur (homophone, accord ou ponctuation). Repère-la, explique-la, puis corrige-la.</p>
+              <ol class="qa-flat">
+                <li>C'est pourtant tout le contraire qui c'est produit.</li>
+                <li>Sont jour de chance était enfin arrivé.</li>
+                <li>Ses sandwichs sont réputés dans toute l'école, même si c'est la mère de Bek qui les prépare.</li>
+                <li>Bek à mis tout son cœur dans se sandwich.</li>
+                <li>« Ça goûte bizarre, aujourd'hui » a dit Keb.</li>
+                <li>Les deux enfants ont manger ensemble depuis des lustres.</li>
+              </ol>
+              <details class="corrige">
+                <summary>Voir les réponses</summary>
+                <div class="reponse">
+                  <p>1. <strong>c'est</strong> → <strong>s'est</strong> (verbe pronominal <em>se produire</em>, pas le présentatif <em>c'est</em>).</p>
+                  <p>2. <strong>Sont</strong> → <strong>Son</strong> (déterminant possessif, pas le verbe <em>être</em>).</p>
+                  <p>3. <strong>Ses</strong> → <strong>Ces</strong> (déterminant démonstratif : la fin de la phrase précise que les sandwichs sont ceux de la mère de Bek, pas ceux de Keb).</p>
+                  <p>4. <strong>à</strong> → <strong>a</strong> (verbe <em>avoir</em>) ; <strong>se</strong> → <strong>ce</strong> (déterminant démonstratif devant « sandwich »).</p>
+                  <p>5. Il manque la virgule après le guillemet fermant, avant l'incise : <em>« Ça goûte bizarre, aujourd'hui », a dit Keb.</em></p>
+                  <p>6. <strong>manger</strong> → <strong>mangé</strong> (participe passé avec l'auxiliaire <em>avoir</em>, pas l'infinitif).</p>
+                </div>
+              </details>
+            </details>
+
           </div>
         </div>
 
@@ -646,13 +934,19 @@
       });
     });
 
-    // Écriture sub-tabs (sec1/2/3)
-    document.querySelectorAll('.subtab-btn').forEach(function(btn){
-      btn.addEventListener('click', function(){
-        document.querySelectorAll('.subtab-btn').forEach(function(b){ b.classList.remove('active'); });
-        document.querySelectorAll('.subtab-panel').forEach(function(p){ p.classList.remove('active'); });
-        btn.classList.add('active');
-        document.getElementById(btn.dataset.subtab).classList.add('active');
+    // Sous-onglets (Écriture sec1/2/3, Grammaire gram-sec1/2/3...) — scopés par groupe
+    // pour que deux groupes de sous-onglets sur la même page n'interfèrent pas.
+    document.querySelectorAll('.subtabs').forEach(function(group){
+      var btns = group.querySelectorAll('.subtab-btn');
+      var panels = Array.prototype.map.call(btns, function(b){ return document.getElementById(b.dataset.subtab); });
+      btns.forEach(function(btn){
+        btn.addEventListener('click', function(){
+          btns.forEach(function(b){ b.classList.remove('active'); });
+          panels.forEach(function(p){ if(p) p.classList.remove('active'); });
+          btn.classList.add('active');
+          var target = document.getElementById(btn.dataset.subtab);
+          if(target) target.classList.add('active');
+        });
       });
     });
   </script>

@@ -1,6 +1,6 @@
 /* ==================================================================
    barre-progression.js — module autonome, même patron que les autres
-   écrans : window.KebBekProgression.demarrerBarreProgression
+   écrans : window.KebBekBarreProgression.demarrerBarreProgression
    (idConteneur, options, callbacks).
 
    Anime une barre de téléversement de 0 à un pourcentage cible, avec
@@ -87,4 +87,4 @@ function demarrerBarreProgression(idConteneur, options, callbacks) {
   };
 }
 
-window.KebBekProgression = { demarrerBarreProgression };
+window.KebBekBarreProgression = { demarrerBarreProgression };

@@ -1,0 +1,66 @@
+/* ==================================================================
+   sequence-telechargement-langue.css — habillage de
+   sequence-telechargement-langue.js.
+
+   Se joue juste après le choix de langue (voir choisir(codeLangue)
+   dans index.html) : un bouton "Download" apparaît déjà traduit dans
+   la langue tout juste choisie — preuve immédiate et tangible que le
+   choix a bien pris, sans texte d'explication. Au clic, la barre de
+   progression (barre-progression.css/js) anime l'insertion, puis le
+   même mot que l'échec initial du téléversement de Bek/Keb réapparaît,
+   traduit : "Réinitialisation" — indice discret, jamais souligné.
+   ================================================================== */
+
+#stlgScene {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 22px;
+  font-family: 'Baloo 2', sans-serif;
+}
+
+.stlg-bloc {
+  transition: opacity 0.36s ease, transform 0.36s cubic-bezier(.2,.8,.3,1.2);
+}
+.stlg-entree-cachee {
+  opacity: 0;
+  transform: translateY(10px);
+}
+
+/* Bouton "Download" — même famille que .edem-bouton-principal
+   (ecran-demarrage.css), mais sans icône : le mot traduit lui-même
+   est le point d'intérêt ici, pas un pictogramme. */
+.stlg-bouton-telecharger {
+  border: none;
+  border-radius: 999px;
+  padding: 18px 42px;
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: #FFFFFF;
+  background: var(--peche-fonce);
+  cursor: pointer;
+  box-shadow: 0 5px 0 0 var(--brun-fonce, #4A3B33), 4px 6px 16px var(--ombre, rgba(102, 80, 69, 0.18));
+  transition: transform 0.18s cubic-bezier(.34,1.6,.4,1), box-shadow 0.15s ease, background 0.15s ease, opacity 0.25s ease;
+}
+.stlg-bouton-telecharger:hover {
+  background: #d97c5c;
+  transform: translateY(-2px);
+}
+.stlg-bouton-telecharger:active {
+  transform: translateY(3px);
+  box-shadow: 0 0 0 0 var(--brun-fonce, #4A3B33), 1px 1px 6px var(--ombre, rgba(102, 80, 69, 0.18));
+}
+.stlg-bouton-telecharger.stlg-masque {
+  opacity: 0;
+  pointer-events: none;
+  position: absolute;
+}
+
+#stlgZoneBarre {
+  min-height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

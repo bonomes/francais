@@ -1526,7 +1526,11 @@
     }
 
     function etapeSequence() {
-      window.KebBekTeleversement.demarrerSequenceTeleversement('nouvelDemarrageContenu', {}, {
+      // 🆕 (20-09-2026) dossierImages précisé : les six images vivent dans
+      // images/telechargement/ sur le dépôt, pas à la racine de images/
+      // (défaut interne du module) — c'était la cause des vignettes
+      // cassées (37 %, cadre vide).
+      window.KebBekTeleversement.demarrerSequenceTeleversement('nouvelDemarrageContenu', { dossierImages: 'images/telechargement/' }, {
         onFin: function () {
           conteneur.style.display = 'none';
           ouvrirChoixLangueForce();

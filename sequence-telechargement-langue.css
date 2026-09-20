@@ -2,86 +2,188 @@
    sequence-telechargement-langue.css — habillage de
    sequence-telechargement-langue.js.
 
-   Se joue juste après le choix de langue (voir choisir(codeLangue)
-   dans index.html) : un bouton "Download" apparaît déjà traduit dans
-   la langue tout juste choisie — preuve immédiate et tangible que le
-   choix a bien pris, sans texte d'explication. Au clic, la barre de
-   progression (barre-progression.css/js) anime l'insertion, puis le
-   même mot que l'échec initial du téléversement de Bek/Keb réapparaît,
-   traduit : "Réinitialisation" — indice discret, jamais souligné.
+   🆕 (20-09-2026) Réécriture complète, voir le long commentaire en
+   tête du .js pour la mise en scène. Le gabarit de la boîte-image
+   (.stlg-image-bek) reprend volontairement les mêmes dimensions que
+   .tvbk-bek-boite (sequence-televersement.css) — c'est ce qui garantit
+   que Bek reste à la même taille entre l'atterrissage et cet écran.
    ================================================================== */
 
-#stlgScene {
+.stlg-scene {
+  position: fixed;
+  inset: 0;
+  z-index: 9000;
+  overflow: hidden;
+  background: var(--beige, #FFF5E8);
+  font-family: 'Baloo 2', sans-serif;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+.stlg-scene.stlg-prete { opacity: 1; }
+
+/* ---------- Fond : Bek, atterrie puis réception, même boîte ---------- */
+.stlg-fond-bek {
+  position: absolute;
+  left: 50%;
+  bottom: 3dvh;
+  height: min(84dvh, 132vw);
+  aspect-ratio: 2 / 3;
+  transform: translateX(-50%);
+}
+
+.stlg-image-bek {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  transition: opacity 0.6s ease;
+}
+.stlg-image-reception { opacity: 0; }
+
+.stlg-scene.stlg-reception .stlg-image-atterrissage { opacity: 0; }
+.stlg-scene.stlg-reception .stlg-image-reception { opacity: 1; }
+
+/* ---------- Panneau : liste de fichiers de langues ---------- */
+.stlg-panneau {
+  position: absolute;
+  left: 50%;
+  bottom: 4dvh;
+  transform: translateX(-50%);
+  width: min(92vw, 420px);
+  max-height: 62dvh;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 18px;
+  border-radius: 26px;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 10px 30px rgba(102, 80, 69, 0.22);
+  transition: opacity 0.36s ease, transform 0.36s cubic-bezier(.2,.8,.3,1.2);
+}
+.stlg-panneau-cachee {
+  opacity: 0;
+  transform: translateX(-50%) translateY(14px);
+}
+
+.stlg-grille {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  overflow-y: auto;
+  padding-right: 2px;
+}
+@media (max-width: 460px) {
+  .stlg-grille { grid-template-columns: repeat(3, 1fr); }
+}
+
+.stlg-fichier {
   position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 22px;
-  font-family: 'Baloo 2', sans-serif;
-}
-
-.stlg-bloc {
-  transition: opacity 0.36s ease, transform 0.36s cubic-bezier(.2,.8,.3,1.2);
-}
-.stlg-entree-cachee {
-  opacity: 0;
-  transform: translateY(10px);
-}
-
-/* Bouton "Download" — même famille que .edem-bouton-principal
-   (ecran-demarrage.css), mais sans icône : le mot traduit lui-même
-   est le point d'intérêt ici, pas un pictogramme. */
-.stlg-image {
-  width: min(56vw, 220px);
-  height: auto;
-  display: block;
-}
-
-.stlg-bouton-telecharger {
-  border: none;
-  border-radius: 999px;
-  padding: 18px 42px;
-  font-family: inherit;
-  font-weight: 700;
-  font-size: 1.1rem;
-  color: #FFFFFF;
-  background: var(--peche-fonce);
+  justify-content: center;
+  gap: 4px;
+  padding: 10px 4px 8px;
+  border: 1.5px solid transparent;
+  border-radius: 14px;
+  background: rgba(240, 169, 139, 0.10);
   cursor: pointer;
-  box-shadow: 0 5px 0 0 var(--brun-fonce, #4A3B33), 4px 6px 16px var(--ombre, rgba(102, 80, 69, 0.18));
-  transition: transform 0.18s cubic-bezier(.34,1.6,.4,1), box-shadow 0.15s ease, background 0.15s ease, opacity 0.25s ease;
+  font-family: inherit;
+  transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
 }
-.stlg-bouton-telecharger:hover {
-  background: #d97c5c;
-  transform: translateY(-2px);
+.stlg-fichier:hover { background: var(--peche-pale, rgba(240, 169, 139, 0.22)); transform: translateY(-1px); }
+.stlg-fichier.stlg-fichier-selectionne {
+  background: var(--peche-pale-vif, rgba(240, 169, 139, 0.32));
+  border-color: var(--peche-fonce);
 }
-.stlg-bouton-telecharger:active {
-  transform: translateY(3px);
-  box-shadow: 0 0 0 0 var(--brun-fonce, #4A3B33), 1px 1px 6px var(--ombre, rgba(102, 80, 69, 0.18));
+
+.stlg-fichier-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--peche-pale-vif, rgba(240, 169, 139, 0.3));
+  color: var(--peche-fonce);
+  font-weight: 700;
+  font-size: 0.6rem;
 }
-.stlg-bouton-telecharger.stlg-masque {
+.stlg-fichier-natif {
+  font-weight: 700;
+  font-size: 0.72rem;
+  color: var(--brun-fonce, var(--brun));
+  text-align: center;
+  line-height: 1.15;
+}
+
+/* Message d'erreur du fichier français — en surimpression, seulement
+   au clic, jamais visible autrement (voir .js : rien ne distingue ce
+   fichier des autres tant qu'on n'a pas essayé de l'ouvrir). */
+.stlg-fichier-erreur {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  border-radius: inherit;
+  background: rgba(74, 59, 51, 0.94);
+  color: #FFF5E8;
+  font-weight: 700;
+  font-size: 0.6rem;
+  line-height: 1.2;
+  text-align: center;
   opacity: 0;
   pointer-events: none;
-  position: absolute;
+  transition: opacity 0.2s ease;
 }
+.stlg-fichier.stlg-fichier-erreur-active .stlg-fichier-erreur { opacity: 1; }
 
-#stlgZoneBarre {
-  min-height: 60px;
+.stlg-zone-bouton {
+  min-height: 46px;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-/* Bloc de fin : "Réinitialisation" + total de fragments optionnel
-   (voir options.totalFragments dans sequence-telechargement-langue.js) */
-.stlg-fin {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
+.stlg-bloc {
+  transition: opacity 0.3s ease, transform 0.3s cubic-bezier(.2,.8,.3,1.2);
 }
-.stlg-fragments {
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: var(--brun-fonce, #4A3B33);
-  opacity: 0.75;
+.stlg-entree-cachee {
+  opacity: 0;
+  transform: translateY(8px);
+}
+
+.stlg-bouton-televerser {
+  border: none;
+  border-radius: 999px;
+  padding: 13px 34px;
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 1rem;
+  color: #FFFFFF;
+  background: var(--peche-fonce);
+  cursor: pointer;
+  box-shadow: 0 4px 0 0 var(--brun-fonce, #4A3B33), 3px 5px 12px var(--ombre, rgba(102, 80, 69, 0.18));
+  transition: transform 0.18s cubic-bezier(.34,1.6,.4,1), box-shadow 0.15s ease, background 0.15s ease;
+}
+.stlg-bouton-televerser:hover { background: #d97c5c; transform: translateY(-2px); }
+.stlg-bouton-televerser:active {
+  transform: translateY(3px);
+  box-shadow: 0 0 0 0 var(--brun-fonce, #4A3B33), 1px 1px 6px var(--ombre, rgba(102, 80, 69, 0.18));
+}
+
+/* ---------- Barre de progression + "Réinitialisation" ---------- */
+.stlg-zone-barre {
+  position: absolute;
+  left: 50%;
+  bottom: 4dvh;
+  transform: translateX(-50%);
+  width: min(92vw, 340px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 60px;
 }

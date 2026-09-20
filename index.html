@@ -21,6 +21,13 @@
 <link rel="stylesheet" href="menu-principal.css">
 <link rel="stylesheet" href="professeur.css">
 <link rel="stylesheet" href="widget-session-prof.css">
+<!-- 🆕 (18-09-2026) Nouvelle scène d'accueil : Commencer/Se connecter →
+     choix de personnage → séquence de téléversement animée. Ajouts
+     seulement — aucune des feuilles ci-dessus n'est touchée. -->
+<link rel="stylesheet" href="ecran-demarrage.css">
+<link rel="stylesheet" href="ecran-televersement.css">
+<link rel="stylesheet" href="barre-progression.css">
+<link rel="stylesheet" href="sequence-televersement.css">
 <style>
   /* ==================================================================
      index.html — page d'accueil officielle du site (voir BONOMES_v61,
@@ -1066,6 +1073,21 @@
   @media (max-width: 460px) {
     .personnages { width: min(70vw, 320px); }
   }
+
+  /* 🆕 (18-09-2026) Conteneur de la nouvelle scène d'accueil — voir le
+     commentaire HTML sur #nouvelDemarrage pour le raisonnement complet.
+     z-index 480 : sous #ecranTitre (500), au-dessus de .scene (aucun
+     z-index déclaré, donc 0/auto). */
+  #nouvelDemarrage {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 480;
+    align-items: center;
+    justify-content: center;
+    background: var(--fond);
+    padding: 20px;
+  }
 </style>
 </head>
 <body>
@@ -1088,6 +1110,15 @@
          largeur ajustée en conséquence. -->
     <img class="ecran-titre-img" src="images/accueil/page_titre_01.webp" width="1376" height="768" alt="Les Bonomes">
   </div>
+
+  <!-- 🆕 (18-09-2026) Nouvelle scène d'accueil (Commencer/Se connecter →
+       choix Keb/Bek → séquence de téléversement). Caché par défaut
+       (display:none) : seule demarrerNouvelAccueilTeleversement() (voir
+       script plus bas) le révèle, uniquement pour un premier visiteur.
+       z-index sous #ecranTitre (voir CSS) : la bulle-titre continue de
+       jouer PAR-DESSUS le temps de son propre timing, sans rien à
+       coordonner ici. -->
+  <div id="nouvelDemarrage"></div>
 
   <div class="scene">
    <div class="scene-rangee" id="sceneRangee">
@@ -1389,6 +1420,77 @@
      écran "Mode professeur" ; voir allerAuMenuPrincipal() plus bas pour
      son initialisation. -->
 <script src="widget-session-prof.js"></script>
+
+<!-- 🆕 (18-09-2026) Nouvelle scène d'accueil — barre-progression.js AVANT
+     sequence-televersement.js (qui en dépend), comme documenté dans ce
+     dernier. -->
+<script src="ecran-demarrage.js"></script>
+<script src="ecran-televersement.js"></script>
+<script src="barre-progression.js"></script>
+<script src="sequence-televersement.js"></script>
+<script>
+  // ================================================================
+  // 🆕 (18-09-2026) Orchestration de la nouvelle scène d'accueil :
+  // Commencer/Se connecter → choix Keb/Bek → séquence de téléversement
+  // → (provisoire) sélecteur de langue déjà existant plus bas dans ce
+  // fichier (ouvrirChoixLangueForce()). Un vrai écran de téléchargement
+  // de la langue viendra remplacer cette dernière étape plus tard — pas
+  // encore construit à ce jour.
+  //
+  // 🚧 Limite connue et assumée pour l'instant : seules les images de
+  // Bek existent pour la séquence animée (televersement_bek_01→06).
+  // Choisir "Keb" rejoue donc la même animation que "Bek" en attendant
+  // que ses propres images soient produites — rien à corriger côté
+  // code tant que ces images n'existent pas.
+  //
+  // Ne modifie aucune variable ni fonction existante : lit seulement
+  // ouvrirChoixLangueForce et demarrerReconnexionDepuisIndex, toutes
+  // deux définies plus bas dans ce fichier (fonctions déclarées, donc
+  // hissées — accessibles même appelées avant leur position dans le
+  // fichier).
+  // ================================================================
+  function demarrerNouvelAccueilTeleversement() {
+    const conteneur = document.getElementById('nouvelDemarrage');
+    if (!conteneur || !window.KebBekDemarrage || !window.KebBekEcranTeleversement || !window.KebBekTeleversement) {
+      console.warn('Nouvelle scène d\u2019accueil indisponible (module manquant) — repli sur le sélecteur de langue.');
+      ouvrirChoixLangueForce();
+      return;
+    }
+
+    conteneur.style.display = 'flex';
+    conteneur.innerHTML = '<div id="nouvelDemarrageContenu" style="width:100%; display:flex; justify-content:center;"></div>';
+
+    function etapeDemarrage() {
+      window.KebBekDemarrage.demarrerEcranDemarrage('nouvelDemarrageContenu', {}, {
+        onCommencer: etapeChoixPersonnage,
+        onSeConnecter: function () {
+          conteneur.style.display = 'none';
+          demarrerReconnexionDepuisIndex('accueil');
+          return Promise.resolve();
+        }
+      });
+    }
+
+    function etapeChoixPersonnage() {
+      window.KebBekEcranTeleversement.demarrerEcranTeleversement('nouvelDemarrageContenu', {}, {
+        onChoisirKeb: etapeSequence,
+        onChoisirBek: etapeSequence,
+        onAnnuler: etapeDemarrage
+      });
+    }
+
+    function etapeSequence() {
+      window.KebBekTeleversement.demarrerSequenceTeleversement('nouvelDemarrageContenu', {}, {
+        onFin: function () {
+          conteneur.style.display = 'none';
+          ouvrirChoixLangueForce();
+        }
+      });
+    }
+
+    etapeDemarrage();
+  }
+</script>
 
 <script>
   // ================================================================
@@ -2749,7 +2851,11 @@
   if (langueSauvegardee()) {
     allerAuMenuPrincipal('retour');
   } else {
-    ouvrirChoixLangueForce();
+    // 🆕 (18-09-2026) Seule ligne existante modifiée dans tout ce fichier :
+    // ouvrirChoixLangueForce() directe → demarrerNouvelAccueilTeleversement(),
+    // qui affiche la nouvelle scène d'accueil puis appelle elle-même
+    // ouvrirChoixLangueForce() une fois la séquence terminée (voir plus haut).
+    demarrerNouvelAccueilTeleversement();
   }
 </script>
 

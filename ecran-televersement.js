@@ -16,9 +16,11 @@
    ================================================================== */
 
 const CLE_LANGUE_TELEVERSEMENT = 'kebbek_langue'; // même clé partagée que les autres modules
+// 🆕 (20-09-2026) Défaut fr, même raisonnement que ecran-demarrage.js : cet
+// écran se joue avant le choix de langue.
 function langueActuelleTeleversement() {
-  try { return localStorage.getItem(CLE_LANGUE_TELEVERSEMENT) || 'en'; }
-  catch (e) { return 'en'; }
+  try { return localStorage.getItem(CLE_LANGUE_TELEVERSEMENT) || 'fr'; }
+  catch (e) { return 'fr'; }
 }
 
 const DICO_TELEVERSEMENT = {

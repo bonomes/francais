@@ -21,9 +21,12 @@
    ================================================================== */
 
 const CLE_LANGUE_DEMARRAGE = 'kebbek_langue'; // même clé que menu-principal.js / sac-a-dos.js
+// 🆕 (20-09-2026) Défaut fr (et non en) : cet écran se joue AVANT le choix
+// de langue / la réinitialisation — narrativement, c'est Kaleb et Rebekah
+// eux-mêmes qui lancent le téléversement de Keb et Bek, donc en français.
 function langueActuelleDemarrage() {
-  try { return localStorage.getItem(CLE_LANGUE_DEMARRAGE) || 'en'; }
-  catch (e) { return 'en'; }
+  try { return localStorage.getItem(CLE_LANGUE_DEMARRAGE) || 'fr'; }
+  catch (e) { return 'fr'; }
 }
 
 const DICO_DEMARRAGE = {

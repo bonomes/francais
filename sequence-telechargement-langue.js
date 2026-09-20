@@ -26,8 +26,8 @@
    ================================================================== */
 
 const DICO_TELECHARGEMENT_LANGUE = {
-  fr: { bouton: 'Télécharger', reinitialisation: 'Réinitialisation' },
-  en: { bouton: 'Download', reinitialisation: 'Reset' }
+  fr: { bouton: 'Télécharger', reinitialisation: 'Réinitialisation', fragments: 'fragments retrouvés' },
+  en: { bouton: 'Download', reinitialisation: 'Reset', fragments: 'fragments recovered' }
 };
 
 function tTelechargementLangue(codeLangue, cle) {
@@ -43,6 +43,10 @@ function tTelechargementLangue(codeLangue, cle) {
  *   - duree (ms, défaut 2600) — durée de la barre de progression
  *   - pauseFin (ms, défaut 1400) — temps laissé à l'affichage de
  *     "Réinitialisation" avant onFin
+ *   - totalFragments (nombre, optionnel) — si fourni, affiché juste sous
+ *     "Réinitialisation" (ex. "247 fragments retrouvés"). Omis =
+ *     comportement actuel inchangé, rien à afficher tant que le compteur
+ *     réel (Supabase) n'existe pas encore côté page hôte.
  * @param {object} callbacks
  *   - onDebut() — appelé au clic sur le bouton, avant que la barre démarre
  *   - onFin() — appelé une fois la pause finale écoulée
@@ -91,9 +95,18 @@ function demarrerSequenceTelechargementLangue(idConteneur, options, callbacks) {
       onFin: function () {
         const zone = document.getElementById('stlgZoneBarre');
         if (zone) {
-          zone.innerHTML = '<span class="stlg-bloc" style="font-weight:700; color:var(--brun-fonce, var(--brun));">' +
-            tTelechargementLangue(codeLangue, 'reinitialisation') +
-          '</span>';
+          const aUnTotal = typeof options.totalFragments === 'number';
+          zone.innerHTML =
+            '<div class="stlg-fin">' +
+              '<span class="stlg-bloc" style="font-weight:700; color:var(--brun-fonce, var(--brun));">' +
+                tTelechargementLangue(codeLangue, 'reinitialisation') +
+              '</span>' +
+              (aUnTotal
+                ? '<span class="stlg-bloc stlg-fragments">' + options.totalFragments + ' ' +
+                    tTelechargementLangue(codeLangue, 'fragments') +
+                  '</span>'
+                : '') +
+            '</div>';
         }
         setTimeout(function () {
           if (typeof callbacks.onFin === 'function') callbacks.onFin();

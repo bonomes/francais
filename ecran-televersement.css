@@ -1,19 +1,20 @@
 /* ==================================================================
-   ecran-televersement.css — habillage du module ecran-televersement.js.
+   ecran-televersement.css — habillage du module ecran-televersement.js
+   (écran de choix de personnage : Keb ou Bek).
 
-   Écran suivant "Commencer" (voir ecran-demarrage.js/css) : l'élève
-   choisit par quel personnage téléverser sa réalité — Keb ou Bek —
-   avec un "Annuler" discret pour revenir en arrière. Même langage
-   visuel que le reste du site (palette peche/brun/beige, Baloo 2,
-   boutons-pilules avec relief 3D).
+   Fichier manquant jusqu'ici — lié dans index.html (<link
+   rel="stylesheet" href="ecran-televersement.css">) mais jamais créé,
+   d'où l'affichage sans mise en page (image de Bek à taille native,
+   Keb poussé hors champ). Reprend la même famille visuelle que
+   ecran-demarrage.css : palette beige/brun/pêche, Baloo 2, pilules
+   avec relief 3D — voir .edem-bouton-secondaire pour le patron
+   d'origine des boutons ici adaptés à deux choix côte à côte.
    ================================================================== */
 
 #ecranTeleversement {
-  position: relative;
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 20px;
+  justify-content: center;
+  width: 100%;
 }
 
 .telv-carte {
@@ -21,11 +22,11 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 18px;
+  gap: 24px;
   font-family: 'Baloo 2', sans-serif;
 }
 
-/* ---------- Entrée en cascade (même patron que edem-entree-cachee) ---------- */
+/* ---------- Entrée en cascade (même patron que .edem-bloc) ---------- */
 .telv-bloc {
   transition: opacity 0.36s ease, transform 0.36s cubic-bezier(.2,.8,.3,1.2);
 }
@@ -34,30 +35,18 @@
   transform: translateY(10px);
 }
 
-/* Encadré-titre "Téléversement" — chip en pilule, pas un bouton, sert
-   de repère/étiquette à l'écran plutôt que d'être cliquable. */
 .telv-titre {
-  display: inline-block;
   font-weight: 700;
-  font-size: 1rem;
-  letter-spacing: 0.02em;
+  font-size: 1.2rem;
   color: var(--brun-fonce, var(--brun));
-  background: #FFFFFF;
-  border: 1.5px solid var(--peche);
-  border-radius: 999px;
-  padding: 9px 26px;
-  box-shadow: 2px 3px 8px var(--ombre);
+  text-align: center;
 }
 
-/* ---------- Choix de personnage (Keb / Bek) — poids égal, côte à côte
-   sur un écran assez large, empilés sur mobile ---------- */
+/* ---------- Choix Keb / Bek, côte à côte ---------- */
 .telv-choix {
-  width: 100%;
   display: flex;
-  gap: 14px;
-}
-@media (max-width: 460px) {
-  .telv-choix { flex-direction: column; }
+  gap: 16px;
+  width: 100%;
 }
 
 .telv-bouton-perso {
@@ -68,14 +57,14 @@
   gap: 10px;
   border: 1.5px solid var(--peche);
   border-radius: 24px;
-  padding: 22px 14px;
+  padding: 20px 14px;
   font-family: inherit;
   font-weight: 700;
   font-size: 1rem;
   color: var(--brun-fonce, var(--brun));
   background: #FFFFFF;
   cursor: pointer;
-  box-shadow: 0 4px 0 0 var(--peche), 3px 5px 12px var(--ombre);
+  box-shadow: 0 4px 0 0 var(--peche), 2px 5px 12px var(--ombre, rgba(102, 80, 69, 0.18));
   transition: transform 0.18s cubic-bezier(.34,1.6,.4,1), box-shadow 0.15s ease, background 0.15s ease;
 }
 .telv-bouton-perso:hover {
@@ -84,49 +73,50 @@
 }
 .telv-bouton-perso:active {
   transform: translateY(3px);
-  box-shadow: 0 0 0 0 var(--peche), 1px 1px 4px var(--ombre);
+  box-shadow: 0 0 0 0 var(--peche), 1px 1px 6px var(--ombre, rgba(102, 80, 69, 0.18));
 }
 
+/* Médaillon rond qui contient l'image — c'est cette règle qui manquait
+   pour empêcher symbole-fille01.webp / symbole-garcon01.webp de
+   s'afficher à leur taille native. */
 .telv-icone-chip-perso {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 52px;
-  height: 52px;
+  flex-shrink: 0;
+  width: 64px;
+  height: 64px;
   border-radius: 50%;
-  background: var(--peche-pale-vif, rgba(240, 169, 139, 0.30));
-  box-shadow: inset 0 1px 2px rgba(74, 59, 51, 0.12);
-  transition: transform 0.18s cubic-bezier(.34,1.6,.4,1);
+  overflow: hidden;
+  background: var(--peche-pale, rgba(240, 169, 139, 0.20));
+  box-shadow: inset 0 1px 3px rgba(74, 59, 51, 0.12);
 }
-.telv-bouton-perso:hover .telv-icone-chip-perso { transform: rotate(-6deg) scale(1.05); }
-.telv-icone-chip-perso svg {
-  width: 26px;
-  height: 26px;
-  stroke: var(--peche-fonce);
-  fill: none;
-  stroke-width: 2;
-  stroke-linecap: round;
-  stroke-linejoin: round;
+.telv-icone-chip-perso img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
-/* ---------- Annuler — discret, texte seul, pas un bouton-pilule ---------- */
+/* ---------- Annuler ---------- */
 .telv-annuler {
   border: none;
   background: none;
   font-family: inherit;
   font-weight: 700;
-  font-size: 0.85rem;
-  color: var(--brun-clair, #8A7364);
-  cursor: pointer;
-  padding: 6px 10px;
+  font-size: 0.88rem;
+  color: var(--brun-fonce, var(--brun));
+  opacity: 0.65;
   text-decoration: underline;
-  text-underline-offset: 3px;
-  transition: color 0.15s ease;
+  cursor: pointer;
+  padding: 6px;
+  transition: opacity 0.15s ease;
 }
-.telv-annuler:hover { color: var(--brun-fonce, var(--brun)); }
+.telv-annuler:hover {
+  opacity: 1;
+}
 
 @media (max-width: 460px) {
-  .telv-bouton-perso { padding: 18px 12px; font-size: 0.95rem; }
-  .telv-icone-chip-perso { width: 46px; height: 46px; }
-  .telv-icone-chip-perso svg { width: 22px; height: 22px; }
+  .telv-bouton-perso { padding: 16px 10px; font-size: 0.92rem; }
+  .telv-icone-chip-perso { width: 54px; height: 54px; }
 }

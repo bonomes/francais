@@ -1,111 +1,127 @@
 /* ==================================================================
-   ecran-televersement.js — écran suivant "Commencer" (ecran-demarrage.js).
-   Même patron d'architecture : window.KebBekEcranTeleversement.
-   demarrerEcranTeleversement(idConteneur, options, callbacks).
+   sequence-telechargement-langue.js — module autonome, même patron
+   que les autres écrans : window.KebBekTelechargementLangue.
+   demarrerSequenceTelechargementLangue(idConteneur, options, callbacks).
 
-   🚧 Note : exposé sous KebBekEcranTeleversement (et non KebBekTeleversement)
-   pour éviter une collision avec sequence-televersement.js, qui utilise
-   déjà ce nom pour demarrerSequenceTeleversement.
+   Dépend de barre-progression.js (window.KebBekBarreProgression),
+   chargé avant celui-ci.
 
-   L'élève choisit par quel personnage téléverser sa réalité — Keb ou
-   Bek. "Annuler" ramène simplement à l'écran précédent (callback,
-   ce module ne navigue jamais lui-même).
+   Déroulement :
+     1. Un bouton "Download" apparaît, déjà traduit dans la langue que
+        l'élève vient de choisir — la preuve elle-même que le choix a
+        pris, sans avoir besoin de le dire.
+     2. Au clic, le bouton disparaît et une barre de progression
+        générique anime l'insertion (aucun mot visible pendant la
+        montée — juste le mouvement, comme demandé).
+     3. Une fois à 100 %, le mot "Réinitialisation" apparaît, traduit
+        dans la même langue — le même mot que celui affiché lors de
+        l'échec du téléversement de Bek/Keb (voir sequence-televersement.js,
+        legendeErreur), jamais expliqué comme tel ici.
+     4. callbacks.onFin() après une courte pause.
 
-   🚧 Dictionnaire réduit à fr/en, même remarque que ecran-demarrage.js
-   — à étendre aux 19 langues de DICO_MENU avant mise en ligne.
+   🚧 Dictionnaire réduit à fr/en pour l'instant, même remarque que les
+   autres modules du jour — à étendre aux 19 langues du site avant
+   mise en ligne. Sans traduction disponible pour options.codeLangue,
+   se replie sur l'anglais plutôt que d'afficher une clé manquante.
    ================================================================== */
 
-const CLE_LANGUE_TELEVERSEMENT = 'kebbek_langue'; // même clé partagée que les autres modules
-// 🆕 (20-09-2026) Défaut fr, même raisonnement que ecran-demarrage.js : cet
-// écran se joue avant le choix de langue.
-function langueActuelleTeleversement() {
-  try { return localStorage.getItem(CLE_LANGUE_TELEVERSEMENT) || 'fr'; }
-  catch (e) { return 'fr'; }
-}
-
-const DICO_TELEVERSEMENT = {
-  fr: {
-    titre: 'Téléversement',
-    keb: 'Keb',
-    bek: 'Bek',
-    annuler: 'Annuler'
-  },
-  en: {
-    titre: 'Uploading',
-    keb: 'Keb',
-    bek: 'Bek',
-    annuler: 'Cancel'
-  }
+const DICO_TELECHARGEMENT_LANGUE = {
+  fr: { bouton: 'Télécharger', reinitialisation: 'Réinitialisation', fragments: 'fragments retrouvés' },
+  en: { bouton: 'Download', reinitialisation: 'Reset', fragments: 'fragments recovered' }
 };
 
-function tTeleversementOuDefaut(cle, defaut) {
-  const langue = langueActuelleTeleversement();
-  const dico = DICO_TELEVERSEMENT[langue] || DICO_TELEVERSEMENT.en;
-  return (dico && dico[cle]) || defaut;
+function tTelechargementLangue(codeLangue, cle) {
+  const dico = DICO_TELECHARGEMENT_LANGUE[codeLangue] || DICO_TELECHARGEMENT_LANGUE.en;
+  return dico[cle] || DICO_TELECHARGEMENT_LANGUE.en[cle];
 }
-
-// Illustrations fournies par Raphaël (remplacent les anciennes icônes SVG
-// dessinées à la main) — voir images/symboles/ pour les fichiers sources.
 
 /**
- * Rend l'écran de choix de personnage (téléversement) dans le conteneur donné.
  * @param {string} idConteneur
- * @param {object} options - réservé pour usage futur
+ * @param {object} options
+ *   - codeLangue (requis) — code de la langue tout juste choisie par
+ *     l'élève; détermine la traduction du bouton et du mot final
+ *   - imageTelechargement (défaut 'images/telechargement/televersement_bek_langue_01.webp')
+ *     — Bek, yeux fermés, particules de lumière absorbées ; visible en
+ *     permanence derrière le bouton puis la barre, tout au long de la
+ *     séquence
+ *   - duree (ms, défaut 2600) — durée de la barre de progression
+ *   - pauseFin (ms, défaut 1400) — temps laissé à l'affichage de
+ *     "Réinitialisation" avant onFin
+ *   - totalFragments (nombre, optionnel) — si fourni, affiché juste sous
+ *     "Réinitialisation" (ex. "247 fragments retrouvés"). Omis =
+ *     comportement actuel inchangé, rien à afficher tant que le compteur
+ *     réel (Supabase) n'existe pas encore côté page hôte.
  * @param {object} callbacks
- *   - onChoisirKeb()
- *   - onChoisirBek()
- *   - onAnnuler() — retour à l'écran précédent, géré par la page hôte
+ *   - onDebut() — appelé au clic sur le bouton, avant que la barre démarre
+ *   - onFin() — appelé une fois la pause finale écoulée
  */
-function demarrerEcranTeleversement(idConteneur, options, callbacks) {
+function demarrerSequenceTelechargementLangue(idConteneur, options, callbacks) {
+  options = options || {};
   callbacks = callbacks || {};
+
   const conteneur = document.getElementById(idConteneur);
   if (!conteneur) return;
+  if (!window.KebBekBarreProgression) {
+    console.warn('sequence-telechargement-langue : barre-progression.js doit être chargé avant.');
+  }
+
+  const codeLangue = options.codeLangue || 'en';
+  const duree = typeof options.duree === 'number' ? options.duree : 2600;
+  const pauseFin = typeof options.pauseFin === 'number' ? options.pauseFin : 1400;
+  const imageTelechargement = typeof options.imageTelechargement === 'string'
+    ? options.imageTelechargement
+    : 'images/telechargement/televersement_bek_langue_01.webp';
 
   conteneur.innerHTML =
-    '<div id="ecranTeleversement">' +
-      '<div class="telv-carte">' +
-
-        '<span class="telv-bloc telv-entree-cachee telv-titre">' +
-          tTeleversementOuDefaut('titre', 'Uploading') +
-        '</span>' +
-
-        '<div class="telv-bloc telv-entree-cachee telv-choix">' +
-          '<button type="button" class="telv-bouton-perso" id="telvBtnKeb">' +
-            '<span class="telv-icone-chip-perso"><img src="images/accueil/symbole-garcon01.webp" alt=""></span>' +
-            '<span>' + tTeleversementOuDefaut('keb', 'Keb') + '</span>' +
-          '</button>' +
-          '<button type="button" class="telv-bouton-perso" id="telvBtnBek">' +
-            '<span class="telv-icone-chip-perso"><img src="images/accueil/symbole-fille01.webp" alt=""></span>' +
-            '<span>' + tTeleversementOuDefaut('bek', 'Bek') + '</span>' +
-          '</button>' +
-        '</div>' +
-
-        '<button type="button" class="telv-bloc telv-entree-cachee telv-annuler" id="telvBtnAnnuler">' +
-          tTeleversementOuDefaut('annuler', 'Cancel') +
-        '</button>' +
-
-      '</div>' +
+    '<div id="stlgScene">' +
+      '<img class="stlg-bloc stlg-entree-cachee stlg-image" src="' + imageTelechargement + '" alt="">' +
+      '<button type="button" class="stlg-bloc stlg-entree-cachee stlg-bouton-telecharger" id="stlgBtnTelecharger">' +
+        tTelechargementLangue(codeLangue, 'bouton') +
+      '</button>' +
+      '<div id="stlgZoneBarre"></div>' +
     '</div>';
 
-  // ---------- Entrée en cascade (même patron que les autres écrans) ----------
-  const entrees = conteneur.querySelectorAll('.telv-entree-cachee');
-  entrees.forEach((el, i) => {
-    setTimeout(() => el.classList.remove('telv-entree-cachee'), 90 + i * 90);
+  const entrees = conteneur.querySelectorAll('.stlg-entree-cachee');
+  entrees.forEach(function (el, i) {
+    setTimeout(function () { el.classList.remove('stlg-entree-cachee'); }, 90 + i * 90);
   });
 
-  const btnKeb = document.getElementById('telvBtnKeb');
-  const btnBek = document.getElementById('telvBtnBek');
-  const btnAnnuler = document.getElementById('telvBtnAnnuler');
+  const btn = document.getElementById('stlgBtnTelecharger');
+  btn.addEventListener('click', function () {
+    btn.classList.add('stlg-masque');
+    if (typeof callbacks.onDebut === 'function') callbacks.onDebut();
 
-  if (btnKeb && typeof callbacks.onChoisirKeb === 'function') {
-    btnKeb.addEventListener('click', callbacks.onChoisirKeb);
-  }
-  if (btnBek && typeof callbacks.onChoisirBek === 'function') {
-    btnBek.addEventListener('click', callbacks.onChoisirBek);
-  }
-  if (btnAnnuler && typeof callbacks.onAnnuler === 'function') {
-    btnAnnuler.addEventListener('click', callbacks.onAnnuler);
-  }
+    if (!window.KebBekBarreProgression) {
+      // Repli sans la barre : on passe directement à la fin après la durée prévue.
+      setTimeout(function () {
+        if (typeof callbacks.onFin === 'function') callbacks.onFin();
+      }, duree + pauseFin);
+      return;
+    }
+
+    window.KebBekBarreProgression.demarrerBarreProgression('stlgZoneBarre', { cible: 100, duree: duree }, {
+      onFin: function () {
+        const zone = document.getElementById('stlgZoneBarre');
+        if (zone) {
+          const aUnTotal = typeof options.totalFragments === 'number';
+          zone.innerHTML =
+            '<div class="stlg-fin">' +
+              '<span class="stlg-bloc" style="font-weight:700; color:var(--brun-fonce, var(--brun));">' +
+                tTelechargementLangue(codeLangue, 'reinitialisation') +
+              '</span>' +
+              (aUnTotal
+                ? '<span class="stlg-bloc stlg-fragments">' + options.totalFragments + ' ' +
+                    tTelechargementLangue(codeLangue, 'fragments') +
+                  '</span>'
+                : '') +
+            '</div>';
+        }
+        setTimeout(function () {
+          if (typeof callbacks.onFin === 'function') callbacks.onFin();
+        }, pauseFin);
+      }
+    });
+  });
 }
 
-window.KebBekEcranTeleversement = { demarrerEcranTeleversement };
+window.KebBekTelechargementLangue = { demarrerSequenceTelechargementLangue };

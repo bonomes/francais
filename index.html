@@ -2780,26 +2780,20 @@
     ouvrir();
   }
 
-  // 🆕 (20-09-2026) Joue la séquence de téléchargement de la langue
-  // (voir sequence-telechargement-langue.js) dans le même conteneur que
-  // la nouvelle scène d'accueil (#nouvelDemarrage), puis révèle le bloc
-  // Connexion/Première leçon une fois "Réinitialisation" affiché. Repli
-  // silencieux sur l'ancien comportement (afficherConnexionChoix direct)
-  // si le module n'est pas chargé, pour ne jamais bloquer un élève.
-  function jouerTelechargementLangueForce(codeLangue) {
-    const conteneur = document.getElementById('nouvelDemarrage');
-    if (!conteneur || !window.KebBekTelechargementLangue) {
-      afficherConnexionChoix();
-      return;
-    }
-    conteneur.style.display = 'flex';
-    conteneur.innerHTML = '<div id="nouvelDemarrageContenu" style="width:100%; display:flex; justify-content:center;"></div>';
-    window.KebBekTelechargementLangue.demarrerSequenceTelechargementLangue('nouvelDemarrageContenu', { codeLangue: codeLangue }, {
-      onFin: function () {
-        conteneur.style.display = 'none';
-        afficherConnexionChoix();
-      }
-    });
+  // 🚧 (20-09-2026) Actuellement inutilisée — préparée pour un futur
+  // sélecteur de langue dédié au nouveau parcours (encore à construire),
+  // qui appliquerait la langue SANS passer par #selecteurLangue. En
+  // attendant, choisir() (plus bas) gère elle-même ce cas via le chemin
+  // #selecteurLangue existant — voir son commentaire "Branchement complété".
+  // À réutiliser ou à retirer le jour où ce sélecteur dédié existera.
+  function appliquerLangueChoisieDepuisNouvelEcran(codeLangue) {
+    langueActuelle = codeLangue;
+    sauvegarderLangue(codeLangue);
+    appliquerDirectionLangue(codeLangue);
+    rafraichirSelection();
+    rafraichirLienCoursPrives();
+    rafraichirConnexionBoutons();
+    rafraichirEnteteSac();
   }
 
   function choisir(codeLangue) {
@@ -2820,18 +2814,32 @@
     // logique de démarrage tout en bas du script). Un changement de
     // langue fait ailleurs (déjà au menu, etc.) ne rouvre jamais ce
     // bloc, puisque .forme-obligatoire n'est alors pas présente.
+    // 🆕 (20-09-2026) Branchement complété : ce chemin (#selecteurLangue
+    // forcé) sert désormais de sélecteur de langue RÉEL pour le nouveau
+    // parcours (etapeSequence, plus haut, y mène via ouvrirChoixLangueForce()
+    // — aucun sélecteur dédié n'existe encore, inutile d'en construire un
+    // pour l'instant puisque celui-ci fonctionne déjà partout ailleurs sur
+    // le site). Une fois la langue choisie ici, on enchaîne sur la
+    // séquence de téléchargement de la langue (sequence-telechargement-langue.js)
+    // AVANT afficherConnexionChoix() — c'est elle qui affiche
+    // "Réinitialisation" traduite, l'indice qu'on voulait à cette étape.
     if (zone.classList.contains('forme-obligatoire')) {
       zone.classList.remove('forme-obligatoire');
       slTitreForce.hidden = true;
       arreterRotationTitreForce();
-      // 🆕 (20-09-2026) La séquence de téléchargement de la langue
-      // (bouton traduit → barre → "Réinitialisation") n'était jusqu'ici
-      // jamais déclenchée : ni chargée (voir <script>/<link> en tête de
-      // fichier) ni appelée ici. Elle ne joue QUE pour ce tout premier
-      // choix forcé, jamais pour un changement de langue ultérieur au
-      // menu — cohérent avec le fait que ce n'est narrativement qu'ici
-      // que Kaleb/Rebekah viennent de téléverser Keb/Bek.
-      jouerTelechargementLangueForce(codeLangue);
+      const conteneurTelechargement = document.getElementById('nouvelDemarrage');
+      if (conteneurTelechargement && window.KebBekTelechargementLangue) {
+        conteneurTelechargement.style.display = 'flex';
+        conteneurTelechargement.innerHTML = '<div id="nouvelDemarrageContenu" style="width:100%; display:flex; justify-content:center;"></div>';
+        window.KebBekTelechargementLangue.demarrerSequenceTelechargementLangue('nouvelDemarrageContenu', { langues: LANGUES }, {
+          onFin: function () {
+            conteneurTelechargement.style.display = 'none';
+            afficherConnexionChoix();
+          }
+        });
+      } else {
+        afficherConnexionChoix();
+      }
     }
     rafraichirLienCoursPrives();
     rafraichirConnexionBoutons();

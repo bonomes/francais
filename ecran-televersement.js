@@ -1,7 +1,11 @@
 /* ==================================================================
    ecran-televersement.js — écran suivant "Commencer" (ecran-demarrage.js).
-   Même patron d'architecture : window.KebBekTeleversement.
+   Même patron d'architecture : window.KebBekEcranTeleversement.
    demarrerEcranTeleversement(idConteneur, options, callbacks).
+
+   🚧 Note : exposé sous KebBekEcranTeleversement (et non KebBekTeleversement)
+   pour éviter une collision avec sequence-televersement.js, qui utilise
+   déjà ce nom pour demarrerSequenceTeleversement.
 
    L'élève choisit par quel personnage téléverser sa réalité — Keb ou
    Bek. "Annuler" ramène simplement à l'écran précédent (callback,
@@ -102,4 +106,4 @@ function demarrerEcranTeleversement(idConteneur, options, callbacks) {
   }
 }
 
-window.KebBekTeleversement = { demarrerEcranTeleversement };
+window.KebBekEcranTeleversement = { demarrerEcranTeleversement };

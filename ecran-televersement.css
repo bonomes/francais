@@ -1,87 +1,122 @@
 /* ==================================================================
-   sequence-telechargement-langue.css — habillage de
-   sequence-telechargement-langue.js.
+   ecran-televersement.css — habillage du module ecran-televersement.js
+   (écran de choix de personnage : Keb ou Bek).
 
-   Se joue juste après le choix de langue (voir choisir(codeLangue)
-   dans index.html) : un bouton "Download" apparaît déjà traduit dans
-   la langue tout juste choisie — preuve immédiate et tangible que le
-   choix a bien pris, sans texte d'explication. Au clic, la barre de
-   progression (barre-progression.css/js) anime l'insertion, puis le
-   même mot que l'échec initial du téléversement de Bek/Keb réapparaît,
-   traduit : "Réinitialisation" — indice discret, jamais souligné.
+   Fichier manquant jusqu'ici — lié dans index.html (<link
+   rel="stylesheet" href="ecran-televersement.css">) mais jamais créé,
+   d'où l'affichage sans mise en page (image de Bek à taille native,
+   Keb poussé hors champ). Reprend la même famille visuelle que
+   ecran-demarrage.css : palette beige/brun/pêche, Baloo 2, pilules
+   avec relief 3D — voir .edem-bouton-secondaire pour le patron
+   d'origine des boutons ici adaptés à deux choix côte à côte.
    ================================================================== */
 
-#stlgScene {
-  position: relative;
+#ecranTeleversement {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+.telv-carte {
+  width: min(92vw, 380px);
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 22px;
+  gap: 24px;
   font-family: 'Baloo 2', sans-serif;
 }
 
-.stlg-bloc {
+/* ---------- Entrée en cascade (même patron que .edem-bloc) ---------- */
+.telv-bloc {
   transition: opacity 0.36s ease, transform 0.36s cubic-bezier(.2,.8,.3,1.2);
 }
-.stlg-entree-cachee {
+.telv-entree-cachee {
   opacity: 0;
   transform: translateY(10px);
 }
 
-/* Bouton "Download" — même famille que .edem-bouton-principal
-   (ecran-demarrage.css), mais sans icône : le mot traduit lui-même
-   est le point d'intérêt ici, pas un pictogramme. */
-.stlg-image {
-  width: min(56vw, 220px);
-  height: auto;
-  display: block;
-}
-
-.stlg-bouton-telecharger {
-  border: none;
-  border-radius: 999px;
-  padding: 18px 42px;
-  font-family: inherit;
+.telv-titre {
   font-weight: 700;
-  font-size: 1.1rem;
-  color: #FFFFFF;
-  background: var(--peche-fonce);
-  cursor: pointer;
-  box-shadow: 0 5px 0 0 var(--brun-fonce, #4A3B33), 4px 6px 16px var(--ombre, rgba(102, 80, 69, 0.18));
-  transition: transform 0.18s cubic-bezier(.34,1.6,.4,1), box-shadow 0.15s ease, background 0.15s ease, opacity 0.25s ease;
-}
-.stlg-bouton-telecharger:hover {
-  background: #d97c5c;
-  transform: translateY(-2px);
-}
-.stlg-bouton-telecharger:active {
-  transform: translateY(3px);
-  box-shadow: 0 0 0 0 var(--brun-fonce, #4A3B33), 1px 1px 6px var(--ombre, rgba(102, 80, 69, 0.18));
-}
-.stlg-bouton-telecharger.stlg-masque {
-  opacity: 0;
-  pointer-events: none;
-  position: absolute;
+  font-size: 1.2rem;
+  color: var(--brun-fonce, var(--brun));
+  text-align: center;
 }
 
-#stlgZoneBarre {
-  min-height: 60px;
+/* ---------- Choix Keb / Bek, côte à côte ---------- */
+.telv-choix {
   display: flex;
-  align-items: center;
-  justify-content: center;
+  gap: 16px;
+  width: 100%;
 }
 
-/* Bloc de fin : "Réinitialisation" + total de fragments optionnel
-   (voir options.totalFragments dans sequence-telechargement-langue.js) */
-.stlg-fin {
+.telv-bouton-perso {
+  flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  gap: 10px;
+  border: 1.5px solid var(--peche);
+  border-radius: 24px;
+  padding: 20px 14px;
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--brun-fonce, var(--brun));
+  background: #FFFFFF;
+  cursor: pointer;
+  box-shadow: 0 4px 0 0 var(--peche), 2px 5px 12px var(--ombre, rgba(102, 80, 69, 0.18));
+  transition: transform 0.18s cubic-bezier(.34,1.6,.4,1), box-shadow 0.15s ease, background 0.15s ease;
 }
-.stlg-fragments {
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: var(--brun-fonce, #4A3B33);
-  opacity: 0.75;
+.telv-bouton-perso:hover {
+  background: var(--peche-pale, rgba(240, 169, 139, 0.16));
+  transform: translateY(-2px);
+}
+.telv-bouton-perso:active {
+  transform: translateY(3px);
+  box-shadow: 0 0 0 0 var(--peche), 1px 1px 6px var(--ombre, rgba(102, 80, 69, 0.18));
+}
+
+/* Médaillon rond qui contient l'image — c'est cette règle qui manquait
+   pour empêcher symbole-fille01.webp / symbole-garcon01.webp de
+   s'afficher à leur taille native. */
+.telv-icone-chip-perso {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: var(--peche-pale, rgba(240, 169, 139, 0.20));
+  box-shadow: inset 0 1px 3px rgba(74, 59, 51, 0.12);
+}
+.telv-icone-chip-perso img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* ---------- Annuler ---------- */
+.telv-annuler {
+  border: none;
+  background: none;
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 0.88rem;
+  color: var(--brun-fonce, var(--brun));
+  opacity: 0.65;
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 6px;
+  transition: opacity 0.15s ease;
+}
+.telv-annuler:hover {
+  opacity: 1;
+}
+
+@media (max-width: 460px) {
+  .telv-bouton-perso { padding: 16px 10px; font-size: 0.92rem; }
+  .telv-icone-chip-perso { width: 54px; height: 54px; }
 }

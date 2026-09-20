@@ -28,6 +28,7 @@
 <link rel="stylesheet" href="ecran-televersement.css">
 <link rel="stylesheet" href="barre-progression.css">
 <link rel="stylesheet" href="sequence-televersement.css">
+<link rel="stylesheet" href="sequence-telechargement-langue.css">
 <style>
   /* ==================================================================
      index.html — page d'accueil officielle du site (voir BONOMES_v61,
@@ -964,6 +965,50 @@
     opacity: 0.55;
   }
 
+  /* 🆕 (20-09-2026) Chip "Français" — même gabarit que .sl-chip, mais en
+     pointillé et légèrement estompé : un détail que seul un élève
+     attentif remarquera, jamais expliqué. Neutre (pas de couleur de la
+     rotation 5n+X) pour ne pas se fondre par hasard dans une teinte
+     "normale". Au clic : message "Fichier manquant ou corrompu" en
+     surimpression, quelques secondes, sans jamais naviguer nulle part. */
+  .sl-chip-francais {
+    border-style: dashed;
+    border-color: var(--peche);
+    background: rgba(255, 255, 255, 0.4);
+    opacity: 0.82;
+  }
+  .sl-chip-francais .sl-chip-badge {
+    background: #E4DCD3;
+    color: var(--brun);
+  }
+  .sl-chip-francais:hover {
+    background: rgba(255, 255, 255, 0.6);
+    transform: none;
+  }
+
+  .sl-chip-erreur-message {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px 6px;
+    border-radius: inherit;
+    background: rgba(74, 59, 51, 0.92);
+    color: #FFF5E8;
+    font-family: 'Baloo 2', sans-serif;
+    font-weight: 700;
+    font-size: 0.68rem;
+    line-height: 1.2;
+    text-align: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+  }
+  .sl-chip-francais.sl-chip-erreur-active .sl-chip-erreur-message {
+    opacity: 1;
+  }
+
   /* ---------- Fond estompé ----------
      Toujours actif : le panneau n'a plus qu'un seul mode (recouvrement
      centré plein écran, à toutes les largeurs), donc le fond assombri
@@ -1428,6 +1473,7 @@
 <script src="ecran-televersement.js"></script>
 <script src="barre-progression.js"></script>
 <script src="sequence-televersement.js"></script>
+<script src="sequence-telechargement-langue.js"></script>
 <script>
   // ================================================================
   // 🆕 (18-09-2026) Orchestration de la nouvelle scène d'accueil :
@@ -2460,6 +2506,30 @@
 
   LANGUES.forEach(l => grilleConteneur.appendChild(creerChipGrille(l)));
 
+  // 🆕 (20-09-2026) Chip "Français" — hors de LANGUES volontairement (ce
+  // n'est pas une langue d'interface sélectionnable) : clic → message
+  // "Fichier manquant ou corrompu", jamais choisir('fr'). Voir
+  // kebbek-universe : français.exe fragmenté en .mem au même titre que
+  // les souvenirs de Bek, indice jamais expliqué comme tel ici.
+  function creerChipFrancais() {
+    const el = document.createElement('div');
+    el.className = 'sl-chip sl-chip-francais';
+    el.dataset.code = 'fr';
+    el.setAttribute('role', 'option');
+    el.innerHTML = `
+      <span class="sl-chip-badge" aria-hidden="true">FR</span>
+      <span class="sl-chip-natif">Français</span>
+      <span class="sl-chip-code">Français</span>
+      <span class="sl-chip-erreur-message" aria-live="polite">Fichier manquant ou corrompu</span>`;
+    el.addEventListener('click', () => {
+      if (el.classList.contains('sl-chip-erreur-active')) return;
+      el.classList.add('sl-chip-erreur-active');
+      setTimeout(() => el.classList.remove('sl-chip-erreur-active'), 2200);
+    });
+    return el;
+  }
+  grilleConteneur.appendChild(creerChipFrancais());
+
   function rafraichirSelection() {
     document.querySelectorAll('.sl-chip').forEach(el => {
       el.classList.toggle('selectionne', el.dataset.code === langueActuelle);
@@ -2474,8 +2544,13 @@
     const q = normaliser(recherche.value.trim());
     let visibles = 0;
     Array.from(grilleConteneur.children).forEach(el => {
-      const langue = LANGUES.find(l => l.code === el.dataset.code);
-      const correspond = !q || normaliser(langue.natif).includes(q) || normaliser(langue.fr).includes(q);
+      let correspond;
+      if (el.dataset.code === 'fr') {
+        correspond = !q || normaliser('Français').includes(q);
+      } else {
+        const langue = LANGUES.find(l => l.code === el.dataset.code);
+        correspond = !q || normaliser(langue.natif).includes(q) || normaliser(langue.fr).includes(q);
+      }
       el.hidden = !correspond;
       if (correspond) visibles++;
     });
@@ -2701,6 +2776,28 @@
     ouvrir();
   }
 
+  // 🆕 (20-09-2026) Joue la séquence de téléchargement de la langue
+  // (voir sequence-telechargement-langue.js) dans le même conteneur que
+  // la nouvelle scène d'accueil (#nouvelDemarrage), puis révèle le bloc
+  // Connexion/Première leçon une fois "Réinitialisation" affiché. Repli
+  // silencieux sur l'ancien comportement (afficherConnexionChoix direct)
+  // si le module n'est pas chargé, pour ne jamais bloquer un élève.
+  function jouerTelechargementLangueForce(codeLangue) {
+    const conteneur = document.getElementById('nouvelDemarrage');
+    if (!conteneur || !window.KebBekTelechargementLangue) {
+      afficherConnexionChoix();
+      return;
+    }
+    conteneur.style.display = 'flex';
+    conteneur.innerHTML = '<div id="nouvelDemarrageContenu" style="width:100%; display:flex; justify-content:center;"></div>';
+    window.KebBekTelechargementLangue.demarrerSequenceTelechargementLangue('nouvelDemarrageContenu', { codeLangue: codeLangue }, {
+      onFin: function () {
+        conteneur.style.display = 'none';
+        afficherConnexionChoix();
+      }
+    });
+  }
+
   function choisir(codeLangue) {
     langueActuelle = codeLangue;
     sauvegarderLangue(codeLangue);
@@ -2723,7 +2820,14 @@
       zone.classList.remove('forme-obligatoire');
       slTitreForce.hidden = true;
       arreterRotationTitreForce();
-      afficherConnexionChoix();
+      // 🆕 (20-09-2026) La séquence de téléchargement de la langue
+      // (bouton traduit → barre → "Réinitialisation") n'était jusqu'ici
+      // jamais déclenchée : ni chargée (voir <script>/<link> en tête de
+      // fichier) ni appelée ici. Elle ne joue QUE pour ce tout premier
+      // choix forcé, jamais pour un changement de langue ultérieur au
+      // menu — cohérent avec le fait que ce n'est narrativement qu'ici
+      // que Kaleb/Rebekah viennent de téléverser Keb/Bek.
+      jouerTelechargementLangueForce(codeLangue);
     }
     rafraichirLienCoursPrives();
     rafraichirConnexionBoutons();

@@ -40,6 +40,10 @@ function tTelechargementLangue(codeLangue, cle) {
  * @param {object} options
  *   - codeLangue (requis) — code de la langue tout juste choisie par
  *     l'élève; détermine la traduction du bouton et du mot final
+ *   - imageTelechargement (défaut 'images/telechargement/televersement_bek_langue_01.webp')
+ *     — Bek, yeux fermés, particules de lumière absorbées ; visible en
+ *     permanence derrière le bouton puis la barre, tout au long de la
+ *     séquence
  *   - duree (ms, défaut 2600) — durée de la barre de progression
  *   - pauseFin (ms, défaut 1400) — temps laissé à l'affichage de
  *     "Réinitialisation" avant onFin
@@ -64,9 +68,13 @@ function demarrerSequenceTelechargementLangue(idConteneur, options, callbacks) {
   const codeLangue = options.codeLangue || 'en';
   const duree = typeof options.duree === 'number' ? options.duree : 2600;
   const pauseFin = typeof options.pauseFin === 'number' ? options.pauseFin : 1400;
+  const imageTelechargement = typeof options.imageTelechargement === 'string'
+    ? options.imageTelechargement
+    : 'images/telechargement/televersement_bek_langue_01.webp';
 
   conteneur.innerHTML =
     '<div id="stlgScene">' +
+      '<img class="stlg-bloc stlg-entree-cachee stlg-image" src="' + imageTelechargement + '" alt="">' +
       '<button type="button" class="stlg-bloc stlg-entree-cachee stlg-bouton-telecharger" id="stlgBtnTelecharger">' +
         tTelechargementLangue(codeLangue, 'bouton') +
       '</button>' +

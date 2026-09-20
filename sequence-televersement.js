@@ -32,6 +32,11 @@
  *   - duree (ms, défaut 11000) — durée de la barre si elle allait à 100 %
  *     (la barre est coupée avant, au dernier seuil)
  *   - etiquette (défaut 'Téléversement en cours…')
+ *   - legendes (tableau de 4 textes, un par étape 1→4 — défaut : les
+ *     libellés "Téléchargement du personnage/corps/personnalité/mémoires")
+ *   - legendeErreur (défaut 'Erreur - Réinitialisation') — affiché au
+ *     moment de l'éclair
+ *   - legendeFin (défaut 'Terminé.') — affiché une fois Bek atterrie
  *   - pleinEcran (défaut true) — si false, la scène remplit le
  *     conteneur (qui doit alors être en position: relative)
  * @param {object} callbacks
@@ -77,6 +82,21 @@ function demarrerSequenceTeleversement(idConteneur, options, callbacks) {
   const etiquette = typeof options.etiquette === 'string' ? options.etiquette : 'Téléversement en cours…';
   const pleinEcran = options.pleinEcran !== false;
 
+  // 🆕 Légende sous la scène : accompagne discrètement la progression
+  // d'un mot différent à chaque seuil, sans dialogue ni explication.
+  // "Erreur - Réinitialisation" (au moment de l'éclair) est le même mot
+  // que celui qu'on retrouvera plus tard sur l'écran de téléchargement
+  // de la langue — indice qu'un joueur attentif pourra un jour relier,
+  // jamais souligné ici.
+  const legendes = options.legendes || [
+    'Téléchargement du personnage',
+    'Téléchargement du corps',
+    'Téléchargement de la personnalité',
+    'Téléchargement des mémoires'
+  ];
+  const legendeErreur = typeof options.legendeErreur === 'string' ? options.legendeErreur : 'Erreur - Réinitialisation';
+  const legendeFin = typeof options.legendeFin === 'string' ? options.legendeFin : 'Terminé.';
+
   let arrete = false;
   let barre = null;
   const minuteries = [];
@@ -103,6 +123,7 @@ function demarrerSequenceTeleversement(idConteneur, options, callbacks) {
         '<div class="tvbk-eclat-onde"></div>' +
       '</div>' +
       '<div class="tvbk-noir" aria-hidden="true"></div>' +
+      '<div class="tvbk-legende" id="tvbkLegende" aria-live="polite"></div>' +
       '<div class="tvbk-revelation">' +
         '<div class="tvbk-lueur" aria-hidden="true"></div>' +
         '<div class="tvbk-bek-boite">' +
@@ -126,6 +147,8 @@ function demarrerSequenceTeleversement(idConteneur, options, callbacks) {
   }
 
   const etapes = scene.querySelectorAll('.tvbk-etape:not(.tvbk-etape--eclair)');
+  const elLegende = document.getElementById('tvbkLegende');
+  elLegende.textContent = legendes[0];
   let etapeCourante = 1;
   function allerEtape(n) {
     if (n <= etapeCourante) return;
@@ -133,6 +156,7 @@ function demarrerSequenceTeleversement(idConteneur, options, callbacks) {
     etapes.forEach(function (img) {
       img.classList.toggle('est-actif', Number(img.getAttribute('data-etape')) === n);
     });
+    if (legendes[n - 1]) elLegende.textContent = legendes[n - 1];
   }
 
   // ---------- Éclair → noir → ouverture → atterrissage ----------
@@ -142,6 +166,7 @@ function demarrerSequenceTeleversement(idConteneur, options, callbacks) {
     eclairFait = true;
     if (barre) barre.arreter();
     scene.classList.add('tvbk-eclair');
+    elLegende.textContent = legendeErreur;
     if (typeof callbacks.onEclair === 'function') callbacks.onEclair();
 
     apres(DUREES.noirDelai, function () { scene.classList.add('tvbk-noir-actif'); });
@@ -151,6 +176,7 @@ function demarrerSequenceTeleversement(idConteneur, options, callbacks) {
     });
     apres(instantFin, function () {
       scene.classList.add('tvbk-fini');
+      elLegende.textContent = legendeFin;
       scene.setAttribute('aria-busy', 'false');
       if (typeof callbacks.onFin === 'function') callbacks.onFin();
     });

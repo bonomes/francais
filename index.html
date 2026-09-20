@@ -2848,7 +2848,14 @@
   //     bloc Connexion/Première leçon n'apparaît qu'ensuite, une fois
   //     la langue choisie (voir choisir()).
   // ==================================================================
-  if (langueSauvegardee()) {
+  // 🆕 (20-09-2026) Raccourci de dev, demandé par Raphaël : ?nouvelaccueil=1
+  // dans l'URL force la nouvelle scène d'accueil même si une langue est déjà
+  // enregistrée — évite de vider kebbek_langue à la main à chaque test.
+  // Sans ce paramètre, comportement strictement inchangé pour les élèves.
+  const parametresURLDemarrage = new URLSearchParams(window.location.search);
+  const forcerNouvelAccueilDev = parametresURLDemarrage.get('nouvelaccueil') === '1';
+
+  if (langueSauvegardee() && !forcerNouvelAccueilDev) {
     allerAuMenuPrincipal('retour');
   } else {
     // 🆕 (18-09-2026) Seule ligne existante modifiée dans tout ce fichier :

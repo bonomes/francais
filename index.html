@@ -1531,9 +1531,30 @@
       // (défaut interne du module) — c'était la cause des vignettes
       // cassées (37 %, cadre vide).
       window.KebBekTeleversement.demarrerSequenceTeleversement('nouvelDemarrageContenu', { dossierImages: 'images/telechargement/' }, {
-        onFin: function () {
+        onFin: etapeChoixLangue
+      });
+    }
+
+    // 🆕 (20-09-2026, corrigé) Sauter DIRECTEMENT à la séquence de
+    // téléchargement de la langue — elle contient déjà sa propre grille
+    // de sélection (le "fichier" français cassé y est aussi). Passer par
+    // l'ancien #selecteurLangue avant elle aurait fait choisir la langue
+    // deux fois de suite. ouvrirChoixLangueForce() ne sert donc plus que
+    // de repli si le module est manquant (voir la garde plus haut dans
+    // cette fonction).
+    function etapeChoixLangue() {
+      conteneur.style.display = 'none';
+      if (!window.KebBekTelechargementLangue) {
+        ouvrirChoixLangueForce();
+        return;
+      }
+      conteneur.style.display = 'flex';
+      conteneur.innerHTML = '<div id="nouvelDemarrageContenu" style="width:100%; display:flex; justify-content:center;"></div>';
+      window.KebBekTelechargementLangue.demarrerSequenceTelechargementLangue('nouvelDemarrageContenu', { langues: LANGUES }, {
+        onFin: function (codeLangueChoisie) {
+          appliquerLangueChoisieDepuisNouvelEcran(codeLangueChoisie);
           conteneur.style.display = 'none';
-          ouvrirChoixLangueForce();
+          afficherConnexionChoix();
         }
       });
     }
@@ -2780,12 +2801,11 @@
     ouvrir();
   }
 
-  // 🚧 (20-09-2026) Actuellement inutilisée — préparée pour un futur
-  // sélecteur de langue dédié au nouveau parcours (encore à construire),
-  // qui appliquerait la langue SANS passer par #selecteurLangue. En
-  // attendant, choisir() (plus bas) gère elle-même ce cas via le chemin
-  // #selecteurLangue existant — voir son commentaire "Branchement complété".
-  // À réutiliser ou à retirer le jour où ce sélecteur dédié existera.
+  // 🆕 (20-09-2026, corrigé) Reprend les effets de bord de choisir()
+  // (langue, sauvegarde, direction, rafraîchissements) SANS les parties
+  // propres à l'ancien panneau (#selecteurLangue n'est jamais ouvert dans
+  // le nouveau parcours) — appelée par etapeChoixLangue() plus haut, une
+  // fois que sequence-telechargement-langue.js a fini.
   function appliquerLangueChoisieDepuisNouvelEcran(codeLangue) {
     langueActuelle = codeLangue;
     sauvegarderLangue(codeLangue);
@@ -2814,32 +2834,19 @@
     // logique de démarrage tout en bas du script). Un changement de
     // langue fait ailleurs (déjà au menu, etc.) ne rouvre jamais ce
     // bloc, puisque .forme-obligatoire n'est alors pas présente.
-    // 🆕 (20-09-2026) Branchement complété : ce chemin (#selecteurLangue
-    // forcé) sert désormais de sélecteur de langue RÉEL pour le nouveau
-    // parcours (etapeSequence, plus haut, y mène via ouvrirChoixLangueForce()
-    // — aucun sélecteur dédié n'existe encore, inutile d'en construire un
-    // pour l'instant puisque celui-ci fonctionne déjà partout ailleurs sur
-    // le site). Une fois la langue choisie ici, on enchaîne sur la
-    // séquence de téléchargement de la langue (sequence-telechargement-langue.js)
-    // AVANT afficherConnexionChoix() — c'est elle qui affiche
-    // "Réinitialisation" traduite, l'indice qu'on voulait à cette étape.
+    // 🆕 (20-09-2026, corrigé) Ce chemin (#selecteurLangue forcé) est un
+    // pur filet de secours — utilisé UNIQUEMENT si etapeChoixLangue()
+    // (plus haut) ne peut pas charger sequence-telechargement-langue.js,
+    // qui contient déjà sa propre sélection de langue (grille de
+    // "fichiers", français inclus). Le brancher aussi ici aurait fait
+    // choisir la langue deux fois de suite dans le parcours normal —
+    // c'est l'erreur qu'on vient de corriger. En mode de secours, on va
+    // directement à afficherConnexionChoix(), sans rejouer la séquence.
     if (zone.classList.contains('forme-obligatoire')) {
       zone.classList.remove('forme-obligatoire');
       slTitreForce.hidden = true;
       arreterRotationTitreForce();
-      const conteneurTelechargement = document.getElementById('nouvelDemarrage');
-      if (conteneurTelechargement && window.KebBekTelechargementLangue) {
-        conteneurTelechargement.style.display = 'flex';
-        conteneurTelechargement.innerHTML = '<div id="nouvelDemarrageContenu" style="width:100%; display:flex; justify-content:center;"></div>';
-        window.KebBekTelechargementLangue.demarrerSequenceTelechargementLangue('nouvelDemarrageContenu', { langues: LANGUES }, {
-          onFin: function () {
-            conteneurTelechargement.style.display = 'none';
-            afficherConnexionChoix();
-          }
-        });
-      } else {
-        afficherConnexionChoix();
-      }
+      afficherConnexionChoix();
     }
     rafraichirLienCoursPrives();
     rafraichirConnexionBoutons();

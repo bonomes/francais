@@ -64,3 +64,18 @@
   align-items: center;
   justify-content: center;
 }
+
+/* Bloc de fin : "Réinitialisation" + total de fragments optionnel
+   (voir options.totalFragments dans sequence-telechargement-langue.js) */
+.stlg-fin {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+.stlg-fragments {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--brun-fonce, #4A3B33);
+  opacity: 0.75;
+}

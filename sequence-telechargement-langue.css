@@ -31,6 +31,12 @@
 /* Bouton "Download" — même famille que .edem-bouton-principal
    (ecran-demarrage.css), mais sans icône : le mot traduit lui-même
    est le point d'intérêt ici, pas un pictogramme. */
+.stlg-image {
+  width: min(56vw, 220px);
+  height: auto;
+  display: block;
+}
+
 .stlg-bouton-telecharger {
   border: none;
   border-radius: 999px;

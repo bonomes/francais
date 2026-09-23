@@ -21,7 +21,13 @@
 }
 .stlg-scene.stlg-prete { opacity: 1; }
 
-/* ---------- Fond : Bek, atterrie puis réception, même boîte ---------- */
+/* ---------- Fond : Bek, atterrie puis réception, même boîte ----------
+   pointer-events: none — c'est un arrière-plan décoratif; sans cette
+   ligne, le rectangle de l'image (même sur ses zones "transparentes")
+   intercepte les clics destinés au panneau/bouton posés par-dessus.
+   z-index explicite plutôt que de compter sur l'ordre du HTML (plus
+   fragile) pour garantir que le panneau et la barre restent toujours
+   au-dessus du fond. */
 .stlg-fond-bek {
   position: absolute;
   left: 50%;
@@ -29,6 +35,8 @@
   height: min(84dvh, 132vw);
   aspect-ratio: 2 / 3;
   transform: translateX(-50%);
+  pointer-events: none;
+  z-index: 1;
 }
 
 .stlg-image-bek {
@@ -109,6 +117,7 @@
   border-radius: 26px;
   background: rgba(255, 255, 255, 0.94);
   box-shadow: 0 10px 30px rgba(102, 80, 69, 0.22);
+  z-index: 5;
   transition: opacity 0.36s ease, transform 0.36s cubic-bezier(.2,.8,.3,1.2);
 }
 .stlg-panneau-cachee {
@@ -236,4 +245,5 @@
   align-items: center;
   justify-content: center;
   min-height: 60px;
+  z-index: 5;
 }

@@ -44,6 +44,56 @@
 .stlg-scene.stlg-reception .stlg-image-atterrissage { opacity: 0; }
 .stlg-scene.stlg-reception .stlg-image-reception { opacity: 1; }
 
+/* ---------- Faisceau lumineux animé ----------
+   Actif seulement pendant .stlg-reception, éteint dès que
+   "Réinitialisation" apparaît (.stlg-fin-barre, ajoutée par le JS).
+   Traverse toute la scène — de juste au-dessus de la tête de Bek
+   jusqu'à la zone de la barre en bas — pour lier visuellement les deux :
+   l'énergie qui descend dans son esprit suit le même tracé que la
+   progression du téléversement en dessous. */
+.stlg-faisceau {
+  position: absolute;
+  left: 50%;
+  top: -4%;
+  bottom: 11dvh;
+  width: 10%;
+  transform: translateX(-50%);
+  overflow: visible;
+  opacity: 0;
+  transition: opacity 0.6s ease;
+  pointer-events: none;
+}
+.stlg-scene.stlg-reception .stlg-faisceau { opacity: 1; }
+.stlg-scene.stlg-fin-barre .stlg-faisceau { opacity: 0; }
+
+.stlg-particule {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #FFFFFF 0%, rgba(255, 224, 140, 0.95) 55%, transparent 75%);
+  box-shadow: 0 0 9px 3px rgba(255, 224, 130, 0.75);
+  transform: translate(-50%, 0);
+  animation: stlgDescente 2.2s linear infinite;
+}
+.stlg-particule:nth-child(1) { left: 50%; animation-delay: 0s; }
+.stlg-particule:nth-child(2) { left: 38%; animation-delay: 0.55s; animation-duration: 2.5s; }
+.stlg-particule:nth-child(3) { left: 62%; animation-delay: 1.1s; animation-duration: 1.9s; }
+.stlg-particule:nth-child(4) { left: 50%; animation-delay: 1.6s; animation-duration: 2.35s; }
+
+@keyframes stlgDescente {
+  0%   { top: 0%;   opacity: 0; }
+  10%  { opacity: 1; }
+  88%  { opacity: 1; }
+  100% { top: 100%; opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stlg-particule { animation: none; opacity: 0.6; top: 45%; }
+}
+
 /* ---------- Panneau : liste de fichiers de langues ---------- */
 .stlg-panneau {
   position: absolute;

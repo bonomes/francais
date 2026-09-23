@@ -124,6 +124,13 @@
   opacity: 0;
   transform: translateX(-50%) translateY(14px);
 }
+/* 🩹 (21-09-2026) Même correctif que .stlg-zone-barre[hidden] ci-dessous —
+   le JS applique aussi hidden=true à ce panneau après son retrait
+   (voir lancerTeleversement), et sa règle display: flex ci-dessus
+   l'aurait pareillement neutralisé sans cette ligne. */
+.stlg-panneau[hidden] {
+  display: none !important;
+}
 
 .stlg-grille {
   display: grid;
@@ -246,4 +253,17 @@
   justify-content: center;
   min-height: 60px;
   z-index: 5;
+}
+/* 🩹 (21-09-2026) Correctif du vrai bug signalé par Raphaël : le bouton
+   "Téléversement" ne répondait jamais au clic. Cause réelle — la règle
+   ci-dessus (display: flex, venant de ma feuille de style) l'emportait
+   sur l'attribut HTML `hidden` de cet élément (une règle de classe
+   d'auteur a priorité sur le comportement implicite de `hidden`), donc
+   cette zone restait affichée et cliquable EN PERMANENCE, par-dessus le
+   bas du panneau — exactement là où se trouve le bouton. Les cases de
+   langue, plus haut dans le panneau, n'étaient pas concernées, d'où le
+   fait qu'elles fonctionnaient. Cette règle force `hidden` à redevenir
+   prioritaire, quoi que dise la règle ci-dessus. */
+.stlg-zone-barre[hidden] {
+  display: none !important;
 }

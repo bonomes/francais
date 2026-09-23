@@ -35,15 +35,38 @@
    Dépend de barre-progression.js (window.KebBekBarreProgression),
    chargé avant celui-ci.
 
-   🚧 Dictionnaire réduit à fr/en pour l'instant, même remarque que les
-   autres modules du jour — à étendre aux 19 langues du site avant
-   mise en ligne. Sans traduction disponible, repli sur l'anglais.
+   Dictionnaire couvrant les 19 langues du site (voir LANGUES dans
+   index.html) — traductions faites de mon mieux, à valider par des
+   locuteurs natifs avant mise en ligne, comme le reste des textes du
+   site. Sans traduction disponible pour un code inattendu, repli sur
+   l'anglais.
    ================================================================== */
 
 const DICO_TELECHARGEMENT_LANGUE = {
   fr: { bouton: 'Téléversement', reinitialisation: 'Réinitialisation', erreurFrancais: 'Fichier fragmenté ou introuvable' },
-  en: { bouton: 'Upload', reinitialisation: 'Reset', erreurFrancais: 'File fragmented or not found' }
+  en: { bouton: 'Upload', reinitialisation: 'Reset', erreurFrancais: 'File fragmented or not found' },
+  es: { bouton: 'Subir', reinitialisation: 'Reinicio', erreurFrancais: 'Archivo fragmentado o no encontrado' },
+  it: { bouton: 'Caricamento', reinitialisation: 'Ripristino', erreurFrancais: 'File frammentato o non trovato' },
+  pt: { bouton: 'Carregar', reinitialisation: 'Reinício', erreurFrancais: 'Ficheiro fragmentado ou não encontrado' },
+  ca: { bouton: 'Pujada', reinitialisation: 'Reinici', erreurFrancais: 'Fitxer fragmentat o no trobat' },
+  eo: { bouton: 'Alŝuto', reinitialisation: 'Restarigo', erreurFrancais: 'Dosiero fragmentita aŭ ne trovita' },
+  zh: { bouton: '上传', reinitialisation: '重置', erreurFrancais: '文件已损坏或未找到' },
+  ja: { bouton: 'アップロード', reinitialisation: 'リセット', erreurFrancais: 'ファイルが破損しているか見つかりません' },
+  ko: { bouton: '업로드', reinitialisation: '재설정', erreurFrancais: '파일이 손상되었거나 찾을 수 없습니다' },
+  vi: { bouton: 'Tải lên', reinitialisation: 'Đặt lại', erreurFrancais: 'Tệp bị phân mảnh hoặc không tìm thấy' },
+  ht: { bouton: 'Voye', reinitialisation: 'Reyinisyalizasyon', erreurFrancais: 'Fichye frajmante oswa pa jwenn' },
+  tl: { bouton: 'I-upload', reinitialisation: 'I-reset', erreurFrancais: 'Nasira o hindi nahanap ang file' },
+  id: { bouton: 'Unggah', reinitialisation: 'Atur Ulang', erreurFrancais: 'File rusak atau tidak ditemukan' },
+  nl: { bouton: 'Uploaden', reinitialisation: 'Reset', erreurFrancais: 'Bestand gefragmenteerd of niet gevonden' },
+  de: { bouton: 'Hochladen', reinitialisation: 'Zurücksetzen', erreurFrancais: 'Datei fragmentiert oder nicht gefunden' },
+  fa: { bouton: 'بارگذاری', reinitialisation: 'بازنشانی', erreurFrancais: 'فایل خرد شده یا یافت نشد' },
+  sv: { bouton: 'Ladda upp', reinitialisation: 'Återställning', erreurFrancais: 'Filen är fragmenterad eller hittades inte' },
+  no: { bouton: 'Last opp', reinitialisation: 'Tilbakestilling', erreurFrancais: 'Filen er fragmentert eller ble ikke funnet' },
+  ru: { bouton: 'Загрузка', reinitialisation: 'Сброс', erreurFrancais: 'Файл повреждён или не найден' }
 };
+// 🚧 Traductions faites de mon mieux, pas relues par une personne native
+// de chacune de ces langues — à valider avant mise en ligne, comme pour
+// tout le reste du site (voir DICO_MENU et les autres dictionnaires).
 
 function tTelechargementLangue(codeLangue, cle) {
   const dico = DICO_TELECHARGEMENT_LANGUE[codeLangue] || DICO_TELECHARGEMENT_LANGUE.en;
@@ -95,6 +118,12 @@ function demarrerSequenceTelechargementLangue(idConteneur, options, callbacks) {
       '<div class="stlg-fond-bek">' +
         '<img class="stlg-image-bek stlg-image-atterrissage" id="stlgImgAtterrissage" src="' + imageAtterrissage + '" alt="Bek">' +
         '<img class="stlg-image-bek stlg-image-reception" id="stlgImgReception" src="' + imageReception + '" alt="Bek">' +
+        '<div class="stlg-faisceau" aria-hidden="true">' +
+          '<span class="stlg-particule"></span>' +
+          '<span class="stlg-particule"></span>' +
+          '<span class="stlg-particule"></span>' +
+          '<span class="stlg-particule"></span>' +
+        '</div>' +
       '</div>' +
       '<div class="stlg-panneau stlg-panneau-cachee" id="stlgPanneau">' +
         '<div class="stlg-grille" id="stlgGrille"></div>' +
@@ -169,11 +198,13 @@ function demarrerSequenceTelechargementLangue(idConteneur, options, callbacks) {
 
   // ---------- 5-6. Panneau retiré, image de réception + barre + Réinitialisation ----------
   function lancerTeleversement(codeLangue) {
+    console.debug('sequence-telechargement-langue : téléversement lancé pour', codeLangue);
     panneau.classList.add('stlg-panneau-cachee');
     setTimeout(function () {
       panneau.hidden = true;
       scene.classList.add('stlg-reception');
       zoneBarre.hidden = false;
+      console.debug('sequence-telechargement-langue : image de réception + barre affichées');
 
       if (!window.KebBekBarreProgression) {
         setTimeout(terminerAvecReinitialisation, duree);
@@ -184,6 +215,7 @@ function demarrerSequenceTelechargementLangue(idConteneur, options, callbacks) {
       });
 
       function terminerAvecReinitialisation() {
+        scene.classList.add('stlg-fin-barre');
         zoneBarre.innerHTML = '<span class="stlg-bloc" style="font-weight:700; color:#FFF5E8;">' +
           tTelechargementLangue(codeLangue, 'reinitialisation') +
         '</span>';

@@ -21,10 +21,14 @@
 <link rel="stylesheet" href="menu-principal.css">
 <link rel="stylesheet" href="professeur.css">
 <link rel="stylesheet" href="widget-session-prof.css">
-<!-- 🆕 (18-09-2026) Nouvelle scène d'accueil : Commencer/Se connecter →
-     choix de personnage → séquence de téléversement animée. Ajouts
-     seulement — aucune des feuilles ci-dessus n'est touchée. -->
-<link rel="stylesheet" href="ecran-demarrage.css">
+<!-- 🆕 (18-09-2026) Nouvelle scène d'accueil : lettre des Bonomes
+     (Oui/Non → Installer Bek) → choix de personnage → séquence de
+     téléversement animée. Ajouts seulement — aucune des feuilles
+     ci-dessus n'est touchée.
+     🆕 (27-09-2026) ecran-demarrage.css remplacé par lettre-initiale.css :
+     la lettre (accueil.html / lettre-initiale.js) est maintenant le tout
+     premier écran, à la place de l'ancien Commencer/Se connecter. -->
+<link rel="stylesheet" href="lettre-initiale.css">
 <link rel="stylesheet" href="ecran-televersement.css">
 <link rel="stylesheet" href="barre-progression.css">
 <link rel="stylesheet" href="sequence-televersement.css">
@@ -1469,7 +1473,7 @@
 <!-- 🆕 (18-09-2026) Nouvelle scène d'accueil — barre-progression.js AVANT
      sequence-televersement.js (qui en dépend), comme documenté dans ce
      dernier. -->
-<script src="ecran-demarrage.js"></script>
+<script src="lettre-initiale.js"></script>
 <script src="ecran-televersement.js"></script>
 <script src="barre-progression.js"></script>
 <script src="sequence-televersement.js"></script>
@@ -1497,7 +1501,7 @@
   // ================================================================
   function demarrerNouvelAccueilTeleversement() {
     const conteneur = document.getElementById('nouvelDemarrage');
-    if (!conteneur || !window.KebBekDemarrage || !window.KebBekEcranTeleversement || !window.KebBekTeleversement) {
+    if (!conteneur || !window.KebBekLettreInitiale || !window.KebBekEcranTeleversement || !window.KebBekTeleversement) {
       console.warn('Nouvelle scène d\u2019accueil indisponible (module manquant) — repli sur le sélecteur de langue.');
       ouvrirChoixLangueForce();
       return;
@@ -1506,14 +1510,18 @@
     conteneur.style.display = 'flex';
     conteneur.innerHTML = '<div id="nouvelDemarrageContenu" style="width:100%; display:flex; justify-content:center;"></div>';
 
-    function etapeDemarrage() {
-      window.KebBekDemarrage.demarrerEcranDemarrage('nouvelDemarrageContenu', {}, {
-        onCommencer: etapeChoixPersonnage,
+    // 🆕 (27-09-2026) La lettre des Bonomes (accueil.html / lettre-initiale.js)
+    // remplace l'ancien écran Commencer/Se connecter comme point d'entrée.
+    // onInstaller (déclenché au clic sur « Installer Bek », juste avant que
+    // le module lance sa PROPRE séquence de téléversement) nous rend la
+    // main pour insérer ici le choix Keb/Bek, comme avant.
+    function etapeLettre() {
+      window.KebBekLettreInitiale.demarrerLettreInitiale('nouvelDemarrageContenu', {}, {
         onSeConnecter: function () {
           conteneur.style.display = 'none';
           demarrerReconnexionDepuisIndex('accueil');
-          return Promise.resolve();
-        }
+        },
+        onInstaller: etapeChoixPersonnage
       });
     }
 
@@ -1521,7 +1529,7 @@
       window.KebBekEcranTeleversement.demarrerEcranTeleversement('nouvelDemarrageContenu', {}, {
         onChoisirKeb: etapeSequence,
         onChoisirBek: etapeSequence,
-        onAnnuler: etapeDemarrage
+        onAnnuler: etapeLettre
       });
     }
 
@@ -1559,7 +1567,7 @@
       });
     }
 
-    etapeDemarrage();
+    etapeLettre();
   }
 </script>
 

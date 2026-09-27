@@ -76,6 +76,32 @@
   box-shadow: 0 0 0 0 var(--peche), 1px 1px 6px var(--ombre, rgba(102, 80, 69, 0.18));
 }
 
+/* ---------- Keb, indisponible pour l'instant ---------- */
+.telv-bouton-perso.telv-indisponible {
+  position: relative;
+  cursor: default;
+  opacity: 0.55;
+  box-shadow: 0 4px 0 0 var(--peche), 2px 5px 12px var(--ombre, rgba(102, 80, 69, 0.18));
+}
+.telv-bouton-perso.telv-indisponible:hover,
+.telv-bouton-perso.telv-indisponible:active {
+  background: #FFFFFF;
+  transform: none;
+  box-shadow: 0 4px 0 0 var(--peche), 2px 5px 12px var(--ombre, rgba(102, 80, 69, 0.18));
+}
+.telv-bouton-perso.telv-indisponible .telv-icone-chip-perso {
+  filter: grayscale(45%);
+}
+.telv-badge-indisponible {
+  margin-top: -2px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--brun-fonce, var(--brun));
+  background: var(--peche-pale, rgba(240, 169, 139, 0.20));
+}
+
 /* Médaillon rond qui contient l'image — c'est cette règle qui manquait
    pour empêcher symbole-fille01.webp / symbole-garcon01.webp de
    s'afficher à leur taille native. */

@@ -28,12 +28,14 @@ const DICO_TELEVERSEMENT = {
     titre: 'Téléversement',
     keb: 'Keb',
     bek: 'Bek',
+    kebIndisponible: 'Bientôt disponible',
     annuler: 'Annuler'
   },
   en: {
     titre: 'Uploading',
     keb: 'Keb',
     bek: 'Bek',
+    kebIndisponible: 'Coming soon',
     annuler: 'Cancel'
   }
 };
@@ -70,9 +72,10 @@ function demarrerEcranTeleversement(idConteneur, options, callbacks) {
         '</span>' +
 
         '<div class="telv-bloc telv-entree-cachee telv-choix">' +
-          '<button type="button" class="telv-bouton-perso" id="telvBtnKeb">' +
+          '<button type="button" class="telv-bouton-perso telv-indisponible" id="telvBtnKeb" disabled aria-disabled="true">' +
             '<span class="telv-icone-chip-perso"><img src="images/accueil/symbole-garçon01.webp" alt=""></span>' +
             '<span>' + tTeleversementOuDefaut('keb', 'Keb') + '</span>' +
+            '<span class="telv-badge-indisponible">' + tTeleversementOuDefaut('kebIndisponible', 'Coming soon') + '</span>' +
           '</button>' +
           '<button type="button" class="telv-bouton-perso" id="telvBtnBek">' +
             '<span class="telv-icone-chip-perso"><img src="images/accueil/symbole-fille01.webp" alt=""></span>' +
@@ -97,9 +100,11 @@ function demarrerEcranTeleversement(idConteneur, options, callbacks) {
   const btnBek = document.getElementById('telvBtnBek');
   const btnAnnuler = document.getElementById('telvBtnAnnuler');
 
-  if (btnKeb && typeof callbacks.onChoisirKeb === 'function') {
-    btnKeb.addEventListener('click', callbacks.onChoisirKeb);
-  }
+  // 🆕 (27-09-2026) Keb indisponible pour l'instant (seules les images de
+  // Bek existent pour sequence-televersement.js) — bouton désactivé
+  // (attribut disabled, aucun écouteur de clic), mais laissé visible avec
+  // un badge « Bientôt disponible » plutôt que retiré, pour garder le
+  // mécanisme apparent en attendant ses images.
   if (btnBek && typeof callbacks.onChoisirBek === 'function') {
     btnBek.addEventListener('click', callbacks.onChoisirBek);
   }

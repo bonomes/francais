@@ -1,1 +1,589 @@
+  .li-scene {
+    position: relative;
+    width: 100%;
+    min-height: 100dvh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .enveloppe-conteneur {
+    position: relative;
+    width: 360px;
+    height: 360px;
+    cursor: pointer;
+  }
+  .enveloppe-img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    user-select: none;
+    -webkit-user-drag: none;
+  }
+  .fermee {
+    opacity: 1;
+    /* état initial : hors écran en haut */
+    transform: translateY(-520px);
+  }
+  .ouverte {
+    opacity: 0;
+    pointer-events: none;
+  }
 
+  /* --- chute --- */
+  @keyframes tvbk-chute {
+    0%   { transform: translateY(-520px); }
+    62%  { transform: translateY(0px); }         /* impact */
+    72%  { transform: translateY(-38px); }        /* premier rebond */
+    82%  { transform: translateY(0px); }
+    89%  { transform: translateY(-14px); }        /* deuxième rebond, plus petit */
+    95%  { transform: translateY(0px); }
+    100% { transform: translateY(0px); }
+  }
+  .enveloppe-conteneur.tombe .fermee {
+    animation: tvbk-chute 1.15s cubic-bezier(.36,.07,.19,.97) forwards;
+  }
+
+  /* léger flottement une fois stabilisée */
+  @keyframes tvbk-flotte {
+    0%, 100% { transform: translateY(0px) rotate(0deg); }
+    50%      { transform: translateY(-6px) rotate(-0.6deg); }
+  }
+  .enveloppe-conteneur.flotte .fermee {
+    animation: tvbk-flotte 3.2s ease-in-out infinite;
+  }
+
+  /* petite invite visuelle : pulsation douce pour signaler qu'on peut cliquer */
+  @keyframes tvbk-invite-pulse {
+    0%, 100% { filter: drop-shadow(0 0 0px rgba(245,196,163,0)); }
+    50%      { filter: drop-shadow(0 0 14px rgba(245,196,163,0.55)); }
+  }
+  .enveloppe-conteneur.flotte .fermee {
+    animation:
+      tvbk-flotte 3.2s ease-in-out infinite,
+      tvbk-invite-pulse 2.4s ease-in-out infinite;
+  }
+
+  /* --- éclat du cachet au clic --- */
+  .li-eclat-halo,
+  .li-eclat-rayons,
+  .li-eclat-onde {
+    position: absolute;
+    left: 50%;
+    top: 54%; /* position approximative du cachet sur l'image fermée */
+    width: 140px;
+    height: 140px;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    opacity: 0;
+  }
+  .li-eclat-halo {
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255,230,200,0.95) 0%, rgba(245,196,163,0.7) 35%, rgba(245,196,163,0) 72%);
+  }
+  .li-eclat-rayons {
+    background: repeating-conic-gradient(
+      rgba(255,224,180,0.9) 0deg 4deg,
+      rgba(255,224,180,0) 4deg 18deg
+    );
+    border-radius: 50%;
+    mix-blend-mode: screen;
+  }
+  .li-eclat-onde {
+    border-radius: 50%;
+    border: 2px solid rgba(255,224,180,0.85);
+    background: transparent;
+  }
+
+  @keyframes tvbk-halo-anim {
+    0%   { opacity: 0; transform: translate(-50%, -50%) scale(0.2); }
+    30%  { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+    100% { opacity: 0; transform: translate(-50%, -50%) scale(1.6); }
+  }
+  @keyframes tvbk-rayons-anim {
+    0%   { opacity: 0; transform: translate(-50%, -50%) scale(0.3) rotate(0deg); }
+    35%  { opacity: 0.9; transform: translate(-50%, -50%) scale(1.15) rotate(25deg); }
+    100% { opacity: 0; transform: translate(-50%, -50%) scale(1.5) rotate(55deg); }
+  }
+  @keyframes tvbk-onde-anim {
+    0%   { opacity: 0.9; transform: translate(-50%, -50%) scale(0.15); }
+    100% { opacity: 0; transform: translate(-50%, -50%) scale(3.2); }
+  }
+  .eclater .li-eclat-halo   { animation: tvbk-halo-anim   0.85s ease-out forwards; }
+  .eclater .li-eclat-rayons { animation: tvbk-rayons-anim 0.85s ease-out forwards; }
+  .eclater .li-eclat-onde   { animation: tvbk-onde-anim   0.85s ease-out forwards; }
+
+  /* --- fondu vers l'image ouverte --- */
+  .enveloppe-conteneur.eclater .fermee {
+    animation: none;
+    transition: opacity 0.6s ease-in 0.35s;
+    opacity: 0;
+  }
+  .enveloppe-conteneur.eclater .ouverte {
+    transition: opacity 0.7s ease-in 0.45s;
+    opacity: 1;
+  }
+
+  /* --- badge de notification (2e courriel), posé sur le coin de l'enveloppe --- */
+  .badge-notif {
+    position: absolute;
+    top: 18px;
+    right: 34px;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: var(--peche, #F0A98B);
+    color: #fff;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 800;
+    font-size: 0.9rem;
+    box-shadow: 0 4px 10px rgba(102, 80, 69, 0.28);
+    /* pointer-events: none en tout temps — le badge n'est qu'un indicateur
+       visuel posé sur l'enveloppe ; le clic doit toujours traverser jusqu'à
+       l'enveloppe elle-même (le courriel), jamais s'arrêter sur le « 1» */
+    cursor: default;
+    z-index: 15;
+    opacity: 0;
+    transform: scale(0.4);
+    pointer-events: none;
+    transition: opacity 0.35s ease, transform 0.35s cubic-bezier(.2,.8,.25,1.3);
+  }
+  .badge-notif.cl-visible {
+    opacity: 1;
+    transform: scale(1);
+    animation: badge-pulse 1.8s ease-in-out 0.35s infinite;
+  }
+  @keyframes badge-pulse {
+    0%, 100% { box-shadow: 0 4px 10px rgba(102, 80, 69, 0.28), 0 0 0 0 rgba(245, 196, 163, 0.55); }
+    50%      { box-shadow: 0 4px 10px rgba(102, 80, 69, 0.28), 0 0 0 8px rgba(245, 196, 163, 0); }
+  }
+
+  /* --- lueur intérieure, une fois l'enveloppe ouverte --- */
+  /* deux couches : un halo large et doux, un cœur plus chaud et plus concentré,
+     positionnés sur le coin du papier qui dépasse — là où le fond crème uni
+     rend la lumière visible, plutôt qu'en plein sur le dessin de l'enveloppe */
+  .li-lueur-halo,
+  .li-lueur-coeur {
+    position: absolute;
+    left: 50%;
+    pointer-events: none;
+    opacity: 0;
+    border-radius: 50%;
+  }
+  .li-lueur-halo {
+    top: 24%;
+    width: 260px;
+    height: 190px;
+    transform: translate(-50%, -50%);
+    background: radial-gradient(
+      ellipse at center,
+      rgba(255, 226, 178, 0.85) 0%,
+      rgba(255, 210, 150, 0.5) 32%,
+      rgba(250, 195, 150, 0.22) 58%,
+      rgba(250, 195, 150, 0) 80%
+    );
+    filter: blur(7px);
+  }
+  .li-lueur-coeur {
+    top: 27%;
+    width: 90px;
+    height: 60px;
+    transform: translate(-50%, -50%);
+    background: radial-gradient(
+      ellipse at center,
+      rgba(255, 250, 235, 0.95) 0%,
+      rgba(255, 228, 185, 0.7) 45%,
+      rgba(255, 228, 185, 0) 85%
+    );
+    filter: blur(2px);
+  }
+  @keyframes tvbk-lueur-respire {
+    0%, 100% { opacity: 0.75; transform: translate(-50%, -50%) scale(1); }
+    50%      { opacity: 1;    transform: translate(-50%, -50%) scale(1.08); }
+  }
+  @keyframes tvbk-coeur-respire {
+    0%, 100% { opacity: 0.85; transform: translate(-50%, -50%) scale(1); }
+    50%      { opacity: 1;    transform: translate(-50%, -50%) scale(1.12); }
+  }
+  .enveloppe-conteneur.eclater .li-lueur-halo {
+    transition: opacity 0.9s ease-in 0.75s;
+    opacity: 0.75;
+    animation: tvbk-lueur-respire 3.6s ease-in-out 1.65s infinite;
+  }
+  .enveloppe-conteneur.eclater .li-lueur-coeur {
+    transition: opacity 0.9s ease-in 0.8s;
+    opacity: 0.85;
+    animation: tvbk-coeur-respire 3.6s ease-in-out 1.7s infinite;
+  }
+
+  /* --- étoiles qui jaillissent au moment de l'ouverture --- */
+  .li-etoiles-zone {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+  .li-etoile {
+    position: absolute;
+    left: 50%;
+    top: 54%;
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.2) rotate(0deg);
+    animation-name: tvbk-etoile-jaillit;
+    animation-timing-function: cubic-bezier(.2,.7,.3,1);
+    animation-fill-mode: forwards;
+  }
+  @keyframes tvbk-etoile-jaillit {
+    0%   { opacity: 0; transform: translate(-50%, -50%) scale(0.15) rotate(0deg); }
+    18%  { opacity: 1; }
+    100% {
+      opacity: 0;
+      transform: translate(calc(-50% + var(--tx)), calc(-50% + var(--ty))) scale(var(--fin-echelle)) rotate(var(--rot));
+    }
+  }
+
+  .rejouer {
+    position: absolute;
+    bottom: 32px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 8px 18px;
+    border-radius: 999px;
+    border: 1.5px solid var(--brun);
+    background: var(--fond, #FFF5E8);
+    color: var(--brun);
+    font-family: 'Nunito', sans-serif;
+    font-size: 14px;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.4s ease 0.3s;
+  }
+  .rejouer.visible {
+    opacity: 1;
+  }
+  .rejouer:hover {
+    background: var(--peche, #F0A98B);
+  }
+  /* ==================================================================
+     Encadré de texte de la lettre + sélecteur de langue + boutons
+     ================================================================== */
+  .cl-cadre {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -46%) scale(0.96);
+    width: min(88vw, 380px);
+    max-height: 72dvh;
+    display: flex;
+    flex-direction: column;
+    padding: 20px 20px 22px;
+    border-radius: 22px;
+    background: #FFFDF8;
+    box-shadow: 0 14px 34px rgba(102, 80, 69, 0.22);
+    z-index: 20;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.55s ease, transform 0.55s cubic-bezier(.2,.8,.25,1.15);
+  }
+  .cl-cadre.cl-visible {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translate(-50%, -50%) scale(1);
+  }
+
+  /* ---------- sélecteur de langue, au sommet ---------- */
+  .cl-selecteur-zone {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    margin-bottom: 14px;
+  }
+  .cl-selecteur-langue {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 14px 7px 8px;
+    border: none;
+    border-radius: 999px;
+    background: rgba(240, 169, 139, 0.16);
+    color: var(--brun);
+    font-family: 'Nunito', sans-serif;
+    font-weight: 700;
+    font-size: 0.82rem;
+    cursor: pointer;
+    transition: background 0.15s ease;
+  }
+  .cl-selecteur-langue:hover { background: rgba(240, 169, 139, 0.28); }
+  .cl-selecteur-badge {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--peche, #F0A98B);
+    color: #fff;
+    font-size: 0.62rem;
+    font-weight: 800;
+  }
+  .cl-selecteur-chevron {
+    display: inline-block;
+    transition: transform 0.25s ease;
+    font-size: 0.7rem;
+  }
+  .cl-selecteur-langue.cl-ouvert .cl-selecteur-chevron {
+    transform: rotate(180deg);
+  }
+
+  .cl-menu-langues {
+    position: absolute;
+    top: calc(100% + 6px);
+    right: 0;
+    transform: translateY(-6px);
+    width: min(60vw, 200px);
+    max-height: 220px;
+    overflow-y: auto;
+    background: #FFFFFF;
+    border-radius: 16px;
+    box-shadow: 0 10px 26px rgba(102, 80, 69, 0.24);
+    padding: 6px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    z-index: 30;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+  }
+  .cl-menu-langues.cl-menu-visible {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0);
+  }
+  .cl-option-langue {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    border: none;
+    border-radius: 11px;
+    background: transparent;
+    font-family: 'Nunito', sans-serif;
+    font-size: 0.84rem;
+    font-weight: 600;
+    color: var(--brun);
+    text-align: left;
+    cursor: pointer;
+    transition: background 0.12s ease;
+  }
+  .cl-option-langue:hover { background: rgba(240, 169, 139, 0.14); }
+  .cl-option-langue.cl-option-selectionnee {
+    background: rgba(240, 169, 139, 0.26);
+    font-weight: 800;
+  }
+  .cl-option-badge {
+    flex: 0 0 auto;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: rgba(240, 169, 139, 0.22);
+    color: var(--brun);
+    font-size: 0.6rem;
+    font-weight: 800;
+  }
+
+  /* ---------- en-tête du courriel (De / À / Objet + langue) ---------- */
+  .cl-entete {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 10px;
+    padding-bottom: 10px;
+    margin-bottom: 14px;
+    border-bottom: 1px solid rgba(107, 74, 53, 0.14);
+  }
+  .cl-entete-lignes {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+  }
+  .cl-entete-ligne {
+    margin: 0;
+    font-family: 'Nunito', sans-serif;
+    font-size: 0.74rem;
+    line-height: 1.4;
+    color: var(--brun);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .cl-entete-label {
+    font-weight: 800;
+    opacity: 0.6;
+    margin-right: 3px;
+  }
+  .cl-lang-zone {
+    position: relative;
+    flex: 0 0 auto;
+  }
+  .cl-lang-discret {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 10px 5px 6px;
+    border: none;
+    border-radius: 999px;
+    background: rgba(240, 169, 139, 0.16);
+    color: var(--brun);
+    font-family: 'Nunito', sans-serif;
+    font-weight: 700;
+    font-size: 0.72rem;
+    cursor: pointer;
+    transition: background 0.15s ease;
+  }
+  .cl-lang-discret:hover { background: rgba(240, 169, 139, 0.28); }
+  .cl-lang-discret.cl-ouvert .cl-selecteur-chevron { transform: rotate(180deg); }
+
+  /* ---------- texte de la lettre ---------- */
+  .cl-texte {
+    text-align: center;
+    padding: 6px 4px 18px;
+  }
+  .cl-salutation {
+    font-family: 'Patrick Hand', cursive;
+    font-size: 1.5rem;
+    color: var(--brun);
+    margin: 0 0 8px;
+  }
+  .cl-corps {
+    font-family: 'Patrick Hand', cursive;
+    font-size: 1.15rem;
+    line-height: 1.42;
+    color: var(--brun);
+    margin: 0;
+  }
+
+  /* ---------- boutons accepter / refuser ---------- */
+  .cl-boutons {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+  }
+  .cl-btn {
+    flex: 1 1 auto;
+    max-width: 150px;
+    padding: 11px 0;
+    border-radius: 999px;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 800;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: transform 0.16s cubic-bezier(.34,1.6,.4,1), box-shadow 0.15s ease, background 0.15s ease;
+  }
+  .cl-btn-accepter {
+    border: none;
+    color: #fff;
+    background: var(--peche, #F0A98B);
+    box-shadow: 0 4px 0 0 #c98f6f, 2px 4px 10px rgba(102, 80, 69, 0.18);
+  }
+  .cl-btn-accepter:hover { background: #efb28e; transform: translateY(-2px); }
+  .cl-btn-accepter:active { transform: translateY(2px); box-shadow: 0 1px 0 0 #c98f6f; }
+  .cl-btn-refuser {
+    border: 1.5px solid var(--brun);
+    color: var(--brun);
+    background: transparent;
+  }
+  .cl-btn-refuser:hover { background: rgba(107, 74, 53, 0.06); transform: translateY(-2px); }
+  .cl-btn-refuser:active { transform: translateY(2px); }
+
+  /* ---------- lien discret "déjà installés ailleurs ?" ----------
+     🆕 Simple déclencheur (callbacks.onSeConnecter()), plus de panneau
+     courriel local — voir le commentaire dans lettre-initiale.js : la
+     vraie mécanique de reconnexion (courriel + code) vit déjà dans
+     identite-eleve.js, pas la peine de la dupliquer ici. */
+  .cl-lien-reconnexion {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    justify-content: center;
+    width: 100%;
+    margin: 12px 0 0;
+    padding: 4px;
+    border: none;
+    background: none;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 700;
+    font-size: 0.72rem;
+    color: var(--brun);
+    opacity: 0.6;
+    cursor: pointer;
+    transition: opacity 0.15s ease;
+  }
+  .cl-lien-reconnexion:hover { opacity: 0.9; }
+
+  /* ---------- système de vues togglées dans l'encadré ---------- */
+  .cl-vue[hidden] { display: none !important; }
+
+  /* ---------- écran "dommage" / "accepté" (remplace le contenu de l'encadré) ---------- */
+  .cl-dommage {
+    text-align: center;
+    padding: 10px 4px;
+  }
+  .cl-dommage-texte {
+    font-family: 'Patrick Hand', cursive;
+    font-size: 1.3rem;
+    color: var(--brun);
+    margin: 0 0 6px;
+  }
+  .cl-dommage-regrets {
+    font-family: 'Nunito', sans-serif;
+    font-size: 0.85rem;
+    color: var(--brun);
+    opacity: 0;
+    margin: 10px 0 14px;
+    transition: opacity 0.5s ease;
+  }
+  .cl-dommage-regrets.cl-visible { opacity: 0.85; }
+  .cl-btn-recommencer {
+    border: 1.5px solid var(--brun);
+    background: var(--fond, #FFF5E8);
+    color: var(--brun);
+    border-radius: 999px;
+    padding: 9px 22px;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 700;
+    font-size: 0.85rem;
+    cursor: pointer;
+    opacity: 0;
+    transform: translateY(6px);
+    transition: opacity 0.4s ease, transform 0.4s ease, background 0.15s ease;
+  }
+  .cl-btn-recommencer.cl-visible { opacity: 1; transform: translateY(0); }
+  .cl-btn-recommencer:hover { background: var(--peche, #F0A98B); }
+
+  /* ---------- 2e courriel : bouton "Installer Bek" ---------- */
+  .cl-lien-televersement {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 14px;
+    padding: 11px 26px;
+    border: none;
+    border-radius: 999px;
+    background: var(--peche, #F0A98B);
+    color: #fff;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 800;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: transform 0.15s ease, background 0.15s ease;
+  }
+  .cl-lien-televersement:hover { background: #eeae86; transform: translateY(-1px); }
+</style>

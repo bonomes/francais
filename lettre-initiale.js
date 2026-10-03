@@ -131,7 +131,7 @@
           '</div>' +
           '<div class="cl-lang-zone">' +
             '<button type="button" class="cl-lang-discret" id="clSelecteur">' +
-              '<span class="cl-selecteur-badge" id="clSelecteurBadge">FR</span><span class="cl-selecteur-chevron">&#9662;</span>' +
+              '<span id="clSelecteurBadge">FR</span><span class="cl-selecteur-chevron">&#9662;</span>' +
             '</button>' +
             '<div class="cl-menu-langues" id="clMenu"></div>' +
           '</div>' +

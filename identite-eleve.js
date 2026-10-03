@@ -3196,6 +3196,26 @@ const KebBekIdentite = (function () {
       action.innerHTML = '';
       indice.style.display = 'none';
 
+      // 🐛 CORRIGÉ (27-09-2026, signalé par Raphaël — capture d'écran du
+      // site en ligne) : en mode reconnexion, cette fonction est appelée
+      // directement (voir demarrerSequenceIdentite, etapeDepart ===
+      // 'reconnexion'), SANS passer par lancerSaisieNom() — qui est
+      // l'endroit qui cache normalement indiceMot/btnTraduirePhrase/
+      // chevron/chevronGauche/tooltipPhrase (voir plus haut). Résultat :
+      // l'indice "Tap or click a word...", le bouton "Translate the
+      // sentence" et les flèches du carrousel restaient visibles derrière
+      // le panneau courriel+code — ce que Raphaël a pris, à raison, pour
+      // "une page aléatoire". Scoped à modeReconnexion uniquement : dans
+      // le parcours normal (compte créé après le carrousel), ces éléments
+      // sont déjà cachés par lancerSaisieNom() avant qu'on arrive ici.
+      if (modeReconnexion) {
+        if (indiceMot) { indiceMot.style.display = 'none'; }
+        btnTraduirePhrase.style.display = 'none';
+        chevron.style.display = 'none';
+        chevronGauche.style.display = 'none';
+        tooltipPhrase.classList.remove('visible');
+      }
+
       const titre = document.createElement('div');
       titre.className = 'iden-titre';
       titre.textContent = texte(options, modeReconnexion ? 'reconnexionTitre' : 'creationCompteTitre');

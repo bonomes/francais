@@ -2993,7 +2993,18 @@
     // ouvrirChoixLangueForce() directe → demarrerNouvelAccueilTeleversement(),
     // qui affiche la nouvelle scène d'accueil puis appelle elle-même
     // ouvrirChoixLangueForce() une fois la séquence terminée (voir plus haut).
-    demarrerNouvelAccueilTeleversement();
+    //
+    // 🐛 CORRIGÉ (27-09-2026, signalé par Raphaël) : demarrerNouvelAccueilTeleversement()
+    // était appelé ici IMMÉDIATEMENT, en même temps que #ecranTitre (voir
+    // plus haut, z-index 500 vs 480 pour #nouvelDemarrage) — donc la chute
+    // de l'enveloppe (lettre-initiale.js, ~1.15s) se jouait ENTIÈREMENT
+    // cachée derrière le logo "Les Bonomes", qui reste affiché 1600ms puis
+    // prend 500ms pour disparaître (voir DUREE_AFFICHAGE_MS/DUREE_SORTIE_MS
+    // dans l'IIFE d'#ecranTitre plus haut — valeurs dupliquées ici faute
+    // d'être exposées globalement par cette IIFE). Le temps que le logo
+    // s'efface, l'enveloppe avait déjà fini de tomber et flottait déjà.
+    // Décalage pour laisser l'écran-titre vraiment se retirer d'abord.
+    setTimeout(demarrerNouvelAccueilTeleversement, 1600 + 500);
   }
 </script>
 

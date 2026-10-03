@@ -43,26 +43,86 @@
    ================================================================== */
 
 const DICO_TELECHARGEMENT_LANGUE = {
-  fr: { bouton: 'Téléversement', reinitialisation: 'Réinitialisation', erreurFrancais: 'Fichier fragmenté ou introuvable' },
-  en: { bouton: 'Upload', reinitialisation: 'Reset', erreurFrancais: 'File fragmented or not found' },
-  es: { bouton: 'Subir', reinitialisation: 'Reinicio', erreurFrancais: 'Archivo fragmentado o no encontrado' },
-  it: { bouton: 'Caricamento', reinitialisation: 'Ripristino', erreurFrancais: 'File frammentato o non trovato' },
-  pt: { bouton: 'Carregar', reinitialisation: 'Reinício', erreurFrancais: 'Ficheiro fragmentado ou não encontrado' },
-  ca: { bouton: 'Pujada', reinitialisation: 'Reinici', erreurFrancais: 'Fitxer fragmentat o no trobat' },
-  eo: { bouton: 'Alŝuto', reinitialisation: 'Restarigo', erreurFrancais: 'Dosiero fragmentita aŭ ne trovita' },
-  zh: { bouton: '上传', reinitialisation: '重置', erreurFrancais: '文件已损坏或未找到' },
-  ja: { bouton: 'アップロード', reinitialisation: 'リセット', erreurFrancais: 'ファイルが破損しているか見つかりません' },
-  ko: { bouton: '업로드', reinitialisation: '재설정', erreurFrancais: '파일이 손상되었거나 찾을 수 없습니다' },
-  vi: { bouton: 'Tải lên', reinitialisation: 'Đặt lại', erreurFrancais: 'Tệp bị phân mảnh hoặc không tìm thấy' },
-  ht: { bouton: 'Voye', reinitialisation: 'Reyinisyalizasyon', erreurFrancais: 'Fichye frajmante oswa pa jwenn' },
-  tl: { bouton: 'I-upload', reinitialisation: 'I-reset', erreurFrancais: 'Nasira o hindi nahanap ang file' },
-  id: { bouton: 'Unggah', reinitialisation: 'Atur Ulang', erreurFrancais: 'File rusak atau tidak ditemukan' },
-  nl: { bouton: 'Uploaden', reinitialisation: 'Reset', erreurFrancais: 'Bestand gefragmenteerd of niet gevonden' },
-  de: { bouton: 'Hochladen', reinitialisation: 'Zurücksetzen', erreurFrancais: 'Datei fragmentiert oder nicht gefunden' },
-  fa: { bouton: 'بارگذاری', reinitialisation: 'بازنشانی', erreurFrancais: 'فایل خرد شده یا یافت نشد' },
-  sv: { bouton: 'Ladda upp', reinitialisation: 'Återställning', erreurFrancais: 'Filen är fragmenterad eller hittades inte' },
-  no: { bouton: 'Last opp', reinitialisation: 'Tilbakestilling', erreurFrancais: 'Filen er fragmentert eller ble ikke funnet' },
-  ru: { bouton: 'Загрузка', reinitialisation: 'Сброс', erreurFrancais: 'Файл повреждён или не найден' }
+  fr: { bouton: 'Téléversement', reinitialisation: 'Réinitialisation', erreurFrancais: 'Fichier fragmenté ou introuvable',
+    titre: 'Sélectionne un fichier de langue',
+    avertissement: 'Veux-tu vraiment changer la langue pour {langue} ? Tu pourras la changer plus tard dans les réglages.',
+    confirmer: 'Oui, changer', annuler: 'Annuler' },
+  en: { bouton: 'Upload', reinitialisation: 'Reset', erreurFrancais: 'File fragmented or not found',
+    titre: 'Select a language file',
+    avertissement: 'Are you sure you want to change the language to {langue}? You can change it later in settings.',
+    confirmer: 'Yes, switch', annuler: 'Cancel' },
+  es: { bouton: 'Subir', reinitialisation: 'Reinicio', erreurFrancais: 'Archivo fragmentado o no encontrado',
+    titre: 'Selecciona un archivo de idioma',
+    avertissement: '¿Seguro que quieres cambiar el idioma a {langue}? Podrás cambiarlo más tarde en los ajustes.',
+    confirmer: 'Sí, cambiar', annuler: 'Cancelar' },
+  it: { bouton: 'Caricamento', reinitialisation: 'Ripristino', erreurFrancais: 'File frammentato o non trovato',
+    titre: 'Seleziona un file di lingua',
+    avertissement: 'Vuoi davvero cambiare la lingua in {langue}? Potrai cambiarla più tardi nelle impostazioni.',
+    confirmer: 'Sì, cambia', annuler: 'Annulla' },
+  pt: { bouton: 'Carregar', reinitialisation: 'Reinício', erreurFrancais: 'Ficheiro fragmentado ou não encontrado',
+    titre: 'Seleciona um ficheiro de idioma',
+    avertissement: 'Tens a certeza de que queres mudar o idioma para {langue}? Podes alterá-lo mais tarde nas definições.',
+    confirmer: 'Sim, mudar', annuler: 'Cancelar' },
+  ca: { bouton: 'Pujada', reinitialisation: 'Reinici', erreurFrancais: 'Fitxer fragmentat o no trobat',
+    titre: "Selecciona un fitxer d'idioma",
+    avertissement: "Segur que vols canviar l'idioma a {langue}? Ho podràs canviar més tard als ajustos.",
+    confirmer: 'Sí, canviar', annuler: 'Cancel·la' },
+  eo: { bouton: 'Alŝuto', reinitialisation: 'Restarigo', erreurFrancais: 'Dosiero fragmentita aŭ ne trovita',
+    titre: 'Elektu lingvan dosieron',
+    avertissement: 'Ĉu vi certe volas ŝanĝi la lingvon al {langue}? Vi povos ŝanĝi ĝin poste en la agordoj.',
+    confirmer: 'Jes, ŝanĝi', annuler: 'Nuligi' },
+  zh: { bouton: '上传', reinitialisation: '重置', erreurFrancais: '文件已损坏或未找到',
+    titre: '选择一个语言文件',
+    avertissement: '你确定要把语言改成{langue}吗？你以后可以在设置里更改。',
+    confirmer: '是，更改', annuler: '取消' },
+  ja: { bouton: 'アップロード', reinitialisation: 'リセット', erreurFrancais: 'ファイルが破損しているか見つかりません',
+    titre: '言語ファイルを選んでね',
+    avertissement: '言語を{langue}に変更してもいい？あとで設定から変更できるよ。',
+    confirmer: 'うん、変更する', annuler: 'キャンセル' },
+  ko: { bouton: '업로드', reinitialisation: '재설정', erreurFrancais: '파일이 손상되었거나 찾을 수 없습니다',
+    titre: '언어 파일을 선택하세요',
+    avertissement: '언어를 {langue}(으)로 변경하시겠어요? 나중에 설정에서 바꿀 수 있어요.',
+    confirmer: '네, 변경할게요', annuler: '취소' },
+  vi: { bouton: 'Tải lên', reinitialisation: 'Đặt lại', erreurFrancais: 'Tệp bị phân mảnh hoặc không tìm thấy',
+    titre: 'Chọn một tệp ngôn ngữ',
+    avertissement: 'Bạn có chắc muốn đổi ngôn ngữ sang {langue} không? Bạn có thể đổi lại sau trong phần cài đặt.',
+    confirmer: 'Có, đổi', annuler: 'Hủy' },
+  ht: { bouton: 'Voye', reinitialisation: 'Reyinisyalizasyon', erreurFrancais: 'Fichye frajmante oswa pa jwenn',
+    titre: 'Chwazi yon fichye lang',
+    avertissement: 'Èske ou sèten ou vle chanje lang pou {langue}? Ou ka chanje l pita nan paramèt yo.',
+    confirmer: 'Wi, chanje', annuler: 'Anile' },
+  tl: { bouton: 'I-upload', reinitialisation: 'I-reset', erreurFrancais: 'Nasira o hindi nahanap ang file',
+    titre: 'Pumili ng language file',
+    avertissement: 'Sigurado ka bang gusto mong palitan ang wika sa {langue}? Puwede mo itong baguhin sa settings mamaya.',
+    confirmer: 'Oo, palitan', annuler: 'Kanselahin' },
+  id: { bouton: 'Unggah', reinitialisation: 'Atur Ulang', erreurFrancais: 'File rusak atau tidak ditemukan',
+    titre: 'Pilih berkas bahasa',
+    avertissement: 'Yakin ingin mengganti bahasa ke {langue}? Kamu bisa mengubahnya lagi nanti di pengaturan.',
+    confirmer: 'Ya, ganti', annuler: 'Batal' },
+  nl: { bouton: 'Uploaden', reinitialisation: 'Reset', erreurFrancais: 'Bestand gefragmenteerd of niet gevonden',
+    titre: 'Kies een taalbestand',
+    avertissement: 'Weet je zeker dat je de taal wilt wijzigen naar {langue}? Je kunt dit later nog aanpassen in de instellingen.',
+    confirmer: 'Ja, wijzigen', annuler: 'Annuleren' },
+  de: { bouton: 'Hochladen', reinitialisation: 'Zurücksetzen', erreurFrancais: 'Datei fragmentiert oder nicht gefunden',
+    titre: 'Wähle eine Sprachdatei',
+    avertissement: 'Möchtest du die Sprache wirklich zu {langue} ändern? Du kannst das später in den Einstellungen wieder ändern.',
+    confirmer: 'Ja, ändern', annuler: 'Abbrechen' },
+  fa: { bouton: 'بارگذاری', reinitialisation: 'بازنشانی', erreurFrancais: 'فایل خرد شده یا یافت نشد',
+    titre: 'یک فایل زبان را انتخاب کن',
+    avertissement: 'مطمئنی می\u200cخواهی زبان را به {langue} تغییر بدهی؟ می\u200cتوانی بعداً از تنظیمات آن را تغییر دهی.',
+    confirmer: 'بله، تغییر بده', annuler: 'لغو' },
+  sv: { bouton: 'Ladda upp', reinitialisation: 'Återställning', erreurFrancais: 'Filen är fragmenterad eller hittades inte',
+    titre: 'Välj en språkfil',
+    avertissement: 'Är du säker på att du vill ändra språket till {langue}? Du kan ändra det senare i inställningarna.',
+    confirmer: 'Ja, byt', annuler: 'Avbryt' },
+  no: { bouton: 'Last opp', reinitialisation: 'Tilbakestilling', erreurFrancais: 'Filen er fragmentert eller ble ikke funnet',
+    titre: 'Velg en språkfil',
+    avertissement: 'Er du sikker på at du vil endre språket til {langue}? Du kan endre det senere i innstillingene.',
+    confirmer: 'Ja, bytt', annuler: 'Avbryt' },
+  ru: { bouton: 'Загрузка', reinitialisation: 'Сброс', erreurFrancais: 'Файл повреждён или не найден',
+    titre: 'Выбери языковой файл',
+    avertissement: 'Ты уверен(а), что хочешь изменить язык на {langue}? Позже ты сможешь изменить это в настройках.',
+    confirmer: 'Да, изменить', annuler: 'Отмена' }
 };
 // 🚧 Traductions faites de mon mieux, pas relues par une personne native
 // de chacune de ces langues — à valider avant mise en ligne, comme pour
@@ -91,6 +151,16 @@ function tTelechargementLangue(codeLangue, cle) {
  *   - duree (ms, défaut 2600) — durée de la barre de progression.
  *   - pauseFin (ms, défaut 1400) — temps d'affichage de
  *     "Réinitialisation" avant onFin.
+ *   - langueInitiale (défaut 'en') — 🆕 (27-09-2026, demande de Raphaël)
+ *     code de la langue dans laquelle l'élève a lu la lettre (voir
+ *     onInstaller dans lettre-initiale.js). Sert à : (1) présélectionner
+ *     d'emblée le bon fichier dans la grille (et afficher directement son
+ *     bouton de téléversement) si c'est une vraie langue de la liste, et
+ *     (2) choisir la langue d'affichage du titre du panneau et de
+ *     l'avertissement de changement de langue (voir plus bas). Si
+ *     l'élève avait lu la lettre en français, rien n'est présélectionné
+ *     (le fichier français est volontairement toujours cassé) — le
+ *     titre/avertissement s'affichent alors en français quand même.
  * @param {object} callbacks
  *   - onFin(codeLangueChoisie) — appelé une fois la pause finale écoulée
  */
@@ -112,6 +182,7 @@ function demarrerSequenceTelechargementLangue(idConteneur, options, callbacks) {
   const delaiAvantPanneau = typeof options.delaiAvantPanneau === 'number' ? options.delaiAvantPanneau : 2000;
   const duree = typeof options.duree === 'number' ? options.duree : 2600;
   const pauseFin = typeof options.pauseFin === 'number' ? options.pauseFin : 1400;
+  const langueInitiale = typeof options.langueInitiale === 'string' ? options.langueInitiale : 'en';
 
   conteneur.innerHTML =
     '<div class="stlg-scene" id="stlgScene">' +
@@ -126,6 +197,7 @@ function demarrerSequenceTelechargementLangue(idConteneur, options, callbacks) {
         '</div>' +
       '</div>' +
       '<div class="stlg-panneau stlg-panneau-cachee" id="stlgPanneau">' +
+        '<p class="stlg-titre" id="stlgTitre">' + tTelechargementLangue(langueInitiale, 'titre') + '</p>' +
         '<div class="stlg-grille" id="stlgGrille"></div>' +
         '<div class="stlg-zone-bouton" id="stlgZoneBouton"></div>' +
       '</div>' +
@@ -174,12 +246,77 @@ function demarrerSequenceTelechargementLangue(idConteneur, options, callbacks) {
   langues.forEach(function (l) { grille.appendChild(creerFichierLangue(l)); });
   grille.appendChild(creerFichierFrancais());
 
-  function choisirFichier(codeLangue, elFichier) {
+  // 🆕 (27-09-2026) Présélection : si langueInitiale correspond à une vraie
+  // langue de la grille (pas 'fr', toujours cassé exprès — voir
+  // creerFichierFrancais), on la sélectionne et on affiche directement son
+  // bouton de téléversement, SANS passer par l'avertissement (c'est déjà
+  // la langue de l'élève, rien ne change). Repli sur rien de présélectionné
+  // si langueInitiale est 'fr' ou absente de la liste.
+  const elInitial = grille.querySelector('[data-code="' + langueInitiale + '"]');
+  if (elInitial && langueInitiale !== 'fr') {
+    selectionnerFichier(langueInitiale, elInitial);
+  }
+
+  // Sélectionne réellement un fichier (met à jour codeLangueChoisie, la
+  // surbrillance, et le bouton de téléversement) — jamais appelée
+  // directement pour un changement de langue, voir choisirFichier plus bas.
+  function selectionnerFichier(codeLangue, elFichier) {
     codeLangueChoisie = codeLangue;
     grille.querySelectorAll('.stlg-fichier').forEach(function (el) {
       el.classList.toggle('stlg-fichier-selectionne', el === elFichier);
     });
     afficherBoutonTeleversement(codeLangue);
+  }
+
+  // 🆕 (27-09-2026, demande de Raphaël) Avertissement affiché UNIQUEMENT si
+  // la langue cliquée diffère de langueInitiale (celle de la lettre) — pas
+  // de la sélection courante : choisir une 2e langue différente après en
+  // avoir déjà confirmé une 1re redemande quand même confirmation, chaque
+  // fois, tant qu'on ne revient pas sur langueInitiale elle-même.
+  function choisirFichier(codeLangue, elFichier) {
+    if (codeLangue === codeLangueChoisie) return; // déjà sélectionnée, rien à faire
+    if (codeLangue !== langueInitiale) {
+      demanderConfirmationChangement(codeLangue, elFichier);
+      return;
+    }
+    selectionnerFichier(codeLangue, elFichier);
+  }
+
+  function demanderConfirmationChangement(codeLangue, elFichier) {
+    const langueInfo = langues.find(function (l) { return l.code === codeLangue; });
+    const nomNatif = langueInfo ? langueInfo.natif : codeLangue.toUpperCase();
+    const texte = tTelechargementLangue(langueInitiale, 'avertissement').replace('{langue}', nomNatif);
+    zoneBouton.innerHTML =
+      '<div class="stlg-bloc stlg-entree-cachee stlg-avertissement" id="stlgAvertissement">' +
+        '<p class="stlg-avertissement-texte">' + texte + '</p>' +
+        '<div class="stlg-avertissement-boutons">' +
+          '<button type="button" class="stlg-btn-annuler" id="stlgBtnAnnulerChangement">' +
+            tTelechargementLangue(langueInitiale, 'annuler') +
+          '</button>' +
+          '<button type="button" class="stlg-btn-confirmer" id="stlgBtnConfirmerChangement">' +
+            tTelechargementLangue(langueInitiale, 'confirmer') +
+          '</button>' +
+        '</div>' +
+      '</div>';
+    requestAnimationFrame(function () {
+      const bloc = document.getElementById('stlgAvertissement');
+      if (bloc) setTimeout(function () { bloc.classList.remove('stlg-entree-cachee'); }, 30);
+    });
+    document.getElementById('stlgBtnConfirmerChangement').addEventListener('click', function () {
+      selectionnerFichier(codeLangue, elFichier);
+    });
+    document.getElementById('stlgBtnAnnulerChangement').addEventListener('click', function () {
+      // Retour à langueInitiale si elle était présélectionnable ; sinon
+      // (ex. lettre lue en français) retour à l'état neutre de départ.
+      const elRetour = grille.querySelector('[data-code="' + langueInitiale + '"]');
+      if (elRetour && langueInitiale !== 'fr') {
+        selectionnerFichier(langueInitiale, elRetour);
+      } else {
+        codeLangueChoisie = null;
+        grille.querySelectorAll('.stlg-fichier').forEach(function (el) { el.classList.remove('stlg-fichier-selectionne'); });
+        zoneBouton.innerHTML = '';
+      }
+    });
   }
 
   function afficherBoutonTeleversement(codeLangue) {

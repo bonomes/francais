@@ -132,6 +132,18 @@
   display: none !important;
 }
 
+/* 🆕 (27-09-2026, demande de Raphaël) Titre du panneau — celui-ci n'avait
+   jusqu'ici aucun texte d'accompagnement, juste une grille de fichiers
+   sans contexte. Langue d'affichage : langueInitiale (voir le .js),
+   celle dans laquelle l'élève a lu la lettre. */
+.stlg-titre {
+  margin: 0;
+  font-weight: 700;
+  font-size: 0.92rem;
+  color: var(--brun-fonce, var(--brun));
+  text-align: center;
+}
+
 .stlg-grille {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -240,6 +252,57 @@
   transform: translateY(3px);
   box-shadow: 0 0 0 0 var(--brun-fonce, #4A3B33), 1px 1px 6px var(--ombre, rgba(102, 80, 69, 0.18));
 }
+
+/* ---------- Avertissement de changement de langue ----------
+   🆕 (27-09-2026, demande de Raphaël) Affiché dans .stlg-zone-bouton à la
+   place du bouton de téléversement quand l'élève clique une langue
+   différente de celle utilisée pour lire la lettre (langueInitiale) —
+   voir demanderConfirmationChangement() dans le .js. */
+.stlg-avertissement {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.stlg-avertissement-texte {
+  margin: 0;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--brun-fonce, var(--brun));
+  text-align: center;
+  line-height: 1.35;
+}
+
+.stlg-avertissement-boutons {
+  display: flex;
+  gap: 10px;
+}
+
+.stlg-btn-annuler,
+.stlg-btn-confirmer {
+  border: none;
+  border-radius: 999px;
+  padding: 10px 20px;
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 0.86rem;
+  cursor: pointer;
+  transition: opacity 0.15s ease, transform 0.18s cubic-bezier(.34,1.6,.4,1);
+}
+.stlg-btn-annuler {
+  border: 1.5px solid var(--peche);
+  background: #FFFFFF;
+  color: var(--brun-fonce, var(--brun));
+}
+.stlg-btn-annuler:hover { background: var(--peche-pale, rgba(240, 169, 139, 0.16)); }
+.stlg-btn-confirmer {
+  background: var(--peche-fonce);
+  color: #FFFFFF;
+  box-shadow: 0 3px 0 0 var(--brun-fonce, #4A3B33);
+}
+.stlg-btn-confirmer:hover { background: #d97c5c; transform: translateY(-1px); }
 
 /* ---------- Barre de progression + "Réinitialisation" ---------- */
 .stlg-zone-barre {

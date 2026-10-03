@@ -128,8 +128,17 @@
   /* --- badge de notification (2e courriel), posé sur le coin de l'enveloppe --- */
   .badge-notif {
     position: absolute;
-    top: 18px;
-    right: 34px;
+    /* 🐛 AJUSTÉ (27-09-2026, signalé par Raphaël) : top/right étaient
+       mesurés par rapport à .enveloppe-conteneur (boîte carrée 360×360),
+       pas par rapport à l'enveloppe visible elle-même — qui, plus large
+       que haute avec object-fit:contain, ne remplit que la bande
+       verticale centrale de cette boîte. Le badge flottait donc dans
+       l'espace vide au-dessus de l'enveloppe plutôt que sur son coin.
+       Valeurs resserrées pour viser le coin supérieur droit réel de
+       l'enveloppe — à ajuster encore d'un coup d'œil si besoin, cette
+       estimation n'a pas pu être vérifiée sur le site rendu. */
+    top: 95px;
+    right: 18px;
     width: 30px;
     height: 30px;
     display: flex;

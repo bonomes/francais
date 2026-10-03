@@ -1521,25 +1521,29 @@
           conteneur.style.display = 'none';
           demarrerReconnexionDepuisIndex('accueil');
         },
-        onInstaller: etapeChoixPersonnage
+        // 🆕 (27-09-2026) codeLangueLue : la langue dans laquelle l'élève a
+        // lu la lettre — à faire suivre sans y toucher jusqu'à
+        // etapeChoixLangue(), qui en a besoin pour présélectionner le bon
+        // fichier de langue (demande de Raphaël).
+        onInstaller: function (codeLangueLue) { etapeChoixPersonnage(codeLangueLue); }
       });
     }
 
-    function etapeChoixPersonnage() {
+    function etapeChoixPersonnage(codeLangueLue) {
       window.KebBekEcranTeleversement.demarrerEcranTeleversement('nouvelDemarrageContenu', {}, {
-        onChoisirKeb: etapeSequence,
-        onChoisirBek: etapeSequence,
+        onChoisirKeb: function () { etapeSequence(codeLangueLue); },
+        onChoisirBek: function () { etapeSequence(codeLangueLue); },
         onAnnuler: etapeLettre
       });
     }
 
-    function etapeSequence() {
+    function etapeSequence(codeLangueLue) {
       // 🆕 (20-09-2026) dossierImages précisé : les six images vivent dans
       // images/telechargement/ sur le dépôt, pas à la racine de images/
       // (défaut interne du module) — c'était la cause des vignettes
       // cassées (37 %, cadre vide).
       window.KebBekTeleversement.demarrerSequenceTeleversement('nouvelDemarrageContenu', { dossierImages: 'images/telechargement/' }, {
-        onFin: etapeChoixLangue
+        onFin: function () { etapeChoixLangue(codeLangueLue); }
       });
     }
 
@@ -1550,7 +1554,7 @@
     // deux fois de suite. ouvrirChoixLangueForce() ne sert donc plus que
     // de repli si le module est manquant (voir la garde plus haut dans
     // cette fonction).
-    function etapeChoixLangue() {
+    function etapeChoixLangue(codeLangueLue) {
       conteneur.style.display = 'none';
       if (!window.KebBekTelechargementLangue) {
         ouvrirChoixLangueForce();
@@ -1558,7 +1562,7 @@
       }
       conteneur.style.display = 'flex';
       conteneur.innerHTML = '<div id="nouvelDemarrageContenu" style="width:100%; display:flex; justify-content:center;"></div>';
-      window.KebBekTelechargementLangue.demarrerSequenceTelechargementLangue('nouvelDemarrageContenu', { langues: LANGUES }, {
+      window.KebBekTelechargementLangue.demarrerSequenceTelechargementLangue('nouvelDemarrageContenu', { langues: LANGUES, langueInitiale: codeLangueLue }, {
         onFin: function (codeLangueChoisie) {
           appliquerLangueChoisieDepuisNouvelEcran(codeLangueChoisie);
           conteneur.style.display = 'none';

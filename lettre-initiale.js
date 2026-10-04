@@ -390,6 +390,25 @@
       } else {
         objetEl.textContent = t.objet2;
       }
+      // 🐛 CORRIGÉ (03-10-2026, signalé par Raphaël) : seuls l'en-tête et la
+      // vue « lettre » étaient retraduits — changer de langue depuis le
+      // remerciement, le « Dommage » ou le 2e courriel laissait le corps du
+      // message dans l'ancienne langue. On retraduit aussi la vue affichée
+      // (textes seulement : aucune classe ni minuterie touchée, pour ne pas
+      // relancer le décompte des « regrets » ni l'animation du cadre).
+      if (!vueRemerciement.hidden) {
+        remerciementTexteEl.textContent = t.remerciement;
+        btnFermer.textContent = t.fermer;
+      }
+      if (!vueDommage.hidden) {
+        dommageTexteEl.textContent = t.dommage;
+        regretsEl.textContent = t.regrets;
+        btnRecommencer.textContent = t.recommencer;
+      }
+      if (!vueMessage2.hidden) {
+        message2IntroEl.textContent = t.message2Intro;
+        lienTeleversementEl.textContent = t.installerBek;
+      }
     }
 
     // ---------- Refuser : « Dommage » puis, après 5 s, « Des regrets ? » ----------

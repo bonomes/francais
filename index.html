@@ -1503,6 +1503,7 @@
     const conteneur = document.getElementById('nouvelDemarrage');
     if (!conteneur || !window.KebBekLettreInitiale || !window.KebBekEcranTeleversement || !window.KebBekTeleversement) {
       console.warn('Nouvelle scène d\u2019accueil indisponible (module manquant) — repli sur le sélecteur de langue.');
+      if (conteneur) conteneur.style.display = 'none'; // retire la couverture opaque posée au démarrage
       ouvrirChoixLangueForce();
       return;
     }
@@ -3008,6 +3009,17 @@
     // d'être exposées globalement par cette IIFE). Le temps que le logo
     // s'efface, l'enveloppe avait déjà fini de tomber et flottait déjà.
     // Décalage pour laisser l'écran-titre vraiment se retirer d'abord.
+    //
+    // 🐛 CORRIGÉ (03-10-2026, signalé par Raphaël) : effet secondaire de ce
+    // décalage — pendant ces 2100 ms, #nouvelDemarrage était encore en
+    // display:none, donc quand le logo s'effaçait on voyait fugitivement
+    // l'ANCIENNE scène d'accueil (#sceneRangee : Keb et Bek, sélecteur EN,
+    // « Information & private lessons ») juste en dessous. On allume donc
+    // tout de suite #nouvelDemarrage — vide mais opaque (fond var(--fond),
+    // z-index 480) — pour masquer cette scène; la lettre s'y monte ensuite
+    // au bout du délai, comme avant.
+    const couvertureNouvelAccueil = document.getElementById('nouvelDemarrage');
+    if (couvertureNouvelAccueil) couvertureNouvelAccueil.style.display = 'flex';
     setTimeout(demarrerNouvelAccueilTeleversement, 1600 + 500);
   }
 </script>

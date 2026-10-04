@@ -98,9 +98,23 @@
   };
 
   const codesValides = LANGUES.map(function (l) { return l.code; });
-  const CLE_LANGUE = 'kebbek_langue'; // même clé que menu-principal.js / sac-a-dos.js / l'ancien ecran-demarrage.js
+  const CLE_LANGUE = 'kebbek_langue'; // même clé que menu-principal.js / sac-a-dos.js — LECTURE SEULE ici
+  // 🐛 CORRIGÉ (03-10-2026, signalé par Raphaël) : ce module écrivait
+  // kebbek_langue dès son ouverture (changerLangue() est appelée une fois au
+  // démarrage) — or index.html lit cette clé comme « cet élève a déjà fait
+  // l'accueil » et file direct au menu principal. Résultat : recharger la
+  // page en plein milieu de la séquence menait au menu. La clé officielle
+  // n'est maintenant écrite que par index.html (appliquerLangueChoisieDepuisNouvelEcran),
+  // à la toute fin de la séquence. Le choix en cours dans la lettre, lui, est
+  // gardé dans une clé de session distincte — il survit à un rechargement
+  // accidentel, mais sans jamais compter comme « accueil terminé ».
+  const CLE_LANGUE_BROUILLON = 'kebbek_langue_lettre';
 
   function detecterLangueNavigateur() {
+    try {
+      const brouillon = sessionStorage.getItem(CLE_LANGUE_BROUILLON);
+      if (brouillon && codesValides.indexOf(brouillon) !== -1) return brouillon;
+    } catch (e) { /* sessionStorage indisponible : on ignore */ }
     try {
       const enregistree = localStorage.getItem(CLE_LANGUE);
       if (enregistree && codesValides.indexOf(enregistree) !== -1) return enregistree;
@@ -355,7 +369,7 @@
 
     function changerLangue(code) {
       langueActuelle = DICO_LETTRE[code] ? code : 'fr';
-      try { localStorage.setItem(CLE_LANGUE, langueActuelle); } catch (e) { /* mode privé, etc. */ }
+      try { sessionStorage.setItem(CLE_LANGUE_BROUILLON, langueActuelle); } catch (e) { /* mode privé, etc. */ }
       const langueInfo = LANGUES.find(function (l) { return l.code === langueActuelle; });
       selecteurBadge.textContent = langueActuelle.toUpperCase();
       selecteur.title = langueInfo.natif;

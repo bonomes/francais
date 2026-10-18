@@ -290,6 +290,11 @@
         enveloppeEl.classList.remove('tombe');
         enveloppeEl.classList.add('flotte');
         peutCliquerEnveloppe = true;
+        // 🆕 (18-10-2026) Le « 1 » s'allume juste après l'atterrissage, comme
+        // pour le 2e courriel : même signal « il y a un message à lire ».
+        minuteurBadge = setTimeout(function () {
+          badgeNotif.classList.add('cl-visible');
+        }, 350);
       }, 1150);
     }
 
@@ -298,6 +303,7 @@
     // premier clic et pour la réouverture au clic sur le badge « 1 »
     function ouvrirEnveloppe(callback) {
       peutCliquerEnveloppe = false;
+      badgeNotif.classList.remove('cl-visible');
       enveloppeEl.classList.remove('flotte');
       enveloppeEl.classList.add('eclater');
       jaillirEtoiles();
@@ -469,17 +475,48 @@
       cadre.classList.add('cl-visible');
     }
 
+    // 🆕 (18-10-2026) La 1re lettre se referme et glisse hors de l'écran par
+    // le bas ; après une pause, la 2e retombe d'en haut avec la même chute que
+    // la 1re (tvbk-chute), puis le « 1 » s'allume. Le clic sur l'enveloppe
+    // rouvre ensuite le 2e message, comme avant.
+    let minuteursSortie = [];
+    function planifierSortie(fn, delai) {
+      minuteursSortie.push(setTimeout(fn, delai));
+    }
+    function annulerSortie() {
+      minuteursSortie.forEach(clearTimeout);
+      minuteursSortie = [];
+    }
+
     btnFermer.addEventListener('click', function () {
       cadre.classList.remove('cl-visible');
-      // l'enveloppe redevient fermée, comme si on attendait un nouveau message
       refermerEnveloppe();
+      annulerSortie();
       if (minuteurBadge) clearTimeout(minuteurBadge);
-      minuteurBadge = setTimeout(function () {
-        badgeNotif.classList.add('cl-visible');
-        // rend l'enveloppe cliquable de nouveau : c'est le clic sur le
-        // courriel (l'enveloppe), pas sur le badge, qui rouvre le 2e message
-        activerClicPourEnveloppe(ouvrirEtAfficherMessage2);
-      }, 3000);
+
+      // laisse le cadre se fondre (0,55 s), puis l'enveloppe fermée s'en va
+      planifierSortie(function () {
+        enveloppeEl.classList.remove('flotte');
+        void enveloppeEl.offsetWidth;
+        enveloppeEl.classList.add('sort');
+      }, 500);
+
+      // elle a quitté l'écran (0,75 s) : pause, puis la nouvelle arrive d'en haut
+      planifierSortie(function () {
+        enveloppeEl.classList.remove('sort');
+        void enveloppeEl.offsetWidth;
+        enveloppeEl.classList.add('tombe');
+      }, 500 + 750 + 900);
+
+      planifierSortie(function () {
+        enveloppeEl.classList.remove('tombe');
+        enveloppeEl.classList.add('flotte');
+        planifierSortie(function () {
+          badgeNotif.classList.add('cl-visible');
+          // c'est le clic sur l'enveloppe (jamais sur le badge) qui rouvre le 2e message
+          activerClicPourEnveloppe(ouvrirEtAfficherMessage2);
+        }, 350);
+      }, 500 + 750 + 900 + 1150);
     });
 
     // ---------- « Installer Bek » ----------
@@ -534,6 +571,8 @@
 
     function reinitialiser() {
       arreterSequenceTeleversement();
+      annulerSortie();
+      enveloppeEl.classList.remove('sort');
       cadre.classList.remove('cl-visible');
       fermerMenu();
       if (minuteurRegrets) { clearTimeout(minuteurRegrets); minuteurRegrets = null; }

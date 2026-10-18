@@ -1588,7 +1588,37 @@
       }
       conteneur.style.display = 'flex';
       conteneur.innerHTML = '<div id="nouvelDemarrageContenu" style="width:100%; display:flex; justify-content:center;"></div>';
-      window.KebBekReveilBek.demarrerReveilBek('nouvelDemarrageContenu', { langue: codeLangueChoisie }, {
+      window.KebBekReveilBek.demarrerReveilBek('nouvelDemarrageContenu', {
+        langue: codeLangueChoisie,
+        // 🩹 (18-10-2026) Noms réels des fichiers sur GitHub (suffixe _01-01,
+        // accents, « bouche-fermee ») → noms attendus par le module. Une
+        // image absente de cette table garde le nom par défaut (et, si elle
+        // n'existe pas, son image de repli).
+        sources: {
+          'bek-perplexe-01': 'images/reveil/bek-perplexe_01-01.webp',
+          'bek-perplexe-02': 'images/reveil/bek-perplexe_02-01.webp',
+          'bek-perplexe-03': 'images/reveil/bek-perplexe_03-01.webp',
+          'bek-perplexe-04': 'images/reveil/bek-perplexe_04-01.webp',
+          'bek-perplexe-05': 'images/reveil/bek-perplexe_05-01.webp',
+          'bek-perplexe-06': 'images/reveil/bek-perplexe_06-01.webp',
+          'bek-surprise': 'images/reveil/bek-interpellee-surprise_01-01.webp',
+          'bek-soulagee': 'images/reveil/bek-interpellee-soulagee_01-01.webp',
+          'bek-espoir-ferme': 'images/reveil/bek-interpellee-remplie-despoir_01-01.webp',
+          'bek-espoir-ouvert': 'images/reveil/bek-interpellee-remplie-despoir_01-01.webp',
+          'bek-comprehensive-ferme': 'images/reveil/bek-comprehensive_bouche-fermee_01-01.webp',
+          'bek-comprehensive-ouvert': 'images/reveil/bek-comprehensive_bouche-ouverte_01-01.webp',
+          'bek-examine-ferme': 'images/reveil/bek-examine_bouche-fermee_01-01.webp',
+          'bek-examine-ouvert': 'images/reveil/bek-examine_bouche-ouverte_01-01.webp',
+          'bek-conscience-ferme': 'images/reveil/bek-prise-de-conscience_bouche-fermee_01-01.webp',
+          'bek-conscience-ouvert': 'images/reveil/bek-prise-de-conscience_bouche-ouverte_01-01.webp',
+          'bek-concentree-ferme': 'images/reveil/bek_concentree_bouche-fermee_01-01.webp',
+          'bek-concentree-ouvert': 'images/reveil/bek_concentree_bouche-ouverte_01-01.webp',
+          'bek-tres-concentree': 'images/reveil/bek_tres-concentree_01-01.webp',
+          'bek-heureuse-ferme': 'images/reveil/bek_heureuse_bouche-fermee_01-01.webp',
+          'bek-heureuse-ouvert': 'images/reveil/bek_heureuse_bouche-ouverte_01-01.webp',
+          'main-salue': 'images/reveil/bouton_main-salue_01-01.webp'
+        }
+      }, {
         // 🚧 onIdentite({ prenom, genre, adulte }) : pas encore branché sur le
         // profil de l'élève — à décider avec la scène de la mémoire.
         onMemoire: function () { finDuParcoursAccueil(codeLangueChoisie); }

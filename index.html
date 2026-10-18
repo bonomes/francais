@@ -33,6 +33,7 @@
 <link rel="stylesheet" href="barre-progression.css">
 <link rel="stylesheet" href="sequence-televersement.css">
 <link rel="stylesheet" href="sequence-telechargement-langue.css">
+<link rel="stylesheet" href="sequence-reveil-bek.css">
 <style>
   /* ==================================================================
      index.html — page d'accueil officielle du site (voir BONOMES_v61,
@@ -1478,6 +1479,8 @@
 <script src="barre-progression.js"></script>
 <script src="sequence-televersement.js"></script>
 <script src="sequence-telechargement-langue.js"></script>
+<script src="dico-reveil-bek.js"></script>
+<script src="sequence-reveil-bek.js"></script>
 <script>
   // ================================================================
   // 🆕 (18-09-2026) Orchestration de la nouvelle scène d'accueil :
@@ -1565,11 +1568,40 @@
       conteneur.innerHTML = '<div id="nouvelDemarrageContenu" style="width:100%; display:flex; justify-content:center;"></div>';
       window.KebBekTelechargementLangue.demarrerSequenceTelechargementLangue('nouvelDemarrageContenu', { langues: LANGUES, langueInitiale: codeLangueLue }, {
         onFin: function (codeLangueChoisie) {
-          appliquerLangueChoisieDepuisNouvelEcran(codeLangueChoisie);
-          conteneur.style.display = 'none';
-          afficherConnexionChoix();
+          // 🆕 (18-10-2026) La langue est appliquée à l'écran mais PAS encore
+          // enregistrée (2e argument) : kebbek_langue signifie « accueil
+          // terminé » et envoie au menu au prochain chargement — on ne
+          // l'écrit qu'à la fin du réveil (voir etapeReveil).
+          appliquerLangueChoisieDepuisNouvelEcran(codeLangueChoisie, true);
+          etapeReveil(codeLangueChoisie);
         }
       });
+    }
+
+    // 🆕 (18-10-2026) Séquence de réveil de Bek (sequence-reveil-bek.js),
+    // juste après le téléchargement de la langue.
+    function etapeReveil(codeLangueChoisie) {
+      if (!window.KebBekReveilBek) {
+        console.warn('Séquence de réveil indisponible (module manquant) — repli sur la fin directe.');
+        finDuParcoursAccueil(codeLangueChoisie);
+        return;
+      }
+      conteneur.style.display = 'flex';
+      conteneur.innerHTML = '<div id="nouvelDemarrageContenu" style="width:100%; display:flex; justify-content:center;"></div>';
+      window.KebBekReveilBek.demarrerReveilBek('nouvelDemarrageContenu', { langue: codeLangueChoisie }, {
+        // 🚧 onIdentite({ prenom, genre, adulte }) : pas encore branché sur le
+        // profil de l'élève — à décider avec la scène de la mémoire.
+        onMemoire: function () { finDuParcoursAccueil(codeLangueChoisie); }
+      });
+    }
+
+    // 🚧 PROVISOIRE : la scène de la mémoire (première leçon) n'existe pas
+    // encore. En attendant, on enregistre enfin la langue et on retombe sur
+    // l'ancienne destination (bloc « Première leçon / Se connecter »).
+    function finDuParcoursAccueil(codeLangueChoisie) {
+      finaliserLangueApresReveil(codeLangueChoisie);
+      conteneur.style.display = 'none';
+      afficherConnexionChoix();
     }
 
     etapeLettre();
@@ -2819,14 +2851,19 @@
   // propres à l'ancien panneau (#selecteurLangue n'est jamais ouvert dans
   // le nouveau parcours) — appelée par etapeChoixLangue() plus haut, une
   // fois que sequence-telechargement-langue.js a fini.
-  function appliquerLangueChoisieDepuisNouvelEcran(codeLangue) {
+  function appliquerLangueChoisieDepuisNouvelEcran(codeLangue, sansSauvegarde) {
     langueActuelle = codeLangue;
-    sauvegarderLangue(codeLangue);
+    if (!sansSauvegarde) sauvegarderLangue(codeLangue);
     appliquerDirectionLangue(codeLangue);
     rafraichirSelection();
     rafraichirLienCoursPrives();
     rafraichirConnexionBoutons();
     rafraichirEnteteSac();
+  }
+
+  // 🆕 (18-10-2026) Écrit enfin kebbek_langue, à la fin du réveil de Bek.
+  function finaliserLangueApresReveil(codeLangue) {
+    sauvegarderLangue(codeLangue);
   }
 
   function choisir(codeLangue) {

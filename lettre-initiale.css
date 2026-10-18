@@ -45,6 +45,17 @@
     animation: tvbk-chute 1.15s cubic-bezier(.36,.07,.19,.97) forwards;
   }
 
+  /* 🆕 (18-10-2026) sortie par le bas : la lettre fermée recule d'un cheveu
+     puis glisse hors de l'écran (voir btnFermer dans le .js) */
+  @keyframes tvbk-sortie {
+    0%   { transform: translateY(0px); }
+    22%  { transform: translateY(-16px); }
+    100% { transform: translateY(640px); }
+  }
+  .enveloppe-conteneur.sort .fermee {
+    animation: tvbk-sortie 0.75s cubic-bezier(.5,0,.85,.45) forwards;
+  }
+
   /* léger flottement une fois stabilisée */
   @keyframes tvbk-flotte {
     0%, 100% { transform: translateY(0px) rotate(0deg); }

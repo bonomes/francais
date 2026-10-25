@@ -474,10 +474,13 @@
       fond.appendChild(m);
       planifier(function () { m.classList.add('rbek-memoire-visible'); }, 30);
 
-      m.addEventListener('click', function () {
-        if (m.disabled) return;
-        m.disabled = true;
-        bulle.classList.add('rbek-bulle-cachee');
+      // 🆕 (18-10-2026) Avant la plongée : l'élève s'interroge (« What's that ? »),
+      // puis le fichier .mem se révèle illisible et il faut installer Le Lecteur
+      // (sequence-lecteur.js). Sans ce module, on plonge directement comme avant.
+      const lecteur = window.KebBekLecteur;
+      if (lecteur) lecteur.afficherCommentaire(scene, { langue: langue, delai: 1100 });
+
+      function plonger() {
         const r = m.getBoundingClientRect();
         const x = Math.round(r.left + r.width / 2);
         const y = Math.round(r.top + r.height / 2);
@@ -492,6 +495,22 @@
             try { callbacks.onMemoire(); } catch (e) { console.warn('onMemoire a échoué.', e); }
           }
         }, 1250);
+      }
+
+      m.addEventListener('click', function () {
+        if (m.disabled) return;
+        m.disabled = true;
+        bulle.classList.add('rbek-bulle-cachee');
+        if (!lecteur) { plonger(); return; }
+        lecteur.demarrer(scene, { langue: langue }, {
+          // « Non » : on rend la main à l'élève (la bulle .mem reste cliquable)
+          onAnnule: function () {
+            m.disabled = false;
+            bulle.classList.remove('rbek-bulle-cachee');
+            lecteur.afficherCommentaire(scene, { langue: langue, delai: 200 });
+          },
+          onPret: plonger
+        });
       });
     }
 

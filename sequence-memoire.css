@@ -1,0 +1,381 @@
+/* ==================================================================
+   sequence-memoire.css — habillage de sequence-memoire.js.
+
+   🆕 (18-10-2026) S'appuie sur sequence-reveil-bek.css (gabarit de Bek,
+   bulle, flèche « suite ») : à charger APRÈS lui. Mêmes boutons-pilules à
+   relief « qu'on presse » que le reste du site (palette beige/brun/pêche,
+   Baloo 2). Disposition constante de la séquence : Bek et sa bulle en haut,
+   l'élève (les tuiles) en bas, le Lecteur dans le coin.
+
+   ⚠️ Pas d'attribut `hidden` (une règle de classe qui pose `display`
+   l'emporte) : toujours une classe (.mem-cache, visibility…).
+   ================================================================== */
+
+.mem-police-systeme { font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; }
+.mem-cache { display: none !important; }
+
+/* ---------- Fond « souvenir » ----------
+   Même dégradé que l'iris de la plongée (.rbek-plongee) → continuité parfaite.
+   Il se retire en fondu à la sortie de la mémoire (le fond beige de la scène
+   réapparaît dessous). */
+.mem-fond-souvenir {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: radial-gradient(circle at 50% 38%, #FFFFFF 0%, #FFF0E4 55%, #F6D3BE 100%);
+  opacity: 1;
+  transition: opacity 1.1s ease;
+  pointer-events: none;
+}
+.mem-scene:not(.mem-souvenir) .mem-fond-souvenir { opacity: 0; }
+
+/* Poussières de lumière qui dérivent doucement */
+.mem-grain { position: absolute; inset: 0; z-index: 1; pointer-events: none; overflow: hidden; transition: opacity 0.9s ease; }
+.mem-scene:not(.mem-souvenir) .mem-grain { opacity: 0; }
+.mem-grain i {
+  position: absolute;
+  bottom: -10px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #FFFFFF 0%, rgba(255, 224, 150, 0.9) 55%, transparent 75%);
+  opacity: 0;
+  animation: memDerive 9s linear infinite;
+}
+.mem-grain i:nth-child(1) { left: 8%;  animation-delay: 0s;   animation-duration: 10s; }
+.mem-grain i:nth-child(2) { left: 22%; animation-delay: 2.4s; animation-duration: 8s;  width: 6px; height: 6px; }
+.mem-grain i:nth-child(3) { left: 38%; animation-delay: 5s;   animation-duration: 11s; }
+.mem-grain i:nth-child(4) { left: 55%; animation-delay: 1.2s; animation-duration: 9s;  width: 10px; height: 10px; }
+.mem-grain i:nth-child(5) { left: 70%; animation-delay: 3.8s; animation-duration: 8.5s; width: 6px; height: 6px; }
+.mem-grain i:nth-child(6) { left: 84%; animation-delay: 6.2s; animation-duration: 10s; }
+.mem-grain i:nth-child(7) { left: 94%; animation-delay: 0.8s; animation-duration: 12s; width: 5px; height: 5px; }
+@keyframes memDerive {
+  0%   { transform: translate(0, 0); opacity: 0; }
+  12%  { opacity: 0.9; }
+  85%  { opacity: 0.7; }
+  100% { transform: translate(24px, -105dvh); opacity: 0; }
+}
+
+/* Cadre intérieur : un halo chaud sur les bords, comme un souvenir vu de l'intérieur */
+.mem-cadre {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  border-radius: 0;
+  box-shadow: inset 0 0 90px 24px rgba(240, 169, 139, 0.42);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.9s ease, box-shadow 0.9s ease;
+}
+.mem-scene.mem-prete.mem-souvenir .mem-cadre { opacity: 1; }
+.mem-scene.mem-restauree .mem-cadre { box-shadow: inset 0 0 110px 34px rgba(255, 214, 120, 0.75); }
+.mem-scene:not(.mem-souvenir) .mem-cadre { opacity: 0; }
+
+/* Bek apparaît en fondu au début de la scène */
+.mem-bek-fond { opacity: 0; transition: opacity 0.7s ease; }
+.mem-scene.mem-prete .mem-bek-fond { opacity: 1; }
+
+/* ---------- La bulle : phrase à cases ---------- */
+.mem-phrase {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  padding: 2px 0;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+/* une tuile en trop qui s'efface quand la phrase est reconstituée */
+.mem-tuile.mem-tuile-efface {
+  opacity: 0;
+  transform: translateY(14px) scale(0.9);
+  pointer-events: none;
+}
+.mem-phrase.mem-phrase-sort { opacity: 0; transform: translateY(-6px); }
+
+.mem-case {
+  position: relative;
+  box-sizing: border-box;
+  min-width: 4.4em;
+  padding: 7px 10px;
+  text-align: center;
+  font-family: 'Baloo 2', sans-serif;
+  font-weight: 700;
+  font-size: clamp(1rem, 2.5dvh, 1.2rem);
+  line-height: 1.3;
+  color: transparent;                       /* le mot réserve la largeur sans se montrer */
+  border: 2px dashed rgba(240, 169, 139, 0.9);
+  border-radius: 14px;
+  background: rgba(240, 169, 139, 0.07);
+  transition: background 0.3s ease, border-color 0.3s ease, color 0.2s ease;
+}
+.mem-case-suivante { animation: memAttend 1.6s ease-in-out infinite; }
+@keyframes memAttend {
+  0%, 100% { border-color: rgba(240, 169, 139, 0.55); background: rgba(240, 169, 139, 0.05); }
+  50%      { border-color: var(--peche-fonce, #E08867); background: rgba(240, 169, 139, 0.18); }
+}
+.mem-case-pleine {
+  color: var(--brun-fonce, #4A3B33);
+  border-style: solid;
+  border-color: transparent;
+  background: var(--peche-pale, rgba(240, 169, 139, 0.16));
+  animation: none;
+}
+.mem-case-donnee { background: rgba(240, 169, 139, 0.10); }
+.mem-case-pop { animation: memPop 0.46s cubic-bezier(.3,1.7,.5,1); }
+@keyframes memPop {
+  0%   { transform: scale(0.82); }
+  55%  { transform: scale(1.14); }
+  100% { transform: scale(1); }
+}
+
+/* Tour réussi : la bulle s'illumine un instant */
+.rbek-bulle.mem-reussi { animation: memReussi 1.2s ease; }
+@keyframes memReussi {
+  0%, 100% { box-shadow: 0 4px 0 0 var(--brun-fonce, #4A3B33), 3px 6px 14px var(--ombre, rgba(102, 80, 69, 0.18)); }
+  35%      { box-shadow: 0 4px 0 0 var(--brun-fonce, #4A3B33), 0 0 0 7px rgba(255, 214, 120, 0.55), 0 0 34px 10px rgba(255, 214, 120, 0.6); }
+}
+
+/* ---------- Plateau de tuiles ---------- */
+.mem-plateau {
+  position: absolute;
+  left: 50%;
+  bottom: 3dvh;
+  width: min(94vw, 440px);
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+  transform: translateX(-50%);
+  z-index: 7;
+  transition: opacity 0.3s ease, transform 0.45s cubic-bezier(.4,0,.2,1);
+}
+.mem-plateau.mem-plateau-vide { opacity: 0; }
+.mem-plateau.mem-plateau-sorti { opacity: 0; transform: translateX(-50%) translateY(40px); pointer-events: none; }
+
+.mem-entree-cachee { opacity: 0; transform: translateY(14px) scale(0.92); }
+
+.mem-tuile {
+  border: 1.5px solid var(--peche, #F0A98B);
+  border-radius: 20px;
+  padding: 13px 24px;
+  font-family: 'Baloo 2', sans-serif;
+  font-weight: 700;
+  font-size: 1.18rem;
+  color: var(--brun-fonce, #4A3B33);
+  background: #FFFFFF;
+  cursor: pointer;
+  box-shadow: 0 4px 0 0 var(--peche, #F0A98B), 2px 6px 12px var(--ombre, rgba(102, 80, 69, 0.18));
+  transition: opacity 0.34s ease, transform 0.34s cubic-bezier(.2,.8,.3,1.2), box-shadow 0.15s ease, background 0.15s ease, color 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+.mem-tuile:hover:not(.mem-tuile-partie) { background: var(--peche-pale, rgba(240, 169, 139, 0.16)); transform: translateY(-2px); }
+.mem-tuile:active:not(.mem-tuile-partie) {
+  transform: translateY(3px);
+  box-shadow: 0 0 0 0 var(--peche, #F0A98B), 1px 1px 5px var(--ombre, rgba(102, 80, 69, 0.18));
+}
+.mem-tuile:focus-visible { outline: 3px solid var(--brun-fonce, #4A3B33); outline-offset: 3px; }
+/* sens affiché (1er toucher) : la tuile se « prépare » */
+.mem-tuile.mem-tuile-choisie {
+  color: #FFFFFF;
+  background: var(--peche-fonce, #E08867);
+  border-color: var(--peche-fonce, #E08867);
+  box-shadow: 0 4px 0 0 var(--brun-fonce, #4A3B33), 3px 6px 14px var(--ombre, rgba(102, 80, 69, 0.18));
+  transform: translateY(-3px);
+}
+/* la tuile est partie dans la bulle : sa place reste (rien ne saute) */
+.mem-tuile.mem-tuile-partie { visibility: hidden; pointer-events: none; }
+
+.mem-tuile.mem-secoue { animation: memSecoue 0.42s ease; }
+@keyframes memSecoue {
+  0%, 100% { transform: translateX(0); }
+  18% { transform: translateX(-9px); }
+  36% { transform: translateX(8px); }
+  54% { transform: translateX(-6px); }
+  72% { transform: translateX(4px); }
+}
+/* indice après deux erreurs : la bonne tuile pulse (aucun texte à traduire) */
+.mem-tuile.mem-indice { animation: memIndice 1.1s ease-in-out infinite; }
+@keyframes memIndice {
+  0%, 100% { box-shadow: 0 4px 0 0 var(--peche, #F0A98B), 0 0 0 0 rgba(255, 214, 120, 0); }
+  50%      { box-shadow: 0 4px 0 0 var(--peche, #F0A98B), 0 0 0 8px rgba(255, 214, 120, 0.6), 0 0 22px 6px rgba(255, 214, 120, 0.55); }
+}
+
+/* Tuile en vol vers la bulle (clone, positionné en absolu dans la scène) */
+.mem-vol {
+  position: absolute;
+  z-index: 12;
+  margin: 0;
+  pointer-events: none;
+  will-change: transform;
+  box-shadow: 0 8px 0 0 rgba(240, 169, 139, 0.55), 4px 14px 20px rgba(102, 80, 69, 0.25);
+}
+
+/* ---------- Étiquette de sens ---------- */
+.mem-sens {
+  position: absolute;
+  z-index: 9;
+  max-width: min(80vw, 300px);
+  padding: 7px 14px;
+  font-family: 'Baloo 2', sans-serif;
+  font-weight: 700;
+  font-size: 1rem;
+  line-height: 1.25;
+  text-align: center;
+  white-space: nowrap;
+  color: var(--brun-fonce, #4A3B33);
+  background: #FFFFFF;
+  border: 2px solid var(--brun-fonce, #4A3B33);
+  border-radius: 14px;
+  box-shadow: 0 3px 0 0 var(--brun-fonce, #4A3B33);
+  transform: translate(-50%, calc(-100% + 6px)) scale(0.9);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.18s ease, transform 0.22s cubic-bezier(.2,.8,.3,1.3), left 0.25s cubic-bezier(.3,.9,.3,1), top 0.25s cubic-bezier(.3,.9,.3,1), visibility 0s linear 0.18s;
+}
+.mem-sens.mem-sens-visible {
+  opacity: 1;
+  visibility: visible;
+  transform: translate(-50%, -100%) scale(1);
+  transition: opacity 0.18s ease, transform 0.22s cubic-bezier(.2,.8,.3,1.3), left 0.25s cubic-bezier(.3,.9,.3,1), top 0.25s cubic-bezier(.3,.9,.3,1), visibility 0s;
+}
+.mem-sens::after {
+  content: '';
+  position: absolute;
+  left: calc(50% + var(--dx, 0px));
+  bottom: -8px;
+  width: 12px;
+  height: 12px;
+  background: #FFFFFF;
+  border-right: 2px solid var(--brun-fonce, #4A3B33);
+  border-bottom: 2px solid var(--brun-fonce, #4A3B33);
+  transform: translateX(-50%) rotate(45deg);
+}
+
+/* ---------- Étincelles ---------- */
+.mem-etincelle {
+  position: absolute;
+  z-index: 11;
+  width: 9px;
+  height: 9px;
+  margin: -4px 0 0 -4px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #FFFFFF 0%, rgba(255, 224, 140, 0.95) 55%, transparent 75%);
+  box-shadow: 0 0 8px 2px rgba(255, 224, 130, 0.7);
+  pointer-events: none;
+  opacity: 0;
+  animation: memEtincelle 0.8s ease-out forwards;
+}
+@keyframes memEtincelle {
+  0%   { transform: translate(0, 0) scale(0.4); opacity: 0; }
+  20%  { opacity: 1; }
+  100% { transform: translate(var(--dx, 0), var(--dy, 0)) scale(1); opacity: 0; }
+}
+
+/* ---------- Le Lecteur (coin inférieur gauche, au-dessus du plateau) ---------- */
+.mem-lecteur {
+  position: absolute;
+  left: 12px;
+  bottom: 24dvh;
+  width: clamp(60px, 10dvh, 82px);
+  aspect-ratio: 1;
+  z-index: 8;
+  pointer-events: none;
+  opacity: 1;
+  transition: opacity 0.4s ease, transform 0.5s cubic-bezier(.2,.8,.3,1.4);
+  animation: memLecteurFlotte 2.8s ease-in-out infinite;
+  filter: drop-shadow(2px 5px 6px rgba(102, 80, 69, 0.28));
+}
+.mem-lecteur.mem-lecteur-cache { opacity: 0; transform: translateY(18px) scale(0.7); }
+.mem-lecteur .lect-lecteur-img { width: 100%; height: 100%; object-fit: contain; display: block; }
+@keyframes memLecteurFlotte {
+  0%, 100% { margin-bottom: 0; rotate: -3deg; }
+  50%      { margin-bottom: 8px; rotate: 3deg; }
+}
+.mem-lecteur.mem-lecteur-saut { animation: memLecteurSaut 0.65s cubic-bezier(.3,1.5,.5,1); }
+@keyframes memLecteurSaut {
+  0%   { transform: translateY(0) scale(1); }
+  35%  { transform: translateY(-22px) scale(1.12); }
+  100% { transform: translateY(0) scale(1); }
+}
+.mem-lecteur.mem-lecteur-oups { animation: memLecteurOups 0.5s ease; }
+@keyframes memLecteurOups {
+  0%, 100% { transform: translateX(0) rotate(0); }
+  25% { transform: translateX(-5px) rotate(-6deg); }
+  55% { transform: translateX(5px) rotate(5deg); }
+  80% { transform: translateX(-2px) rotate(-2deg); }
+}
+.mem-lecteur .lect-aile-g { transform-origin: 30px 58px; animation: memBat 1.4s ease-in-out infinite; }
+.mem-lecteur .lect-aile-d { transform-origin: 90px 58px; animation: memBat 1.4s ease-in-out infinite reverse; }
+@keyframes memBat { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(-9deg); } }
+
+/* Réplique de fin du Lecteur */
+.mem-lb {
+  position: absolute;
+  left: 12px;
+  bottom: calc(24dvh + clamp(60px, 10dvh, 82px) + 16px);
+  width: min(82vw, 330px);
+  padding: 13px 16px;
+  border: 2px solid var(--brun-fonce, #4A3B33);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.98);
+  box-shadow: 0 4px 0 0 var(--brun-fonce, #4A3B33), 3px 6px 14px var(--ombre, rgba(102, 80, 69, 0.18));
+  z-index: 9;
+  transition: opacity 0.3s ease, transform 0.35s cubic-bezier(.2,.8,.3,1.3), visibility 0s;
+}
+.mem-lb::after {
+  content: '';
+  position: absolute;
+  left: 30px;
+  bottom: -11px;
+  width: 18px;
+  height: 18px;
+  background: rgba(255, 255, 255, 0.98);
+  border-right: 2px solid var(--brun-fonce, #4A3B33);
+  border-bottom: 2px solid var(--brun-fonce, #4A3B33);
+  transform: rotate(45deg);
+}
+.mem-lb.mem-lb-cachee {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateY(10px) scale(0.96);
+  transition: opacity 0.2s ease, transform 0.2s ease, visibility 0s linear 0.2s;
+}
+.mem-lb-texte {
+  margin: 0 28px 0 0;
+  font-family: 'Baloo 2', sans-serif;
+  font-weight: 700;
+  font-size: clamp(1rem, 2.5dvh, 1.15rem);
+  line-height: 1.35;
+  color: var(--brun-fonce, #4A3B33);
+}
+.mem-lb-fleche {
+  position: absolute;
+  right: 12px;
+  bottom: -18px;
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--brun-fonce, #4A3B33);
+  border-radius: 50%;
+  background: var(--peche-fonce, #E08867);
+  box-shadow: 0 3px 0 0 var(--brun-fonce, #4A3B33);
+  cursor: pointer;
+}
+.mem-lb-fleche svg {
+  width: 20px; height: 20px;
+  stroke: #FFFFFF; fill: none; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round;
+  animation: rbekFleche 1s ease-in-out infinite;
+}
+.mem-lb-fleche:focus-visible { outline: 3px solid var(--brun-fonce, #4A3B33); outline-offset: 3px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .mem-grain i, .mem-lecteur, .mem-lecteur .lect-aile, .mem-case-suivante, .mem-tuile.mem-indice,
+  .mem-lb-fleche svg, .rbek-bulle.mem-reussi, .mem-case-pop, .mem-tuile.mem-secoue { animation: none; }
+  .mem-plateau, .mem-sens, .mem-tuile { transition: opacity 0.2s ease; }
+}

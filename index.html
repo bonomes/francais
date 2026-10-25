@@ -34,6 +34,8 @@
 <link rel="stylesheet" href="sequence-televersement.css">
 <link rel="stylesheet" href="sequence-telechargement-langue.css">
 <link rel="stylesheet" href="sequence-reveil-bek.css">
+<link rel="stylesheet" href="sequence-lecteur.css">
+<link rel="stylesheet" href="sequence-memoire.css">
 <style>
   /* ==================================================================
      index.html — page d'accueil officielle du site (voir BONOMES_v61,
@@ -1480,7 +1482,9 @@
 <script src="sequence-televersement.js"></script>
 <script src="sequence-telechargement-langue.js"></script>
 <script src="dico-reveil-bek.js"></script>
+<script src="sequence-lecteur.js"></script>
 <script src="sequence-reveil-bek.js"></script>
+<script src="sequence-memoire.js"></script>
 <script>
   // ================================================================
   // 🆕 (18-09-2026) Orchestration de la nouvelle scène d'accueil :
@@ -1621,12 +1625,26 @@
       }, {
         // 🚧 onIdentite({ prenom, genre, adulte }) : pas encore branché sur le
         // profil de l'élève — à décider avec la scène de la mémoire.
-        onMemoire: function () { finDuParcoursAccueil(codeLangueChoisie); }
+        onMemoire: function () { etapeMemoire(codeLangueChoisie); }
       });
     }
 
-    // 🚧 PROVISOIRE : la scène de la mémoire (première leçon) n'existe pas
-    // encore. En attendant, on enregistre enfin la langue et on retombe sur
+    // 🆕 (18-10-2026) La première mémoire (« Je parle français »), jouée dans
+    // le même conteneur juste après la plongée (sequence-memoire.js). Sans le
+    // module, on passe directement à la suite.
+    function etapeMemoire(codeLangueChoisie) {
+      if (!window.KebBekMemoire) {
+        console.warn('Première mémoire indisponible (module manquant) — repli sur la fin directe.');
+        finDuParcoursAccueil(codeLangueChoisie);
+        return;
+      }
+      window.KebBekMemoire.demarrerMemoire('nouvelDemarrageContenu', { langue: codeLangueChoisie }, {
+        onTermine: function () { finDuParcoursAccueil(codeLangueChoisie); }
+      });
+    }
+
+    // 🚧 PROVISOIRE : ce qui suit la première mémoire n'est pas encore décidé.
+    // En attendant, on enregistre enfin la langue et on retombe sur
     // l'ancienne destination (bloc « Première leçon / Se connecter »).
     function finDuParcoursAccueil(codeLangueChoisie) {
       finaliserLangueApresReveil(codeLangueChoisie);

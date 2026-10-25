@@ -21,6 +21,16 @@
         je me souviens. » (dans la langue de l'élève). Le Lecteur propose
         enfin d'en retrouver d'autres, puis callbacks.onTermine().
 
+   🆕 (25-10-2026) L'AIDE DU LECTEUR : le Lecteur est un bouton. Un toucher
+   sur lui (ou sur un mot déjà placé dans la bulle) ouvre une feuille qui
+   explique chaque mot de la mémoire : nature grammaticale, équivalent dans
+   la langue de l'élève, remarques propres à cette langue (genre, majuscule,
+   pronom obligatoire…). Si une tuile est « sélectionnée », la feuille
+   s'ouvre directement sur son mot. Une invitation discrète apparaît au
+   début (« Touche-moi si tu ne comprends pas quelque chose ! »).
+   Les explications vivent dans AIDE (une entrée par mot, par langue) : pour
+   ajouter un mot ou un point de grammaire, on ajoute une entrée.
+
    Aucune « corruption » du texte : c'est une seule bonne mémoire, et c'est
    l'élève qui la reconstruit.
 
@@ -61,19 +71,112 @@
       sens_je: 'moi', sens_parle: '(moi) parler', sens_francais: 'la langue fran\u00e7aise', sens_parles: '(toi) parler',
       bekFin: '\u2026mais c\u2019est tout ce dont je me souviens.',
       lecteurFin: 'Il doit y en avoir d\u2019autres\u2026 Je peux t\u2019aider \u00e0 les retrouver.',
-      suite: 'Suite'
+      suite: 'Suite',
+      aideBouton: 'Le Lecteur\u00a0: aide',
+      aideInviteTactile: 'Touche-moi si tu ne comprends pas quelque chose\u00a0!',
+      aideInviteSouris: 'Clique sur moi si tu ne comprends pas quelque chose\u00a0!',
+      aideTitre: 'Le Lecteur t\u2019explique',
+      aideMots: 'Les mots de cette m\u00e9moire',
+      aideEquiv: '',
+      aideFermer: 'Fermer'
     },
     en: {
       sens_je: 'I', sens_parle: '(I) speak', sens_francais: 'French', sens_parles: '(you) speak',
       bekFin: '\u2026but that\u2019s all I remember.',
       lecteurFin: 'There must be more\u2026 I can help you find them.',
-      suite: 'Next'
+      suite: 'Next',
+      aideBouton: 'The Reader: help',
+      aideInviteTactile: 'Tap me if you don\u2019t understand something!',
+      aideInviteSouris: 'Click me if you don\u2019t understand something!',
+      aideTitre: 'The Reader explains',
+      aideMots: 'Words in this memory',
+      aideEquiv: 'In your language',
+      aideFermer: 'Close'
     },
     es: {
       sens_je: 'yo', sens_parle: '(yo) hablo', sens_francais: 'franc\u00e9s', sens_parles: '(t\u00fa) hablas',
       bekFin: '\u2026pero eso es todo lo que recuerdo.',
       lecteurFin: 'Debe de haber m\u00e1s\u2026 Puedo ayudarte a encontrarlos.',
-      suite: 'Siguiente'
+      suite: 'Siguiente',
+      aideBouton: 'El Lector: ayuda',
+      aideInviteTactile: '\u00a1Toca sobre m\u00ed si no entiendes algo!',
+      aideInviteSouris: '\u00a1Haz clic en m\u00ed si no entiendes algo!',
+      aideTitre: 'El Lector te explica',
+      aideMots: 'Palabras de este recuerdo',
+      aideEquiv: 'En tu idioma',
+      aideFermer: 'Cerrar'
+    }
+  };
+
+  // ---------- Les explications (une entrée par mot, par langue) ----------
+  // nature  : catégorie grammaticale (étiquette)
+  // equiv   : l'équivalent dans la langue de l'élève (facultatif)
+  // texte   : paragraphes — c'est ICI qu'on ajuste à la langue (genre,
+  //           majuscules, pronom obligatoire ou non…)
+  // formes  : [[forme, explication], …] (facultatif)
+  // Repli : en, puis fr. Pour un nouveau mot ou point de grammaire : une
+  // entrée de plus (et son id dans MOTS).
+  const AIDE = {
+    fr: {
+      je: {
+        nature: 'Pronom personnel \u00b7 1re personne du singulier',
+        texte: ['Il d\u00e9signe la personne qui parle\u00a0: moi.', 'Devant une voyelle, il devient j\u2019\u00a0: j\u2019aime, j\u2019habite.']
+      },
+      parle: {
+        nature: 'Verbe \u00b7 pr\u00e9sent',
+        texte: ['Le verbe parler, conjugu\u00e9 au pr\u00e9sent avec \u00ab\u00a0je\u00a0\u00bb.'],
+        formes: [['parler', 'verbe \u00e0 l\u2019infinitif, c\u2019est-\u00e0-dire non conjugu\u00e9'], ['je parle', 'pr\u00e9sent de l\u2019indicatif']]
+      },
+      francais: {
+        nature: 'Nom \u00b7 masculin',
+        texte: ['Ici, il d\u00e9signe une langue.', 'Les noms de langues sont masculins (le fran\u00e7ais) et s\u2019\u00e9crivent sans majuscule.']
+      },
+      parles: {
+        nature: 'Verbe \u00b7 pr\u00e9sent',
+        texte: ['Le verbe parler, conjugu\u00e9 avec \u00ab\u00a0tu\u00a0\u00bb\u00a0: tu parles.', 'Avec \u00ab\u00a0je\u00a0\u00bb, on dit\u00a0: je parle, sans -s.']
+      }
+    },
+    en: {
+      je: {
+        nature: 'Personal pronoun \u00b7 1st person singular',
+        equiv: 'I',
+        texte: ['It stands for the person who is speaking.', 'Unlike \u201cI\u201d, je has no capital letter in the middle of a sentence. Before a vowel it becomes j\u2019: j\u2019aime.']
+      },
+      parle: {
+        nature: 'Verb \u00b7 present tense',
+        texte: ['The verb parler (to speak), conjugated in the present tense with \u201cje\u201d.'],
+        formes: [['parler', 'infinitive: the verb \u201cto speak\u201d, not conjugated'], ['je parle', '\u201cI speak\u201d or \u201cI am speaking\u201d: French uses one present tense for both']]
+      },
+      francais: {
+        nature: 'Noun \u00b7 masculine',
+        equiv: 'French',
+        texte: ['Here it names a language.', 'Every French noun is masculine or feminine. English has no grammatical gender, so you learn the gender along with each noun. Languages are all masculine: le fran\u00e7ais.', 'And unlike English, the names of languages are not capitalized in French.']
+      },
+      parles: {
+        nature: 'Verb \u00b7 present tense',
+        texte: ['The verb parler with \u201ctu\u201d (you): tu parles.', 'With \u201cje\u201d, it\u2019s je parle, without the -s.']
+      }
+    },
+    es: {
+      je: {
+        nature: 'Pronombre personal \u00b7 1.\u00aa persona del singular',
+        equiv: 'yo',
+        texte: ['Representa a la persona que habla.', 'En espa\u00f1ol casi nunca se dice \u00abyo\u00bb, porque el verbo ya lo indica (hablo). En franc\u00e9s el pronombre es obligatorio: je parle.']
+      },
+      parle: {
+        nature: 'Verbo \u00b7 presente',
+        texte: ['El verbo parler (hablar), en presente con \u00abje\u00bb.'],
+        formes: [['parler', 'infinitivo: el verbo sin conjugar'], ['je parle', '\u00abyo hablo\u00bb. La -e final no se pronuncia']]
+      },
+      francais: {
+        nature: 'Nombre \u00b7 masculino',
+        equiv: 'franc\u00e9s',
+        texte: ['Aqu\u00ed nombra una lengua.', 'Como en espa\u00f1ol, los sustantivos franceses son masculinos o femeninos, y los idiomas son masculinos: le fran\u00e7ais, el franc\u00e9s.', 'Y, como en espa\u00f1ol, se escriben con min\u00fascula.']
+      },
+      parles: {
+        nature: 'Verbo \u00b7 presente',
+        texte: ['El verbo parler con \u00abtu\u00bb: tu parles.', 'Con \u00abje\u00bb se dice je parle, sin -s.']
+      }
     }
   };
 
@@ -86,16 +189,19 @@
     'bek-concentree-ouvert':'images/reveil/bek_concentree_bouche-ouverte_01-01.webp',
     'bek-perplexe-05':      'images/reveil/bek-perplexe_05-01.webp',
     'bek-perplexe-06':      'images/reveil/bek-perplexe_06-01.webp',
-    'bek-soulagee':         'images/reveil/bek-interpellee-soulagee_01-01.webp'
+    'bek-soulagee':         'images/reveil/bek-interpellee-soulagee_01-01.webp',
+    // 🎨 Optionnelle : pose « déçue » pour « …mais c'est tout ce dont je me
+    // souviens ». Absente, on retombe sur bek-perplexe-05.
+    'bek-decue':            'images/reveil/bek_decue_01-01.webp'
   };
   const POSES = [
     'bek-heureuse-ferme', 'bek-heureuse-ouvert', 'bek-concentree-ferme', 'bek-concentree-ouvert',
-    'bek-perplexe-05', 'bek-perplexe-06', 'bek-soulagee'
+    'bek-perplexe-05', 'bek-perplexe-06', 'bek-soulagee', 'bek-decue'
   ];
   const EXPRESSIONS = {
     heureuse: { ferme: 'bek-heureuse-ferme',   ouvert: 'bek-heureuse-ouvert',   repli: 'bek-soulagee' },
     effort:   { ferme: 'bek-concentree-ferme', ouvert: 'bek-concentree-ouvert', repli: 'bek-perplexe-06' },
-    triste:   { fixe: 'bek-perplexe-05' }
+    triste:   { fixe: 'bek-decue', repli: 'bek-perplexe-05' }
   };
 
   const VITESSE_TEXTE = 32;
@@ -187,10 +293,26 @@
         '</div>' +
         '<div class="mem-plateau" role="group"></div>' +
         '<div class="mem-sens" aria-hidden="true"></div>' +
-        (iconeLecteur ? '<div class="mem-lecteur mem-lecteur-cache" aria-hidden="true">' + iconeLecteur + '</div>' : '') +
+        (iconeLecteur ? '<button type="button" class="mem-lecteur mem-lecteur-cache" aria-label="' + echapper(T('aideBouton')) + '">' + iconeLecteur + '</button>' : '') +
+        (iconeLecteur ? '<div class="mem-invite mem-invite-cachee" aria-hidden="true"><p class="mem-invite-texte"></p></div>' : '') +
         (iconeLecteur ? '<div class="mem-lb mem-lb-cachee"><p class="mem-lb-texte"></p>' +
           '<button type="button" class="mem-lb-fleche" aria-label="' + echapper(T('suite')) + '">' +
             '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></button></div>' : '') +
+        (iconeLecteur ?
+          '<div class="mem-aide mem-aide-cachee" role="dialog" aria-modal="true" aria-labelledby="memAideTitre">' +
+            '<div class="mem-aide-voile"></div>' +
+            '<section class="mem-aide-feuille">' +
+              '<header class="mem-aide-entete">' +
+                '<span class="mem-aide-icone" aria-hidden="true">' + lect.htmlIcone(options, 'lect-lecteur-img') + '</span>' +
+                '<h2 class="mem-aide-titre" id="memAideTitre">' + echapper(T('aideTitre')) + '</h2>' +
+                '<button type="button" class="mem-aide-fermer" aria-label="' + echapper(T('aideFermer')) + '">' +
+                  '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>' +
+              '</header>' +
+              '<p class="mem-aide-legende">' + echapper(T('aideMots')) + '</p>' +
+              '<div class="mem-aide-mots" role="tablist"></div>' +
+              '<article class="mem-aide-carte" aria-live="polite"></article>' +
+            '</section>' +
+          '</div>' : '') +
       '</div>';
 
     const scene = conteneur.querySelector('.mem-scene');
@@ -205,6 +327,15 @@
     const sens = conteneur.querySelector('.mem-sens');
     const lecteurEl = conteneur.querySelector('.mem-lecteur');
     const lb = conteneur.querySelector('.mem-lb');
+    const invite = conteneur.querySelector('.mem-invite');
+    const aide = conteneur.querySelector('.mem-aide');
+    const aideMotsEl = conteneur.querySelector('.mem-aide-mots');
+    const aideCarte = conteneur.querySelector('.mem-aide-carte');
+    const aideFermerBtn = conteneur.querySelector('.mem-aide-fermer');
+    let aideOuverte = false;
+    let aideUtilisee = false;
+    let aideBloquee = false;
+    let dernierFocus = null;
     if (LANGUES_POLICE_SYSTEME.indexOf(langue) !== -1) scene.classList.add('mem-police-systeme');
 
     // ---------- Poses de Bek (même logique que sequence-reveil-bek.js) ----------
@@ -518,8 +649,109 @@
       });
     }
 
+    // ---------- L'aide du Lecteur ----------
+    function getAide(id) {
+      return (AIDE[langue] && AIDE[langue][id]) || (AIDE.en && AIDE.en[id]) || (AIDE.fr && AIDE.fr[id]) || null;
+    }
+    // Les mots proposés dans la feuille : d'abord ceux déjà posés dans la bulle
+    // (dans l'ordre), puis ceux qui restent sur le plateau (dans l'ordre où
+    // ils sont affichés). L'ordre de la phrase n'est donc jamais « dévoilé ».
+    function idsAide() {
+      const ids = [];
+      Array.prototype.forEach.call(phrase.querySelectorAll('.mem-case-pleine'), function (c) { ids.push(c.dataset.id); });
+      Array.prototype.forEach.call(plateau.querySelectorAll('.mem-tuile:not(.mem-tuile-partie):not(.mem-tuile-efface)'), function (t) {
+        if (ids.indexOf(t.dataset.id) === -1) ids.push(t.dataset.id);
+      });
+      return ids.length ? ids : PHRASE.slice();
+    }
+    function rendreAide(idVoulu) {
+      const ids = idsAide();
+      const actif = ids.indexOf(idVoulu) !== -1 ? idVoulu : ids[0];
+      aideMotsEl.innerHTML = ids.map(function (id) {
+        const sel = id === actif;
+        return '<button type="button" role="tab" class="mem-aide-puce' + (sel ? ' mem-aide-puce-active' : '') +
+          '" data-id="' + id + '" aria-selected="' + sel + '" dir="ltr">' + echapper(MOTS[id]) + '</button>';
+      }).join('');
+      const a = getAide(actif);
+      let html = '<h3 class="mem-aide-mot" dir="ltr">' + echapper(MOTS[actif]) + '</h3>';
+      if (a) {
+        html += '<span class="mem-aide-nature">' + echapper(a.nature) + '</span>';
+        if (a.equiv) {
+          html += '<p class="mem-aide-equiv">' +
+            (T('aideEquiv') ? '<span class="mem-aide-equiv-lib">' + echapper(T('aideEquiv')) + '</span> ' : '') +
+            '<strong dir="ltr">' + echapper(a.equiv) + '</strong></p>';
+        }
+        (a.texte || []).forEach(function (para) { html += '<p class="mem-aide-para">' + echapper(para) + '</p>'; });
+        if (a.formes && a.formes.length) {
+          html += '<ul class="mem-aide-formes">' + a.formes.map(function (f) {
+            return '<li><b dir="ltr">' + echapper(f[0]) + '</b><span>' + echapper(f[1]) + '</span></li>';
+          }).join('') + '</ul>';
+        }
+      }
+      aideCarte.innerHTML = html;
+      aideCarte.scrollTop = 0;
+      aideCarte.classList.remove('mem-aide-carte-change');
+      void aideCarte.offsetWidth;
+      aideCarte.classList.add('mem-aide-carte-change');
+    }
+    function surToucheAide(e) { if (e.key === 'Escape') fermerAide(); }
+    function ouvrirAide(idVoulu) {
+      if (!aide || aideOuverte || aideBloquee || arrete) return;
+      aideOuverte = true;
+      aideUtilisee = true;
+      masquerInvite();
+      cacherSens();
+      rendreAide(idVoulu || (selection && selection.dataset.id) || null);
+      dernierFocus = document.activeElement;
+      aide.classList.remove('mem-aide-cachee');
+      planifier(function () { if (aideOuverte) aideFermerBtn.focus({ preventScroll: true }); }, 380);
+      document.addEventListener('keydown', surToucheAide);
+    }
+    function fermerAide() {
+      if (!aideOuverte) return;
+      aideOuverte = false;
+      aide.classList.add('mem-aide-cachee');
+      document.removeEventListener('keydown', surToucheAide);
+      const retour = (dernierFocus && document.body.contains(dernierFocus)) ? dernierFocus : lecteurEl;
+      if (retour && retour.focus) retour.focus({ preventScroll: true });
+    }
+    if (aide) {
+      lecteurEl.addEventListener('click', function () { ouvrirAide(); });
+      aideFermerBtn.addEventListener('click', fermerAide);
+      aide.querySelector('.mem-aide-voile').addEventListener('click', fermerAide);
+      aideMotsEl.addEventListener('click', function (e) {
+        const b = e.target.closest ? e.target.closest('.mem-aide-puce') : null;
+        if (b) rendreAide(b.dataset.id);
+      });
+      // un mot déjà posé dans la bulle s'explique aussi d'un toucher
+      phrase.addEventListener('click', function (e) {
+        const c = e.target.closest ? e.target.closest('.mem-case-pleine') : null;
+        if (c) ouvrirAide(c.dataset.id);
+      });
+    }
+
+    // Invitation discrète au début : une bulle près du Lecteur, qui s'efface seule
+    function montrerInvite() {
+      if (!invite || aideUtilisee || aideOuverte || aideBloquee) return;
+      const tactile = !!(window.matchMedia && window.matchMedia('(pointer: coarse)').matches);
+      invite.querySelector('.mem-invite-texte').textContent = T(tactile ? 'aideInviteTactile' : 'aideInviteSouris');
+      invite.classList.remove('mem-invite-cachee');
+      lecteurEl.classList.add('mem-lecteur-appel');
+      lecteurReagit('mem-lecteur-saut', 650);
+      planifier(masquerInvite, 7000);
+    }
+    function masquerInvite() {
+      if (!invite) return;
+      invite.classList.add('mem-invite-cachee');
+      if (lecteurEl) lecteurEl.classList.remove('mem-lecteur-appel');
+    }
+
     // ---------- Souvenir reconstitué : on sort de la mémoire ----------
     async function restauration() {
+      aideBloquee = true;                       // plus d'aide pendant la sortie du souvenir
+      if (aideOuverte) fermerAide();
+      masquerInvite();
+      if (lecteurEl) lecteurEl.classList.add('mem-lecteur-inactif');
       scene.classList.add('mem-restauree');
       etincelles(bulle, 22, true);
       await parlerPendant('heureuse', 1100);
@@ -572,6 +804,7 @@
       construirePlateau(TOURS[0]);
       await attendre(500);
       verrou = false;
+      planifier(montrerInvite, 1600);
     }
 
     if (options.precharger === false) lancer({});
@@ -581,6 +814,7 @@
       arreter: function () {
         arrete = true;
         minuteurs.forEach(clearTimeout);
+        document.removeEventListener('keydown', surToucheAide);
       }
     };
   }

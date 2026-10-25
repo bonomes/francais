@@ -1,0 +1,271 @@
+/* ==================================================================
+   sequence-lecteur.css — habillage de sequence-lecteur.js.
+
+   🆕 (18-10-2026) Tout vit DANS .rbek-scene (z-index 9000, position fixed) :
+   les éléments ci-dessous sont des enfants de la scène du réveil.
+
+   Convention d'écran de la séquence : Bek en haut (bulle), l'élève en bas
+   (« pensée » pâle), le SYSTÈME au centre (fenêtre plate, police système),
+   le Lecteur dans un coin.
+
+   ⚠️ Même leçon que sequence-reveil-bek.css : on ne masque jamais avec
+   l'attribut `hidden` (une règle de classe qui pose `display` l'emporte) —
+   toujours une classe (.lect-cache : visibility + pointer-events).
+   ================================================================== */
+
+/* ---------- Commentaire de l'élève (pensée) ---------- */
+.lect-pensee {
+  position: absolute;
+  left: 50%;
+  bottom: 3dvh;
+  max-width: min(88vw, 380px);
+  margin: 0;
+  padding: 10px 18px;
+  font-family: 'Baloo 2', sans-serif;
+  font-weight: 600;
+  font-style: italic;
+  font-size: 1.02rem;
+  color: var(--brun-clair, #8A7364);
+  text-align: center;
+  background: rgba(255, 255, 255, 0.72);
+  border: 2px dashed var(--peche, #F0A98B);
+  border-radius: 999px;
+  z-index: 7;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateX(-50%) translateY(10px);
+  transition: opacity 0.4s ease, transform 0.4s cubic-bezier(.2,.8,.3,1.2);
+}
+.lect-pensee.lect-pensee-visible {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+.lect-police-systeme { font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; }
+.lect-police-systeme .lect-btn,
+.lect-police-systeme .lect-lecteur-texte { font-family: inherit; }
+
+/* ---------- Voile (assombrit la scène derrière les fenêtres) ---------- */
+.lect-voile {
+  position: absolute;
+  inset: 0;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(74, 59, 51, 0);
+  transition: background 0.3s ease;
+  pointer-events: auto;
+}
+.lect-voile.lect-voile-visible { background: rgba(74, 59, 51, 0.42); }
+/* quand le Lecteur parle : plus de fond assombri, et la scène derrière
+   (Bek) reste regardable ; seuls les éléments du Lecteur captent le clic */
+.lect-voile.lect-voile-leger { background: rgba(74, 59, 51, 0.12); }
+
+/* ---------- Fenêtre système ----------
+   À PLAT : pas de rebord 3D ni de pêche foncé — c'est ce qui distingue la
+   voix de l'ordinateur de celle des personnages. */
+.lect-carte {
+  width: min(92vw, 380px);
+  padding: 18px 18px 16px;
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  color: #2F2722;
+  background: #FFFFFF;
+  border: 1px solid #CFC6BE;
+  border-radius: 14px;
+  box-shadow: 0 18px 44px rgba(40, 30, 24, 0.32), 0 2px 6px rgba(40, 30, 24, 0.14);
+  opacity: 0;
+  transform: scale(0.94) translateY(8px);
+  transition: opacity 0.24s ease, transform 0.28s cubic-bezier(.2,.8,.3,1.15);
+}
+.lect-carte.lect-carte-visible { opacity: 1; transform: scale(1) translateY(0); }
+
+.lect-entete { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+.lect-alerte {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  font-weight: 800;
+  font-size: 1.05rem;
+  color: #FFFFFF;
+  background: #D9534F;
+}
+.lect-titre { margin: 0; font-size: 1.05rem; font-weight: 700; line-height: 1.2; }
+
+.lect-fichier {
+  display: inline-block;
+  margin-bottom: 10px;
+  padding: 3px 10px;
+  font-family: ui-monospace, 'SFMono-Regular', Consolas, monospace;
+  font-size: 0.82rem;
+  color: #5C5048;
+  background: #F3EEE9;
+  border-radius: 6px;
+}
+.lect-texte { margin: 0 0 16px; font-size: 0.93rem; line-height: 1.45; color: #4A3F38; }
+
+.lect-boutons { display: flex; justify-content: flex-end; gap: 10px; }
+.lect-boutons-seul { justify-content: center; min-height: 44px; }
+
+.lect-btn {
+  border: none;
+  border-radius: 10px;
+  padding: 10px 22px;
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: #FFFFFF;
+  background: var(--peche-fonce, #E08867);
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.12s ease, opacity 0.2s ease;
+}
+.lect-btn:hover:not(:disabled) { background: #d97c5c; }
+.lect-btn:active:not(:disabled) { transform: translateY(1px); }
+.lect-btn:disabled { opacity: 0.55; cursor: default; }
+.lect-btn:focus-visible { outline: 3px solid #4A3B33; outline-offset: 2px; }
+.lect-btn-clair { color: #4A3F38; background: #EFE9E3; }
+.lect-btn-clair:hover:not(:disabled) { background: #E5DDD5; }
+.lect-btn.lect-cache { opacity: 0; visibility: hidden; pointer-events: none; }
+
+/* ---------- Installation ---------- */
+.lect-carte-install { text-align: center; padding-top: 22px; }
+
+.lect-icone-install {
+  position: relative;
+  width: 104px;
+  height: 104px;
+  margin: 0 auto 12px;
+}
+.lect-icone-fond,
+.lect-icone-plein { position: absolute; inset: 0; display: block; }
+.lect-icone-fond { filter: grayscale(1); opacity: 0.28; }
+/* la version en couleur se « découvre » du bas vers le haut selon --p */
+.lect-icone-plein { clip-path: inset(calc((1 - var(--p, 0)) * 100%) 0 0 0); }
+.lect-icone-img { width: 100%; height: 100%; object-fit: contain; display: block; }
+
+.lect-titre-install { margin-bottom: 14px; font-size: 1rem; }
+
+.lect-barre {
+  height: 12px;
+  overflow: hidden;
+  background: #EFE9E3;
+  border-radius: 999px;
+}
+.lect-barre-remplie {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, #F0A98B, #E08867);
+  border-radius: inherit;
+  transform: scaleX(0);
+  transform-origin: left center;
+}
+[dir="rtl"] .lect-barre-remplie { transform-origin: right center; }
+.lect-pourcent { margin: 7px 0 10px; font-size: 0.84rem; font-weight: 700; color: #6B5D54; }
+
+/* « terminé » : l'icône fait un petit saut */
+.lect-carte-termine .lect-icone-install { animation: lectSaut 0.55s cubic-bezier(.3,1.6,.5,1); }
+.lect-carte-termine .lect-icone-fond { opacity: 0; }
+.lect-carte-termine .lect-pourcent { color: #3d7a3d; }
+@keyframes lectSaut {
+  0%   { transform: translateY(0) scale(1); }
+  40%  { transform: translateY(-12px) scale(1.08); }
+  100% { transform: translateY(0) scale(1); }
+}
+
+/* ---------- Le Lecteur parle ---------- */
+.lect-lecteur-zone {
+  position: absolute;
+  left: 50%;
+  bottom: 5dvh;
+  width: min(92vw, 400px);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  transform: translateX(-50%) translateY(18px);
+  opacity: 0;
+  transition: opacity 0.35s ease, transform 0.45s cubic-bezier(.2,.8,.3,1.3);
+  pointer-events: none;
+}
+.lect-lecteur-zone.lect-lecteur-visible {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+.lect-lecteur-zone > * { pointer-events: auto; }
+
+.lect-lecteur-bulle {
+  position: relative;
+  align-self: stretch;
+  padding: 14px 16px 14px;
+  font-family: 'Baloo 2', sans-serif;
+  color: var(--brun-fonce, #4A3B33);
+  background: rgba(255, 255, 255, 0.98);
+  border: 2px solid var(--brun-fonce, #4A3B33);
+  border-radius: 20px;
+  box-shadow: 0 4px 0 0 var(--brun-fonce, #4A3B33), 3px 6px 14px var(--ombre, rgba(102, 80, 69, 0.18));
+}
+/* queue de la bulle vers l'icône (en bas à gauche) */
+.lect-lecteur-bulle::after {
+  content: '';
+  position: absolute;
+  left: 42px;
+  bottom: -11px;
+  width: 18px;
+  height: 18px;
+  background: rgba(255, 255, 255, 0.98);
+  border-right: 2px solid var(--brun-fonce, #4A3B33);
+  border-bottom: 2px solid var(--brun-fonce, #4A3B33);
+  transform: rotate(45deg);
+}
+[dir="rtl"] .lect-lecteur-bulle::after { left: auto; right: 42px; }
+.lect-lecteur-texte {
+  margin: 0 0 12px;
+  font-weight: 700;
+  font-size: clamp(1rem, 2.5dvh, 1.15rem);
+  line-height: 1.35;
+  text-align: center;
+}
+.lect-lecteur-bulle .lect-btn {
+  display: block;
+  margin: 0 auto;
+  font-family: 'Baloo 2', sans-serif;
+  border-radius: 999px;
+  padding: 10px 28px;
+  box-shadow: 0 3px 0 0 var(--brun-fonce, #4A3B33);
+}
+.lect-lecteur-bulle .lect-btn:active:not(:disabled) { transform: translateY(2px); box-shadow: none; }
+
+.lect-lecteur {
+  width: clamp(72px, 13dvh, 96px);
+  aspect-ratio: 1;
+  margin: 8px 0 0 14px;
+  animation: lectFlotte 2.8s ease-in-out infinite;
+  filter: drop-shadow(2px 5px 6px rgba(102, 80, 69, 0.28));
+}
+.lect-lecteur-img { width: 100%; height: 100%; object-fit: contain; display: block; }
+[dir="rtl"] .lect-lecteur { margin: 8px 14px 0 0; align-self: flex-end; }
+@keyframes lectFlotte {
+  0%, 100% { transform: translateY(0) rotate(-3deg); }
+  50%      { transform: translateY(-9px) rotate(3deg); }
+}
+
+/* petites « pages » qui battent (icône provisoire) */
+.lect-lecteur .lect-aile-g { transform-origin: 30px 58px; animation: lectBat 1.4s ease-in-out infinite; }
+.lect-lecteur .lect-aile-d { transform-origin: 90px 58px; animation: lectBat 1.4s ease-in-out infinite reverse; }
+@keyframes lectBat {
+  0%, 100% { transform: rotate(0deg); }
+  50%      { transform: rotate(-9deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lect-lecteur,
+  .lect-lecteur .lect-aile,
+  .lect-carte-termine .lect-icone-install { animation: none; }
+  .lect-carte, .lect-lecteur-zone, .lect-pensee { transition: opacity 0.2s ease; }
+}

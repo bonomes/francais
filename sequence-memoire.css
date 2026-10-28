@@ -627,3 +627,52 @@
   .mem-lecteur.mem-lecteur-appel::after, .mem-aide-icone, .mem-aide-carte.mem-aide-carte-change { animation: none; }
   .mem-aide-feuille, .mem-aide-cachee .mem-aide-feuille, .mem-invite { transition: opacity 0.2s ease; }
 }
+
+/* ==================================================================
+   🆕 (25-10-2026) MISE EN SCÈNE : bouton de son, inclinaison de secours
+   ================================================================== */
+
+/* Sans l'image « tête penchée », la concentrée s'incline légèrement
+   (pivot aux pieds, comme .rbek-bek) pour que l'ouverture marche déjà. */
+.mem-scene .rbek-bek { transition: transform 0.6s cubic-bezier(.3, .9, .3, 1); }
+.mem-scene .rbek-bek.mem-penche-css { transform: rotate(-3.5deg); }
+
+/* Bouton haut-parleur : même famille que le « retour » du menu (verre dépoli,
+   contour pêche), à droite, symétrique du Lecteur. */
+.mem-son {
+  position: absolute;
+  right: 12px;
+  bottom: 24dvh;
+  z-index: 8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border-radius: 50%;
+  border: 1.5px solid var(--peche, #F0A98B);
+  background: rgba(255, 255, 255, 0.72);
+  box-shadow: 2px 2px 8px var(--ombre, rgba(102, 80, 69, 0.18));
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  transition: transform 0.2s cubic-bezier(.34, 1.6, .4, 1), background 0.15s ease, opacity 0.3s ease;
+}
+.mem-son svg { width: 22px; height: 22px; fill: none; stroke: var(--peche-fonce, #E08867); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.mem-son .mem-son-haut-parleur { fill: rgba(240, 169, 139, 0.28); }
+.mem-son .mem-son-barre { opacity: 0; }
+.mem-son:hover { background: #FFFFFF; transform: scale(1.08); }
+.mem-son:active { transform: scale(0.92); }
+.mem-son:focus-visible { outline: 3px solid var(--brun-fonce, #4A3B33); outline-offset: 3px; }
+/* son coupé : ondes remplacées par une barre, bouton en retrait */
+.mem-son.mem-son-coupe { opacity: 0.8; }
+.mem-son.mem-son-coupe .mem-son-ondes { opacity: 0; }
+.mem-son.mem-son-coupe .mem-son-barre { opacity: 1; }
+
+/* 🩹 Aucun débordement défilable : la feuille d'aide rangée sous l'écran, ou le
+   zoom de Bek, ne doivent jamais permettre à la scène de glisser (un focus ou un
+   geste pouvait la faire défiler d'une centaine de pixels). `clip` interdit
+   même le défilement programmatique. */
+.mem-scene { overflow: hidden; overflow: clip; }
+.mem-aide { overflow: hidden; overflow: clip; }

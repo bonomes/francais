@@ -31,6 +31,24 @@
    Les explications vivent dans AIDE (une entrée par mot, par langue) : pour
    ajouter un mot ou un point de grammaire, on ajoute une entrée.
 
+   🆕 (25-10-2026) MISE EN SCÈNE :
+     - OUVERTURE (≈ 4 s, passable d'un toucher) : Bek concentrée, penche la
+       tête, la relève avec confiance (petit sursaut), main sur la poitrine,
+       solennelle — puis la bulle et les tuiles arrivent.
+     - TROIS TOURS = trois postures et un rapprochement progressif (zoom
+       1 → 1,12 → 1,25) ; à la fin, dézoom et retour à la position initiale.
+     - BOUCHE SYNCHRONISÉE : au toucher qui place un mot, la bouche de Bek
+       s'ouvre autant de fois que le mot a de syllabes et se referme à
+       l'atterrissage de la tuile (paires fermée/ouverte par posture).
+     - SONS : une note qui monte à chaque mot posé (gamme pentatonique,
+       synthétisée, aucun fichier), un accord à la phrase complète, un « bonk »
+       doux sur une erreur ; la VOIX dit le mot (fichier audio/fr/<mot>.mp3 s'il
+       existe, sinon la synthèse vocale du navigateur). Bouton haut-parleur
+       (mémorisé) pour couper le son — SON_PAR_DEFAUT règle l'état initial.
+     Toutes les poses nouvelles sont facultatives : absentes, on retombe sur
+     les poses existantes (heureuse / concentrée), la mise en scène marche
+     quand même et s'enrichit à mesure que les images arrivent.
+
    Aucune « corruption » du texte : c'est une seule bonne mémoire, et c'est
    l'élève qui la reconstruit.
 
@@ -60,11 +78,19 @@
     je: 'Je', parle: 'parle', francais: 'fran\u00e7ais', parles: 'parles'
   };
   // `places` = indices des mots déjà en place au début du tour.
+  // `pose` = posture de Bek pendant le tour ; `zoom` = rapprochement de la caméra.
   const TOURS = [
-    { places: [0, 1], distracteurs: [] },
-    { places: [0],    distracteurs: [] },
-    { places: [],     distracteurs: ['parles'] }
+    { places: [0, 1], distracteurs: [],          pose: 'solennelle', zoom: 1 },
+    { places: [0],    distracteurs: [],          pose: 'tendue',     zoom: 1.12 },
+    { places: [],     distracteurs: ['parles'],  pose: 'emue',       zoom: 1.25 }
   ];
+  // Nombre de syllabes de chaque mot : la bouche de Bek s'ouvre autant de fois.
+  const SYLLABES = { je: 1, parle: 1, francais: 2, parles: 1 };
+  const SON_PAR_DEFAUT = true;            // ← mettre false pour démarrer en silence
+  const CLE_SON = 'kebbek_son';
+  // Notes (do ré mi sol la do) : un mot posé = une note qui monte dans la phrase.
+  const GAMME = [523.25, 587.33, 659.25, 783.99, 880.0, 1046.5];
+  const NOTE_DU_MOT = [0, 2, 3];          // je = do, parle = mi, français = sol
 
   const DICO = {
     fr: {
@@ -72,6 +98,7 @@
       bekFin: '\u2026mais c\u2019est tout ce dont je me souviens.',
       lecteurFin: 'Il doit y en avoir d\u2019autres\u2026 Je peux t\u2019aider \u00e0 les retrouver.',
       suite: 'Suite',
+      sonBouton: 'Son',
       aideBouton: 'Le Lecteur\u00a0: aide',
       aideInviteTactile: 'Touche-moi si tu ne comprends pas quelque chose\u00a0!',
       aideInviteSouris: 'Clique sur moi si tu ne comprends pas quelque chose\u00a0!',
@@ -85,6 +112,7 @@
       bekFin: '\u2026but that\u2019s all I remember.',
       lecteurFin: 'There must be more\u2026 I can help you find them.',
       suite: 'Next',
+      sonBouton: 'Sound',
       aideBouton: 'The Reader: help',
       aideInviteTactile: 'Tap me if you don\u2019t understand something!',
       aideInviteSouris: 'Click me if you don\u2019t understand something!',
@@ -98,6 +126,7 @@
       bekFin: '\u2026pero eso es todo lo que recuerdo.',
       lecteurFin: 'Debe de haber m\u00e1s\u2026 Puedo ayudarte a encontrarlos.',
       suite: 'Siguiente',
+      sonBouton: 'Sonido',
       aideBouton: 'El Lector: ayuda',
       aideInviteTactile: '\u00a1Toca sobre m\u00ed si no entiendes algo!',
       aideInviteSouris: '\u00a1Haz clic en m\u00ed si no entiendes algo!',
@@ -192,16 +221,36 @@
     'bek-soulagee':         'images/reveil/bek-interpellee-soulagee_01-01.webp',
     // 🎨 Optionnelle : pose « déçue » pour « …mais c'est tout ce dont je me
     // souviens ». Absente, on retombe sur bek-perplexe-05.
-    'bek-decue':            'images/reveil/bek_decue_01-01.webp'
+    'bek-decue':            'images/reveil/bek_decue_01-01.webp',
+    // 🎨 Optionnelles : l'ouverture et les postures des trois tours. Absentes,
+    // on retombe sur les poses existantes (voir EXPRESSIONS).
+    'bek-penchee':          'images/reveil/bek_penchee_01-01.webp',
+    'bek-confiante':        'images/reveil/bek_confiante_01-01.webp',
+    'bek-solennelle-ferme': 'images/reveil/bek_solennelle_bouche-fermee_01-01.webp',
+    'bek-solennelle-ouvert':'images/reveil/bek_solennelle_bouche-ouverte_01-01.webp',
+    'bek-tendue-ferme':     'images/reveil/bek_tendue_bouche-fermee_01-01.webp',
+    'bek-tendue-ouvert':    'images/reveil/bek_tendue_bouche-ouverte_01-01.webp',
+    'bek-emue-ferme':       'images/reveil/bek_emue_bouche-fermee_01-01.webp',
+    'bek-emue-ouvert':      'images/reveil/bek_emue_bouche-ouverte_01-01.webp'
   };
   const POSES = [
     'bek-heureuse-ferme', 'bek-heureuse-ouvert', 'bek-concentree-ferme', 'bek-concentree-ouvert',
-    'bek-perplexe-05', 'bek-perplexe-06', 'bek-soulagee', 'bek-decue'
+    'bek-perplexe-05', 'bek-perplexe-06', 'bek-soulagee', 'bek-decue',
+    'bek-penchee', 'bek-confiante',
+    'bek-solennelle-ferme', 'bek-solennelle-ouvert', 'bek-tendue-ferme', 'bek-tendue-ouvert',
+    'bek-emue-ferme', 'bek-emue-ouvert'
   ];
   const EXPRESSIONS = {
     heureuse: { ferme: 'bek-heureuse-ferme',   ouvert: 'bek-heureuse-ouvert',   repli: 'bek-soulagee' },
     effort:   { ferme: 'bek-concentree-ferme', ouvert: 'bek-concentree-ouvert', repli: 'bek-perplexe-06' },
-    triste:   { fixe: 'bek-decue', repli: 'bek-perplexe-05' }
+    triste:   { fixe: 'bek-decue', repli: 'bek-perplexe-05' },
+    // ouverture de la mémoire (images uniques : elle ne parle pas encore)
+    penchee:   { fixe: 'bek-penchee',   repli: 'bek-concentree-ferme' },
+    confiante: { fixe: 'bek-confiante', repli: 'bek-heureuse-ferme' },
+    // postures des trois tours (paires fermée/ouverte ; `alt` = expression de repli)
+    solennelle: { ferme: 'bek-solennelle-ferme', ouvert: 'bek-solennelle-ouvert', alt: 'heureuse' },
+    tendue:     { ferme: 'bek-tendue-ferme',     ouvert: 'bek-tendue-ouvert',     alt: 'heureuse' },
+    emue:       { ferme: 'bek-emue-ferme',       ouvert: 'bek-emue-ouvert',       alt: 'heureuse' }
   };
 
   const VITESSE_TEXTE = 32;
@@ -259,6 +308,10 @@
 
     let arrete = false;
     let niveau = 1;
+    let numeroTour = 0;
+    let sauter = false;         // vrai si l'élève a touché l'écran pendant l'ouverture
+    let reveils = [];
+    let jetonBouche = 0;
     let courante = null;
     let verrou = true;          // vrai tant que l'élève ne peut pas jouer
     let selection = null;       // tuile dont le sens est affiché
@@ -293,6 +346,9 @@
         '</div>' +
         '<div class="mem-plateau" role="group"></div>' +
         '<div class="mem-sens" aria-hidden="true"></div>' +
+        '<button type="button" class="mem-son" aria-pressed="true" aria-label="' + echapper(T('sonBouton')) + '">' +
+          '<svg viewBox="0 0 24 24" aria-hidden="true"><path class="mem-son-haut-parleur" d="M4 9.5v5h3.5L12 18.5v-13L7.5 9.5H4z"/>' +
+          '<path class="mem-son-ondes" d="M15.5 9a4 4 0 010 6M18 6.5a7.5 7.5 0 010 11"/><path class="mem-son-barre" d="M4 4l16 16"/></svg></button>' +
         (iconeLecteur ? '<button type="button" class="mem-lecteur mem-lecteur-cache" aria-label="' + echapper(T('aideBouton')) + '">' + iconeLecteur + '</button>' : '') +
         (iconeLecteur ? '<div class="mem-invite mem-invite-cachee" aria-hidden="true"><p class="mem-invite-texte"></p></div>' : '') +
         (iconeLecteur ? '<div class="mem-lb mem-lb-cachee"><p class="mem-lb-texte"></p>' +
@@ -328,6 +384,8 @@
     const lecteurEl = conteneur.querySelector('.mem-lecteur');
     const lb = conteneur.querySelector('.mem-lb');
     const invite = conteneur.querySelector('.mem-invite');
+    const zoomEl = conteneur.querySelector('.rbek-zoom');
+    const boutonSon = conteneur.querySelector('.mem-son');
     const aide = conteneur.querySelector('.mem-aide');
     const aideMotsEl = conteneur.querySelector('.mem-aide-mots');
     const aideCarte = conteneur.querySelector('.mem-aide-carte');
@@ -339,23 +397,144 @@
     if (LANGUES_POLICE_SYSTEME.indexOf(langue) !== -1) scene.classList.add('mem-police-systeme');
 
     // ---------- Poses de Bek (même logique que sequence-reveil-bek.js) ----------
-    function montrer(nom) {
+    // `fondu` (ms) : fondu enchaîné doux entre deux postures ; sans lui, coupe nette
+    // (c'est ce qu'il faut pour la bouche, qui bat vite).
+    function montrer(nom, fondu) {
       const cible = poses[nom];
       if (!cible || cible === courante) return;
-      cible.style.transitionDuration = '0ms';
+      const ancienne = courante;
+      const ms = reduit ? 0 : (fondu || 0);
+      cible.style.transitionDuration = ms + 'ms';
       cible.style.zIndex = String(++niveau);
       cible.classList.add('rbek-pose-visible');
-      const ancienne = courante;
       courante = cible;
-      if (ancienne) ancienne.classList.remove('rbek-pose-visible');
+      if (!ancienne) return;
+      if (ms) {
+        ancienne.style.transitionDuration = '0ms';
+        planifier(function () { if (ancienne !== courante) ancienne.classList.remove('rbek-pose-visible'); }, ms + 40);
+      } else {
+        ancienne.classList.remove('rbek-pose-visible');
+      }
     }
     function disponible(nom) { return !!(nom && poses[nom]); }
     function formes(exp) {
       const e = EXPRESSIONS[exp];
       if (disponible(e.ferme) && disponible(e.ouvert)) return { ferme: e.ferme, ouvert: e.ouvert };
+      if (e.alt) return formes(e.alt);
       return { fixe: [e.fixe, e.ferme, e.repli, 'bek-soulagee'].find(disponible) };
     }
-    function exprimer(exp) { const f = formes(exp); montrer(f.ferme || f.fixe); }
+    function exprimer(exp, fondu) { const f = formes(exp); montrer(f.ferme || f.fixe, fondu); }
+    function expTour() { return TOURS[numeroTour].pose; }
+
+    // Caméra : rapprochement progressif (le visage reste entre la bulle et les tuiles)
+    function zoomer(niveauZoom, ms) {
+      zoomEl.style.transformOrigin = '50% 30%';
+      zoomEl.style.transition = (reduit || !ms) ? 'none' : 'transform ' + ms + 'ms cubic-bezier(.4,0,.2,1)';
+      zoomEl.style.transform = 'scale(' + niveauZoom + ')';
+    }
+
+    // La bouche s'ouvre `syllabes` fois, réparties sur `duree` ms, et se referme.
+    function bouchePhrase(exp, syllabes, duree) {
+      const f = formes(exp);
+      if (!f.ferme) return;
+      const mon = ++jetonBouche;
+      const pas = duree / Math.max(1, syllabes);
+      for (let i = 0; i < syllabes; i++) {
+        planifier(function () { if (mon === jetonBouche) montrer(f.ouvert); }, i * pas);
+        planifier(function () { if (mon === jetonBouche) montrer(f.ferme); }, i * pas + pas * 0.62);
+      }
+      planifier(function () { if (mon === jetonBouche) montrer(f.ferme); }, duree);
+    }
+
+    // ---------- Sons (synthétisés : aucun fichier requis) ----------
+    const son = { actif: SON_PAR_DEFAUT, ctx: null };
+    try {
+      const v = localStorage.getItem(CLE_SON);
+      if (v === '0') son.actif = false;
+      else if (v === '1') son.actif = true;
+    } catch (e) {}
+    function ctxAudio() {
+      if (!son.ctx) {
+        const AC = window.AudioContext || window.webkitAudioContext;
+        if (!AC) return null;
+        try { son.ctx = new AC(); } catch (e) { return null; }
+      }
+      if (son.ctx.state === 'suspended' && son.ctx.resume) son.ctx.resume().catch(function () {});
+      return son.ctx;
+    }
+    function note(freq, debut, duree, type, gain) {
+      if (!son.actif) return;
+      const c = ctxAudio();
+      if (!c) return;
+      try {
+        const t0 = c.currentTime + (debut || 0);
+        const o = c.createOscillator();
+        const g = c.createGain();
+        o.type = type || 'sine';
+        o.frequency.value = freq;
+        g.gain.setValueAtTime(0.0001, t0);
+        g.gain.exponentialRampToValueAtTime(gain || 0.12, t0 + 0.02);
+        g.gain.exponentialRampToValueAtTime(0.0001, t0 + duree);
+        o.connect(g);
+        g.connect(c.destination);
+        o.start(t0);
+        o.stop(t0 + duree + 0.05);
+      } catch (e) {}
+    }
+    function sonMot(i) {
+      const f = GAMME[NOTE_DU_MOT[i] != null ? NOTE_DU_MOT[i] : 0];
+      note(f, 0, 0.42, 'sine', 0.13);
+      note(f * 2, 0, 0.24, 'triangle', 0.035);
+    }
+    function sonErreur() { note(196, 0, 0.2, 'triangle', 0.1); note(174.6, 0.09, 0.22, 'triangle', 0.08); }
+    function sonPhrase() {
+      [0, 2, 3, 5].forEach(function (k, i) { note(GAMME[k], i * 0.1, 0.8, 'sine', 0.1); });
+    }
+    function sonRestauration() {
+      [0, 1, 2, 3, 4, 5].forEach(function (k, i) { note(GAMME[k], i * 0.12, 1.1, 'sine', 0.08); });
+    }
+
+    // La voix : audio/fr/<id>.mp3 s'il existe, sinon la synthèse vocale du navigateur.
+    const dispoAudio = {};
+    function synthese(texte) {
+      try {
+        const ss = window.speechSynthesis;
+        if (!ss || !window.SpeechSynthesisUtterance) return;
+        const u = new window.SpeechSynthesisUtterance(texte);
+        u.lang = options.voixLangue || 'fr-FR';
+        u.rate = 0.85;
+        u.pitch = 1.1;
+        const voix = (ss.getVoices ? ss.getVoices() : []).filter(function (v) { return v.lang && v.lang.toLowerCase().indexOf('fr') === 0; })[0];
+        if (voix) u.voice = voix;
+        ss.cancel();
+        ss.speak(u);
+      } catch (e) {}
+    }
+    function direMot(id, texte) {
+      if (!son.actif) return;
+      if (dispoAudio[id] === false) { synthese(texte); return; }
+      let repli = false;
+      function secours() { if (repli) return; repli = true; dispoAudio[id] = false; synthese(texte); }
+      try {
+        const a = new Audio((options.dossierAudio || 'audio/fr/') + id + '.mp3');
+        a.addEventListener('error', secours, { once: true });
+        const p = a.play();
+        if (p && p.then) p.then(function () { dispoAudio[id] = true; }).catch(function () { if (dispoAudio[id] !== true) secours(); });
+      } catch (e) { secours(); }
+    }
+    function reglerBoutonSon() {
+      boutonSon.setAttribute('aria-pressed', son.actif ? 'true' : 'false');
+      boutonSon.classList.toggle('mem-son-coupe', !son.actif);
+    }
+    reglerBoutonSon();
+    boutonSon.addEventListener('click', function () {
+      son.actif = !son.actif;
+      try { localStorage.setItem(CLE_SON, son.actif ? '1' : '0'); } catch (e) {}
+      if (!son.actif) { try { window.speechSynthesis && window.speechSynthesis.cancel(); } catch (e) {} }
+      else { note(GAMME[2], 0, 0.3, 'sine', 0.1); }
+      reglerBoutonSon();
+    });
+    scene.addEventListener('pointerdown', function () { if (son.actif) ctxAudio(); }, { once: true });
 
     // Bek « dit » un mot : la bouche bat un court instant (irrégulier).
     function parlerPendant(exp, ms) {
@@ -489,6 +668,7 @@
     }
 
     function erreur(t) {
+      sonErreur();
       t.classList.remove('mem-secoue');
       void t.offsetWidth;
       t.classList.add('mem-secoue');
@@ -535,20 +715,23 @@
       verrou = true;
       t.classList.remove('mem-indice');
       deselectionner();
+      const id = t.dataset.id;
+      // Bek « dit » le mot : sa bouche s'ouvre au toucher, se referme quand la tuile atterrit
+      direMot(id, MOTS[id]);
+      bouchePhrase(expTour(), SYLLABES[id] || 1, reduit ? 420 : 520);
       voler(t, cible).then(function () {
         cible.classList.add('mem-case-pleine', 'mem-case-pop');
         cible.classList.remove('mem-case-suivante');
         etincelles(cible, 7, false);
+        sonMot(PHRASE.indexOf(id));
         erreurs = 0;
         majSuivante();
         if (!prochainVide()) { tourReussi(); return; }
-        parlerPendant('heureuse', 260);
         verrou = false;
       });
     }
 
     // ---------- Fin de tour / tours suivants ----------
-    let numeroTour = 0;
     async function tourReussi() {
       // les tuiles restantes (le « piège ») s'effacent : la phrase est complète
       Array.prototype.forEach.call(plateau.querySelectorAll('.mem-tuile:not(.mem-tuile-partie)'), function (t) {
@@ -556,11 +739,15 @@
       });
       bulle.classList.add('mem-reussi');
       lecteurReagit('mem-lecteur-saut', 650);
-      parlerPendant('heureuse', 900);
-      await attendre(1300);
+      sonPhrase();
+      direMot('phrase', 'Je parle fran\u00e7ais');
+      bouchePhrase(expTour(), 4, 1400);          // « Je-par-le-fran-çais » (4 syllabes sonores)
+      await attendre(1750);
       bulle.classList.remove('mem-reussi');
       if (numeroTour + 1 < TOURS.length) {
         numeroTour++;
+        zoomer(TOURS[numeroTour].zoom, 1300);       // Bek se rapproche
+        exprimer(TOURS[numeroTour].pose, 450);      // nouvelle posture, en fondu
         phrase.classList.add('mem-phrase-sort');
         plateau.classList.add('mem-plateau-vide');
         await attendre(380);
@@ -754,8 +941,8 @@
       if (lecteurEl) lecteurEl.classList.add('mem-lecteur-inactif');
       scene.classList.add('mem-restauree');
       etincelles(bulle, 22, true);
-      await parlerPendant('heureuse', 1100);
-      await attendre(300);
+      sonRestauration();
+      await attendre(1400);
 
       plateau.classList.add('mem-plateau-sorti');
       bulle.classList.add('rbek-bulle-cachee');
@@ -764,9 +951,11 @@
 
       // le fond chaud se retire : on revient à Bek, concentrée
       scene.classList.remove('mem-souvenir');
-      exprimer('effort');
-      await attendre(1200);
+      zoomer(1, 1300);                         // Bek reprend sa place
+      exprimer('effort', 600);
+      await attendre(1300);
 
+      direMot('phrase', 'Je parle fran\u00e7ais');
       await dire('Je parle fran\u00e7ais\u00a0!', 'heureuse');
       await dire(T('bekFin'), 'triste');
       bulle.classList.add('rbek-bulle-cachee');
@@ -791,12 +980,50 @@
         poses[nom] = img;
       });
     }
+    // Une pause que le toucher de l'élève peut écourter (ouverture passable)
+    function pause(ms) {
+      return new Promise(function (resolve) {
+        if (sauter) { resolve(); return; }
+        const rec = { resolve: resolve };
+        rec.id = planifier(function () { reveils = reveils.filter(function (r) { return r !== rec; }); resolve(); }, ms);
+        reveils.push(rec);
+      });
+    }
+    function sauterOuverture() {
+      if (sauter) return;
+      sauter = true;
+      reveils.forEach(function (r) { clearTimeout(r.id); r.resolve(); });
+      reveils = [];
+    }
+
     async function lancer(etat) {
       if (arrete) return;
       creerPoses(etat || {});
-      exprimer('heureuse');
+      zoomer(1, 0);
+      exprimer('effort');                         // point de départ : concentrée
       scene.classList.add('mem-prete');
-      await attendre(650);
+      scene.addEventListener('pointerdown', sauterOuverture);
+
+      // --- Ouverture : elle cherche, se redresse, pose la main sur le cœur ---
+      await pause(1500);
+      if (!sauter) {                                // tête penchée
+        if (disponible('bek-penchee')) exprimer('penchee', 380);
+        else bek.classList.add('mem-penche-css');   // sans l'image : inclinaison simulée
+        await pause(1150);
+      }
+      if (!sauter) {                                // elle la relève, avec confiance
+        bek.classList.remove('mem-penche-css');
+        exprimer('confiante', 260);
+        bek.classList.remove('rbek-sursaut');
+        void bek.offsetWidth;
+        bek.classList.add('rbek-sursaut');
+        await pause(850);
+      }
+      bek.classList.remove('mem-penche-css');
+      exprimer('solennelle', sauter ? 0 : 380);     // main sur la poitrine, l'air solennel
+      if (!sauter) await pause(950);
+      scene.removeEventListener('pointerdown', sauterOuverture);
+
       bulle.classList.remove('rbek-bulle-cachee');
       construirePhrase(TOURS[0]);
       if (lecteurEl) planifier(function () { lecteurEl.classList.remove('mem-lecteur-cache'); }, 300);
@@ -815,6 +1042,7 @@
         arrete = true;
         minuteurs.forEach(clearTimeout);
         document.removeEventListener('keydown', surToucheAide);
+        try { window.speechSynthesis && window.speechSynthesis.cancel(); } catch (e) {}
       }
     };
   }

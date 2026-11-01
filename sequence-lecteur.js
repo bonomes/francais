@@ -403,7 +403,7 @@
       carte.innerHTML =
         '<div class="lect-entete"><span class="lect-alerte" aria-hidden="true">!</span>' +
           '<h2 class="lect-titre" id="lectTitre">' + echapper(T('erreurTitre')) + '</h2></div>' +
-        '<div class="lect-fichier" dir="ltr">souvenir.mem</div>' +
+        '<div class="lect-fichier" dir="ltr">identite-fr.mem</div>' +
         '<p class="lect-texte" id="lectTexte">' + echapper(T('erreurTexte')) + '</p>' +
         '<div class="lect-boutons">' +
           '<button type="button" class="lect-btn lect-btn-clair" id="lectNon">' + echapper(T('non')) + '</button>' +

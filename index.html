@@ -1582,6 +1582,11 @@
       });
     }
 
+    // 🆕 (01-11-2026) Identité donnée au réveil ({ prenom, genre, adulte }) :
+    // gardée ici pour la passer à la séquence de la mémoire, qui la fait
+    // confirmer (ou corriger) par l'élève avant de proposer un compte.
+    let identiteReveil = null;
+
     // 🆕 (18-10-2026) Séquence de réveil de Bek (sequence-reveil-bek.js),
     // juste après le téléchargement de la langue.
     function etapeReveil(codeLangueChoisie) {
@@ -1623,8 +1628,9 @@
           'main-salue': 'images/reveil/bouton_main-salue_01-01.webp'
         }
       }, {
-        // 🚧 onIdentite({ prenom, genre, adulte }) : pas encore branché sur le
-        // profil de l'élève — à décider avec la scène de la mémoire.
+        // 🆕 (01-11-2026) L'identité n'est PAS enregistrée ici : l'élève doit
+        // d'abord la confirmer dans la fenêtre du Lecteur (voir etapeMemoire).
+        onIdentite: function (identite) { identiteReveil = identite; },
         onMemoire: function () { etapeMemoire(codeLangueChoisie); }
       });
     }
@@ -1638,7 +1644,29 @@
         finDuParcoursAccueil(codeLangueChoisie);
         return;
       }
-      window.KebBekMemoire.demarrerMemoire('nouvelDemarrageContenu', { langue: codeLangueChoisie }, {
+      window.KebBekMemoire.demarrerMemoire('nouvelDemarrageContenu', {
+        langue: codeLangueChoisie,
+        identite: identiteReveil          // null → pas de rencontre ni de fenêtres, on passe à onTermine
+      }, {
+        // Identité confirmée (ou corrigée) par l'élève : c'est CELLE-CI qu'on enregistre.
+        // Mode invité (localStorage) tant qu'aucun compte n'existe ; nationalité non
+        // transmise (undefined = ne pas modifier), captée plus tard à la Leçon 1.
+        onIdentiteConfirmee: function (identite) {
+          identiteReveil = identite;
+          if (window.KebBekProgression) {
+            window.KebBekProgression
+              .enregistrerIdentite(identite.genre, undefined, identite.prenom, identite.adulte)
+              .catch(function (e) { console.warn('Échec de l\'enregistrement de l\'identité (invité).', e); });
+          } else {
+            console.warn('KebBekProgression indisponible — identité non enregistrée.', identite);
+          }
+          if (typeof rafraichirSoldeSac === 'function') rafraichirSoldeSac();
+        },
+        // 🚧 PROVISOIRE : « Créer un compte » — le nouvel écran de compte (courriel + code)
+        // n'existe pas encore (l'ancien identite-eleve.js est remplacé). En attendant, on
+        // retombe sur la fin provisoire, qui propose « Première leçon / Se connecter ».
+        onCompte: function () { finDuParcoursAccueil(codeLangueChoisie); },
+        // « Plus tard » : l'élève continue en invité.
         onTermine: function () { finDuParcoursAccueil(codeLangueChoisie); }
       });
     }

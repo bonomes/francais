@@ -823,3 +823,60 @@
   .mem-flash.mem-eclat-actif { animation: memFlashDoux 1.2s ease-out forwards; }
   @keyframes memFlashDoux { 0% { opacity: 0; } 20% { opacity: 0.8; } 100% { opacity: 0; } }
 }
+
+/* ==================================================================
+   🆕 (01-11-2026) Rencontre avec le Lecteur
+   Le Lecteur vient se poser au bout du doigt de Bek ; sa bulle passe SOUS lui
+   (le visage de Bek reste dégagé) ; l'élève répond par un bouton unique ; sa
+   « pensée » est une pastille pâle en bas de l'écran.
+   ⚠️ Rien n'est masqué par l'attribut `hidden` : uniquement des classes.
+   ================================================================== */
+.mem-lecteur.mem-lecteur-voyage {
+  transition: left 1.2s cubic-bezier(.4, 0, .2, 1), bottom 1.2s cubic-bezier(.4, 0, .2, 1),
+              opacity 0.4s ease, transform 0.5s cubic-bezier(.2,.8,.3,1.4);
+}
+.mem-lb.mem-lb-sous { bottom: auto; }
+.mem-lb.mem-lb-sous::after {
+  left: var(--queue, 30px);
+  bottom: auto;
+  top: -11px;
+  border-right: 0;
+  border-bottom: 0;
+  border-left: 2px solid var(--brun-fonce, #4A3B33);
+  border-top: 2px solid var(--brun-fonce, #4A3B33);
+}
+/* question posée à l'élève : pas de flèche « suite », c'est le bouton qui répond */
+.mem-lb.mem-lb-question .mem-lb-fleche { display: none; }
+.mem-lb.mem-lb-question .mem-lb-texte { margin-right: 0; }
+
+.mem-pensee {
+  position: absolute;
+  left: 50%;
+  bottom: 3dvh;
+  width: max-content;          /* sinon la pastille est bornée à la moitié de l'écran (left: 50%) */
+  max-width: min(88vw, 380px);
+  margin: 0;
+  padding: 10px 18px;
+  font-family: inherit;
+  font-weight: 600;
+  font-style: italic;
+  font-size: 1.02rem;
+  color: var(--brun-clair, #8A7364);
+  text-align: center;
+  background: rgba(255, 255, 255, 0.78);
+  border: 2px dashed var(--peche, #F0A98B);
+  border-radius: 999px;
+  z-index: 7;
+  cursor: pointer;
+  opacity: 0;
+  transform: translateX(-50%) translateY(10px);
+  transition: opacity 0.4s ease, transform 0.4s cubic-bezier(.2,.8,.3,1.2);
+}
+.mem-pensee.mem-pensee-visible { opacity: 1; transform: translateX(-50%) translateY(0); }
+.mem-police-systeme .mem-pensee,
+.mem-police-systeme .mem-reponse .rbek-btn-reponse { font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; }
+
+@media (prefers-reduced-motion: reduce) {
+  .mem-lecteur.mem-lecteur-voyage { transition: opacity 0.2s ease; }
+  .mem-pensee { transition: opacity 0.2s ease; }
+}

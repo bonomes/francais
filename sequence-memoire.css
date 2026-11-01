@@ -880,3 +880,60 @@
   .mem-lecteur.mem-lecteur-voyage { transition: opacity 0.2s ease; }
   .mem-pensee { transition: opacity 0.2s ease; }
 }
+
+/* ==================================================================
+   🆕 (01-11-2026) Fenêtre « vérification des informations » (voix du système)
+   Réutilise .lect-voile / .lect-carte / .lect-btn de sequence-lecteur.css
+   (fenêtre plate, police système) ; ci-dessous seulement le formulaire.
+   ================================================================== */
+.mem-fen-voile { z-index: 30; }
+.mem-fen { width: min(92vw, 360px); }
+.mem-fen-icone {
+  flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  width: 30px; height: 30px;
+  border-radius: 50%;
+  background: var(--peche-fonce, #E08867);
+}
+.mem-fen-icone svg { width: 18px; height: 18px; fill: none; stroke: #FFFFFF; stroke-width: 2.2; stroke-linecap: round; }
+.mem-fen-etiquette { display: block; margin: 0 0 5px; font-size: 0.82rem; font-weight: 700; color: #5C5048; }
+.mem-fen-champ {
+  display: block;
+  width: 100%;
+  padding: 10px 12px;
+  font: inherit;
+  font-size: 1rem;
+  color: #2F2722;
+  background: #FFFFFF;
+  border: 1.5px solid #CFC6BE;
+  border-radius: 10px;
+}
+.mem-fen-champ:focus { outline: none; border-color: var(--peche-fonce, #E08867); box-shadow: 0 0 0 3px rgba(240, 169, 139, 0.28); }
+.mem-fen-champ.mem-fen-champ-faux { border-color: #D9534F; }
+.mem-fen-erreur { min-height: 1.3em; margin: 5px 0 8px; font-size: 0.82rem; color: #B3422F; }
+.mem-fen-profils { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 16px; }
+.mem-fen-profil {
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  padding: 10px 6px;
+  font: inherit;
+  color: #2F2722;
+  background: #FFFFFF;
+  border: 1.5px solid #CFC6BE;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+.mem-fen-profil:hover { background: #FBF6F2; }
+.mem-fen-profil:focus-visible { outline: 3px solid #4A3B33; outline-offset: 2px; }
+.mem-fen-profil.mem-fen-profil-choisi { border-color: var(--peche-fonce, #E08867); background: #FFF1EA; box-shadow: inset 0 0 0 1px var(--peche-fonce, #E08867); }
+.mem-fen-mot { font-size: 0.95rem; font-weight: 700; line-height: 1.2; text-align: center; }
+.mem-fen-age { font-size: 0.74rem; color: #6B5D54; }
+
+/* ---------- 🆕 Fenêtre « compte » (étape C) : réutilise .mem-fen / .lect-carte ---------- */
+.mem-cpt .lect-texte { margin-bottom: 18px; }
+.mem-cpt-boutons { flex-wrap: wrap; }
+.mem-cpt-boutons .lect-btn { min-height: 44px; }
+@media (max-width: 400px) {
+  .mem-cpt-boutons { flex-direction: column-reverse; }
+  .mem-cpt-boutons .lect-btn { width: 100%; }
+}

@@ -49,6 +49,16 @@
      les poses existantes (heureuse / concentrée), la mise en scène marche
      quand même et s'enrichit à mesure que les images arrivent.
 
+   🆕 (31-10-2026) SAISIE AU CLAVIER : on peut aussi TAPER les mots (ordinateur,
+   Chromebook…), comme sur Duolingo. Les lettres tapées s'affichent dans la
+   prochaine case de la bulle et surlignent le début des mots possibles ; dès
+   qu'UN SEUL mot du plateau commence par ces lettres, il vole dans la case
+   (« f » suffit pour « français »). Si deux mots restent possibles (« parle »
+   et « parles »), on continue de taper ; Espace ou Entrée valide le mot tapé en
+   entier. Retour arrière et Échap effacent. Accents et majuscules sont
+   ignorés. Un mauvais mot se comporte exactement comme au toucher
+   (la tuile se secoue, le son d'erreur, l'indice après deux erreurs).
+
    Aucune « corruption » du texte : c'est une seule bonne mémoire, et c'est
    l'élève qui la reconstruit.
 
@@ -99,6 +109,7 @@
       lecteurFin: 'Il doit y en avoir d\u2019autres\u2026 Je peux t\u2019aider \u00e0 les retrouver.',
       suite: 'Suite',
       sonBouton: 'Son',
+      astuceClavier: 'Astuce\u00a0: tu peux aussi taper les mots au clavier.',
       aideBouton: 'Le Lecteur\u00a0: aide',
       aideInviteTactile: 'Touche-moi si tu ne comprends pas quelque chose\u00a0!',
       aideInviteSouris: 'Clique sur moi si tu ne comprends pas quelque chose\u00a0!',
@@ -113,6 +124,7 @@
       lecteurFin: 'There must be more\u2026 I can help you find them.',
       suite: 'Next',
       sonBouton: 'Sound',
+      astuceClavier: 'Tip: you can also type the words on your keyboard.',
       aideBouton: 'The Reader: help',
       aideInviteTactile: 'Tap me if you don\u2019t understand something!',
       aideInviteSouris: 'Click me if you don\u2019t understand something!',
@@ -127,6 +139,7 @@
       lecteurFin: 'Debe de haber m\u00e1s\u2026 Puedo ayudarte a encontrarlos.',
       suite: 'Siguiente',
       sonBouton: 'Sonido',
+      astuceClavier: 'Truco: tambi\u00e9n puedes escribir las palabras con el teclado.',
       aideBouton: 'El Lector: ayuda',
       aideInviteTactile: '\u00a1Toca sobre m\u00ed si no entiendes algo!',
       aideInviteSouris: '\u00a1Haz clic en m\u00ed si no entiendes algo!',
@@ -345,6 +358,7 @@
           '</button>' +
         '</div>' +
         '<div class="mem-plateau" role="group"></div>' +
+        '<div class="mem-astuce mem-astuce-cachee" aria-hidden="true"></div>' +
         '<div class="mem-sens" aria-hidden="true"></div>' +
         '<button type="button" class="mem-son" aria-pressed="true" aria-label="' + echapper(T('sonBouton')) + '">' +
           '<svg viewBox="0 0 24 24" aria-hidden="true"><path class="mem-son-haut-parleur" d="M4 9.5v5h3.5L12 18.5v-13L7.5 9.5H4z"/>' +
@@ -384,6 +398,7 @@
     const lecteurEl = conteneur.querySelector('.mem-lecteur');
     const lb = conteneur.querySelector('.mem-lb');
     const invite = conteneur.querySelector('.mem-invite');
+    const astuce = conteneur.querySelector('.mem-astuce');
     const zoomEl = conteneur.querySelector('.rbek-zoom');
     const boutonSon = conteneur.querySelector('.mem-son');
     const aide = conteneur.querySelector('.mem-aide');
@@ -595,6 +610,7 @@
 
     // ---------- Le plateau : tuiles de mots ----------
     function construirePlateau(tour) {
+      effacerFrappe();
       plateau.innerHTML = '';
       plateau.classList.remove('mem-plateau-vide', 'mem-plateau-sorti');
       const manquants = PHRASE.filter(function (id, i) { return tour.places.indexOf(i) === -1; });
@@ -729,6 +745,115 @@
         if (!prochainVide()) { tourReussi(); return; }
         verrou = false;
       });
+    }
+
+    // ---------- Saisie au clavier ----------
+    let frappe = '';
+    let minuteurFrappe = null;
+    let astuceVue = false;
+    function cle(t) { return String(t).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, ''); }
+    function tuilesDispo() {
+      return Array.prototype.slice.call(plateau.querySelectorAll('.mem-tuile:not(.mem-tuile-partie):not(.mem-tuile-efface):not(.mem-entree-cachee)'));
+    }
+    function candidates(tampon) {
+      return tuilesDispo().filter(function (t) { return cle(MOTS[t.dataset.id]).indexOf(tampon) === 0; });
+    }
+    function effacerFrappe() {
+      frappe = '';
+      clearTimeout(minuteurFrappe);
+      if (!plateau) return;
+      Array.prototype.forEach.call(plateau.querySelectorAll('.mem-tuile'), function (t) {
+        t.classList.remove('mem-tuile-attenuee', 'mem-tuile-prefixe');
+        if (t.querySelector && t.querySelector('.mem-tuile-frappe')) t.textContent = MOTS[t.dataset.id];
+      });
+      Array.prototype.forEach.call(phrase.querySelectorAll('.mem-frappe'), function (g) { g.parentNode.removeChild(g); });
+    }
+    function majFrappe() {
+      const cand = candidates(frappe);
+      tuilesDispo().forEach(function (t) {
+        const ok = cand.indexOf(t) !== -1;
+        t.classList.toggle('mem-tuile-attenuee', !ok);
+        t.classList.toggle('mem-tuile-prefixe', ok);
+        const mot = MOTS[t.dataset.id];
+        if (ok) t.innerHTML = '<span class="mem-tuile-frappe">' + echapper(mot.slice(0, frappe.length)) + '</span>' + echapper(mot.slice(frappe.length));
+        else t.textContent = mot;
+      });
+      // les lettres tapées apparaissent dans la prochaine case de la bulle
+      Array.prototype.forEach.call(phrase.querySelectorAll('.mem-frappe'), function (g) { g.parentNode.removeChild(g); });
+      const case_ = prochainVide();
+      if (case_ && cand.length) {
+        const g = document.createElement('span');
+        g.className = 'mem-frappe';
+        g.textContent = MOTS[cand[0].dataset.id].slice(0, frappe.length);
+        case_.appendChild(g);
+      }
+      clearTimeout(minuteurFrappe);
+      minuteurFrappe = setTimeout(effacerFrappe, 3200);   // saisie abandonnée : on repart de zéro
+    }
+    function aucunMot() {
+      // aucune tuile ne commence ainsi : la case secoue les lettres, puis on repart de zéro (sans pénalité)
+      const case_ = prochainVide();
+      const lettres = frappe;
+      effacerFrappe();
+      if (!case_) return;
+      const g = document.createElement('span');
+      g.className = 'mem-frappe mem-frappe-non';
+      g.textContent = lettres;
+      case_.appendChild(g);
+      planifier(function () { if (g.parentNode) g.parentNode.removeChild(g); }, 520);
+    }
+    function loger(t) {
+      effacerFrappe();        // la tuile retrouve son texte entier avant de s'envoler
+      placer(t);
+    }
+    function masquerAstuce() {
+      astuceVue = true;
+      if (astuce) astuce.classList.add('mem-astuce-cachee');
+    }
+    function surFrappe(e) {
+      if (arrete || verrou || aideOuverte || aideBloquee || e.defaultPrevented) return;
+      if (e.ctrlKey || e.metaKey || e.altKey || e.isComposing) return;
+      const cible = e.target;
+      if (cible && /^(input|textarea|select)$/i.test(cible.tagName || '')) return;
+      const k = e.key;
+      if (k === 'Escape') { if (frappe) { effacerFrappe(); e.preventDefault(); } return; }
+      if (k === 'Backspace') {
+        if (frappe) { e.preventDefault(); frappe = frappe.slice(0, -1); if (frappe) majFrappe(); else effacerFrappe(); }
+        return;
+      }
+      if (k === 'Enter' || k === ' ') {
+        if (!frappe) return;
+        e.preventDefault();
+        // Espace / Entrée : on valide le mot tapé en entier (utile pour « parle » / « parles »)
+        const exact = tuilesDispo().filter(function (t) { return cle(MOTS[t.dataset.id]) === frappe; })[0];
+        if (exact) loger(exact); else aucunMot();
+        return;
+      }
+      if (!k || k.length !== 1 || !/\p{L}/u.test(k)) return;
+      e.preventDefault();
+      const actif = document.activeElement;
+      if (actif && actif !== document.body && actif.blur) actif.blur();   // pas de clic fantôme sur une tuile restée « active »
+      deselectionner();
+      masquerAstuce();
+      frappe += cle(k);
+      const cand = candidates(frappe);
+      if (!cand.length) { aucunMot(); return; }
+      if (cand.length === 1) { loger(cand[0]); return; }   // un seul mot possible : il se loge tout de suite
+      majFrappe();
+    }
+    document.addEventListener('keydown', surFrappe);
+
+    // Astuce, une seule fois, seulement s'il y a un clavier (pas sur un téléphone)
+    function montrerAstuce() {
+      if (!astuce || astuceVue || aideOuverte || aideBloquee) return;
+      const tactile = !!(window.matchMedia && window.matchMedia('(pointer: coarse)').matches);
+      let dejaVue = false;
+      try { dejaVue = localStorage.getItem('kebbek_astuce_clavier') === '1'; } catch (e) {}
+      if (tactile || dejaVue) return;
+      try { localStorage.setItem('kebbek_astuce_clavier', '1'); } catch (e) {}
+      astuce.textContent = T('astuceClavier');
+      astuce.classList.remove('mem-astuce-cachee');
+      planifier(masquerAstuce, 6500);
     }
 
     // ---------- Fin de tour / tours suivants ----------
@@ -1032,6 +1157,7 @@
       await attendre(500);
       verrou = false;
       planifier(montrerInvite, 1600);
+      planifier(montrerAstuce, 9500);                 // après l'invitation du Lecteur
     }
 
     if (options.precharger === false) lancer({});
@@ -1042,6 +1168,7 @@
         arrete = true;
         minuteurs.forEach(clearTimeout);
         document.removeEventListener('keydown', surToucheAide);
+        document.removeEventListener('keydown', surFrappe);
         try { window.speechSynthesis && window.speechSynthesis.cancel(); } catch (e) {}
       }
     };

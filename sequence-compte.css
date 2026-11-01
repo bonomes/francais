@@ -1,0 +1,65 @@
+/* ==================================================================
+   sequence-compte.css — habillage de sequence-compte.js.
+   Réutilise .lect-voile / .lect-carte / .lect-entete / .lect-titre / .lect-texte /
+   .lect-btn de sequence-lecteur.css (à charger avant). Tout est préfixé cpt-.
+   ================================================================== */
+.cpt-voile { z-index: 40; }
+/* sans scène de la mémoire derrière : la fenêtre couvre tout l'écran */
+.cpt-voile.cpt-voile-seul { position: fixed; z-index: 9100; }
+.cpt-carte { width: min(92vw, 360px); }
+.cpt-icone {
+  flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  width: 30px; height: 30px;
+  border-radius: 50%;
+  background: var(--peche-fonce, #E08867);
+}
+.cpt-icone svg { width: 18px; height: 18px; fill: none; stroke: #FFFFFF; stroke-width: 2.2; stroke-linecap: round; }
+.cpt-corps { display: flex; flex-direction: column; }
+.cpt-corps .lect-texte { margin-bottom: 12px; }
+.cpt-champ {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 11px 12px;
+  font-family: inherit;
+  font-size: 1rem;
+  color: #2F2722;
+  background: #FFFFFF;
+  border: 1px solid #CFC6BE;
+  border-radius: 10px;
+}
+.cpt-champ:focus { outline: none; border-color: var(--peche-fonce, #E08867); box-shadow: 0 0 0 3px rgba(240, 169, 139, 0.28); }
+.cpt-msg { min-height: 1.3em; margin: 6px 0 10px; font-size: 0.84rem; color: #5C5048; }
+.cpt-msg.cpt-msg-erreur { color: #B3422F; }
+.cpt-btn { min-height: 44px; width: 100%; }
+.cpt-lien {
+  align-self: center;
+  margin-top: 12px;
+  padding: 8px 10px;
+  font-family: inherit;
+  font-size: 0.86rem;
+  color: #6B5D54;
+  text-decoration: underline;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+.cpt-lien:hover { color: #2F2722; }
+.cpt-lien:focus-visible { outline: 3px solid #4A3B33; outline-offset: 2px; border-radius: 6px; }
+.cpt-lien:disabled { opacity: 0.5; cursor: default; }
+.cpt-avert { margin: 0; font-size: 0.76rem; line-height: 1.35; text-align: center; color: #8A7B71; }
+.cpt-profils { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 4px; }
+.cpt-profil {
+  min-height: 48px;
+  padding: 10px 12px;
+  font-family: inherit;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #2F2722;
+  background: #FFFFFF;
+  border: 1px solid #CFC6BE;
+  border-radius: 12px;
+  cursor: pointer;
+}
+.cpt-profil:hover { background: #FBF6F2; }
+.cpt-profil:focus-visible { outline: 3px solid #4A3B33; outline-offset: 2px; }

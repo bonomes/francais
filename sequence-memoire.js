@@ -74,9 +74,13 @@
    Aucune « corruption » du texte : c'est une seule bonne mémoire, et c'est
    l'élève qui la reconstruit.
 
-   🚧 Dictionnaire réduit à fr / en / es (repli : en, puis fr) — à étendre
-   aux 19 langues avant mise en ligne. Les 4 mots affichés sont les mêmes
-   pour tous ; seul leur SENS est traduit (clés sens_*).
+   🆕 (01-11-2026) Dictionnaire (DICO) ET explications de l'aide (AIDE) pour
+   fr + les 19 langues du site (repli : en, puis fr). Les 4 mots affichés sont
+   les mêmes pour tous ; seul leur SENS est traduit (clés sens_*). Chaque aide
+   est écrite pour sa langue (pronom omis ou obligatoire, genre, majuscules…).
+   ℹ️ pt = portugais du Brésil ; zh = chinois simplifié ; fa s'affiche de droite
+   à gauche (mots français et phrase restent de gauche à droite). Textes à faire
+   relire par des locuteurs avant la mise en ligne.
 
    🎨 Réutilise le gabarit de Bek de sequence-reveil-bek.css (.rbek-fond,
    .rbek-pose, .rbek-bulle…) pour garder exactement la même taille, la même
@@ -93,6 +97,7 @@
 
   const CLE_LANGUE = 'kebbek_langue';
   const LANGUES_POLICE_SYSTEME = ['ru', 'vi'];
+  const LANGUES_DROITE_A_GAUCHE = ['fa'];
 
   // La phrase à reconstruire, et tous les mots possibles (y compris le piège).
   const PHRASE = ['je', 'parle', 'francais'];
@@ -171,6 +176,261 @@
       aideMots: 'Palabras de este recuerdo',
       aideEquiv: 'En tu idioma',
       aideFermer: 'Cerrar'
+    },
+    it: {
+      sens_je: 'io', sens_parle: '(io) parlo', sens_francais: 'francese', sens_parles: '(tu) parli',
+      bekFin: '\u2026ma \u00e8 tutto quello che ricordo.',
+      lecteurFin: 'Ce ne devono essere altri\u2026 Posso aiutarti a ritrovarli.',
+      suite: 'Avanti',
+      sonBouton: 'Audio',
+      astuceClavier: 'Suggerimento: puoi anche digitare le parole con la tastiera.',
+      aideBouton: 'Il Lettore: aiuto',
+      aideInviteTactile: 'Toccami se non capisci qualcosa!',
+      aideInviteSouris: 'Cliccami se non capisci qualcosa!',
+      aideTitre: 'Il Lettore ti spiega',
+      aideMots: 'Le parole di questo ricordo',
+      aideEquiv: 'Nella tua lingua',
+      aideFermer: 'Chiudi'
+    },
+    pt: {
+      sens_je: 'eu', sens_parle: '(eu) falo', sens_francais: 'franc\u00eas', sens_parles: '(tu) falas',
+      bekFin: '\u2026mas \u00e9 s\u00f3 disso que me lembro.',
+      lecteurFin: 'Deve haver mais\u2026 Posso ajudar voc\u00ea a encontr\u00e1-las.',
+      suite: 'Pr\u00f3ximo',
+      sonBouton: 'Som',
+      astuceClavier: 'Dica: voc\u00ea tamb\u00e9m pode digitar as palavras no teclado.',
+      aideBouton: 'O Leitor: ajuda',
+      aideInviteTactile: 'Toque em mim se voc\u00ea n\u00e3o entender alguma coisa!',
+      aideInviteSouris: 'Clique em mim se voc\u00ea n\u00e3o entender alguma coisa!',
+      aideTitre: 'O Leitor explica',
+      aideMots: 'As palavras desta lembran\u00e7a',
+      aideEquiv: 'Na sua l\u00edngua',
+      aideFermer: 'Fechar'
+    },
+    ca: {
+      sens_je: 'jo', sens_parle: '(jo) parlo', sens_francais: 'franc\u00e8s', sens_parles: '(tu) parles',
+      bekFin: '\u2026per\u00f2 aix\u00f2 \u00e9s tot el que recordo.',
+      lecteurFin: 'N\u2019hi ha d\u2019haver m\u00e9s\u2026 Et puc ajudar a trobar-los.',
+      suite: 'Seg\u00fcent',
+      sonBouton: 'So',
+      astuceClavier: 'Truc: tamb\u00e9 pots escriure les paraules amb el teclat.',
+      aideBouton: 'El Lector: ajuda',
+      aideInviteTactile: 'Toca\u2019m si no entens alguna cosa!',
+      aideInviteSouris: 'Fes-me clic si no entens alguna cosa!',
+      aideTitre: 'El Lector t\u2019explica',
+      aideMots: 'Les paraules d\u2019aquest record',
+      aideEquiv: 'En la teva llengua',
+      aideFermer: 'Tanca'
+    },
+    eo: {
+      sens_je: 'mi', sens_parle: '(mi) parolas', sens_francais: 'la franca lingvo', sens_parles: '(vi) parolas',
+      bekFin: '\u2026sed tion nur mi memoras.',
+      lecteurFin: 'Certe ekzistas pliaj\u2026 Mi povas helpi vin retrovi ilin.',
+      suite: 'Sekva',
+      sonBouton: 'Sono',
+      astuceClavier: 'Konsileto: vi anka\u016d povas tajpi la vortojn per la klavaro.',
+      aideBouton: 'La Legilo: helpo',
+      aideInviteTactile: 'Tu\u015du min, se vi ion ne komprenas!',
+      aideInviteSouris: 'Alklaku min, se vi ion ne komprenas!',
+      aideTitre: 'La Legilo klarigas',
+      aideMots: 'La vortoj de \u0109i tiu memora\u0135o',
+      aideEquiv: 'En via lingvo',
+      aideFermer: 'Fermi'
+    },
+    zh: {
+      sens_je: '\u6211', sens_parle: '\uff08\u6211\uff09\u8bf4', sens_francais: '\u6cd5\u8bed', sens_parles: '\uff08\u4f60\uff09\u8bf4',
+      bekFin: '\u2026\u2026\u53ef\u8fd9\u5c31\u662f\u6211\u8bb0\u5f97\u7684\u5168\u90e8\u4e86\u3002',
+      lecteurFin: '\u4e00\u5b9a\u8fd8\u6709\u522b\u7684\u2026\u2026\u6211\u53ef\u4ee5\u5e2e\u4f60\u627e\u5230\u5b83\u4eec\u3002',
+      suite: '\u7ee7\u7eed',
+      sonBouton: '\u58f0\u97f3',
+      astuceClavier: '\u5c0f\u63d0\u793a\uff1a\u4f60\u4e5f\u53ef\u4ee5\u7528\u952e\u76d8\u8f93\u5165\u8fd9\u4e9b\u8bcd\u3002',
+      aideBouton: '\u9605\u8bfb\u5668\uff1a\u5e2e\u52a9',
+      aideInviteTactile: '\u5982\u679c\u6709\u4e0d\u660e\u767d\u7684\u5730\u65b9\uff0c\u5c31\u70b9\u70b9\u6211\uff01',
+      aideInviteSouris: '\u5982\u679c\u6709\u4e0d\u660e\u767d\u7684\u5730\u65b9\uff0c\u5c31\u70b9\u6211\uff01',
+      aideTitre: '\u9605\u8bfb\u5668\u6765\u89e3\u91ca',
+      aideMots: '\u8fd9\u6bb5\u8bb0\u5fc6\u91cc\u7684\u8bcd',
+      aideEquiv: '\u7528\u4f60\u7684\u8bed\u8a00\u8bf4',
+      aideFermer: '\u5173\u95ed'
+    },
+    ja: {
+      sens_je: '\u79c1', sens_parle: '\uff08\u79c1\u304c\uff09\u8a71\u3059', sens_francais: '\u30d5\u30e9\u30f3\u30b9\u8a9e', sens_parles: '\uff08\u304d\u307f\u304c\uff09\u8a71\u3059',
+      bekFin: '\u2026\u2026\u3067\u3082\u3001\u899a\u3048\u3066\u3044\u308b\u306e\u306f\u3053\u308c\u3060\u3051\u3002',
+      lecteurFin: '\u304d\u3063\u3068\u307b\u304b\u306b\u3082\u3042\u308b\u306f\u305a\u2026\u2026\u898b\u3064\u3051\u308b\u304a\u624b\u4f1d\u3044\u3092\u3059\u308b\u3088\u3002',
+      suite: '\u6b21\u3078',
+      sonBouton: '\u30b5\u30a6\u30f3\u30c9',
+      astuceClavier: '\u30d2\u30f3\u30c8\uff1a\u30ad\u30fc\u30dc\u30fc\u30c9\u3067\u8a00\u8449\u3092\u5165\u529b\u3059\u308b\u3053\u3068\u3082\u3067\u304d\u308b\u3088\u3002',
+      aideBouton: '\u30ea\u30fc\u30c0\u30fc\uff1a\u30d8\u30eb\u30d7',
+      aideInviteTactile: '\u308f\u304b\u3089\u306a\u3044\u3053\u3068\u304c\u3042\u3063\u305f\u3089\u3001\u3055\u308f\u3063\u3066\u306d\uff01',
+      aideInviteSouris: '\u308f\u304b\u3089\u306a\u3044\u3053\u3068\u304c\u3042\u3063\u305f\u3089\u3001\u30af\u30ea\u30c3\u30af\u3057\u3066\u306d\uff01',
+      aideTitre: '\u30ea\u30fc\u30c0\u30fc\u304c\u8aac\u660e\u3059\u308b\u3088',
+      aideMots: '\u3053\u306e\u8a18\u61b6\u306e\u8a00\u8449',
+      aideEquiv: '\u3042\u306a\u305f\u306e\u8a00\u8449\u3067',
+      aideFermer: '\u9589\u3058\u308b'
+    },
+    ko: {
+      sens_je: '\ub098', sens_parle: '(\ub0b4\uac00) \ub9d0\ud574\uc694', sens_francais: '\ud504\ub791\uc2a4\uc5b4', sens_parles: '(\ub124\uac00) \ub9d0\ud574\uc694',
+      bekFin: '\u2026\ud558\uc9c0\ub9cc \uc81c\uac00 \uae30\uc5b5\ud558\ub294 \uac74 \uc774\uac8c \uc804\ubd80\uc608\uc694.',
+      lecteurFin: '\ub354 \uc788\uc744 \uac70\uc608\uc694\u2026 \ucc3e\ub294 \uac78 \ub3c4\uc640\uc904\uac8c\uc694.',
+      suite: '\ub2e4\uc74c',
+      sonBouton: '\uc18c\ub9ac',
+      astuceClavier: '\ud301: \ud0a4\ubcf4\ub4dc\ub85c \ub2e8\uc5b4\ub97c \uc9c1\uc811 \uc785\ub825\ud560 \uc218\ub3c4 \uc788\uc5b4\uc694.',
+      aideBouton: '\ub9ac\ub354: \ub3c4\uc6c0\ub9d0',
+      aideInviteTactile: '\ubaa8\ub974\ub294 \uac8c \uc788\uc73c\uba74 \uc800\ub97c \ub20c\ub7ec \ubcf4\uc138\uc694!',
+      aideInviteSouris: '\ubaa8\ub974\ub294 \uac8c \uc788\uc73c\uba74 \uc800\ub97c \ud074\ub9ad\ud574 \ubcf4\uc138\uc694!',
+      aideTitre: '\ub9ac\ub354\uac00 \uc124\uba85\ud574\uc694',
+      aideMots: '\uc774 \uae30\uc5b5 \uc18d\uc758 \ub2e8\uc5b4',
+      aideEquiv: '\ub0b4 \uc5b8\uc5b4\ub85c',
+      aideFermer: '\ub2eb\uae30'
+    },
+    vi: {
+      sens_je: 't\u00f4i', sens_parle: '(t\u00f4i) n\u00f3i', sens_francais: 'ti\u1ebfng Ph\u00e1p', sens_parles: '(b\u1ea1n) n\u00f3i',
+      bekFin: '\u2026nh\u01b0ng m\u00ecnh ch\u1ec9 nh\u1edb \u0111\u01b0\u1ee3c c\u00f3 v\u1eady th\u00f4i.',
+      lecteurFin: 'Ch\u1eafc ch\u1eafn c\u00f2n nhi\u1ec1u n\u1eefa\u2026 M\u00ecnh c\u00f3 th\u1ec3 gi\u00fap b\u1ea1n t\u00ecm l\u1ea1i ch\u00fang.',
+      suite: 'Ti\u1ebfp',
+      sonBouton: '\u00c2m thanh',
+      astuceClavier: 'M\u1eb9o: b\u1ea1n c\u0169ng c\u00f3 th\u1ec3 g\u00f5 c\u00e1c t\u1eeb b\u1eb1ng b\u00e0n ph\u00edm.',
+      aideBouton: 'Tr\u00ecnh \u0111\u1ecdc: tr\u1ee3 gi\u00fap',
+      aideInviteTactile: 'Ch\u1ea1m v\u00e0o m\u00ecnh n\u1ebfu b\u1ea1n kh\u00f4ng hi\u1ec3u \u0111i\u1ec1u g\u00ec nh\u00e9!',
+      aideInviteSouris: 'Nh\u1ea5p v\u00e0o m\u00ecnh n\u1ebfu b\u1ea1n kh\u00f4ng hi\u1ec3u \u0111i\u1ec1u g\u00ec nh\u00e9!',
+      aideTitre: 'Tr\u00ecnh \u0111\u1ecdc gi\u1ea3i th\u00edch',
+      aideMots: 'C\u00e1c t\u1eeb trong k\u00fd \u1ee9c n\u00e0y',
+      aideEquiv: 'Trong ng\u00f4n ng\u1eef c\u1ee7a b\u1ea1n',
+      aideFermer: '\u0110\u00f3ng'
+    },
+    ht: {
+      sens_je: 'mwen', sens_parle: '(mwen) pale', sens_francais: 'frans\u00e8', sens_parles: '(ou) pale',
+      bekFin: '\u2026men se s\u00e8lman sa mwen sonje.',
+      lecteurFin: 'Dwe gen plis ank\u00f2\u2026 Mwen ka ede w jwenn yo.',
+      suite: 'Swivan',
+      sonBouton: 'Son',
+      astuceClavier: 'Kons\u00e8y: ou ka tape mo yo ak klavye a tou.',
+      aideBouton: 'Lekt\u00e8 a: \u00e8d',
+      aideInviteTactile: 'Touche m si ou pa konprann yon bagay!',
+      aideInviteSouris: 'Klike sou mwen si ou pa konprann yon bagay!',
+      aideTitre: 'Lekt\u00e8 a eksplike',
+      aideMots: 'Mo yo nan souvni sa a',
+      aideEquiv: 'Nan lang ou',
+      aideFermer: 'F\u00e8men'
+    },
+    tl: {
+      sens_je: 'ako', sens_parle: '(ako) nagsasalita', sens_francais: 'Pranses', sens_parles: '(ikaw) nagsasalita',
+      bekFin: '\u2026pero iyan lang ang natatandaan ko.',
+      lecteurFin: 'Siguradong may iba pa\u2026 Matutulungan kitang hanapin ang mga ito.',
+      suite: 'Susunod',
+      sonBouton: 'Tunog',
+      astuceClavier: 'Tip: puwede mo ring i-type ang mga salita gamit ang keyboard.',
+      aideBouton: 'Ang Tagabasa: tulong',
+      aideInviteTactile: 'I-tap mo ako kung may hindi ka naiintindihan!',
+      aideInviteSouris: 'I-click mo ako kung may hindi ka naiintindihan!',
+      aideTitre: 'Ipinapaliwanag ng Tagabasa',
+      aideMots: 'Mga salita sa alaalang ito',
+      aideEquiv: 'Sa wika mo',
+      aideFermer: 'Isara'
+    },
+    id: {
+      sens_je: 'saya', sens_parle: '(saya) berbicara', sens_francais: 'bahasa Prancis', sens_parles: '(kamu) berbicara',
+      bekFin: '\u2026tapi hanya itu yang kuingat.',
+      lecteurFin: 'Pasti masih ada yang lain\u2026 Aku bisa membantumu menemukannya.',
+      suite: 'Lanjut',
+      sonBouton: 'Suara',
+      astuceClavier: 'Tips: kamu juga bisa mengetik kata-katanya dengan keyboard.',
+      aideBouton: 'Si Pembaca: bantuan',
+      aideInviteTactile: 'Sentuh aku kalau ada yang tidak kamu pahami!',
+      aideInviteSouris: 'Klik aku kalau ada yang tidak kamu pahami!',
+      aideTitre: 'Si Pembaca menjelaskan',
+      aideMots: 'Kata-kata dalam kenangan ini',
+      aideEquiv: 'Dalam bahasamu',
+      aideFermer: 'Tutup'
+    },
+    nl: {
+      sens_je: 'ik', sens_parle: '(ik) spreek', sens_francais: 'Frans', sens_parles: '(jij) spreekt',
+      bekFin: '\u2026maar dat is alles wat ik me herinner.',
+      lecteurFin: 'Er moeten er nog meer zijn\u2026 Ik kan je helpen ze te vinden.',
+      suite: 'Volgende',
+      sonBouton: 'Geluid',
+      astuceClavier: 'Tip: je kunt de woorden ook met het toetsenbord typen.',
+      aideBouton: 'De Lezer: hulp',
+      aideInviteTactile: 'Tik op mij als je iets niet begrijpt!',
+      aideInviteSouris: 'Klik op mij als je iets niet begrijpt!',
+      aideTitre: 'De Lezer legt uit',
+      aideMots: 'De woorden van deze herinnering',
+      aideEquiv: 'In jouw taal',
+      aideFermer: 'Sluiten'
+    },
+    de: {
+      sens_je: 'ich', sens_parle: '(ich) spreche', sens_francais: 'Franz\u00f6sisch', sens_parles: '(du) sprichst',
+      bekFin: '\u2026aber das ist alles, woran ich mich erinnere.',
+      lecteurFin: 'Es muss noch mehr geben\u2026 Ich kann dir helfen, sie zu finden.',
+      suite: 'Weiter',
+      sonBouton: 'Ton',
+      astuceClavier: 'Tipp: Du kannst die W\u00f6rter auch mit der Tastatur eingeben.',
+      aideBouton: 'Der Leser: Hilfe',
+      aideInviteTactile: 'Tipp mich an, wenn du etwas nicht verstehst!',
+      aideInviteSouris: 'Klick mich an, wenn du etwas nicht verstehst!',
+      aideTitre: 'Der Leser erkl\u00e4rt',
+      aideMots: 'Die W\u00f6rter dieser Erinnerung',
+      aideEquiv: 'In deiner Sprache',
+      aideFermer: 'Schlie\u00dfen'
+    },
+    fa: {
+      sens_je: '\u0645\u0646', sens_parle: '(\u0645\u0646) \u0635\u062d\u0628\u062a \u0645\u06cc\u200c\u06a9\u0646\u0645', sens_francais: '\u0641\u0631\u0627\u0646\u0633\u0648\u06cc', sens_parles: '(\u062a\u0648) \u0635\u062d\u0628\u062a \u0645\u06cc\u200c\u06a9\u0646\u06cc',
+      bekFin: '\u2026\u0627\u0645\u0627 \u0641\u0642\u0637 \u0647\u0645\u06cc\u0646 \u0631\u0627 \u0628\u0647 \u06cc\u0627\u062f \u062f\u0627\u0631\u0645.',
+      lecteurFin: '\u062d\u062a\u0645\u0627\u064b \u0628\u06cc\u0634\u062a\u0631 \u0627\u0632 \u0627\u06cc\u0646 \u0647\u0645 \u0647\u0633\u062a\u2026 \u0645\u06cc\u200c\u062a\u0648\u0627\u0646\u0645 \u06a9\u0645\u06a9\u062a \u06a9\u0646\u0645 \u067e\u06cc\u062f\u0627\u06cc\u0634\u0627\u0646 \u06a9\u0646\u06cc.',
+      suite: '\u0628\u0639\u062f\u06cc',
+      sonBouton: '\u0635\u062f\u0627',
+      astuceClavier: '\u0646\u06a9\u062a\u0647: \u0645\u06cc\u200c\u062a\u0648\u0627\u0646\u06cc \u06a9\u0644\u0645\u0647\u200c\u0647\u0627 \u0631\u0627 \u0628\u0627 \u0635\u0641\u062d\u0647\u200c\u06a9\u0644\u06cc\u062f \u0647\u0645 \u062a\u0627\u06cc\u067e \u06a9\u0646\u06cc.',
+      aideBouton: '\u062e\u0648\u0627\u0646\u0646\u062f\u0647: \u0631\u0627\u0647\u0646\u0645\u0627',
+      aideInviteTactile: '\u0627\u06af\u0631 \u0686\u06cc\u0632\u06cc \u0631\u0627 \u0646\u0641\u0647\u0645\u06cc\u062f\u06cc\u060c \u0631\u0648\u06cc \u0645\u0646 \u0628\u0632\u0646!',
+      aideInviteSouris: '\u0627\u06af\u0631 \u0686\u06cc\u0632\u06cc \u0631\u0627 \u0646\u0641\u0647\u0645\u06cc\u062f\u06cc\u060c \u0631\u0648\u06cc \u0645\u0646 \u06a9\u0644\u06cc\u06a9 \u06a9\u0646!',
+      aideTitre: '\u062e\u0648\u0627\u0646\u0646\u062f\u0647 \u062a\u0648\u0636\u06cc\u062d \u0645\u06cc\u200c\u062f\u0647\u062f',
+      aideMots: '\u06a9\u0644\u0645\u0647\u200c\u0647\u0627\u06cc \u0627\u06cc\u0646 \u062e\u0627\u0637\u0631\u0647',
+      aideEquiv: '\u0628\u0647 \u0632\u0628\u0627\u0646 \u062a\u0648',
+      aideFermer: '\u0628\u0633\u062a\u0646'
+    },
+    sv: {
+      sens_je: 'jag', sens_parle: '(jag) talar', sens_francais: 'franska', sens_parles: '(du) talar',
+      bekFin: '\u2026men det \u00e4r allt jag minns.',
+      lecteurFin: 'Det m\u00e5ste finnas fler\u2026 Jag kan hj\u00e4lpa dig att hitta dem.',
+      suite: 'N\u00e4sta',
+      sonBouton: 'Ljud',
+      astuceClavier: 'Tips: du kan ocks\u00e5 skriva orden med tangentbordet.',
+      aideBouton: 'L\u00e4saren: hj\u00e4lp',
+      aideInviteTactile: 'Tryck p\u00e5 mig om du inte f\u00f6rst\u00e5r n\u00e5got!',
+      aideInviteSouris: 'Klicka p\u00e5 mig om du inte f\u00f6rst\u00e5r n\u00e5got!',
+      aideTitre: 'L\u00e4saren f\u00f6rklarar',
+      aideMots: 'Orden i det h\u00e4r minnet',
+      aideEquiv: 'P\u00e5 ditt spr\u00e5k',
+      aideFermer: 'St\u00e4ng'
+    },
+    no: {
+      sens_je: 'jeg', sens_parle: '(jeg) snakker', sens_francais: 'fransk', sens_parles: '(du) snakker',
+      bekFin: '\u2026men det er alt jeg husker.',
+      lecteurFin: 'Det m\u00e5 finnes flere\u2026 Jeg kan hjelpe deg med \u00e5 finne dem.',
+      suite: 'Neste',
+      sonBouton: 'Lyd',
+      astuceClavier: 'Tips: du kan ogs\u00e5 skrive ordene med tastaturet.',
+      aideBouton: 'Leseren: hjelp',
+      aideInviteTactile: 'Trykk p\u00e5 meg hvis du ikke forst\u00e5r noe!',
+      aideInviteSouris: 'Klikk p\u00e5 meg hvis du ikke forst\u00e5r noe!',
+      aideTitre: 'Leseren forklarer',
+      aideMots: 'Ordene i dette minnet',
+      aideEquiv: 'P\u00e5 ditt spr\u00e5k',
+      aideFermer: 'Lukk'
+    },
+    ru: {
+      sens_je: '\u044f', sens_parle: '(\u044f) \u0433\u043e\u0432\u043e\u0440\u044e', sens_francais: '\u0444\u0440\u0430\u043d\u0446\u0443\u0437\u0441\u043a\u0438\u0439 \u044f\u0437\u044b\u043a', sens_parles: '(\u0442\u044b) \u0433\u043e\u0432\u043e\u0440\u0438\u0448\u044c',
+      bekFin: '\u2026\u043d\u043e \u044d\u0442\u043e \u0432\u0441\u0451, \u0447\u0442\u043e \u044f \u043f\u043e\u043c\u043d\u044e.',
+      lecteurFin: '\u0414\u043e\u043b\u0436\u043d\u044b \u0431\u044b\u0442\u044c \u0438 \u0434\u0440\u0443\u0433\u0438\u0435\u2026 \u042f \u043c\u043e\u0433\u0443 \u043f\u043e\u043c\u043e\u0447\u044c \u0442\u0435\u0431\u0435 \u0438\u0445 \u043d\u0430\u0439\u0442\u0438.',
+      suite: '\u0414\u0430\u043b\u044c\u0448\u0435',
+      sonBouton: '\u0417\u0432\u0443\u043a',
+      astuceClavier: '\u041f\u043e\u0434\u0441\u043a\u0430\u0437\u043a\u0430: \u0441\u043b\u043e\u0432\u0430 \u043c\u043e\u0436\u043d\u043e \u0432\u0432\u043e\u0434\u0438\u0442\u044c \u0438 \u0441 \u043a\u043b\u0430\u0432\u0438\u0430\u0442\u0443\u0440\u044b.',
+      aideBouton: '\u0427\u0438\u0442\u0430\u0442\u0435\u043b\u044c: \u043f\u043e\u043c\u043e\u0449\u044c',
+      aideInviteTactile: '\u041a\u043e\u0441\u043d\u0438\u0441\u044c \u043c\u0435\u043d\u044f, \u0435\u0441\u043b\u0438 \u0447\u0442\u043e-\u0442\u043e \u043d\u0435\u043f\u043e\u043d\u044f\u0442\u043d\u043e!',
+      aideInviteSouris: '\u041d\u0430\u0436\u043c\u0438 \u043d\u0430 \u043c\u0435\u043d\u044f, \u0435\u0441\u043b\u0438 \u0447\u0442\u043e-\u0442\u043e \u043d\u0435\u043f\u043e\u043d\u044f\u0442\u043d\u043e!',
+      aideTitre: '\u0427\u0438\u0442\u0430\u0442\u0435\u043b\u044c \u043e\u0431\u044a\u044f\u0441\u043d\u044f\u0435\u0442',
+      aideMots: '\u0421\u043b\u043e\u0432\u0430 \u0438\u0437 \u044d\u0442\u043e\u0433\u043e \u0432\u043e\u0441\u043f\u043e\u043c\u0438\u043d\u0430\u043d\u0438\u044f',
+      aideEquiv: '\u041d\u0430 \u0442\u0432\u043e\u0451\u043c \u044f\u0437\u044b\u043a\u0435',
+      aideFermer: '\u0417\u0430\u043a\u0440\u044b\u0442\u044c'
     }
   };
 
@@ -242,6 +502,363 @@
       parles: {
         nature: 'Verbo \u00b7 presente',
         texte: ['El verbo parler con \u00abtu\u00bb: tu parles.', 'Con \u00abje\u00bb se dice je parle, sin -s.']
+      }
+    },
+    it: {
+      je: {
+        nature: 'Pronome personale \u00b7 1\u00aa persona singolare',
+        equiv: 'io',
+        texte: ['Indica la persona che parla.', 'In italiano si dice quasi sempre \u00abparlo\u00bb, senza \u00abio\u00bb, perch\u00e9 il verbo lo indica gi\u00e0. In francese il pronome \u00e8 obbligatorio: je parle. Davanti a una vocale diventa j\u2019: j\u2019aime.']
+      },
+      parle: {
+        nature: 'Verbo \u00b7 presente',
+        texte: ['Il verbo parler (parlare), al presente con \u00abje\u00bb.'],
+        formes: [['parler', 'infinito: il verbo non coniugato'], ['je parle', '\u00abio parlo\u00bb. La -e finale non si pronuncia']]
+      },
+      francais: {
+        nature: 'Nome \u00b7 maschile',
+        equiv: 'francese',
+        texte: ['Qui indica una lingua.', 'Come in italiano, i nomi delle lingue sono maschili (le fran\u00e7ais, il francese) e si scrivono con l\u2019iniziale minuscola.']
+      },
+      parles: {
+        nature: 'Verbo \u00b7 presente',
+        texte: ['Il verbo parler con \u00abtu\u00bb: tu parles.', 'Con \u00abje\u00bb si dice je parle, senza -s.']
+      }
+    },
+    pt: {
+      je: {
+        nature: 'Pronome pessoal \u00b7 1\u00aa pessoa do singular',
+        equiv: 'eu',
+        texte: ['Representa a pessoa que fala.', 'Em portugu\u00eas, o \u00abeu\u00bb pode ser omitido, porque o verbo j\u00e1 indica a pessoa (falo). Em franc\u00eas o pronome \u00e9 obrigat\u00f3rio: je parle. Diante de vogal, torna-se j\u2019: j\u2019aime.']
+      },
+      parle: {
+        nature: 'Verbo \u00b7 presente',
+        texte: ['O verbo parler (falar), no presente com \u00abje\u00bb.'],
+        formes: [['parler', 'infinitivo: o verbo sem conjugar'], ['je parle', '\u00abeu falo\u00bb. O -e final n\u00e3o se pronuncia']]
+      },
+      francais: {
+        nature: 'Substantivo \u00b7 masculino',
+        equiv: 'franc\u00eas',
+        texte: ['Aqui, nomeia uma l\u00edngua.', 'Como em portugu\u00eas, os nomes de l\u00ednguas s\u00e3o masculinos (le fran\u00e7ais, o franc\u00eas) e se escrevem com inicial min\u00fascula.']
+      },
+      parles: {
+        nature: 'Verbo \u00b7 presente',
+        texte: ['O verbo parler com \u00abtu\u00bb: tu parles.', 'Com \u00abje\u00bb, diz-se je parle, sem -s.']
+      }
+    },
+    ca: {
+      je: {
+        nature: 'Pronom personal \u00b7 1a persona del singular',
+        equiv: 'jo',
+        texte: ['Representa la persona que parla.', 'En catal\u00e0 gaireb\u00e9 mai no es diu \u00abjo\u00bb, perqu\u00e8 el verb ja ho indica (parlo). En franc\u00e8s el pronom \u00e9s obligatori: je parle. Davant d\u2019una vocal esdev\u00e9 j\u2019: j\u2019aime.']
+      },
+      parle: {
+        nature: 'Verb \u00b7 present',
+        texte: ['El verb parler (parlar), en present amb \u00abje\u00bb.'],
+        formes: [['parler', 'infinitiu: el verb sense conjugar'], ['je parle', '\u00abjo parlo\u00bb. La -e final no es pronuncia']]
+      },
+      francais: {
+        nature: 'Nom \u00b7 mascul\u00ed',
+        equiv: 'franc\u00e8s',
+        texte: ['Aqu\u00ed anomena una llengua.', 'Com en catal\u00e0, els noms de lleng\u00fces s\u00f3n masculins (le fran\u00e7ais, el franc\u00e8s) i s\u2019escriuen amb min\u00fascula.']
+      },
+      parles: {
+        nature: 'Verb \u00b7 present',
+        texte: ['El verb parler amb \u00abtu\u00bb: tu parles.', 'Igual que en catal\u00e0: tu parles. Amb \u00abje\u00bb, per\u00f2, es diu je parle, sense -s.']
+      }
+    },
+    eo: {
+      je: {
+        nature: 'Persona pronomo \u00b7 unua persono, singulara',
+        equiv: 'mi',
+        texte: ['\u011ci signifas la parolantan personon.', 'En Esperanto la verbo ne \u015dan\u011di\u011das la\u016d la persono (mi parolas, vi parolas). En la franca \u011di \u015dan\u011di\u011das, kaj la pronomo estas deviga: je parle. Anta\u016d vokalo \u011di fari\u011das j\u2019: j\u2019aime.']
+      },
+      parle: {
+        nature: 'Verbo \u00b7 prezenco',
+        texte: ['La verbo parler (paroli), en la prezenco kun \u00abje\u00bb.'],
+        formes: [['parler', 'infinitivo: la neflekcita verbo'], ['je parle', '\u00abmi parolas\u00bb. La fina -e ne prononci\u011das']]
+      },
+      francais: {
+        nature: 'Substantivo \u00b7 maskla',
+        equiv: 'la franca',
+        texte: ['\u0108i tie \u011di nomas lingvon.', 'En la franca \u0109iu substantivo estas vira a\u016d virina; Esperanto ne konas gramatikan genron. Lingvonomoj estas viraj: le fran\u00e7ais.', 'Kiel en Esperanto, ili skribi\u011das per malgranda litero.']
+      },
+      parles: {
+        nature: 'Verbo \u00b7 prezenco',
+        texte: ['La verbo parler kun \u00abtu\u00bb: tu parles.', 'Kun \u00abje\u00bb oni diras je parle, sen -s.']
+      }
+    },
+    zh: {
+      je: {
+        nature: '\u4eba\u79f0\u4ee3\u8bcd \u00b7 \u7b2c\u4e00\u4eba\u79f0\u5355\u6570',
+        equiv: '\u6211',
+        texte: ['\u6307\u8bf4\u8bdd\u7684\u4eba\u3002', '\u6c49\u8bed\u91cc\u5e38\u5e38\u7701\u7565\u4e3b\u8bed\uff0c\u4f46\u6cd5\u8bed\u7684\u52a8\u8bcd\u4f1a\u968f\u4eba\u79f0\u53d8\u5316\uff0c\u4e3b\u8bed\u4ee3\u8bcd\u4e0d\u80fd\u7701\uff1aje parle\u3002\u5728\u5143\u97f3\u524d\uff0cje \u8981\u7f29\u5199\u6210 j\u2019\uff1aj\u2019aime\u3002']
+      },
+      parle: {
+        nature: '\u52a8\u8bcd \u00b7 \u73b0\u5728\u65f6',
+        texte: ['\u52a8\u8bcd parler\uff08\u8bf4\uff0c\u8bb2\uff09\uff0c\u4e0e\u201cje\u201d\u642d\u914d\u7684\u73b0\u5728\u65f6\u3002'],
+        formes: [['parler', '\u4e0d\u5b9a\u5f0f\uff1a\u672a\u53d8\u4f4d\u7684\u52a8\u8bcd\u539f\u5f62'], ['je parle', '\u201c\u6211\u8bf4\u201d\u3002\u7ed3\u5c3e\u7684 -e \u4e0d\u53d1\u97f3']]
+      },
+      francais: {
+        nature: '\u540d\u8bcd \u00b7 \u9633\u6027',
+        equiv: '\u6cd5\u8bed',
+        texte: ['\u8fd9\u91cc\u6307\u4e00\u79cd\u8bed\u8a00\u3002', '\u6cd5\u8bed\u7684\u540d\u8bcd\u5206\u9634\u6027\u548c\u9633\u6027\uff0c\u6c49\u8bed\u6ca1\u6709\u8fd9\u79cd\u533a\u522b\u3002\u8bed\u8a00\u7684\u540d\u79f0\u90fd\u662f\u9633\u6027\uff1ale fran\u00e7ais\u3002', '\u6cd5\u8bed\u4e2d\u8bed\u8a00\u540d\u79f0\u4e0d\u5927\u5199\u3002']
+      },
+      parles: {
+        nature: '\u52a8\u8bcd \u00b7 \u73b0\u5728\u65f6',
+        texte: ['\u52a8\u8bcd parler \u4e0e\u201ctu\u201d\uff08\u4f60\uff09\u642d\u914d\uff1atu parles\u3002', '\u4e0e\u201cje\u201d\u642d\u914d\u65f6\u662f je parle\uff0c\u6ca1\u6709 -s\u3002']
+      }
+    },
+    ja: {
+      je: {
+        nature: '\u4eba\u79f0\u4ee3\u540d\u8a5e \u00b7 1\u4eba\u79f0\u5358\u6570',
+        equiv: '\u79c1',
+        texte: ['\u8a71\u3057\u3066\u3044\u308b\u4eba\u3092\u6307\u3057\u307e\u3059\u3002', '\u65e5\u672c\u8a9e\u3067\u306f\u300c\u79c1\u300d\u3092\u3088\u304f\u7701\u7565\u3057\u307e\u3059\u304c\u3001\u30d5\u30e9\u30f3\u30b9\u8a9e\u3067\u306f\u4e3b\u8a9e\u304c\u5fc5\u8981\u3067\u3059\uff1aje parle\u3002\u6bcd\u97f3\u306e\u524d\u3067\u306f j\u2019 \u306b\u306a\u308a\u307e\u3059\uff1aj\u2019aime\u3002']
+      },
+      parle: {
+        nature: '\u52d5\u8a5e \u00b7 \u73fe\u5728\u5f62',
+        texte: ['\u52d5\u8a5e parler\uff08\u8a71\u3059\uff09\u306e\u3001\u300cje\u300d\u306b\u5408\u308f\u305b\u305f\u73fe\u5728\u5f62\u3067\u3059\u3002'],
+        formes: [['parler', '\u4e0d\u5b9a\u8a5e\uff1a\u6d3b\u7528\u3057\u3066\u3044\u306a\u3044\u52d5\u8a5e\u306e\u5f62'], ['je parle', '\u300c\u79c1\u306f\u8a71\u3059\u300d\u3002\u8a9e\u672b\u306e -e \u306f\u767a\u97f3\u3057\u307e\u305b\u3093']]
+      },
+      francais: {
+        nature: '\u540d\u8a5e \u00b7 \u7537\u6027',
+        equiv: '\u30d5\u30e9\u30f3\u30b9\u8a9e',
+        texte: ['\u3053\u3053\u3067\u306f\u8a00\u8a9e\u306e\u540d\u524d\u3067\u3059\u3002', '\u30d5\u30e9\u30f3\u30b9\u8a9e\u306e\u540d\u8a5e\u306b\u306f\u7537\u6027\u30fb\u5973\u6027\u304c\u3042\u308a\u307e\u3059\u3002\u65e5\u672c\u8a9e\u306b\u306f\u306a\u3044\u533a\u5225\u3067\u3059\u3002\u8a00\u8a9e\u306e\u540d\u524d\u306f\u3059\u3079\u3066\u7537\u6027\uff1ale fran\u00e7ais\u3002', '\u307e\u305f\u3001\u30d5\u30e9\u30f3\u30b9\u8a9e\u3067\u306f\u8a00\u8a9e\u306e\u540d\u524d\u3092\u5c0f\u6587\u5b57\u3067\u66f8\u304d\u307e\u3059\u3002']
+      },
+      parles: {
+        nature: '\u52d5\u8a5e \u00b7 \u73fe\u5728\u5f62',
+        texte: ['\u52d5\u8a5e parler \u3092\u300ctu\u300d\uff08\u304d\u307f\uff09\u306b\u5408\u308f\u305b\u305f\u5f62\uff1atu parles\u3002', '\u300cje\u300d\u306e\u3068\u304d\u306f je parle \u3067\u3001-s \u306f\u3064\u304d\u307e\u305b\u3093\u3002']
+      }
+    },
+    ko: {
+      je: {
+        nature: '\uc778\uce6d\ub300\uba85\uc0ac \u00b7 1\uc778\uce6d \ub2e8\uc218',
+        equiv: '\ub098',
+        texte: ['\ub9d0\ud558\ub294 \uc0ac\ub78c\uc744 \uac00\ub9ac\ucf1c\uc694.', '\ud55c\uad6d\uc5b4\uc5d0\uc11c\ub294 \u201c\ub098\u201d\ub97c \uc790\uc8fc \uc0dd\ub7b5\ud558\uc9c0\ub9cc, \ud504\ub791\uc2a4\uc5b4\uc5d0\uc11c\ub294 \uc8fc\uc5b4\uac00 \uaf2d \ud544\uc694\ud574\uc694: je parle. \ubaa8\uc74c \uc55e\uc5d0\uc11c\ub294 j\u2019\ub85c \uc904\uc5b4\uc694: j\u2019aime.']
+      },
+      parle: {
+        nature: '\ub3d9\uc0ac \u00b7 \ud604\uc7ac\ud615',
+        texte: ['\ub3d9\uc0ac parler(\ub9d0\ud558\ub2e4)\ub97c \u201cje\u201d\uc5d0 \ub9de\ucdb0 \ud604\uc7ac\ud615\uc73c\ub85c \uc4f4 \uac70\uc608\uc694.'],
+        formes: [['parler', '\ubd80\uc815\uc0ac: \ud65c\uc6a9\ud558\uc9c0 \uc54a\uc740 \ub3d9\uc0ac \uc6d0\ud615'], ['je parle', '\u201c\ub098\ub294 \ub9d0\ud574\uc694\u201d. \ub05d\uc758 -e\ub294 \ubc1c\uc74c\ud558\uc9c0 \uc54a\uc544\uc694']]
+      },
+      francais: {
+        nature: '\uba85\uc0ac \u00b7 \ub0a8\uc131',
+        equiv: '\ud504\ub791\uc2a4\uc5b4',
+        texte: ['\uc5ec\uae30\uc11c\ub294 \uc5b8\uc5b4\uc758 \uc774\ub984\uc774\uc5d0\uc694.', '\ud504\ub791\uc2a4\uc5b4 \uba85\uc0ac\uc5d0\ub294 \ub0a8\uc131\uacfc \uc5ec\uc131\uc774 \uc788\uc5b4\uc694. \ud55c\uad6d\uc5b4\uc5d0\ub294 \uc5c6\ub294 \uad6c\ubd84\uc774\uc8e0. \uc5b8\uc5b4 \uc774\ub984\uc740 \ubaa8\ub450 \ub0a8\uc131\uc774\uc5d0\uc694: le fran\u00e7ais.', '\uadf8\ub9ac\uace0 \ud504\ub791\uc2a4\uc5b4\uc5d0\uc11c\ub294 \uc5b8\uc5b4 \uc774\ub984\uc744 \uc18c\ubb38\uc790\ub85c \uc368\uc694.']
+      },
+      parles: {
+        nature: '\ub3d9\uc0ac \u00b7 \ud604\uc7ac\ud615',
+        texte: ['\ub3d9\uc0ac parler\ub97c \u201ctu\u201d(\ub108)\uc5d0 \ub9de\ucd98 \ud615\ud0dc: tu parles.', '\u201cje\u201d\uc77c \ub54c\ub294 je parle\ub85c, -s\uac00 \ubd99\uc9c0 \uc54a\uc544\uc694.']
+      }
+    },
+    vi: {
+      je: {
+        nature: '\u0110\u1ea1i t\u1eeb nh\u00e2n x\u01b0ng \u00b7 ng\u00f4i th\u1ee9 nh\u1ea5t s\u1ed1 \u00edt',
+        equiv: 't\u00f4i',
+        texte: ['Ch\u1ec9 ng\u01b0\u1eddi \u0111ang n\u00f3i.', 'Ti\u1ebfng Vi\u1ec7t c\u00f3 th\u1ec3 b\u1ecf ch\u1ee7 ng\u1eef khi \u0111\u00e3 r\u00f5, nh\u01b0ng ti\u1ebfng Ph\u00e1p th\u00ec b\u1eaft bu\u1ed9c ph\u1ea3i c\u00f3: je parle. Tr\u01b0\u1edbc nguy\u00ean \u00e2m, je th\u00e0nh j\u2019: j\u2019aime.']
+      },
+      parle: {
+        nature: '\u0110\u1ed9ng t\u1eeb \u00b7 hi\u1ec7n t\u1ea1i',
+        texte: ['\u0110\u1ed9ng t\u1eeb parler (n\u00f3i), chia \u1edf th\u00ec hi\u1ec7n t\u1ea1i v\u1edbi \u201cje\u201d.'],
+        formes: [['parler', 'nguy\u00ean m\u1eabu: \u0111\u1ed9ng t\u1eeb ch\u01b0a chia'], ['je parle', '\u201ct\u00f4i n\u00f3i\u201d. Ch\u1eef -e \u1edf cu\u1ed1i kh\u00f4ng \u0111\u1ecdc']]
+      },
+      francais: {
+        nature: 'Danh t\u1eeb \u00b7 gi\u1ed1ng \u0111\u1ef1c',
+        equiv: 'ti\u1ebfng Ph\u00e1p',
+        texte: ['\u1ede \u0111\u00e2y n\u00f3 ch\u1ec9 m\u1ed9t ng\u00f4n ng\u1eef.', 'Danh t\u1eeb ti\u1ebfng Ph\u00e1p c\u00f3 gi\u1ed1ng \u0111\u1ef1c v\u00e0 gi\u1ed1ng c\u00e1i, c\u00f2n ti\u1ebfng Vi\u1ec7t th\u00ec kh\u00f4ng. T\u00ean c\u00e1c ng\u00f4n ng\u1eef \u0111\u1ec1u l\u00e0 gi\u1ed1ng \u0111\u1ef1c: le fran\u00e7ais.', 'V\u00e0 trong ti\u1ebfng Ph\u00e1p, t\u00ean ng\u00f4n ng\u1eef kh\u00f4ng vi\u1ebft hoa.']
+      },
+      parles: {
+        nature: '\u0110\u1ed9ng t\u1eeb \u00b7 hi\u1ec7n t\u1ea1i',
+        texte: ['\u0110\u1ed9ng t\u1eeb parler chia v\u1edbi \u201ctu\u201d (b\u1ea1n): tu parles.', 'V\u1edbi \u201cje\u201d th\u00ec n\u00f3i je parle, kh\u00f4ng c\u00f3 -s.']
+      }
+    },
+    ht: {
+      je: {
+        nature: 'Pwonon p\u00e8son\u00e8l \u00b7 1ye p\u00e8s\u00f2n sengilye',
+        equiv: 'mwen',
+        texte: ['Li reprezante moun k ap pale a.', 'An frans\u00e8, pwonon an obligatwa: je parle. Devan yon vway\u00e8l, je vin j\u2019: j\u2019aime.']
+      },
+      parle: {
+        nature: 'V\u00e8b \u00b7 prezan',
+        texte: ['V\u00e8b parler (pale), nan tan prezan ak \u00ab je \u00bb.'],
+        formes: [['parler', 'enfinitif: v\u00e8b la san konjigezon'], ['je parle', '\u00ab mwen pale \u00bb. L\u00e8t -e a nan fen an pa pwononse']]
+      },
+      francais: {
+        nature: 'Non \u00b7 maskilen',
+        equiv: 'frans\u00e8',
+        texte: ['Isit la, li bay non yon lang.', 'An frans\u00e8, chak non se maskilen oswa fenmen; krey\u00f2l pa f\u00e8 diferans sa a. Tout non lang yo maskilen: le fran\u00e7ais.', 'An frans\u00e8, non lang yo pa k\u00f2manse ak yon l\u00e8t majiskil.']
+      },
+      parles: {
+        nature: 'V\u00e8b \u00b7 prezan',
+        texte: ['V\u00e8b parler ak \u00ab tu \u00bb: tu parles.', 'An krey\u00f2l v\u00e8b la rete menm (mwen pale, ou pale), men an frans\u00e8 li chanje: je parle, tu parles.']
+      }
+    },
+    tl: {
+      je: {
+        nature: 'Panghalip na panao \u00b7 unang panauhan, isahan',
+        equiv: 'ako',
+        texte: ['Tumutukoy ito sa taong nagsasalita.', 'Sa Pranses, kailangang laging may panghalip na paksa: je parle. Bago ang patinig, nagiging j\u2019 ito: j\u2019aime.']
+      },
+      parle: {
+        nature: 'Pandiwa \u00b7 kasalukuyan',
+        texte: ['Ang pandiwang parler (magsalita), sa kasalukuyang panahunan kasama ang \u00abje\u00bb.'],
+        formes: [['parler', 'pawatas: ang pandiwang hindi pa binabanghay'], ['je parle', '\u00abnagsasalita ako\u00bb. Hindi binibigkas ang -e sa dulo']]
+      },
+      francais: {
+        nature: 'Pangngalan \u00b7 panlalaki',
+        equiv: 'Pranses',
+        texte: ['Dito, pangalan ito ng isang wika.', 'May panlalaki at pambabae ang mga pangngalang Pranses; walang ganito sa Tagalog. Panlalaki ang lahat ng pangalan ng wika: le fran\u00e7ais.', 'Sa Pranses, hindi nagsisimula sa malaking titik ang pangalan ng wika, hindi tulad ng \u201cPranses\u201d sa Tagalog.']
+      },
+      parles: {
+        nature: 'Pandiwa \u00b7 kasalukuyan',
+        texte: ['Ang pandiwang parler kasama ang \u00abtu\u00bb (ikaw): tu parles.', 'Kapag \u00abje\u00bb, je parle ang sinasabi, walang -s.']
+      }
+    },
+    id: {
+      je: {
+        nature: 'Kata ganti orang \u00b7 orang pertama tunggal',
+        equiv: 'saya',
+        texte: ['Merujuk pada orang yang berbicara.', 'Dalam bahasa Indonesia, subjek sering dihilangkan, tetapi dalam bahasa Prancis subjek wajib ada: je parle. Sebelum huruf vokal, je menjadi j\u2019: j\u2019aime.']
+      },
+      parle: {
+        nature: 'Kata kerja \u00b7 kala kini',
+        texte: ['Kata kerja parler (berbicara), dalam kala kini bersama \u00abje\u00bb.'],
+        formes: [['parler', 'infinitif: kata kerja yang belum dikonjugasi'], ['je parle', '\u00absaya berbicara\u00bb. Huruf -e di akhir tidak dibaca']]
+      },
+      francais: {
+        nature: 'Kata benda \u00b7 maskulin',
+        equiv: 'bahasa Prancis',
+        texte: ['Di sini, kata ini menyebut sebuah bahasa.', 'Kata benda bahasa Prancis bersifat maskulin atau feminin, sedangkan bahasa Indonesia tidak mengenal gender. Nama bahasa selalu maskulin: le fran\u00e7ais.', 'Dan dalam bahasa Prancis, nama bahasa ditulis dengan huruf kecil.']
+      },
+      parles: {
+        nature: 'Kata kerja \u00b7 kala kini',
+        texte: ['Kata kerja parler bersama \u00abtu\u00bb (kamu): tu parles.', 'Dengan \u00abje\u00bb, bentuknya je parle, tanpa -s.']
+      }
+    },
+    nl: {
+      je: {
+        nature: 'Persoonlijk voornaamwoord \u00b7 eerste persoon enkelvoud',
+        equiv: 'ik',
+        texte: ['Het verwijst naar de persoon die spreekt.', 'Net als in het Nederlands moet het voornaamwoord er staan: je parle. V\u00f3\u00f3r een klinker wordt je j\u2019: j\u2019aime.']
+      },
+      parle: {
+        nature: 'Werkwoord \u00b7 tegenwoordige tijd',
+        texte: ['Het werkwoord parler (spreken), in de tegenwoordige tijd bij \u00abje\u00bb.'],
+        formes: [['parler', 'infinitief: het werkwoord zonder vervoeging'], ['je parle', '\u00abik spreek\u00bb. De -e aan het eind wordt niet uitgesproken']]
+      },
+      francais: {
+        nature: 'Zelfstandig naamwoord \u00b7 mannelijk',
+        equiv: 'Frans',
+        texte: ['Hier is het de naam van een taal.', 'Franse zelfstandige naamwoorden zijn mannelijk of vrouwelijk; in het Nederlands heb je de- en het-woorden. Talen zijn mannelijk: le fran\u00e7ais.', 'En anders dan in het Nederlands krijgen namen van talen in het Frans geen hoofdletter.']
+      },
+      parles: {
+        nature: 'Werkwoord \u00b7 tegenwoordige tijd',
+        texte: ['Het werkwoord parler bij \u00abtu\u00bb (jij): tu parles.', 'Bij \u00abje\u00bb zeg je je parle, zonder -s.']
+      }
+    },
+    de: {
+      je: {
+        nature: 'Personalpronomen \u00b7 1. Person Singular',
+        equiv: 'ich',
+        texte: ['Es steht f\u00fcr die Person, die spricht.', 'Wie im Deutschen muss das Pronomen stehen: je parle. Vor einem Vokal wird je zu j\u2019: j\u2019aime.']
+      },
+      parle: {
+        nature: 'Verb \u00b7 Pr\u00e4sens',
+        texte: ['Das Verb parler (sprechen), im Pr\u00e4sens mit \u201eje\u201c.'],
+        formes: [['parler', 'Infinitiv: das Verb ohne Beugung'], ['je parle', '\u201eich spreche\u201c. Das -e am Ende spricht man nicht mit']]
+      },
+      francais: {
+        nature: 'Substantiv \u00b7 maskulin',
+        equiv: 'Franz\u00f6sisch',
+        texte: ['Hier bezeichnet es eine Sprache.', 'Franz\u00f6sische Substantive sind m\u00e4nnlich oder weiblich (im Deutschen gibt es au\u00dferdem s\u00e4chlich). Sprachen sind m\u00e4nnlich: le fran\u00e7ais.', 'Und anders als im Deutschen schreibt man Sprachnamen im Franz\u00f6sischen klein.']
+      },
+      parles: {
+        nature: 'Verb \u00b7 Pr\u00e4sens',
+        texte: ['Das Verb parler mit \u201etu\u201c (du): tu parles.', 'Mit \u201eje\u201c hei\u00dft es je parle, ohne -s.']
+      }
+    },
+    fa: {
+      je: {
+        nature: '\u0636\u0645\u06cc\u0631 \u0634\u062e\u0635\u06cc \u00b7 \u0627\u0648\u0644 \u0634\u062e\u0635 \u0645\u0641\u0631\u062f',
+        equiv: '\u0645\u0646',
+        texte: ['\u0628\u0647 \u06a9\u0633\u06cc \u0627\u0634\u0627\u0631\u0647 \u062f\u0627\u0631\u062f \u06a9\u0647 \u0635\u062d\u0628\u062a \u0645\u06cc\u200c\u06a9\u0646\u062f.', '\u062f\u0631 \u0641\u0627\u0631\u0633\u06cc \u0636\u0645\u06cc\u0631 \u0641\u0627\u0639\u0644\u06cc \u0631\u0627 \u0627\u063a\u0644\u0628 \u062d\u0630\u0641 \u0645\u06cc\u200c\u06a9\u0646\u0646\u062f\u060c \u0686\u0648\u0646 \u067e\u0627\u06cc\u0627\u0646 \u0641\u0639\u0644 \u0634\u062e\u0635 \u0631\u0627 \u0646\u0634\u0627\u0646 \u0645\u06cc\u200c\u062f\u0647\u062f. \u062f\u0631 \u0641\u0631\u0627\u0646\u0633\u0648\u06cc \u0636\u0645\u06cc\u0631 \u0628\u0627\u06cc\u062f \u0628\u06cc\u0627\u06cc\u062f: je parle. \u067e\u06cc\u0634 \u0627\u0632 \u062d\u0631\u0641 \u0635\u062f\u0627\u062f\u0627\u0631\u060c je \u0628\u0647 j\u2019 \u062a\u0628\u062f\u06cc\u0644 \u0645\u06cc\u200c\u0634\u0648\u062f: j\u2019aime.']
+      },
+      parle: {
+        nature: '\u0641\u0639\u0644 \u00b7 \u0632\u0645\u0627\u0646 \u062d\u0627\u0644',
+        texte: ['\u0641\u0639\u0644 parler (\u0635\u062d\u0628\u062a \u06a9\u0631\u062f\u0646) \u062f\u0631 \u0632\u0645\u0627\u0646 \u062d\u0627\u0644 \u0628\u0627 \u00abje\u00bb.'],
+        formes: [['parler', '\u0645\u0635\u062f\u0631: \u0641\u0639\u0644 \u0628\u062f\u0648\u0646 \u0635\u0631\u0641'], ['je parle', '\u00ab\u0645\u0646 \u0635\u062d\u0628\u062a \u0645\u06cc\u200c\u06a9\u0646\u0645\u00bb. \u062d\u0631\u0641 -e \u067e\u0627\u06cc\u0627\u0646\u06cc \u062a\u0644\u0641\u0638 \u0646\u0645\u06cc\u200c\u0634\u0648\u062f']]
+      },
+      francais: {
+        nature: '\u0627\u0633\u0645 \u00b7 \u0645\u0630\u06a9\u0631',
+        equiv: '\u0641\u0631\u0627\u0646\u0633\u0648\u06cc',
+        texte: ['\u062f\u0631 \u0627\u06cc\u0646\u062c\u0627 \u0646\u0627\u0645 \u06cc\u06a9 \u0632\u0628\u0627\u0646 \u0627\u0633\u062a.', '\u0627\u0633\u0645\u200c\u0647\u0627 \u062f\u0631 \u0641\u0631\u0627\u0646\u0633\u0648\u06cc \u0645\u0630\u06a9\u0631 \u06cc\u0627 \u0645\u0624\u0646\u062b\u200c\u0627\u0646\u062f\u061b \u0641\u0627\u0631\u0633\u06cc \u062c\u0646\u0633 \u062f\u0633\u062a\u0648\u0631\u06cc \u0646\u062f\u0627\u0631\u062f. \u0646\u0627\u0645 \u0647\u0645\u0647\u0654 \u0632\u0628\u0627\u0646\u200c\u0647\u0627 \u0645\u0630\u06a9\u0631 \u0627\u0633\u062a: le fran\u00e7ais.', '\u0648 \u0646\u0627\u0645 \u0632\u0628\u0627\u0646\u200c\u0647\u0627 \u062f\u0631 \u0641\u0631\u0627\u0646\u0633\u0648\u06cc \u0628\u0627 \u062d\u0631\u0641 \u06a9\u0648\u0686\u06a9 \u0646\u0648\u0634\u062a\u0647 \u0645\u06cc\u200c\u0634\u0648\u062f.']
+      },
+      parles: {
+        nature: '\u0641\u0639\u0644 \u00b7 \u0632\u0645\u0627\u0646 \u062d\u0627\u0644',
+        texte: ['\u0641\u0639\u0644 parler \u0628\u0627 \u00abtu\u00bb (\u062a\u0648): tu parles.', '\u0628\u0627 \u00abje\u00bb \u0645\u06cc\u200c\u06af\u0648\u06cc\u06cc\u0645 je parle\u060c \u0628\u062f\u0648\u0646 -s.']
+      }
+    },
+    sv: {
+      je: {
+        nature: 'Personligt pronomen \u00b7 f\u00f6rsta person singular',
+        equiv: 'jag',
+        texte: ['Det st\u00e5r f\u00f6r personen som talar.', 'Precis som p\u00e5 svenska m\u00e5ste pronomenet finnas med: je parle. Framf\u00f6r en vokal blir je till j\u2019: j\u2019aime.']
+      },
+      parle: {
+        nature: 'Verb \u00b7 presens',
+        texte: ['Verbet parler (tala), i presens med \u00abje\u00bb.'],
+        formes: [['parler', 'infinitiv: verbet utan b\u00f6jning'], ['je parle', '\u00abjag talar\u00bb. Slut-e uttalas inte']]
+      },
+      francais: {
+        nature: 'Substantiv \u00b7 maskulinum',
+        equiv: 'franska',
+        texte: ['H\u00e4r \u00e4r det namnet p\u00e5 ett spr\u00e5k.', 'Franska substantiv \u00e4r maskulina eller feminina, medan svenskan har utrum och neutrum. Spr\u00e5k \u00e4r maskulina: le fran\u00e7ais.', 'Och som p\u00e5 svenska skrivs spr\u00e5knamn med liten bokstav.']
+      },
+      parles: {
+        nature: 'Verb \u00b7 presens',
+        texte: ['Verbet parler med \u00abtu\u00bb (du): tu parles.', 'Till skillnad fr\u00e5n svenskan, d\u00e4r verbet \u00e4r detsamma (jag talar, du talar), \u00e4ndras det p\u00e5 franska: je parle, tu parles.']
+      }
+    },
+    no: {
+      je: {
+        nature: 'Personlig pronomen \u00b7 1. person entall',
+        equiv: 'jeg',
+        texte: ['Det st\u00e5r for personen som snakker.', 'Akkurat som p\u00e5 norsk m\u00e5 pronomenet v\u00e6re med: je parle. Foran en vokal blir je til j\u2019: j\u2019aime.']
+      },
+      parle: {
+        nature: 'Verb \u00b7 presens',
+        texte: ['Verbet parler (snakke), i presens med \u00abje\u00bb.'],
+        formes: [['parler', 'infinitiv: verbet uten b\u00f8yning'], ['je parle', '\u00abjeg snakker\u00bb. Slutt-e uttales ikke']]
+      },
+      francais: {
+        nature: 'Substantiv \u00b7 maskulinum',
+        equiv: 'fransk',
+        texte: ['Her er det navnet p\u00e5 et spr\u00e5k.', 'Franske substantiv er maskuline eller feminine; norsk har ogs\u00e5 intetkj\u00f8nn. Spr\u00e5k er maskuline: le fran\u00e7ais.', 'Og som p\u00e5 norsk skrives spr\u00e5knavn med liten bokstav.']
+      },
+      parles: {
+        nature: 'Verb \u00b7 presens',
+        texte: ['Verbet parler med \u00abtu\u00bb (du): tu parles.', 'P\u00e5 norsk er verbet likt (jeg snakker, du snakker), men p\u00e5 fransk endrer det seg: je parle, tu parles.']
+      }
+    },
+    ru: {
+      je: {
+        nature: '\u041b\u0438\u0447\u043d\u043e\u0435 \u043c\u0435\u0441\u0442\u043e\u0438\u043c\u0435\u043d\u0438\u0435 \u00b7 1-\u0435 \u043b\u0438\u0446\u043e, \u0435\u0434\u0438\u043d\u0441\u0442\u0432\u0435\u043d\u043d\u043e\u0435 \u0447\u0438\u0441\u043b\u043e',
+        equiv: '\u044f',
+        texte: ['\u041e\u043d\u043e \u043e\u0431\u043e\u0437\u043d\u0430\u0447\u0430\u0435\u0442 \u0433\u043e\u0432\u043e\u0440\u044f\u0449\u0435\u0433\u043e.', '\u041a\u0430\u043a \u0438 \u0440\u0443\u0441\u0441\u043a\u043e\u0435 \u00ab\u044f\u00bb, je \u043d\u0435 \u043f\u0438\u0448\u0435\u0442\u0441\u044f \u0441 \u0431\u043e\u043b\u044c\u0448\u043e\u0439 \u0431\u0443\u043a\u0432\u044b \u0432 \u0441\u0435\u0440\u0435\u0434\u0438\u043d\u0435 \u043f\u0440\u0435\u0434\u043b\u043e\u0436\u0435\u043d\u0438\u044f. \u041f\u0435\u0440\u0435\u0434 \u0433\u043b\u0430\u0441\u043d\u043e\u0439 \u043e\u043d\u043e \u043f\u0440\u0435\u0432\u0440\u0430\u0449\u0430\u0435\u0442\u0441\u044f \u0432 j\u2019: j\u2019aime.']
+      },
+      parle: {
+        nature: '\u0413\u043b\u0430\u0433\u043e\u043b \u00b7 \u043d\u0430\u0441\u0442\u043e\u044f\u0449\u0435\u0435 \u0432\u0440\u0435\u043c\u044f',
+        texte: ['\u0413\u043b\u0430\u0433\u043e\u043b parler (\u0433\u043e\u0432\u043e\u0440\u0438\u0442\u044c) \u0432 \u043d\u0430\u0441\u0442\u043e\u044f\u0449\u0435\u043c \u0432\u0440\u0435\u043c\u0435\u043d\u0438 \u0441 \u00abje\u00bb.'],
+        formes: [['parler', '\u0438\u043d\u0444\u0438\u043d\u0438\u0442\u0438\u0432: \u043d\u0435\u0441\u043f\u0440\u044f\u0433\u0430\u0435\u043c\u0430\u044f \u0444\u043e\u0440\u043c\u0430 \u0433\u043b\u0430\u0433\u043e\u043b\u0430'], ['je parle', '\u00ab\u044f \u0433\u043e\u0432\u043e\u0440\u044e\u00bb. \u041a\u043e\u043d\u0435\u0447\u043d\u0430\u044f -e \u043d\u0435 \u043f\u0440\u043e\u0438\u0437\u043d\u043e\u0441\u0438\u0442\u0441\u044f']]
+      },
+      francais: {
+        nature: '\u0421\u0443\u0449\u0435\u0441\u0442\u0432\u0438\u0442\u0435\u043b\u044c\u043d\u043e\u0435 \u00b7 \u043c\u0443\u0436\u0441\u043a\u043e\u0439 \u0440\u043e\u0434',
+        equiv: '\u0444\u0440\u0430\u043d\u0446\u0443\u0437\u0441\u043a\u0438\u0439',
+        texte: ['\u0417\u0434\u0435\u0441\u044c \u044d\u0442\u043e \u043d\u0430\u0437\u0432\u0430\u043d\u0438\u0435 \u044f\u0437\u044b\u043a\u0430.', '\u041a\u0430\u043a \u0438 \u0432 \u0440\u0443\u0441\u0441\u043a\u043e\u043c, \u0444\u0440\u0430\u043d\u0446\u0443\u0437\u0441\u043a\u0438\u0435 \u0441\u0443\u0449\u0435\u0441\u0442\u0432\u0438\u0442\u0435\u043b\u044c\u043d\u044b\u0435 \u0431\u044b\u0432\u0430\u044e\u0442 \u043c\u0443\u0436\u0441\u043a\u043e\u0433\u043e \u0438 \u0436\u0435\u043d\u0441\u043a\u043e\u0433\u043e \u0440\u043e\u0434\u0430. \u041d\u0430\u0437\u0432\u0430\u043d\u0438\u044f \u044f\u0437\u044b\u043a\u043e\u0432 \u2014 \u043c\u0443\u0436\u0441\u043a\u043e\u0433\u043e \u0440\u043e\u0434\u0430: le fran\u00e7ais.', '\u0418, \u043a\u0430\u043a \u0432 \u0440\u0443\u0441\u0441\u043a\u043e\u043c, \u043d\u0430\u0437\u0432\u0430\u043d\u0438\u044f \u044f\u0437\u044b\u043a\u043e\u0432 \u043f\u0438\u0448\u0443\u0442\u0441\u044f \u0441 \u043c\u0430\u043b\u0435\u043d\u044c\u043a\u043e\u0439 \u0431\u0443\u043a\u0432\u044b.']
+      },
+      parles: {
+        nature: '\u0413\u043b\u0430\u0433\u043e\u043b \u00b7 \u043d\u0430\u0441\u0442\u043e\u044f\u0449\u0435\u0435 \u0432\u0440\u0435\u043c\u044f',
+        texte: ['\u0413\u043b\u0430\u0433\u043e\u043b parler \u0441 \u00abtu\u00bb (\u0442\u044b): tu parles.', '\u0421 \u00abje\u00bb \u0433\u043e\u0432\u043e\u0440\u044f\u0442 je parle, \u0431\u0435\u0437 -s.']
       }
     }
   };
@@ -444,6 +1061,14 @@
     let aideBloquee = false;
     let dernierFocus = null;
     if (LANGUES_POLICE_SYSTEME.indexOf(langue) !== -1) scene.classList.add('mem-police-systeme');
+    // Persan : les textes de l'interface se lisent de droite à gauche ; la phrase
+    // française et ses tuiles (mem-phrase, mem-plateau) restent de gauche à droite.
+    if (LANGUES_DROITE_A_GAUCHE.indexOf(langue) !== -1) {
+      ['.rbek-bulle-texte', '.mem-astuce', '.mem-sens', '.mem-invite-texte', '.mem-lb-texte', '.mem-aide-feuille'].forEach(function (sel) {
+        const el = conteneur.querySelector(sel);
+        if (el) el.setAttribute('dir', 'rtl');
+      });
+    }
 
     // ---------- Poses de Bek (même logique que sequence-reveil-bek.js) ----------
     // `fondu` (ms) : fondu enchaîné doux entre deux postures ; sans lui, coupe nette

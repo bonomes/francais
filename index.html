@@ -36,6 +36,7 @@
 <link rel="stylesheet" href="sequence-reveil-bek.css">
 <link rel="stylesheet" href="sequence-lecteur.css">
 <link rel="stylesheet" href="sequence-memoire.css">
+<link rel="stylesheet" href="sequence-compte.css">
 <style>
   /* ==================================================================
      index.html — page d'accueil officielle du site (voir BONOMES_v61,
@@ -1485,6 +1486,7 @@
 <script src="sequence-lecteur.js"></script>
 <script src="sequence-reveil-bek.js"></script>
 <script src="sequence-memoire.js"></script>
+<script src="sequence-compte.js"></script>
 <script>
   // ================================================================
   // 🆕 (18-09-2026) Orchestration de la nouvelle scène d'accueil :
@@ -1662,12 +1664,32 @@
           }
           if (typeof rafraichirSoldeSac === 'function') rafraichirSoldeSac();
         },
-        // 🚧 PROVISOIRE : « Créer un compte » — le nouvel écran de compte (courriel + code)
-        // n'existe pas encore (l'ancien identite-eleve.js est remplacé). En attendant, on
-        // retombe sur la fin provisoire, qui propose « Première leçon / Se connecter ».
-        onCompte: function () { finDuParcoursAccueil(codeLangueChoisie); },
+        // « Créer un compte » : courriel + code (sequence-compte.js), posés sur la scène de la
+        // mémoire. Le module crée ou retrouve le profil et migre ce que l'élève a fait en invité.
+        // Sans le module, on retombe sur la fin provisoire (l'élève reste invité).
+        onCompte: function (identite) { etapeCompte(codeLangueChoisie, identite); },
         // « Plus tard » : l'élève continue en invité.
         onTermine: function () { finDuParcoursAccueil(codeLangueChoisie); }
+      });
+    }
+
+    // 🆕 (01-11-2026) Création du compte (sequence-compte.js) — « Continuer sans compte »
+    // ramène à la même fin que « Plus tard » : l'élève reste invité.
+    function etapeCompte(codeLangueChoisie, identite) {
+      if (!window.KebBekCompte) {
+        console.warn('Création de compte indisponible (module manquant) — repli sur la fin directe.');
+        finDuParcoursAccueil(codeLangueChoisie);
+        return;
+      }
+      window.KebBekCompte.demarrerCompte('nouvelDemarrageContenu', {
+        langue: codeLangueChoisie,
+        identite: identite
+      }, {
+        onComplet: function () {
+          if (typeof rafraichirSoldeSac === 'function') rafraichirSoldeSac();   // vrai compte : vrai solde
+          finDuParcoursAccueil(codeLangueChoisie);
+        },
+        onAnnule: function () { finDuParcoursAccueil(codeLangueChoisie); }
       });
     }
 

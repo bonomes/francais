@@ -1432,6 +1432,9 @@
     // (vers la GAUCHE de l'image) dans la scène de rencontre. Absente : pose perplexe.
     'bek-pointe-ferme':     'images/reveil/bek_pointe_bouche-fermee_01-01.webp',
     'bek-pointe-ouvert':    'images/reveil/bek_pointe_bouche-ouverte_01-01.webp',
+    // 🎨 Optionnelle : « observe » — Bek a baissé le bras mais regarde toujours vers la
+    // GAUCHE (le Lecteur). Elle ne parle pas. Absente : pose perplexe.
+    'bek-observe':          'images/reveil/bek_observe_01-01.webp',
     // 🎨 Optionnelles : l'ouverture et les postures des trois tours. Absentes,
     // on retombe sur les poses existantes (voir EXPRESSIONS).
     'bek-penchee':          'images/reveil/bek_penchee_01-01.webp',
@@ -1449,7 +1452,7 @@
   const POSES = [
     'bek-heureuse-ferme', 'bek-heureuse-ouvert', 'bek-concentree-ferme', 'bek-concentree-ouvert',
     'bek-perplexe-05', 'bek-perplexe-06', 'bek-soulagee', 'bek-decue-ferme', 'bek-decue-ouvert',
-    'bek-pointe-ferme', 'bek-pointe-ouvert',
+    'bek-pointe-ferme', 'bek-pointe-ouvert', 'bek-observe',
     'bek-penchee', 'bek-declic', 'bek-confiante',
     'bek-solennelle-ferme', 'bek-solennelle-ouvert', 'bek-tendue-ferme', 'bek-tendue-ouvert',
     'bek-emue-ferme', 'bek-emue-ouvert'
@@ -1461,6 +1464,7 @@
     // rencontre du Lecteur
     pointe:   { ferme: 'bek-pointe-ferme',   ouvert: 'bek-pointe-ouvert',   repli: 'bek-perplexe-05' },
     perplexe: { fixe: 'bek-perplexe-05', repli: 'bek-perplexe-06' },
+    observe:  { fixe: 'bek-observe',     repli: 'bek-perplexe-05' },
     // ouverture de la mémoire (images uniques : elle ne parle pas encore)
     penchee:   { fixe: 'bek-penchee',   repli: 'bek-concentree-ferme' },
     declic:    { fixe: 'bek-declic',    repli: 'bek-penchee' },
@@ -2287,12 +2291,13 @@
       await dire(T('rencBekQuoi'), 'pointe');
       bulle.classList.add('rbek-bulle-cachee');
       await attendre(350);
-      // 3. l'élève se le dit à voix basse ; Bek reste perplexe
+      // 3. l'élève se le dit à voix basse ; Bek, muette, garde le doigt pointé
       await pensee(T('rencPensee'));
-      exprimer('perplexe', 300);
       await attendre(600);
-      // 4. le Lecteur se présente et demande de l'aide
+      // 4. le Lecteur se présente et demande de l'aide : dès qu'il parle, Bek baisse le
+      //    bras mais continue de le regarder (pose « observe », fondu doux)
       lecteurReagit('mem-lecteur-saut', 650);
+      exprimer('observe', 350);
       await lecteurDit(T('rencLect1'));
       await lecteurDit(T('rencLect2'));
       await lecteurDit(T('rencLect3'));

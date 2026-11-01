@@ -873,9 +873,11 @@
     'bek-perplexe-05':      'images/reveil/bek-perplexe_05-01.webp',
     'bek-perplexe-06':      'images/reveil/bek-perplexe_06-01.webp',
     'bek-soulagee':         'images/reveil/bek-interpellee-soulagee_01-01.webp',
-    // 🎨 Optionnelle : pose « déçue » pour « …mais c'est tout ce dont je me
-    // souviens ». Absente, on retombe sur bek-perplexe-05.
-    'bek-decue':            'images/reveil/bek_decue_01-01.webp',
+    // 🎨 Optionnelle : paire « déçue » (bouche fermée / ouverte) pour « …mais
+    // c'est tout ce dont je me souviens ». Fermée seule : Bek ne parle pas mais
+    // reste déçue ; aucune des deux : on retombe sur bek-perplexe-05.
+    'bek-decue-ferme':      'images/reveil/bek_decue_bouche-fermee_01-01.webp',
+    'bek-decue-ouvert':     'images/reveil/bek_decue_bouche-ouverte_01-01.webp',
     // 🎨 Optionnelles : l'ouverture et les postures des trois tours. Absentes,
     // on retombe sur les poses existantes (voir EXPRESSIONS).
     'bek-penchee':          'images/reveil/bek_penchee_01-01.webp',
@@ -892,7 +894,7 @@
   };
   const POSES = [
     'bek-heureuse-ferme', 'bek-heureuse-ouvert', 'bek-concentree-ferme', 'bek-concentree-ouvert',
-    'bek-perplexe-05', 'bek-perplexe-06', 'bek-soulagee', 'bek-decue',
+    'bek-perplexe-05', 'bek-perplexe-06', 'bek-soulagee', 'bek-decue-ferme', 'bek-decue-ouvert',
     'bek-penchee', 'bek-declic', 'bek-confiante',
     'bek-solennelle-ferme', 'bek-solennelle-ouvert', 'bek-tendue-ferme', 'bek-tendue-ouvert',
     'bek-emue-ferme', 'bek-emue-ouvert'
@@ -900,7 +902,7 @@
   const EXPRESSIONS = {
     heureuse: { ferme: 'bek-heureuse-ferme',   ouvert: 'bek-heureuse-ouvert',   repli: 'bek-soulagee' },
     effort:   { ferme: 'bek-concentree-ferme', ouvert: 'bek-concentree-ouvert', repli: 'bek-perplexe-06' },
-    triste:   { fixe: 'bek-decue', repli: 'bek-perplexe-05' },
+    triste:   { ferme: 'bek-decue-ferme',    ouvert: 'bek-decue-ouvert',    repli: 'bek-perplexe-05' },
     // ouverture de la mémoire (images uniques : elle ne parle pas encore)
     penchee:   { fixe: 'bek-penchee',   repli: 'bek-concentree-ferme' },
     declic:    { fixe: 'bek-declic',    repli: 'bek-penchee' },

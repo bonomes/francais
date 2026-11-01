@@ -88,8 +88,17 @@
 
    @param {string} idConteneur
    @param {object} options : langue, sources (surcharge des noms d'images),
-                             dossierImages, extension
-   @param {object} callbacks : onTermine()
+                             dossierImages, extension,
+                             🆕 identite { prenom, genre: 'm'|'f', adulte: bool } —
+                             celle recueillie par sequence-reveil-bek (onIdentite) ;
+                             si elle est fournie, la scène « rencontre du Lecteur »
+                             se joue après la mémoire (rencontre: false l'en empêche),
+                             🧪 sauterA: 'rencontre' — aperçu : saute le jeu et
+                             démarre à la fin de la mémoire (pour régler la scène)
+   @param {object} callbacks : onTermine(),
+                               🆕 onConfirmerIdentite(identite) — appelé quand le Lecteur
+                               demande « Tu confirmes ? » ; s'il est fourni, c'est lui
+                               qui prend la suite (onTermine n'est alors pas appelé)
    @returns {{ arreter: function }}
    ================================================================== */
 (function () {
@@ -130,12 +139,29 @@
   // Notes (do ré mi sol la do) : un mot posé = une note qui monte dans la phrase.
   const GAMME = [523.25, 587.33, 659.25, 783.99, 880.0, 1046.5];
   const NOTE_DU_MOT = [0, 2, 3];          // je = do, parle = mi, français = sol
+  // 🆕 Rencontre : bout du doigt de Bek dans l'image « pointe » (fraction de la boîte
+  // de Bek : 0 = bord gauche / haut). Le Lecteur vient s'y poser.
+  const DOIGT = { x: 0.178, y: 0.547 };
+  const RENCONTRE = { approche: 1500, penseeMin: 2800, penseeMax: 5200, penseeParSigne: 90 };
 
   const DICO = {
     fr: {
       sens_je: 'moi', sens_parle: '(moi) parler', sens_francais: 'la langue fran\u00e7aise', sens_parles: '(toi) parler',
       bekFin: '\u2026mais c\u2019est tout ce dont je me souviens.',
       lecteurFin: 'Il doit y en avoir d\u2019autres\u2026 Je peux t\u2019aider \u00e0 les retrouver.',
+      // 🆕 Rencontre avec le Lecteur — rendu vivant par langue (pas de traduction littérale)
+      rencBekQuoi: 'C\u2019est quoi, \u00e7a\u00a0?',
+      rencPensee: 'Une IA, je suppose\u00a0?',
+      rencLect1: 'Salut Bek, je me pr\u00e9sente\u00a0: je suis le Lecteur.',
+      rencLect2: 'Je peux t\u2019aider \u00e0 retrouver et \u00e0 reconstruire tes m\u00e9moires.',
+      rencLect3: 'J\u2019ai besoin d\u2019un humain pour r\u00e9aliser certaines de ces t\u00e2ches.',
+      rencLect4: 'Humain, veux-tu nous aider\u00a0?',
+      rencReponse: 'J\u2019imagine que je n\u2019ai pas le choix\u00a0!',
+      rencRecapGarcon: 'Il s\u2019appelle {nom}, c\u2019est un gar\u00e7on.',
+      rencRecapFille: 'Elle s\u2019appelle {nom}, c\u2019est une fille.',
+      rencRecapHomme: 'Il s\u2019appelle {nom}, c\u2019est un homme.',
+      rencRecapFemme: 'Elle s\u2019appelle {nom}, c\u2019est une femme.',
+      rencLect5: 'C\u2019est vrai\u00a0? Tu confirmes\u00a0?',
       suite: 'Suite',
       sonBouton: 'Son',
       astuceClavier: 'Astuce\u00a0: tu peux aussi taper les mots au clavier.',
@@ -151,6 +177,19 @@
       sens_je: 'I', sens_parle: '(I) speak', sens_francais: 'French', sens_parles: '(you) speak',
       bekFin: '\u2026but that\u2019s all I remember.',
       lecteurFin: 'There must be more\u2026 I can help you find them.',
+      // 🆕 Rencontre avec le Lecteur — rendu vivant par langue (pas de traduction littérale)
+      rencBekQuoi: 'What\u2019s that?!',
+      rencPensee: 'An AI, I guess?',
+      rencLect1: 'Hi Bek, let me introduce myself: I\u2019m the Reader.',
+      rencLect2: 'I can help you find and rebuild your memories.',
+      rencLect3: 'I need a human to do some of these tasks.',
+      rencLect4: 'Human, will you help us?',
+      rencReponse: 'I guess I don\u2019t have a choice!',
+      rencRecapGarcon: 'His name is {nom}, and he\u2019s a boy.',
+      rencRecapFille: 'Her name is {nom}, and she\u2019s a girl.',
+      rencRecapHomme: 'His name is {nom}, and he\u2019s a man.',
+      rencRecapFemme: 'Her name is {nom}, and she\u2019s a woman.',
+      rencLect5: 'Is that true? Can you confirm?',
       suite: 'Next',
       sonBouton: 'Sound',
       astuceClavier: 'Tip: you can also type the words on your keyboard.',
@@ -166,6 +205,19 @@
       sens_je: 'yo', sens_parle: '(yo) hablo', sens_francais: 'franc\u00e9s', sens_parles: '(t\u00fa) hablas',
       bekFin: '\u2026pero eso es todo lo que recuerdo.',
       lecteurFin: 'Debe de haber m\u00e1s\u2026 Puedo ayudarte a encontrarlos.',
+      // 🆕 Rencontre avec le Lecteur — rendu vivant par langue (pas de traduction littérale)
+      rencBekQuoi: '\u00bfY eso qu\u00e9 es?',
+      rencPensee: '\u00bfUna IA, supongo?',
+      rencLect1: '\u00a1Hola, Bek! Me presento: soy el Lector.',
+      rencLect2: 'Puedo ayudarte a encontrar y reconstruir tus recuerdos.',
+      rencLect3: 'Necesito a un humano para hacer algunas de estas tareas.',
+      rencLect4: 'Humano, \u00bfquieres ayudarnos?',
+      rencReponse: 'Parece que no me queda otra\u2026',
+      rencRecapGarcon: 'Se llama {nom}, es un chico.',
+      rencRecapFille: 'Se llama {nom}, es una chica.',
+      rencRecapHomme: 'Se llama {nom}, es un hombre.',
+      rencRecapFemme: 'Se llama {nom}, es una mujer.',
+      rencLect5: '\u00bfEs verdad? \u00bfLo confirmas?',
       suite: 'Siguiente',
       sonBouton: 'Sonido',
       astuceClavier: 'Truco: tambi\u00e9n puedes escribir las palabras con el teclado.',
@@ -181,6 +233,19 @@
       sens_je: 'io', sens_parle: '(io) parlo', sens_francais: 'francese', sens_parles: '(tu) parli',
       bekFin: '\u2026ma \u00e8 tutto quello che ricordo.',
       lecteurFin: 'Ce ne devono essere altri\u2026 Posso aiutarti a ritrovarli.',
+      // 🆕 Rencontre avec le Lecteur — rendu vivant par langue (pas de traduction littérale)
+      rencBekQuoi: 'Che cos\u2019\u00e8 quello?',
+      rencPensee: 'Un\u2019IA, immagino?',
+      rencLect1: 'Ciao Bek, mi presento: sono il Lettore.',
+      rencLect2: 'Posso aiutarti a ritrovare e ricostruire i tuoi ricordi.',
+      rencLect3: 'Mi serve un umano per svolgere alcune di queste attivit\u00e0.',
+      rencLect4: 'Umano, ci vuoi aiutare?',
+      rencReponse: 'A quanto pare non ho molta scelta\u2026',
+      rencRecapGarcon: 'Si chiama {nom}, \u00e8 un ragazzo.',
+      rencRecapFille: 'Si chiama {nom}, \u00e8 una ragazza.',
+      rencRecapHomme: 'Si chiama {nom}, \u00e8 un uomo.',
+      rencRecapFemme: 'Si chiama {nom}, \u00e8 una donna.',
+      rencLect5: '\u00c8 vero? Confermi?',
       suite: 'Avanti',
       sonBouton: 'Audio',
       astuceClavier: 'Suggerimento: puoi anche digitare le parole con la tastiera.',
@@ -196,6 +261,19 @@
       sens_je: 'eu', sens_parle: '(eu) falo', sens_francais: 'franc\u00eas', sens_parles: '(tu) falas',
       bekFin: '\u2026mas \u00e9 s\u00f3 disso que me lembro.',
       lecteurFin: 'Deve haver mais\u2026 Posso ajudar voc\u00ea a encontr\u00e1-las.',
+      // 🆕 Rencontre avec le Lecteur — rendu vivant par langue (pas de traduction littérale)
+      rencBekQuoi: 'O que \u00e9 isso?!',
+      rencPensee: 'Uma IA, eu acho?',
+      rencLect1: 'Oi, Bek! Deixa eu me apresentar: sou o Leitor.',
+      rencLect2: 'Posso ajudar voc\u00ea a reencontrar e reconstruir suas mem\u00f3rias.',
+      rencLect3: 'Preciso de um humano para fazer algumas dessas tarefas.',
+      rencLect4: 'Humano, voc\u00ea quer nos ajudar?',
+      rencReponse: 'Pelo visto, n\u00e3o tenho muita escolha\u2026',
+      rencRecapGarcon: 'Ele se chama {nom}, \u00e9 um menino.',
+      rencRecapFille: 'Ela se chama {nom}, \u00e9 uma menina.',
+      rencRecapHomme: 'Ele se chama {nom}, \u00e9 um homem.',
+      rencRecapFemme: 'Ela se chama {nom}, \u00e9 uma mulher.',
+      rencLect5: '\u00c9 verdade? Voc\u00ea confirma?',
       suite: 'Pr\u00f3ximo',
       sonBouton: 'Som',
       astuceClavier: 'Dica: voc\u00ea tamb\u00e9m pode digitar as palavras no teclado.',
@@ -211,6 +289,19 @@
       sens_je: 'jo', sens_parle: '(jo) parlo', sens_francais: 'franc\u00e8s', sens_parles: '(tu) parles',
       bekFin: '\u2026per\u00f2 aix\u00f2 \u00e9s tot el que recordo.',
       lecteurFin: 'N\u2019hi ha d\u2019haver m\u00e9s\u2026 Et puc ajudar a trobar-los.',
+      // 🆕 Rencontre avec le Lecteur — rendu vivant par langue (pas de traduction littérale)
+      rencBekQuoi: 'Qu\u00e8 \u00e9s all\u00f2?',
+      rencPensee: 'Una IA, suposo?',
+      rencLect1: 'Hola, Bek! Em presento: s\u00f3c el Lector.',
+      rencLect2: 'Et puc ajudar a retrobar i reconstruir els teus records.',
+      rencLect3: 'Necessito un hum\u00e0 per fer algunes d\u2019aquestes tasques.',
+      rencLect4: 'Hum\u00e0, ens vols ajudar?',
+      rencReponse: 'Pel que es veu, no tinc gaire opci\u00f3\u2026',
+      rencRecapGarcon: 'Es diu {nom}, \u00e9s un noi.',
+      rencRecapFille: 'Es diu {nom}, \u00e9s una noia.',
+      rencRecapHomme: 'Es diu {nom}, \u00e9s un home.',
+      rencRecapFemme: 'Es diu {nom}, \u00e9s una dona.',
+      rencLect5: '\u00c9s veritat? Ho confirmes?',
       suite: 'Seg\u00fcent',
       sonBouton: 'So',
       astuceClavier: 'Truc: tamb\u00e9 pots escriure les paraules amb el teclat.',
@@ -226,6 +317,19 @@
       sens_je: 'mi', sens_parle: '(mi) parolas', sens_francais: 'la franca lingvo', sens_parles: '(vi) parolas',
       bekFin: '\u2026sed tion nur mi memoras.',
       lecteurFin: 'Certe ekzistas pliaj\u2026 Mi povas helpi vin retrovi ilin.',
+      // 🆕 Rencontre avec le Lecteur — rendu vivant par langue (pas de traduction littérale)
+      rencBekQuoi: 'Kio estas tio?',
+      rencPensee: 'Artefarita inteligento, mi supozas?',
+      rencLect1: 'Saluton, Bek! Mi prezentas min: mi estas la Legilo.',
+      rencLect2: 'Mi povas helpi vin retrovi kaj rekonstrui viajn memorojn.',
+      rencLect3: 'Mi bezonas homon por plenumi kelkajn el \u0109i tiuj taskoj.',
+      rencLect4: 'Homo, \u0109u vi volas helpi nin?',
+      rencReponse: '\u015cajne mi ne havas multan elekton\u2026',
+      rencRecapGarcon: 'Li nomi\u011das {nom}, li estas knabo.',
+      rencRecapFille: '\u015ci nomi\u011das {nom}, \u015di estas knabino.',
+      rencRecapHomme: 'Li nomi\u011das {nom}, li estas viro.',
+      rencRecapFemme: '\u015ci nomi\u011das {nom}, \u015di estas virino.',
+      rencLect5: '\u0108u vere? \u0108u vi konfirmas?',
       suite: 'Sekva',
       sonBouton: 'Sono',
       astuceClavier: 'Konsileto: vi anka\u016d povas tajpi la vortojn per la klavaro.',
@@ -241,6 +345,19 @@
       sens_je: '\u6211', sens_parle: '\uff08\u6211\uff09\u8bf4', sens_francais: '\u6cd5\u8bed', sens_parles: '\uff08\u4f60\uff09\u8bf4',
       bekFin: '\u2026\u2026\u53ef\u8fd9\u5c31\u662f\u6211\u8bb0\u5f97\u7684\u5168\u90e8\u4e86\u3002',
       lecteurFin: '\u4e00\u5b9a\u8fd8\u6709\u522b\u7684\u2026\u2026\u6211\u53ef\u4ee5\u5e2e\u4f60\u627e\u5230\u5b83\u4eec\u3002',
+      // 🆕 Rencontre avec le Lecteur — rendu vivant par langue (pas de traduction littérale)
+      rencBekQuoi: '\u90a3\u662f\u4ec0\u4e48\u5440\uff1f',
+      rencPensee: '\u662f\u4eba\u5de5\u667a\u80fd\u5427\uff1f',
+      rencLect1: '\u4f60\u597d\uff0cBek\uff01\u6211\u6765\u81ea\u6211\u4ecb\u7ecd\u4e00\u4e0b\uff1a\u6211\u662f\u201c\u9605\u8bfb\u5668\u201d\u3002',
+      rencLect2: '\u6211\u53ef\u4ee5\u5e2e\u4f60\u627e\u56de\u5e76\u91cd\u5efa\u4f60\u7684\u8bb0\u5fc6\u3002',
+      rencLect3: '\u5176\u4e2d\u6709\u4e9b\u4efb\u52a1\uff0c\u9700\u8981\u4e00\u4e2a\u4eba\u7c7b\u6765\u5b8c\u6210\u3002',
+      rencLect4: '\u4eba\u7c7b\uff0c\u4f60\u613f\u610f\u5e2e\u5e2e\u6211\u4eec\u5417\uff1f',
+      rencReponse: '\u770b\u6765\u6211\u4e5f\u6ca1\u5f97\u9009\u5427\u2026\u2026',
+      rencRecapGarcon: '\u4ed6\u53eb{nom}\uff0c\u662f\u4e2a\u7537\u5b69\u3002',
+      rencRecapFille: '\u5979\u53eb{nom}\uff0c\u662f\u4e2a\u5973\u5b69\u3002',
+      rencRecapHomme: '\u4ed6\u53eb{nom}\uff0c\u662f\u4e2a\u7537\u4eba\u3002',
+      rencRecapFemme: '\u5979\u53eb{nom}\uff0c\u662f\u4e2a\u5973\u4eba\u3002',
+      rencLect5: '\u662f\u771f\u7684\u5417\uff1f\u4f60\u786e\u8ba4\u4e00\u4e0b\uff1f',
       suite: '\u7ee7\u7eed',
       sonBouton: '\u58f0\u97f3',
       astuceClavier: '\u5c0f\u63d0\u793a\uff1a\u4f60\u4e5f\u53ef\u4ee5\u7528\u952e\u76d8\u8f93\u5165\u8fd9\u4e9b\u8bcd\u3002',
@@ -256,6 +373,19 @@
       sens_je: '\u79c1', sens_parle: '\uff08\u79c1\u304c\uff09\u8a71\u3059', sens_francais: '\u30d5\u30e9\u30f3\u30b9\u8a9e', sens_parles: '\uff08\u304d\u307f\u304c\uff09\u8a71\u3059',
       bekFin: '\u2026\u2026\u3067\u3082\u3001\u899a\u3048\u3066\u3044\u308b\u306e\u306f\u3053\u308c\u3060\u3051\u3002',
       lecteurFin: '\u304d\u3063\u3068\u307b\u304b\u306b\u3082\u3042\u308b\u306f\u305a\u2026\u2026\u898b\u3064\u3051\u308b\u304a\u624b\u4f1d\u3044\u3092\u3059\u308b\u3088\u3002',
+      // 🆕 Rencontre avec le Lecteur — rendu vivant par langue (pas de traduction littérale)
+      rencBekQuoi: '\u3042\u308c\u3001\u306a\u306b\uff1f',
+      rencPensee: 'AI\u304b\u306a\uff1f',
+      rencLect1: '\u3053\u3093\u306b\u3061\u306f\u3001Bek\u3002\u81ea\u5df1\u7d39\u4ecb\u3059\u308b\u306d\u3002\u308f\u305f\u3057\u306f\u300c\u30ea\u30fc\u30c0\u30fc\u300d\u3060\u3088\u3002',
+      rencLect2: '\u304d\u307f\u306e\u8a18\u61b6\u3092\u898b\u3064\u3051\u3066\u3001\u7d44\u307f\u7acb\u3066\u76f4\u3059\u304a\u624b\u4f1d\u3044\u304c\u3067\u304d\u308b\u3088\u3002',
+      rencLect3: '\u3053\u306e\u3046\u3061\u306e\u3044\u304f\u3064\u304b\u306f\u3001\u4eba\u9593\u306e\u624b\u304c\u306a\u3044\u3068\u3067\u304d\u306a\u3044\u3093\u3060\u3002',
+      rencLect4: '\u4eba\u9593\u3055\u3093\u3001\u624b\u4f1d\u3063\u3066\u304f\u308c\u308b\uff1f',
+      rencReponse: '\u9078\u629e\u80a2\u3001\u306a\u3055\u305d\u3046\u3060\u306d\u2026',
+      rencRecapGarcon: '{nom}\u304f\u3093\u3063\u3066\u3044\u3046\u306e\u3002\u7537\u306e\u5b50\u3060\u3088\u3002',
+      rencRecapFille: '{nom}\u3061\u3083\u3093\u3063\u3066\u3044\u3046\u306e\u3002\u5973\u306e\u5b50\u3060\u3088\u3002',
+      rencRecapHomme: '{nom}\u3055\u3093\u3063\u3066\u3044\u3046\u306e\u3002\u7537\u306e\u4eba\u3060\u3088\u3002',
+      rencRecapFemme: '{nom}\u3055\u3093\u3063\u3066\u3044\u3046\u306e\u3002\u5973\u306e\u4eba\u3060\u3088\u3002',
+      rencLect5: '\u672c\u5f53\uff1f \u78ba\u8a8d\u3057\u3066\u304f\u308c\u308b\uff1f',
       suite: '\u6b21\u3078',
       sonBouton: '\u30b5\u30a6\u30f3\u30c9',
       astuceClavier: '\u30d2\u30f3\u30c8\uff1a\u30ad\u30fc\u30dc\u30fc\u30c9\u3067\u8a00\u8449\u3092\u5165\u529b\u3059\u308b\u3053\u3068\u3082\u3067\u304d\u308b\u3088\u3002',
@@ -271,6 +401,19 @@
       sens_je: '\ub098', sens_parle: '(\ub0b4\uac00) \ub9d0\ud574\uc694', sens_francais: '\ud504\ub791\uc2a4\uc5b4', sens_parles: '(\ub124\uac00) \ub9d0\ud574\uc694',
       bekFin: '\u2026\ud558\uc9c0\ub9cc \uc81c\uac00 \uae30\uc5b5\ud558\ub294 \uac74 \uc774\uac8c \uc804\ubd80\uc608\uc694.',
       lecteurFin: '\ub354 \uc788\uc744 \uac70\uc608\uc694\u2026 \ucc3e\ub294 \uac78 \ub3c4\uc640\uc904\uac8c\uc694.',
+      // 🆕 Rencontre avec le Lecteur — rendu vivant par langue (pas de traduction littérale)
+      rencBekQuoi: '\uc800\uac8c \ubb50\uc57c?',
+      rencPensee: 'AI\uc778\uac00?',
+      rencLect1: '\uc548\ub155, Bek! \ub0b4 \uc18c\uac1c\ub97c \ud560\uac8c. \ub098\ub294 \u2018\ub9ac\ub354\u2019\uc57c.',
+      rencLect2: '\ub124 \uae30\uc5b5\uc744 \ucc3e\uace0 \ub2e4\uc2dc \uc9dc \ub9de\ucd94\ub294 \uac78 \ub3c4\uc640\uc904 \uc218 \uc788\uc5b4.',
+      rencLect3: '\uc774 \uc911 \uba87 \uac00\uc9c0\ub294 \uc0ac\ub78c\uc758 \uc190\uc774 \ud544\uc694\ud574.',
+      rencLect4: '\uc778\uac04, \uc6b0\ub9ac\ub97c \ub3c4\uc640\uc904\ub798?',
+      rencReponse: '\uc120\ud0dd\uad8c\uc774 \uc5c6\ub294 \uac83 \uac19\ub124\u2026',
+      rencRecapGarcon: '\uc774\ub984\uc740 {nom}. \ub0a8\uc790\uc544\uc774\uc57c.',
+      rencRecapFille: '\uc774\ub984\uc740 {nom}. \uc5ec\uc790\uc544\uc774\uc57c.',
+      rencRecapHomme: '\uc774\ub984\uc740 {nom}. \ub0a8\uc790 \uc5b4\ub978\uc774\uc57c.',
+      rencRecapFemme: '\uc774\ub984\uc740 {nom}. \uc5ec\uc790 \uc5b4\ub978\uc774\uc57c.',
+      rencLect5: '\uc815\ub9d0\uc774\uc57c? \ud655\uc778\ud574 \uc904\ub798?',
       suite: '\ub2e4\uc74c',
       sonBouton: '\uc18c\ub9ac',
       astuceClavier: '\ud301: \ud0a4\ubcf4\ub4dc\ub85c \ub2e8\uc5b4\ub97c \uc9c1\uc811 \uc785\ub825\ud560 \uc218\ub3c4 \uc788\uc5b4\uc694.',
@@ -286,6 +429,19 @@
       sens_je: 't\u00f4i', sens_parle: '(t\u00f4i) n\u00f3i', sens_francais: 'ti\u1ebfng Ph\u00e1p', sens_parles: '(b\u1ea1n) n\u00f3i',
       bekFin: '\u2026nh\u01b0ng m\u00ecnh ch\u1ec9 nh\u1edb \u0111\u01b0\u1ee3c c\u00f3 v\u1eady th\u00f4i.',
       lecteurFin: 'Ch\u1eafc ch\u1eafn c\u00f2n nhi\u1ec1u n\u1eefa\u2026 M\u00ecnh c\u00f3 th\u1ec3 gi\u00fap b\u1ea1n t\u00ecm l\u1ea1i ch\u00fang.',
+      // 🆕 Rencontre avec le Lecteur — rendu vivant par langue (pas de traduction littérale)
+      rencBekQuoi: 'C\u00e1i g\u00ec kia v\u1eady?',
+      rencPensee: 'Ch\u1eafc l\u00e0 AI nh\u1ec9?',
+      rencLect1: 'Ch\u00e0o Bek, \u0111\u1ec3 m\u00ecnh t\u1ef1 gi\u1edbi thi\u1ec7u nh\u00e9: m\u00ecnh l\u00e0 Tr\u00ecnh \u0111\u1ecdc.',
+      rencLect2: 'M\u00ecnh c\u00f3 th\u1ec3 gi\u00fap b\u1ea1n t\u00ecm l\u1ea1i v\u00e0 d\u1ef1ng l\u1ea1i nh\u1eefng k\u00fd \u1ee9c c\u1ee7a b\u1ea1n.',
+      rencLect3: 'M\u1ed9t s\u1ed1 vi\u1ec7c trong \u0111\u00f3 m\u00ecnh c\u1ea7n c\u00f3 m\u1ed9t con ng\u01b0\u1eddi m\u1edbi l\u00e0m \u0111\u01b0\u1ee3c.',
+      rencLect4: 'Con ng\u01b0\u1eddi \u01a1i, b\u1ea1n gi\u00fap ch\u00fang m\u00ecnh nh\u00e9?',
+      rencReponse: 'C\u00f3 v\u1ebb m\u00ecnh \u0111\u00e2u c\u00f3 quy\u1ec1n ch\u1ecdn nh\u1ec9\u2026',
+      rencRecapGarcon: 'C\u1eadu \u1ea5y t\u00ean l\u00e0 {nom}, l\u00e0 m\u1ed9t c\u1eadu b\u00e9.',
+      rencRecapFille: 'B\u1ea1n \u1ea5y t\u00ean l\u00e0 {nom}, l\u00e0 m\u1ed9t c\u00f4 b\u00e9.',
+      rencRecapHomme: 'Anh \u1ea5y t\u00ean l\u00e0 {nom}, l\u00e0 m\u1ed9t ng\u01b0\u1eddi \u0111\u00e0n \u00f4ng.',
+      rencRecapFemme: 'Ch\u1ecb \u1ea5y t\u00ean l\u00e0 {nom}, l\u00e0 m\u1ed9t ng\u01b0\u1eddi ph\u1ee5 n\u1eef.',
+      rencLect5: '\u0110\u00fang kh\u00f4ng? B\u1ea1n x\u00e1c nh\u1eadn nh\u00e9?',
       suite: 'Ti\u1ebfp',
       sonBouton: '\u00c2m thanh',
       astuceClavier: 'M\u1eb9o: b\u1ea1n c\u0169ng c\u00f3 th\u1ec3 g\u00f5 c\u00e1c t\u1eeb b\u1eb1ng b\u00e0n ph\u00edm.',
@@ -301,6 +457,19 @@
       sens_je: 'mwen', sens_parle: '(mwen) pale', sens_francais: 'frans\u00e8', sens_parles: '(ou) pale',
       bekFin: '\u2026men se s\u00e8lman sa mwen sonje.',
       lecteurFin: 'Dwe gen plis ank\u00f2\u2026 Mwen ka ede w jwenn yo.',
+      // 🆕 Rencontre avec le Lecteur — rendu vivant par langue (pas de traduction littérale)
+      rencBekQuoi: 'Kisa sa a ye?',
+      rencPensee: 'Yon IA, mwen sipoze?',
+      rencLect1: 'Bonjou Bek, kite m prezante t\u00e8t mwen: mwen se Lekt\u00e8 a.',
+      rencLect2: 'Mwen ka ede w jwenn ak rebati souvni w yo.',
+      rencLect3: 'Mwen bezwen yon moun pou f\u00e8 k\u00e8k nan travay sa yo.',
+      rencLect4: 'Moun, \u00e8ske w vle ede nou?',
+      rencReponse: 'Mwen pa gen tw\u00f2p chwa, mwen kw\u00e8\u2026',
+      rencRecapGarcon: 'Li rele {nom}, se yon ti gason.',
+      rencRecapFille: 'Li rele {nom}, se yon ti fi.',
+      rencRecapHomme: 'Li rele {nom}, se yon nonm.',
+      rencRecapFemme: 'Li rele {nom}, se yon fanm.',
+      rencLect5: 'Se vre? Ou konfime?',
       suite: 'Swivan',
       sonBouton: 'Son',
       astuceClavier: 'Kons\u00e8y: ou ka tape mo yo ak klavye a tou.',
@@ -316,6 +485,19 @@
       sens_je: 'ako', sens_parle: '(ako) nagsasalita', sens_francais: 'Pranses', sens_parles: '(ikaw) nagsasalita',
       bekFin: '\u2026pero iyan lang ang natatandaan ko.',
       lecteurFin: 'Siguradong may iba pa\u2026 Matutulungan kitang hanapin ang mga ito.',
+      // 🆕 Rencontre avec le Lecteur — rendu vivant par langue (pas de traduction littérale)
+      rencBekQuoi: 'Ano \u2019yan?!',
+      rencPensee: 'AI, siguro?',
+      rencLect1: 'Kumusta, Bek! Magpapakilala ako: ako ang Tagabasa.',
+      rencLect2: 'Matutulungan kitang hanapin at buuin muli ang mga alaala mo.',
+      rencLect3: 'Kailangan ko ng isang tao para gawin ang ilan sa mga gawaing ito.',
+      rencLect4: 'Tao, tutulungan mo ba kami?',
+      rencReponse: 'Mukhang wala naman akong choice\u2026',
+      rencRecapGarcon: 'Siya si {nom}, isang batang lalaki.',
+      rencRecapFille: 'Siya si {nom}, isang batang babae.',
+      rencRecapHomme: 'Siya si {nom}, isang lalaki.',
+      rencRecapFemme: 'Siya si {nom}, isang babae.',
+      rencLect5: 'Totoo ba? Kinukumpirma mo ba?',
       suite: 'Susunod',
       sonBouton: 'Tunog',
       astuceClavier: 'Tip: puwede mo ring i-type ang mga salita gamit ang keyboard.',
@@ -331,6 +513,19 @@
       sens_je: 'saya', sens_parle: '(saya) berbicara', sens_francais: 'bahasa Prancis', sens_parles: '(kamu) berbicara',
       bekFin: '\u2026tapi hanya itu yang kuingat.',
       lecteurFin: 'Pasti masih ada yang lain\u2026 Aku bisa membantumu menemukannya.',
+      // 🆕 Rencontre avec le Lecteur — rendu vivant par langue (pas de traduction littérale)
+      rencBekQuoi: 'Itu apa?!',
+      rencPensee: 'AI, mungkin?',
+      rencLect1: 'Halo, Bek! Perkenalkan, aku Si Pembaca.',
+      rencLect2: 'Aku bisa membantumu menemukan dan menyusun kembali ingatanmu.',
+      rencLect3: 'Aku butuh seorang manusia untuk mengerjakan beberapa tugas ini.',
+      rencLect4: 'Manusia, maukah kamu membantu kami?',
+      rencReponse: 'Kayaknya aku nggak punya pilihan, ya\u2026',
+      rencRecapGarcon: 'Namanya {nom}, dia seorang anak laki-laki.',
+      rencRecapFille: 'Namanya {nom}, dia seorang anak perempuan.',
+      rencRecapHomme: 'Namanya {nom}, dia seorang pria.',
+      rencRecapFemme: 'Namanya {nom}, dia seorang wanita.',
+      rencLect5: 'Benar begitu? Bisa kamu konfirmasi?',
       suite: 'Lanjut',
       sonBouton: 'Suara',
       astuceClavier: 'Tips: kamu juga bisa mengetik kata-katanya dengan keyboard.',
@@ -346,6 +541,19 @@
       sens_je: 'ik', sens_parle: '(ik) spreek', sens_francais: 'Frans', sens_parles: '(jij) spreekt',
       bekFin: '\u2026maar dat is alles wat ik me herinner.',
       lecteurFin: 'Er moeten er nog meer zijn\u2026 Ik kan je helpen ze te vinden.',
+      // 🆕 Rencontre avec le Lecteur — rendu vivant par langue (pas de traduction littérale)
+      rencBekQuoi: 'Wat is dat nou?!',
+      rencPensee: 'Een AI, denk ik?',
+      rencLect1: 'Hoi Bek, ik stel me even voor: ik ben de Lezer.',
+      rencLect2: 'Ik kan je helpen je herinneringen terug te vinden en weer op te bouwen.',
+      rencLect3: 'Voor sommige van die taken heb ik een mens nodig.',
+      rencLect4: 'Mens, wil je ons helpen?',
+      rencReponse: 'Veel keus heb ik blijkbaar niet\u2026',
+      rencRecapGarcon: 'Hij heet {nom}, en het is een jongen.',
+      rencRecapFille: 'Ze heet {nom}, en het is een meisje.',
+      rencRecapHomme: 'Hij heet {nom}, en het is een man.',
+      rencRecapFemme: 'Ze heet {nom}, en het is een vrouw.',
+      rencLect5: 'Klopt dat? Bevestig je dat?',
       suite: 'Volgende',
       sonBouton: 'Geluid',
       astuceClavier: 'Tip: je kunt de woorden ook met het toetsenbord typen.',
@@ -361,6 +569,19 @@
       sens_je: 'ich', sens_parle: '(ich) spreche', sens_francais: 'Franz\u00f6sisch', sens_parles: '(du) sprichst',
       bekFin: '\u2026aber das ist alles, woran ich mich erinnere.',
       lecteurFin: 'Es muss noch mehr geben\u2026 Ich kann dir helfen, sie zu finden.',
+      // 🆕 Rencontre avec le Lecteur — rendu vivant par langue (pas de traduction littérale)
+      rencBekQuoi: 'Was ist das denn?!',
+      rencPensee: 'Eine KI, nehme ich an?',
+      rencLect1: 'Hallo Bek, ich stelle mich kurz vor: Ich bin der Leser.',
+      rencLect2: 'Ich kann dir helfen, deine Erinnerungen wiederzufinden und neu aufzubauen.',
+      rencLect3: 'F\u00fcr einige dieser Aufgaben brauche ich einen Menschen.',
+      rencLect4: 'Mensch, hilfst du uns?',
+      rencReponse: 'Wie es aussieht, habe ich keine Wahl\u2026',
+      rencRecapGarcon: 'Er hei\u00dft {nom}, und er ist ein Junge.',
+      rencRecapFille: 'Sie hei\u00dft {nom}, und sie ist ein M\u00e4dchen.',
+      rencRecapHomme: 'Er hei\u00dft {nom}, und er ist ein Mann.',
+      rencRecapFemme: 'Sie hei\u00dft {nom}, und sie ist eine Frau.',
+      rencLect5: 'Stimmt das? Best\u00e4tigst du das?',
       suite: 'Weiter',
       sonBouton: 'Ton',
       astuceClavier: 'Tipp: Du kannst die W\u00f6rter auch mit der Tastatur eingeben.',
@@ -376,6 +597,19 @@
       sens_je: '\u0645\u0646', sens_parle: '(\u0645\u0646) \u0635\u062d\u0628\u062a \u0645\u06cc\u200c\u06a9\u0646\u0645', sens_francais: '\u0641\u0631\u0627\u0646\u0633\u0648\u06cc', sens_parles: '(\u062a\u0648) \u0635\u062d\u0628\u062a \u0645\u06cc\u200c\u06a9\u0646\u06cc',
       bekFin: '\u2026\u0627\u0645\u0627 \u0641\u0642\u0637 \u0647\u0645\u06cc\u0646 \u0631\u0627 \u0628\u0647 \u06cc\u0627\u062f \u062f\u0627\u0631\u0645.',
       lecteurFin: '\u062d\u062a\u0645\u0627\u064b \u0628\u06cc\u0634\u062a\u0631 \u0627\u0632 \u0627\u06cc\u0646 \u0647\u0645 \u0647\u0633\u062a\u2026 \u0645\u06cc\u200c\u062a\u0648\u0627\u0646\u0645 \u06a9\u0645\u06a9\u062a \u06a9\u0646\u0645 \u067e\u06cc\u062f\u0627\u06cc\u0634\u0627\u0646 \u06a9\u0646\u06cc.',
+      // 🆕 Rencontre avec le Lecteur — rendu vivant par langue (pas de traduction littérale)
+      rencBekQuoi: '\u0627\u0648\u0646 \u062f\u06cc\u06af\u0647 \u0686\u06cc\u0647\u061f!',
+      rencPensee: '\u06cc\u0647 \u0647\u0648\u0634 \u0645\u0635\u0646\u0648\u0639\u06cc\u060c \u0627\u062d\u062a\u0645\u0627\u0644\u0627\u064b\u061f',
+      rencLect1: '\u0633\u0644\u0627\u0645 Bek\u060c \u0628\u0630\u0627\u0631 \u062e\u0648\u062f\u0645\u0648 \u0645\u0639\u0631\u0641\u06cc \u06a9\u0646\u0645: \u0645\u0646 \u00ab\u062e\u0648\u0627\u0646\u0646\u062f\u0647\u00bb \u0647\u0633\u062a\u0645.',
+      rencLect2: '\u0645\u06cc\u200c\u062a\u0648\u0646\u0645 \u06a9\u0645\u06a9\u062a \u06a9\u0646\u0645 \u062e\u0627\u0637\u0631\u0647\u200c\u0647\u0627\u062a \u0631\u0648 \u067e\u06cc\u062f\u0627 \u06a9\u0646\u06cc \u0648 \u062f\u0648\u0628\u0627\u0631\u0647 \u0628\u0633\u0627\u0632\u06cc\u0634\u0648\u0646.',
+      rencLect3: '\u0628\u0631\u0627\u06cc \u0628\u0639\u0636\u06cc \u0627\u0632 \u0627\u06cc\u0646 \u06a9\u0627\u0631\u0647\u0627 \u0628\u0647 \u06cc\u0647 \u0627\u0646\u0633\u0627\u0646 \u0646\u06cc\u0627\u0632 \u062f\u0627\u0631\u0645.',
+      rencLect4: '\u0627\u0646\u0633\u0627\u0646\u060c \u06a9\u0645\u06a9\u0645\u0648\u0646 \u0645\u06cc\u200c\u06a9\u0646\u06cc\u061f',
+      rencReponse: '\u0627\u0646\u06af\u0627\u0631 \u0686\u0627\u0631\u0647\u200c\u0627\u06cc \u0646\u062f\u0627\u0631\u0645\u2026',
+      rencRecapGarcon: '\u0627\u0633\u0645\u0634 {nom} \u0627\u0633\u062a. \u06cc\u06a9 \u067e\u0633\u0631 \u0627\u0633\u062a.',
+      rencRecapFille: '\u0627\u0633\u0645\u0634 {nom} \u0627\u0633\u062a. \u06cc\u06a9 \u062f\u062e\u062a\u0631 \u0627\u0633\u062a.',
+      rencRecapHomme: '\u0627\u0633\u0645\u0634 {nom} \u0627\u0633\u062a. \u06cc\u06a9 \u0645\u0631\u062f \u0627\u0633\u062a.',
+      rencRecapFemme: '\u0627\u0633\u0645\u0634 {nom} \u0627\u0633\u062a. \u06cc\u06a9 \u0632\u0646 \u0627\u0633\u062a.',
+      rencLect5: '\u062f\u0631\u0633\u062a\u0647\u061f \u062a\u0623\u06cc\u06cc\u062f\u0634 \u0645\u06cc\u200c\u06a9\u0646\u06cc\u061f',
       suite: '\u0628\u0639\u062f\u06cc',
       sonBouton: '\u0635\u062f\u0627',
       astuceClavier: '\u0646\u06a9\u062a\u0647: \u0645\u06cc\u200c\u062a\u0648\u0627\u0646\u06cc \u06a9\u0644\u0645\u0647\u200c\u0647\u0627 \u0631\u0627 \u0628\u0627 \u0635\u0641\u062d\u0647\u200c\u06a9\u0644\u06cc\u062f \u0647\u0645 \u062a\u0627\u06cc\u067e \u06a9\u0646\u06cc.',
@@ -391,6 +625,19 @@
       sens_je: 'jag', sens_parle: '(jag) talar', sens_francais: 'franska', sens_parles: '(du) talar',
       bekFin: '\u2026men det \u00e4r allt jag minns.',
       lecteurFin: 'Det m\u00e5ste finnas fler\u2026 Jag kan hj\u00e4lpa dig att hitta dem.',
+      // 🆕 Rencontre avec le Lecteur — rendu vivant par langue (pas de traduction littérale)
+      rencBekQuoi: 'Vad \u00e4r det d\u00e4r?!',
+      rencPensee: 'En AI, antar jag?',
+      rencLect1: 'Hej Bek, jag presenterar mig: jag \u00e4r L\u00e4saren.',
+      rencLect2: 'Jag kan hj\u00e4lpa dig att hitta och bygga upp dina minnen igen.',
+      rencLect3: 'F\u00f6r n\u00e5gra av de h\u00e4r uppgifterna beh\u00f6ver jag en m\u00e4nniska.',
+      rencLect4: 'M\u00e4nniska, vill du hj\u00e4lpa oss?',
+      rencReponse: 'Jag har v\u00e4l inget val\u2026',
+      rencRecapGarcon: 'Han heter {nom}, och han \u00e4r en pojke.',
+      rencRecapFille: 'Hon heter {nom}, och hon \u00e4r en flicka.',
+      rencRecapHomme: 'Han heter {nom}, och han \u00e4r en man.',
+      rencRecapFemme: 'Hon heter {nom}, och hon \u00e4r en kvinna.',
+      rencLect5: 'St\u00e4mmer det? Bekr\u00e4ftar du?',
       suite: 'N\u00e4sta',
       sonBouton: 'Ljud',
       astuceClavier: 'Tips: du kan ocks\u00e5 skriva orden med tangentbordet.',
@@ -406,6 +653,19 @@
       sens_je: 'jeg', sens_parle: '(jeg) snakker', sens_francais: 'fransk', sens_parles: '(du) snakker',
       bekFin: '\u2026men det er alt jeg husker.',
       lecteurFin: 'Det m\u00e5 finnes flere\u2026 Jeg kan hjelpe deg med \u00e5 finne dem.',
+      // 🆕 Rencontre avec le Lecteur — rendu vivant par langue (pas de traduction littérale)
+      rencBekQuoi: 'Hva er det der?!',
+      rencPensee: 'En KI, antar jeg?',
+      rencLect1: 'Hei Bek, la meg presentere meg: jeg er Leseren.',
+      rencLect2: 'Jeg kan hjelpe deg med \u00e5 finne og bygge opp minnene dine igjen.',
+      rencLect3: 'For noen av disse oppgavene trenger jeg et menneske.',
+      rencLect4: 'Menneske, vil du hjelpe oss?',
+      rencReponse: 'Jeg har vel ikke noe valg\u2026',
+      rencRecapGarcon: 'Han heter {nom}, og han er en gutt.',
+      rencRecapFille: 'Hun heter {nom}, og hun er en jente.',
+      rencRecapHomme: 'Han heter {nom}, og han er en mann.',
+      rencRecapFemme: 'Hun heter {nom}, og hun er en kvinne.',
+      rencLect5: 'Stemmer det? Bekrefter du?',
       suite: 'Neste',
       sonBouton: 'Lyd',
       astuceClavier: 'Tips: du kan ogs\u00e5 skrive ordene med tastaturet.',
@@ -421,6 +681,19 @@
       sens_je: '\u044f', sens_parle: '(\u044f) \u0433\u043e\u0432\u043e\u0440\u044e', sens_francais: '\u0444\u0440\u0430\u043d\u0446\u0443\u0437\u0441\u043a\u0438\u0439 \u044f\u0437\u044b\u043a', sens_parles: '(\u0442\u044b) \u0433\u043e\u0432\u043e\u0440\u0438\u0448\u044c',
       bekFin: '\u2026\u043d\u043e \u044d\u0442\u043e \u0432\u0441\u0451, \u0447\u0442\u043e \u044f \u043f\u043e\u043c\u043d\u044e.',
       lecteurFin: '\u0414\u043e\u043b\u0436\u043d\u044b \u0431\u044b\u0442\u044c \u0438 \u0434\u0440\u0443\u0433\u0438\u0435\u2026 \u042f \u043c\u043e\u0433\u0443 \u043f\u043e\u043c\u043e\u0447\u044c \u0442\u0435\u0431\u0435 \u0438\u0445 \u043d\u0430\u0439\u0442\u0438.',
+      // 🆕 Rencontre avec le Lecteur — rendu vivant par langue (pas de traduction littérale)
+      rencBekQuoi: '\u042d\u0442\u043e \u0435\u0449\u0451 \u0447\u0442\u043e \u0442\u0430\u043a\u043e\u0435?!',
+      rencPensee: '\u0418\u0418, \u043d\u0430\u0432\u0435\u0440\u043d\u043e\u0435?',
+      rencLect1: '\u041f\u0440\u0438\u0432\u0435\u0442, Bek! \u041f\u043e\u0437\u0432\u043e\u043b\u044c \u043f\u0440\u0435\u0434\u0441\u0442\u0430\u0432\u0438\u0442\u044c\u0441\u044f: \u044f \u2014 \u0427\u0438\u0442\u0430\u0442\u0435\u043b\u044c.',
+      rencLect2: '\u042f \u043c\u043e\u0433\u0443 \u043f\u043e\u043c\u043e\u0447\u044c \u0442\u0435\u0431\u0435 \u043d\u0430\u0439\u0442\u0438 \u0438 \u0432\u043e\u0441\u0441\u0442\u0430\u043d\u043e\u0432\u0438\u0442\u044c \u0442\u0432\u043e\u0438 \u0432\u043e\u0441\u043f\u043e\u043c\u0438\u043d\u0430\u043d\u0438\u044f.',
+      rencLect3: '\u0414\u043b\u044f \u043d\u0435\u043a\u043e\u0442\u043e\u0440\u044b\u0445 \u0438\u0437 \u044d\u0442\u0438\u0445 \u0437\u0430\u0434\u0430\u0447 \u043c\u043d\u0435 \u043d\u0443\u0436\u0435\u043d \u0447\u0435\u043b\u043e\u0432\u0435\u043a.',
+      rencLect4: '\u0427\u0435\u043b\u043e\u0432\u0435\u043a, \u043f\u043e\u043c\u043e\u0436\u0435\u0448\u044c \u043d\u0430\u043c?',
+      rencReponse: '\u041f\u043e\u0445\u043e\u0436\u0435, \u0432\u044b\u0431\u043e\u0440\u0430 \u0443 \u043c\u0435\u043d\u044f \u043d\u0435\u0442\u2026',
+      rencRecapGarcon: '\u0415\u0433\u043e \u0437\u043e\u0432\u0443\u0442 {nom}, \u043e\u043d \u043c\u0430\u043b\u044c\u0447\u0438\u043a.',
+      rencRecapFille: '\u0415\u0451 \u0437\u043e\u0432\u0443\u0442 {nom}, \u043e\u043d\u0430 \u0434\u0435\u0432\u043e\u0447\u043a\u0430.',
+      rencRecapHomme: '\u0415\u0433\u043e \u0437\u043e\u0432\u0443\u0442 {nom}, \u043e\u043d \u043c\u0443\u0436\u0447\u0438\u043d\u0430.',
+      rencRecapFemme: '\u0415\u0451 \u0437\u043e\u0432\u0443\u0442 {nom}, \u043e\u043d\u0430 \u0436\u0435\u043d\u0449\u0438\u043d\u0430.',
+      rencLect5: '\u042d\u0442\u043e \u043f\u0440\u0430\u0432\u0434\u0430? \u041f\u043e\u0434\u0442\u0432\u0435\u0440\u0436\u0434\u0430\u0435\u0448\u044c?',
       suite: '\u0414\u0430\u043b\u044c\u0448\u0435',
       sonBouton: '\u0417\u0432\u0443\u043a',
       astuceClavier: '\u041f\u043e\u0434\u0441\u043a\u0430\u0437\u043a\u0430: \u0441\u043b\u043e\u0432\u0430 \u043c\u043e\u0436\u043d\u043e \u0432\u0432\u043e\u0434\u0438\u0442\u044c \u0438 \u0441 \u043a\u043b\u0430\u0432\u0438\u0430\u0442\u0443\u0440\u044b.',
@@ -878,6 +1151,10 @@
     // reste déçue ; aucune des deux : on retombe sur bek-perplexe-05.
     'bek-decue-ferme':      'images/reveil/bek_decue_bouche-fermee_01-01.webp',
     'bek-decue-ouvert':     'images/reveil/bek_decue_bouche-ouverte_01-01.webp',
+    // 🎨 Paire « pointe » (bouche fermée / ouverte) : Bek montre le Lecteur du doigt
+    // (vers la GAUCHE de l'image) dans la scène de rencontre. Absente : pose perplexe.
+    'bek-pointe-ferme':     'images/reveil/bek_pointe_bouche-fermee_01-01.webp',
+    'bek-pointe-ouvert':    'images/reveil/bek_pointe_bouche-ouverte_01-01.webp',
     // 🎨 Optionnelles : l'ouverture et les postures des trois tours. Absentes,
     // on retombe sur les poses existantes (voir EXPRESSIONS).
     'bek-penchee':          'images/reveil/bek_penchee_01-01.webp',
@@ -895,6 +1172,7 @@
   const POSES = [
     'bek-heureuse-ferme', 'bek-heureuse-ouvert', 'bek-concentree-ferme', 'bek-concentree-ouvert',
     'bek-perplexe-05', 'bek-perplexe-06', 'bek-soulagee', 'bek-decue-ferme', 'bek-decue-ouvert',
+    'bek-pointe-ferme', 'bek-pointe-ouvert',
     'bek-penchee', 'bek-declic', 'bek-confiante',
     'bek-solennelle-ferme', 'bek-solennelle-ouvert', 'bek-tendue-ferme', 'bek-tendue-ouvert',
     'bek-emue-ferme', 'bek-emue-ouvert'
@@ -903,6 +1181,9 @@
     heureuse: { ferme: 'bek-heureuse-ferme',   ouvert: 'bek-heureuse-ouvert',   repli: 'bek-soulagee' },
     effort:   { ferme: 'bek-concentree-ferme', ouvert: 'bek-concentree-ouvert', repli: 'bek-perplexe-06' },
     triste:   { ferme: 'bek-decue-ferme',    ouvert: 'bek-decue-ouvert',    repli: 'bek-perplexe-05' },
+    // rencontre du Lecteur
+    pointe:   { ferme: 'bek-pointe-ferme',   ouvert: 'bek-pointe-ouvert',   repli: 'bek-perplexe-05' },
+    perplexe: { fixe: 'bek-perplexe-05', repli: 'bek-perplexe-06' },
     // ouverture de la mémoire (images uniques : elle ne parle pas encore)
     penchee:   { fixe: 'bek-penchee',   repli: 'bek-concentree-ferme' },
     declic:    { fixe: 'bek-declic',    repli: 'bek-penchee' },
@@ -964,6 +1245,10 @@
     function urlImage(nom) { return sources[nom] || (dossier + nom + ext); }
     const reduit = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
     const lect = window.KebBekLecteur;
+    // 🆕 identité recueillie au réveil (sinon pas de scène de rencontre)
+    const IDENTITE = (options.identite && typeof options.identite === 'object' && options.identite.prenom)
+      ? { prenom: String(options.identite.prenom), genre: options.identite.genre === 'f' ? 'f' : 'm', adulte: !!options.identite.adulte }
+      : null;
     const iconeLecteur = (lect && typeof lect.htmlIcone === 'function') ? lect.htmlIcone(options, 'lect-lecteur-img') : '';
 
     let arrete = false;
@@ -1628,6 +1913,140 @@
       });
     }
 
+    // ---------- 🆕 Rencontre : le Lecteur se présente à Bek ----------
+    // Le Lecteur vient se poser au bout du doigt de Bek ; elle le voit et le montre
+    // (« C'est quoi, ça ? ») ; l'élève se dit « Une IA, je suppose ? » ; le Lecteur se
+    // présente et demande de l'aide à « l'humain » (un seul bouton, comique) ; Bek présente
+    // l'élève (prénom, garçon/fille/homme/femme) ; le Lecteur demande de confirmer.
+    function placerLecteurPresDeBek() {
+      if (!lecteurEl) return;
+      const s = scene.getBoundingClientRect();
+      const r = bek.getBoundingClientRect();
+      const taille = lecteurEl.offsetWidth || 70;
+      const bx = (r.left - s.left) + DOIGT.x * r.width;
+      const by = (r.top - s.top) + DOIGT.y * r.height;
+      lecteurEl.classList.add('mem-lecteur-voyage');
+      lecteurEl.style.left = Math.max(6, Math.round(bx - taille - 10)) + 'px';
+      lecteurEl.style.bottom = Math.round(s.height - (by + taille / 2)) + 'px';
+    }
+    // La bulle du Lecteur se place SOUS lui (le visage de Bek reste dégagé), queue vers le haut.
+    function placerBulleLecteur() {
+      const s = scene.getBoundingClientRect();
+      const l = lecteurEl.getBoundingClientRect();
+      const w = lb.offsetWidth || 300;
+      const centre = (l.left - s.left) + l.width / 2;
+      const gauche = Math.min(Math.max(8, centre - 40), Math.max(8, s.width - w - 8));
+      lb.classList.add('mem-lb-sous');
+      lb.style.left = Math.round(gauche) + 'px';
+      lb.style.top = Math.round((l.bottom - s.top) + 18) + 'px';
+      lb.style.bottom = 'auto';
+      lb.style.setProperty('--queue', Math.round(Math.min(Math.max(16, centre - gauche - 9), w - 40)) + 'px');
+    }
+    function lecteurDit(texte) {
+      placerBulleLecteur();
+      lb.classList.remove('mem-lb-question');
+      return direLecteur(texte);
+    }
+    // Réponse de l'élève : un bouton unique, en bas de l'écran
+    function creerReponse(libelle) {
+      const boite = document.createElement('div');
+      boite.className = 'rbek-choix mem-reponse rbek-choix-cache';
+      const bouton = document.createElement('button');
+      bouton.type = 'button';
+      bouton.className = 'rbek-btn-reponse';
+      bouton.textContent = libelle;
+      if (LANGUES_DROITE_A_GAUCHE.indexOf(langue) !== -1) boite.setAttribute('dir', 'rtl');
+      boite.appendChild(bouton);
+      scene.appendChild(boite);
+      planifier(function () { boite.classList.remove('rbek-choix-cache'); }, 700);
+      return {
+        bouton: bouton,
+        cacher: function () { boite.classList.add('rbek-choix-cache'); planifier(function () { boite.remove(); }, 400); }
+      };
+    }
+    function lecteurQuestion(texte, libelle) {
+      return new Promise(function (resolve) {
+        placerBulleLecteur();
+        lb.classList.add('mem-lb-question');           // pas de flèche : c'est le bouton qui répond
+        lb.querySelector('.mem-lb-texte').textContent = texte;
+        lb.classList.remove('mem-lb-cachee');
+        const rep = creerReponse(libelle);
+        planifier(function () { rep.bouton.focus({ preventScroll: true }); }, 800);
+        rep.bouton.addEventListener('click', function () {
+          rep.cacher();
+          lb.classList.add('mem-lb-cachee');
+          planifier(function () { lb.classList.remove('mem-lb-question'); resolve(); }, 350);
+        }, { once: true });
+      });
+    }
+    // Pensée de l'élève : une pastille pâle en bas, qui s'efface seule (ou au toucher)
+    function pensee(texte) {
+      return new Promise(function (resolve) {
+        const p = document.createElement('p');
+        p.className = 'mem-pensee';
+        p.textContent = texte;
+        if (LANGUES_DROITE_A_GAUCHE.indexOf(langue) !== -1) p.setAttribute('dir', 'rtl');
+        scene.appendChild(p);
+        planifier(function () { p.classList.add('mem-pensee-visible'); }, 40);
+        let fini = false;
+        function fin() {
+          if (fini) return;
+          fini = true;
+          p.classList.remove('mem-pensee-visible');
+          planifier(function () { p.remove(); resolve(); }, 450);
+        }
+        p.addEventListener('click', fin);
+        planifier(fin, Math.min(RENCONTRE.penseeMax, Math.max(RENCONTRE.penseeMin, Array.from(texte).length * RENCONTRE.penseeParSigne)));
+      });
+    }
+    async function rencontre() {
+      // 1. le Lecteur s'approche de Bek, jusqu'au bout de son doigt
+      placerLecteurPresDeBek();
+      await attendre(reduit ? 300 : RENCONTRE.approche);
+      // 2. Bek le voit et le montre du doigt
+      bek.classList.remove('rbek-sursaut');
+      void bek.offsetWidth;
+      bek.classList.add('rbek-sursaut');
+      await dire(T('rencBekQuoi'), 'pointe');
+      bulle.classList.add('rbek-bulle-cachee');
+      await attendre(350);
+      // 3. l'élève se le dit à voix basse ; Bek reste perplexe
+      await pensee(T('rencPensee'));
+      exprimer('perplexe', 300);
+      await attendre(600);
+      // 4. le Lecteur se présente et demande de l'aide
+      lecteurReagit('mem-lecteur-saut', 650);
+      await lecteurDit(T('rencLect1'));
+      await lecteurDit(T('rencLect2'));
+      await lecteurDit(T('rencLect3'));
+      await lecteurQuestion(T('rencLect4'), T('rencReponse'));
+      if (!IDENTITE) return;
+      // 5. Bek présente l'élève, le Lecteur demande confirmation
+      const mot = IDENTITE.adulte ? (IDENTITE.genre === 'f' ? 'Femme' : 'Homme') : (IDENTITE.genre === 'f' ? 'Fille' : 'Garcon');
+      await dire(T('rencRecap' + mot).replace('{nom}', function () { return IDENTITE.prenom; }), 'heureuse');
+      bulle.classList.add('rbek-bulle-cachee');
+      await attendre(350);
+      lecteurReagit('mem-lecteur-saut', 650);
+      await lecteurDit(T('rencLect5'));
+    }
+
+    // Dernière réplique du Lecteur, puis la rencontre (si l'identité est connue)
+    async function finMemoire() {
+      if (lecteurEl) await direLecteur(T('lecteurFin'));
+      if (arrete) return;
+      if (IDENTITE && options.rencontre !== false && lecteurEl && lb) {
+        await rencontre();
+        if (arrete) return;
+        if (typeof callbacks.onConfirmerIdentite === 'function') {
+          try { callbacks.onConfirmerIdentite(Object.assign({}, IDENTITE)); } catch (e) { console.warn('onConfirmerIdentite a échoué.', e); }
+          return;
+        }
+      }
+      if (typeof callbacks.onTermine === 'function') {
+        try { callbacks.onTermine(); } catch (e) { console.warn('onTermine a échoué.', e); }
+      }
+    }
+
     // ---------- L'éclat du déclic ----------
     // Lumière derrière la tête (halo + rayons + anneau), voile lumineux sur la scène,
     // étincelles qui jaillissent, carillon. Rejouable : on relance les animations.
@@ -1763,10 +2182,7 @@
       bulle.classList.add('rbek-bulle-cachee');
       await attendre(400);
 
-      if (lecteurEl) await direLecteur(T('lecteurFin'));
-      if (typeof callbacks.onTermine === 'function') {
-        try { callbacks.onTermine(); } catch (e) { console.warn('onTermine a échoué.', e); }
-      }
+      await finMemoire();
     }
 
     // ================= Démarrage =================
@@ -1804,6 +2220,16 @@
       zoomer(1, 0);
       exprimer('effort');                         // point de départ : concentrée
       scene.classList.add('mem-prete');
+      if (options.sauterA === 'rencontre') {      // 🧪 aperçu : on saute le jeu, on démarre à la fin de la mémoire
+        aideBloquee = true;
+        scene.classList.remove('mem-souvenir');
+        scene.classList.add('mem-restauree');
+        if (lecteurEl) { lecteurEl.classList.remove('mem-lecteur-cache'); lecteurEl.classList.add('mem-lecteur-inactif'); }
+        exprimer('triste');
+        await attendre(800);
+        await finMemoire();
+        return;
+      }
       scene.addEventListener('pointerdown', sauterOuverture);
 
       // --- Ouverture : elle cherche, retient son souffle, DÉCLIC, savoure, devient solennelle ---

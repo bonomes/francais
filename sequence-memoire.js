@@ -78,7 +78,7 @@
    fr + les 19 langues du site (repli : en, puis fr). Les 4 mots affichés sont
    les mêmes pour tous ; seul leur SENS est traduit (clés sens_*). Chaque aide
    est écrite pour sa langue (pronom omis ou obligatoire, genre, majuscules…).
-   ℹ️ pt = portugais du Brésil ; zh = chinois simplifié ; fa s'affiche de droite
+   ℹ️ pt = deux voix : Bek parle portugais du PORTUGAL (rencBekQuoi, rencRecap*, bekFin), le Lecteur et le système (fen*, compte*, aide) portugais du BRÉSIL — compromis voulu ; zh = chinois simplifié ; fa s'affiche de droite
    à gauche (mots français et phrase restent de gauche à droite). Textes à faire
    relire par des locuteurs avant la mise en ligne.
 
@@ -96,9 +96,18 @@
                              🧪 sauterA: 'rencontre' — aperçu : saute le jeu et
                              démarre à la fin de la mémoire (pour régler la scène)
    @param {object} callbacks : onTermine(),
-                               🆕 onConfirmerIdentite(identite) — appelé quand le Lecteur
-                               demande « Tu confirmes ? » ; s'il est fourni, c'est lui
-                               qui prend la suite (onTermine n'est alors pas appelé)
+                               🆕 onIdentiteConfirmee(identite) — appelé quand l'élève a
+                               confirmé (ou corrigé) ses informations dans la fenêtre du
+                               Lecteur ; reçoit { prenom, genre, adulte } : c'est là qu'il
+                               faut ENREGISTRER l'identité corrigée. Sans onCompte, il prend
+                               la suite (onTermine n'est alors pas appelé) ;
+                               🆕 onCompte(identite) — étape C : s'il est fourni, le Lecteur
+                               dit « Si tu ne veux pas perdre tes progrès… » puis une fenêtre
+                               propose « Créer un compte » / « Plus tard ». « Créer un
+                               compte » appelle onCompte(identite) (la page hôte lance alors
+                               la création du compte : ce module n'en crée aucun) ;
+                               « Plus tard » appelle onTermine(). options.compte: false
+                               supprime la fenêtre même si onCompte est fourni
    @returns {{ arreter: function }}
    ================================================================== */
 (function () {
@@ -142,6 +151,14 @@
   // 🆕 Rencontre : bout du doigt de Bek dans l'image « pointe » (fraction de la boîte
   // de Bek : 0 = bord gauche / haut). Le Lecteur vient s'y poser.
   const DOIGT = { x: 0.178, y: 0.547 };
+  // Même règle que sequence-reveil-bek.js : 1 à 20 caractères, lettres de toute écriture
+  const REGEX_PRENOM = /^[\p{L}\p{M}][\p{L}\p{M}'\u2019 .\-]{0,19}$/u;
+  const PROFILS = [           // mêmes valeurs que le réveil ; l'âge s'affiche à côté du mot
+    { id: 'Garcon', genre: 'm', adulte: false, age: '0\u201317' },
+    { id: 'Fille',  genre: 'f', adulte: false, age: '0\u201317' },
+    { id: 'Homme',  genre: 'm', adulte: true,  age: '18+' },
+    { id: 'Femme',  genre: 'f', adulte: true,  age: '18+' }
+  ];
   const RENCONTRE = { approche: 1500, penseeMin: 2800, penseeMax: 5200, penseeParSigne: 90 };
 
   const DICO = {
@@ -162,6 +179,19 @@
       rencRecapHomme: 'Il s\u2019appelle {nom}, c\u2019est un homme.',
       rencRecapFemme: 'Elle s\u2019appelle {nom}, c\u2019est une femme.',
       rencLect5: 'C\u2019est vrai\u00a0? Tu confirmes\u00a0?',
+      fenTitre: 'V\u00e9rification des informations',
+      fenPrenom: 'Pr\u00e9nom',
+      fenConfirmer: 'Confirmer',
+      fenErreur: 'De 1 \u00e0 20 lettres.',
+      fenGarcon: 'Gar\u00e7on',
+      fenFille: 'Fille',
+      fenHomme: 'Homme',
+      fenFemme: 'Femme',
+      compteLect: 'Si tu ne veux pas perdre tes progr\u00e8s, tu devrais penser \u00e0 faire un compte.',
+      compteTitre: 'Garder ta progression',
+      compteTexte: 'Un courriel suffit : on t\u2019envoie un code, sans mot de passe.',
+      compteCreer: 'Cr\u00e9er un compte',
+      comptePlusTard: 'Plus tard',
       suite: 'Suite',
       sonBouton: 'Son',
       astuceClavier: 'Astuce\u00a0: tu peux aussi taper les mots au clavier.',
@@ -190,6 +220,19 @@
       rencRecapHomme: 'His name is {nom}, and he\u2019s a man.',
       rencRecapFemme: 'Her name is {nom}, and she\u2019s a woman.',
       rencLect5: 'Is that true? Can you confirm?',
+      fenTitre: 'Check your details',
+      fenPrenom: 'First name',
+      fenConfirmer: 'Confirm',
+      fenErreur: 'Use 1 to 20 letters.',
+      fenGarcon: 'Boy',
+      fenFille: 'Girl',
+      fenHomme: 'Man',
+      fenFemme: 'Woman',
+      compteLect: 'If you don\u2019t want to lose your progress, you should think about making an account.',
+      compteTitre: 'Keep your progress',
+      compteTexte: 'Just an email: we\u2019ll send you a code, no password needed.',
+      compteCreer: 'Create an account',
+      comptePlusTard: 'Later',
       suite: 'Next',
       sonBouton: 'Sound',
       astuceClavier: 'Tip: you can also type the words on your keyboard.',
@@ -218,6 +261,19 @@
       rencRecapHomme: 'Se llama {nom}, es un hombre.',
       rencRecapFemme: 'Se llama {nom}, es una mujer.',
       rencLect5: '\u00bfEs verdad? \u00bfLo confirmas?',
+      fenTitre: 'Comprueba tus datos',
+      fenPrenom: 'Nombre',
+      fenConfirmer: 'Confirmar',
+      fenErreur: 'Usa de 1 a 20 letras.',
+      fenGarcon: 'Chico',
+      fenFille: 'Chica',
+      fenHomme: 'Hombre',
+      fenFemme: 'Mujer',
+      compteLect: 'Si no quieres perder tu progreso, deber\u00edas pensar en crear una cuenta.',
+      compteTitre: 'Guarda tu progreso',
+      compteTexte: 'Solo hace falta un correo: te enviamos un c\u00f3digo, sin contrase\u00f1a.',
+      compteCreer: 'Crear una cuenta',
+      comptePlusTard: 'M\u00e1s tarde',
       suite: 'Siguiente',
       sonBouton: 'Sonido',
       astuceClavier: 'Truco: tambi\u00e9n puedes escribir las palabras con el teclado.',
@@ -246,6 +302,19 @@
       rencRecapHomme: 'Si chiama {nom}, \u00e8 un uomo.',
       rencRecapFemme: 'Si chiama {nom}, \u00e8 una donna.',
       rencLect5: '\u00c8 vero? Confermi?',
+      fenTitre: 'Controlla i tuoi dati',
+      fenPrenom: 'Nome',
+      fenConfirmer: 'Conferma',
+      fenErreur: 'Da 1 a 20 lettere.',
+      fenGarcon: 'Ragazzo',
+      fenFille: 'Ragazza',
+      fenHomme: 'Uomo',
+      fenFemme: 'Donna',
+      compteLect: 'Se non vuoi perdere i tuoi progressi, dovresti pensare di creare un account.',
+      compteTitre: 'Salva i tuoi progressi',
+      compteTexte: 'Basta un\u2019e-mail: ti mandiamo un codice, senza password.',
+      compteCreer: 'Crea un account',
+      comptePlusTard: 'Pi\u00f9 tardi',
       suite: 'Avanti',
       sonBouton: 'Audio',
       astuceClavier: 'Suggerimento: puoi anche digitare le parole con la tastiera.',
@@ -262,18 +331,31 @@
       bekFin: '\u2026mas \u00e9 s\u00f3 disso que me lembro.',
       lecteurFin: 'Deve haver mais\u2026 Posso ajudar voc\u00ea a encontr\u00e1-las.',
       // 🆕 Rencontre avec le Lecteur — rendu vivant par langue (pas de traduction littérale)
-      rencBekQuoi: 'O que \u00e9 isso?!',
+      rencBekQuoi: 'O que \u00e9 isto?!',
       rencPensee: 'Uma IA, eu acho?',
       rencLect1: 'Oi, Bek! Deixa eu me apresentar: sou o Leitor.',
       rencLect2: 'Posso ajudar voc\u00ea a reencontrar e reconstruir suas mem\u00f3rias.',
       rencLect3: 'Preciso de um humano para fazer algumas dessas tarefas.',
       rencLect4: 'Humano, voc\u00ea quer nos ajudar?',
       rencReponse: 'Pelo visto, n\u00e3o tenho muita escolha\u2026',
-      rencRecapGarcon: 'Ele se chama {nom}, \u00e9 um menino.',
-      rencRecapFille: 'Ela se chama {nom}, \u00e9 uma menina.',
-      rencRecapHomme: 'Ele se chama {nom}, \u00e9 um homem.',
-      rencRecapFemme: 'Ela se chama {nom}, \u00e9 uma mulher.',
+      rencRecapGarcon: 'Chama-se {nom}, \u00e9 um rapaz.',
+      rencRecapFille: 'Chama-se {nom}, \u00e9 uma rapariga.',
+      rencRecapHomme: 'Chama-se {nom}, \u00e9 um homem.',
+      rencRecapFemme: 'Chama-se {nom}, \u00e9 uma mulher.',
       rencLect5: '\u00c9 verdade? Voc\u00ea confirma?',
+      fenTitre: 'Confira seus dados',
+      fenPrenom: 'Nome',
+      fenConfirmer: 'Confirmar',
+      fenErreur: 'Use de 1 a 20 letras.',
+      fenGarcon: 'Menino',
+      fenFille: 'Menina',
+      fenHomme: 'Homem',
+      fenFemme: 'Mulher',
+      compteLect: 'Se voc\u00ea n\u00e3o quer perder seu progresso, deveria pensar em criar uma conta.',
+      compteTitre: 'Guarde seu progresso',
+      compteTexte: 'Basta um e-mail: enviamos um c\u00f3digo, sem senha.',
+      compteCreer: 'Criar uma conta',
+      comptePlusTard: 'Mais tarde',
       suite: 'Pr\u00f3ximo',
       sonBouton: 'Som',
       astuceClavier: 'Dica: voc\u00ea tamb\u00e9m pode digitar as palavras no teclado.',
@@ -302,6 +384,19 @@
       rencRecapHomme: 'Es diu {nom}, \u00e9s un home.',
       rencRecapFemme: 'Es diu {nom}, \u00e9s una dona.',
       rencLect5: '\u00c9s veritat? Ho confirmes?',
+      fenTitre: 'Comprova les teves dades',
+      fenPrenom: 'Nom',
+      fenConfirmer: 'Confirma',
+      fenErreur: 'Fes servir d\u20191 a 20 lletres.',
+      fenGarcon: 'Noi',
+      fenFille: 'Noia',
+      fenHomme: 'Home',
+      fenFemme: 'Dona',
+      compteLect: 'Si no vols perdre els teus progressos, hauries de pensar a fer-te un compte.',
+      compteTitre: 'Guarda els teus progressos',
+      compteTexte: 'Nom\u00e9s cal un correu: t\u2019enviem un codi, sense contrasenya.',
+      compteCreer: 'Crea un compte',
+      comptePlusTard: 'M\u00e9s tard',
       suite: 'Seg\u00fcent',
       sonBouton: 'So',
       astuceClavier: 'Truc: tamb\u00e9 pots escriure les paraules amb el teclat.',
@@ -330,6 +425,19 @@
       rencRecapHomme: 'Li nomi\u011das {nom}, li estas viro.',
       rencRecapFemme: '\u015ci nomi\u011das {nom}, \u015di estas virino.',
       rencLect5: '\u0108u vere? \u0108u vi konfirmas?',
+      fenTitre: 'Kontrolu viajn informojn',
+      fenPrenom: 'Anta\u016dnomo',
+      fenConfirmer: 'Konfirmi',
+      fenErreur: 'Uzu 1 \u011dis 20 literojn.',
+      fenGarcon: 'Knabo',
+      fenFille: 'Knabino',
+      fenHomme: 'Viro',
+      fenFemme: 'Virino',
+      compteLect: 'Se vi ne volas perdi vian progreson, vi pripensu krei konton.',
+      compteTitre: 'Konservu vian progreson',
+      compteTexte: 'Sufi\u0109as retpo\u015dto: ni sendas kodon al vi, sen pasvorto.',
+      compteCreer: 'Krei konton',
+      comptePlusTard: 'Poste',
       suite: 'Sekva',
       sonBouton: 'Sono',
       astuceClavier: 'Konsileto: vi anka\u016d povas tajpi la vortojn per la klavaro.',
@@ -358,6 +466,19 @@
       rencRecapHomme: '\u4ed6\u53eb{nom}\uff0c\u662f\u4e2a\u7537\u4eba\u3002',
       rencRecapFemme: '\u5979\u53eb{nom}\uff0c\u662f\u4e2a\u5973\u4eba\u3002',
       rencLect5: '\u662f\u771f\u7684\u5417\uff1f\u4f60\u786e\u8ba4\u4e00\u4e0b\uff1f',
+      fenTitre: '\u8bf7\u6838\u5bf9\u4f60\u7684\u4fe1\u606f',
+      fenPrenom: '\u540d\u5b57',
+      fenConfirmer: '\u786e\u8ba4',
+      fenErreur: '\u8bf7\u8f93\u5165 1 \u5230 20 \u4e2a\u5b57\u6bcd\u3002',
+      fenGarcon: '\u7537\u5b69',
+      fenFille: '\u5973\u5b69',
+      fenHomme: '\u7537\u4eba',
+      fenFemme: '\u5973\u4eba',
+      compteLect: '\u5982\u679c\u4f60\u4e0d\u60f3\u4e22\u5931\u5b66\u4e60\u8fdb\u5ea6\uff0c\u6700\u597d\u8003\u8651\u6ce8\u518c\u4e00\u4e2a\u8d26\u53f7\u3002',
+      compteTitre: '\u4fdd\u5b58\u4f60\u7684\u8fdb\u5ea6',
+      compteTexte: '\u53ea\u9700\u4e00\u4e2a\u90ae\u7bb1\uff1a\u6211\u4eec\u4f1a\u53d1\u7ed9\u4f60\u9a8c\u8bc1\u7801\uff0c\u65e0\u9700\u5bc6\u7801\u3002',
+      compteCreer: '\u521b\u5efa\u8d26\u53f7',
+      comptePlusTard: '\u4ee5\u540e\u518d\u8bf4',
       suite: '\u7ee7\u7eed',
       sonBouton: '\u58f0\u97f3',
       astuceClavier: '\u5c0f\u63d0\u793a\uff1a\u4f60\u4e5f\u53ef\u4ee5\u7528\u952e\u76d8\u8f93\u5165\u8fd9\u4e9b\u8bcd\u3002',
@@ -386,6 +507,19 @@
       rencRecapHomme: '{nom}\u3055\u3093\u3063\u3066\u3044\u3046\u306e\u3002\u7537\u306e\u4eba\u3060\u3088\u3002',
       rencRecapFemme: '{nom}\u3055\u3093\u3063\u3066\u3044\u3046\u306e\u3002\u5973\u306e\u4eba\u3060\u3088\u3002',
       rencLect5: '\u672c\u5f53\uff1f \u78ba\u8a8d\u3057\u3066\u304f\u308c\u308b\uff1f',
+      fenTitre: '\u60c5\u5831\u306e\u78ba\u8a8d',
+      fenPrenom: '\u540d\u524d',
+      fenConfirmer: '\u78ba\u8a8d\u3059\u308b',
+      fenErreur: '1\u301c20\u6587\u5b57\u3067\u5165\u529b\u3057\u3066\u304f\u3060\u3055\u3044\u3002',
+      fenGarcon: '\u7537\u306e\u5b50',
+      fenFille: '\u5973\u306e\u5b50',
+      fenHomme: '\u7537\u306e\u4eba',
+      fenFemme: '\u5973\u306e\u4eba',
+      compteLect: '\u9032\u307f\u5177\u5408\u3092\u306a\u304f\u3057\u305f\u304f\u306a\u304b\u3063\u305f\u3089\u3001\u30a2\u30ab\u30a6\u30f3\u30c8\u3092\u4f5c\u3063\u305f\u307b\u3046\u304c\u3044\u3044\u3088\u3002',
+      compteTitre: '\u9032\u307f\u5177\u5408\u3092\u4fdd\u5b58\u3059\u308b',
+      compteTexte: '\u30e1\u30fc\u30eb\u30a2\u30c9\u30ec\u30b9\u3060\u3051\u3067\u5927\u4e08\u592b\u3067\u3059\u3002\u30b3\u30fc\u30c9\u3092\u304a\u9001\u308a\u3057\u307e\u3059\u306e\u3067\u3001\u30d1\u30b9\u30ef\u30fc\u30c9\u306f\u4e0d\u8981\u3067\u3059\u3002',
+      compteCreer: '\u30a2\u30ab\u30a6\u30f3\u30c8\u3092\u4f5c\u308b',
+      comptePlusTard: '\u3042\u3068\u3067',
       suite: '\u6b21\u3078',
       sonBouton: '\u30b5\u30a6\u30f3\u30c9',
       astuceClavier: '\u30d2\u30f3\u30c8\uff1a\u30ad\u30fc\u30dc\u30fc\u30c9\u3067\u8a00\u8449\u3092\u5165\u529b\u3059\u308b\u3053\u3068\u3082\u3067\u304d\u308b\u3088\u3002',
@@ -407,13 +541,26 @@
       rencLect1: '\uc548\ub155, Bek! \ub0b4 \uc18c\uac1c\ub97c \ud560\uac8c. \ub098\ub294 \u2018\ub9ac\ub354\u2019\uc57c.',
       rencLect2: '\ub124 \uae30\uc5b5\uc744 \ucc3e\uace0 \ub2e4\uc2dc \uc9dc \ub9de\ucd94\ub294 \uac78 \ub3c4\uc640\uc904 \uc218 \uc788\uc5b4.',
       rencLect3: '\uc774 \uc911 \uba87 \uac00\uc9c0\ub294 \uc0ac\ub78c\uc758 \uc190\uc774 \ud544\uc694\ud574.',
-      rencLect4: '\uc778\uac04, \uc6b0\ub9ac\ub97c \ub3c4\uc640\uc904\ub798?',
+      rencLect4: '\uc778\uac04, \uc6b0\ub9ac\ub97c \ub3c4\uc640\uc904\ub798\uc694?',
       rencReponse: '\uc120\ud0dd\uad8c\uc774 \uc5c6\ub294 \uac83 \uac19\ub124\u2026',
       rencRecapGarcon: '\uc774\ub984\uc740 {nom}. \ub0a8\uc790\uc544\uc774\uc57c.',
       rencRecapFille: '\uc774\ub984\uc740 {nom}. \uc5ec\uc790\uc544\uc774\uc57c.',
       rencRecapHomme: '\uc774\ub984\uc740 {nom}. \ub0a8\uc790 \uc5b4\ub978\uc774\uc57c.',
       rencRecapFemme: '\uc774\ub984\uc740 {nom}. \uc5ec\uc790 \uc5b4\ub978\uc774\uc57c.',
-      rencLect5: '\uc815\ub9d0\uc774\uc57c? \ud655\uc778\ud574 \uc904\ub798?',
+      rencLect5: '\uc815\ub9d0\uc774\uc5d0\uc694? \ud655\uc778\ud574 \uc904\ub798\uc694?',
+      fenTitre: '\uc815\ubcf4 \ud655\uc778',
+      fenPrenom: '\uc774\ub984',
+      fenConfirmer: '\ud655\uc778',
+      fenErreur: '1~20\uc790\ub85c \uc785\ub825\ud574 \uc8fc\uc138\uc694.',
+      fenGarcon: '\ub0a8\uc790\uc544\uc774',
+      fenFille: '\uc5ec\uc790\uc544\uc774',
+      fenHomme: '\ub0a8\uc790 \uc5b4\ub978',
+      fenFemme: '\uc5ec\uc790 \uc5b4\ub978',
+      compteLect: '\uc9c4\ud589 \uc0c1\ud669\uc744 \uc783\uace0 \uc2f6\uc9c0 \uc54a\ub2e4\uba74 \uacc4\uc815\uc744 \ub9cc\ub4dc\ub294 \uac8c \uc88b\uc544\uc694.',
+      compteTitre: '\uc9c4\ud589 \uc0c1\ud669 \uc800\uc7a5',
+      compteTexte: '\uc774\uba54\uc77c\ub9cc \uc788\uc73c\uba74 \ub3fc\uc694. \ucf54\ub4dc\ub97c \ubcf4\ub0b4 \ub4dc\ub9ac\ub2c8 \ube44\ubc00\ubc88\ud638\ub294 \ud544\uc694 \uc5c6\uc5b4\uc694.',
+      compteCreer: '\uacc4\uc815 \ub9cc\ub4e4\uae30',
+      comptePlusTard: '\ub098\uc911\uc5d0',
       suite: '\ub2e4\uc74c',
       sonBouton: '\uc18c\ub9ac',
       astuceClavier: '\ud301: \ud0a4\ubcf4\ub4dc\ub85c \ub2e8\uc5b4\ub97c \uc9c1\uc811 \uc785\ub825\ud560 \uc218\ub3c4 \uc788\uc5b4\uc694.',
@@ -442,6 +589,19 @@
       rencRecapHomme: 'Anh \u1ea5y t\u00ean l\u00e0 {nom}, l\u00e0 m\u1ed9t ng\u01b0\u1eddi \u0111\u00e0n \u00f4ng.',
       rencRecapFemme: 'Ch\u1ecb \u1ea5y t\u00ean l\u00e0 {nom}, l\u00e0 m\u1ed9t ng\u01b0\u1eddi ph\u1ee5 n\u1eef.',
       rencLect5: '\u0110\u00fang kh\u00f4ng? B\u1ea1n x\u00e1c nh\u1eadn nh\u00e9?',
+      fenTitre: 'Ki\u1ec3m tra th\u00f4ng tin c\u1ee7a b\u1ea1n',
+      fenPrenom: 'T\u00ean',
+      fenConfirmer: 'X\u00e1c nh\u1eadn',
+      fenErreur: 'Nh\u1eadp t\u1eeb 1 \u0111\u1ebfn 20 ch\u1eef c\u00e1i.',
+      fenGarcon: 'C\u1eadu b\u00e9',
+      fenFille: 'C\u00f4 b\u00e9',
+      fenHomme: '\u0110\u00e0n \u00f4ng',
+      fenFemme: 'Ph\u1ee5 n\u1eef',
+      compteLect: 'N\u1ebfu kh\u00f4ng mu\u1ed1n m\u1ea5t ti\u1ebfn tr\u00ecnh h\u1ecdc, b\u1ea1n n\u00ean ngh\u0129 \u0111\u1ebfn vi\u1ec7c t\u1ea1o m\u1ed9t t\u00e0i kho\u1ea3n.',
+      compteTitre: 'Gi\u1eef ti\u1ebfn tr\u00ecnh c\u1ee7a b\u1ea1n',
+      compteTexte: 'Ch\u1ec9 c\u1ea7n m\u1ed9t email: ch\u00fang m\u00ecnh g\u1eedi m\u00e3 cho b\u1ea1n, kh\u00f4ng c\u1ea7n m\u1eadt kh\u1ea9u.',
+      compteCreer: 'T\u1ea1o t\u00e0i kho\u1ea3n',
+      comptePlusTard: '\u0110\u1ec3 sau',
       suite: 'Ti\u1ebfp',
       sonBouton: '\u00c2m thanh',
       astuceClavier: 'M\u1eb9o: b\u1ea1n c\u0169ng c\u00f3 th\u1ec3 g\u00f5 c\u00e1c t\u1eeb b\u1eb1ng b\u00e0n ph\u00edm.',
@@ -470,6 +630,19 @@
       rencRecapHomme: 'Li rele {nom}, se yon nonm.',
       rencRecapFemme: 'Li rele {nom}, se yon fanm.',
       rencLect5: 'Se vre? Ou konfime?',
+      fenTitre: 'Verifye enf\u00f2masyon ou yo',
+      fenPrenom: 'Non',
+      fenConfirmer: 'Konfime',
+      fenErreur: 'Itilize 1 a 20 l\u00e8t.',
+      fenGarcon: 'Ti gason',
+      fenFille: 'Ti fi',
+      fenHomme: 'Nonm',
+      fenFemme: 'Fanm',
+      compteLect: 'Si w pa vle p\u00e8di pwogr\u00e8 w, ou ta dwe panse f\u00e8 yon kont.',
+      compteTitre: 'Kenbe pwogr\u00e8 w',
+      compteTexte: 'Se s\u00e8lman yon im\u00e8l ou bezwen : n ap voye yon k\u00f2d ba ou, san modpas.',
+      compteCreer: 'Kreye yon kont',
+      comptePlusTard: 'Pita',
       suite: 'Swivan',
       sonBouton: 'Son',
       astuceClavier: 'Kons\u00e8y: ou ka tape mo yo ak klavye a tou.',
@@ -498,6 +671,19 @@
       rencRecapHomme: 'Siya si {nom}, isang lalaki.',
       rencRecapFemme: 'Siya si {nom}, isang babae.',
       rencLect5: 'Totoo ba? Kinukumpirma mo ba?',
+      fenTitre: 'Suriin ang iyong impormasyon',
+      fenPrenom: 'Pangalan',
+      fenConfirmer: 'Kumpirmahin',
+      fenErreur: 'Gumamit ng 1 hanggang 20 titik.',
+      fenGarcon: 'Batang lalaki',
+      fenFille: 'Batang babae',
+      fenHomme: 'Lalaki',
+      fenFemme: 'Babae',
+      compteLect: 'Kung ayaw mong mawala ang progress mo, mag-isip kang gumawa ng account.',
+      compteTitre: 'Itago ang progress mo',
+      compteTexte: 'Email lang ang kailangan: padadalhan ka namin ng code, walang password.',
+      compteCreer: 'Gumawa ng account',
+      comptePlusTard: 'Mamaya na',
       suite: 'Susunod',
       sonBouton: 'Tunog',
       astuceClavier: 'Tip: puwede mo ring i-type ang mga salita gamit ang keyboard.',
@@ -526,6 +712,19 @@
       rencRecapHomme: 'Namanya {nom}, dia seorang pria.',
       rencRecapFemme: 'Namanya {nom}, dia seorang wanita.',
       rencLect5: 'Benar begitu? Bisa kamu konfirmasi?',
+      fenTitre: 'Periksa datamu',
+      fenPrenom: 'Nama',
+      fenConfirmer: 'Konfirmasi',
+      fenErreur: 'Gunakan 1 sampai 20 huruf.',
+      fenGarcon: 'Anak laki-laki',
+      fenFille: 'Anak perempuan',
+      fenHomme: 'Pria',
+      fenFemme: 'Wanita',
+      compteLect: 'Kalau kamu tidak mau kehilangan kemajuanmu, sebaiknya kamu membuat akun.',
+      compteTitre: 'Simpan kemajuanmu',
+      compteTexte: 'Cukup email: kami kirim kode, tanpa kata sandi.',
+      compteCreer: 'Buat akun',
+      comptePlusTard: 'Nanti saja',
       suite: 'Lanjut',
       sonBouton: 'Suara',
       astuceClavier: 'Tips: kamu juga bisa mengetik kata-katanya dengan keyboard.',
@@ -554,6 +753,19 @@
       rencRecapHomme: 'Hij heet {nom}, en het is een man.',
       rencRecapFemme: 'Ze heet {nom}, en het is een vrouw.',
       rencLect5: 'Klopt dat? Bevestig je dat?',
+      fenTitre: 'Controleer je gegevens',
+      fenPrenom: 'Voornaam',
+      fenConfirmer: 'Bevestigen',
+      fenErreur: 'Gebruik 1 tot 20 letters.',
+      fenGarcon: 'Jongen',
+      fenFille: 'Meisje',
+      fenHomme: 'Man',
+      fenFemme: 'Vrouw',
+      compteLect: 'Als je je voortgang niet wilt kwijtraken, moet je eens overwegen een account aan te maken.',
+      compteTitre: 'Bewaar je voortgang',
+      compteTexte: 'Een e-mailadres is genoeg: we sturen je een code, geen wachtwoord nodig.',
+      compteCreer: 'Account aanmaken',
+      comptePlusTard: 'Later',
       suite: 'Volgende',
       sonBouton: 'Geluid',
       astuceClavier: 'Tip: je kunt de woorden ook met het toetsenbord typen.',
@@ -582,6 +794,19 @@
       rencRecapHomme: 'Er hei\u00dft {nom}, und er ist ein Mann.',
       rencRecapFemme: 'Sie hei\u00dft {nom}, und sie ist eine Frau.',
       rencLect5: 'Stimmt das? Best\u00e4tigst du das?',
+      fenTitre: 'Pr\u00fcfe deine Angaben',
+      fenPrenom: 'Vorname',
+      fenConfirmer: 'Best\u00e4tigen',
+      fenErreur: 'Verwende 1 bis 20 Buchstaben.',
+      fenGarcon: 'Junge',
+      fenFille: 'M\u00e4dchen',
+      fenHomme: 'Mann',
+      fenFemme: 'Frau',
+      compteLect: 'Wenn du deinen Fortschritt nicht verlieren willst, solltest du dir \u00fcberlegen, ein Konto anzulegen.',
+      compteTitre: 'Fortschritt sichern',
+      compteTexte: 'Eine E-Mail gen\u00fcgt: Wir schicken dir einen Code, ein Passwort brauchst du nicht.',
+      compteCreer: 'Konto erstellen',
+      comptePlusTard: 'Sp\u00e4ter',
       suite: 'Weiter',
       sonBouton: 'Ton',
       astuceClavier: 'Tipp: Du kannst die W\u00f6rter auch mit der Tastatur eingeben.',
@@ -610,6 +835,19 @@
       rencRecapHomme: '\u0627\u0633\u0645\u0634 {nom} \u0627\u0633\u062a. \u06cc\u06a9 \u0645\u0631\u062f \u0627\u0633\u062a.',
       rencRecapFemme: '\u0627\u0633\u0645\u0634 {nom} \u0627\u0633\u062a. \u06cc\u06a9 \u0632\u0646 \u0627\u0633\u062a.',
       rencLect5: '\u062f\u0631\u0633\u062a\u0647\u061f \u062a\u0623\u06cc\u06cc\u062f\u0634 \u0645\u06cc\u200c\u06a9\u0646\u06cc\u061f',
+      fenTitre: '\u0627\u0637\u0644\u0627\u0639\u0627\u062a\u062a \u0631\u0627 \u0628\u0631\u0631\u0633\u06cc \u06a9\u0646',
+      fenPrenom: '\u0646\u0627\u0645',
+      fenConfirmer: '\u062a\u0623\u06cc\u06cc\u062f',
+      fenErreur: '\u0627\u0632 \u06f1 \u062a\u0627 \u06f2\u06f0 \u062d\u0631\u0641 \u0627\u0633\u062a\u0641\u0627\u062f\u0647 \u06a9\u0646.',
+      fenGarcon: '\u067e\u0633\u0631',
+      fenFille: '\u062f\u062e\u062a\u0631',
+      fenHomme: '\u0645\u0631\u062f',
+      fenFemme: '\u0632\u0646',
+      compteLect: '\u0627\u06af\u0631 \u0646\u0645\u06cc\u200c\u062e\u0648\u0627\u0647\u06cc \u067e\u06cc\u0634\u0631\u0641\u062a\u062a \u0631\u0627 \u0627\u0632 \u062f\u0633\u062a \u0628\u062f\u0647\u06cc\u060c \u0628\u0647\u062a\u0631 \u0627\u0633\u062a \u0628\u0647 \u0633\u0627\u062e\u062a\u0646 \u06cc\u06a9 \u062d\u0633\u0627\u0628 \u0641\u06a9\u0631 \u06a9\u0646\u06cc.',
+      compteTitre: '\u067e\u06cc\u0634\u0631\u0641\u062a\u062a \u0631\u0627 \u0646\u06af\u0647 \u062f\u0627\u0631',
+      compteTexte: '\u0641\u0642\u0637 \u06cc\u06a9 \u0627\u06cc\u0645\u06cc\u0644 \u06a9\u0627\u0641\u06cc \u0627\u0633\u062a: \u06cc\u06a9 \u06a9\u062f \u0628\u0631\u0627\u06cc\u062a \u0645\u06cc\u200c\u0641\u0631\u0633\u062a\u06cc\u0645\u060c \u0628\u062f\u0648\u0646 \u0631\u0645\u0632 \u0639\u0628\u0648\u0631.',
+      compteCreer: '\u0633\u0627\u062e\u062a \u062d\u0633\u0627\u0628',
+      comptePlusTard: '\u0628\u0639\u062f\u0627\u064b',
       suite: '\u0628\u0639\u062f\u06cc',
       sonBouton: '\u0635\u062f\u0627',
       astuceClavier: '\u0646\u06a9\u062a\u0647: \u0645\u06cc\u200c\u062a\u0648\u0627\u0646\u06cc \u06a9\u0644\u0645\u0647\u200c\u0647\u0627 \u0631\u0627 \u0628\u0627 \u0635\u0641\u062d\u0647\u200c\u06a9\u0644\u06cc\u062f \u0647\u0645 \u062a\u0627\u06cc\u067e \u06a9\u0646\u06cc.',
@@ -638,6 +876,19 @@
       rencRecapHomme: 'Han heter {nom}, och han \u00e4r en man.',
       rencRecapFemme: 'Hon heter {nom}, och hon \u00e4r en kvinna.',
       rencLect5: 'St\u00e4mmer det? Bekr\u00e4ftar du?',
+      fenTitre: 'Kontrollera dina uppgifter',
+      fenPrenom: 'F\u00f6rnamn',
+      fenConfirmer: 'Bekr\u00e4fta',
+      fenErreur: 'Anv\u00e4nd 1 till 20 bokst\u00e4ver.',
+      fenGarcon: 'Pojke',
+      fenFille: 'Flicka',
+      fenHomme: 'Man',
+      fenFemme: 'Kvinna',
+      compteLect: 'Om du inte vill f\u00f6rlora dina framsteg b\u00f6r du fundera p\u00e5 att skapa ett konto.',
+      compteTitre: 'Spara dina framsteg',
+      compteTexte: 'Bara en e-postadress: vi skickar en kod, inget l\u00f6senord beh\u00f6vs.',
+      compteCreer: 'Skapa konto',
+      comptePlusTard: 'Senare',
       suite: 'N\u00e4sta',
       sonBouton: 'Ljud',
       astuceClavier: 'Tips: du kan ocks\u00e5 skriva orden med tangentbordet.',
@@ -666,6 +917,19 @@
       rencRecapHomme: 'Han heter {nom}, og han er en mann.',
       rencRecapFemme: 'Hun heter {nom}, og hun er en kvinne.',
       rencLect5: 'Stemmer det? Bekrefter du?',
+      fenTitre: 'Sjekk opplysningene dine',
+      fenPrenom: 'Fornavn',
+      fenConfirmer: 'Bekreft',
+      fenErreur: 'Bruk 1 til 20 bokstaver.',
+      fenGarcon: 'Gutt',
+      fenFille: 'Jente',
+      fenHomme: 'Mann',
+      fenFemme: 'Kvinne',
+      compteLect: 'Hvis du ikke vil miste fremgangen din, b\u00f8r du tenke p\u00e5 \u00e5 lage en konto.',
+      compteTitre: 'Behold fremgangen din',
+      compteTexte: 'Bare en e-postadresse: vi sender deg en kode, uten passord.',
+      compteCreer: 'Opprett konto',
+      comptePlusTard: 'Senere',
       suite: 'Neste',
       sonBouton: 'Lyd',
       astuceClavier: 'Tips: du kan ogs\u00e5 skrive ordene med tastaturet.',
@@ -694,6 +958,19 @@
       rencRecapHomme: '\u0415\u0433\u043e \u0437\u043e\u0432\u0443\u0442 {nom}, \u043e\u043d \u043c\u0443\u0436\u0447\u0438\u043d\u0430.',
       rencRecapFemme: '\u0415\u0451 \u0437\u043e\u0432\u0443\u0442 {nom}, \u043e\u043d\u0430 \u0436\u0435\u043d\u0449\u0438\u043d\u0430.',
       rencLect5: '\u042d\u0442\u043e \u043f\u0440\u0430\u0432\u0434\u0430? \u041f\u043e\u0434\u0442\u0432\u0435\u0440\u0436\u0434\u0430\u0435\u0448\u044c?',
+      fenTitre: '\u041f\u0440\u043e\u0432\u0435\u0440\u044c \u0441\u0432\u043e\u0438 \u0434\u0430\u043d\u043d\u044b\u0435',
+      fenPrenom: '\u0418\u043c\u044f',
+      fenConfirmer: '\u041f\u043e\u0434\u0442\u0432\u0435\u0440\u0434\u0438\u0442\u044c',
+      fenErreur: '\u041e\u0442 1 \u0434\u043e 20 \u0431\u0443\u043a\u0432.',
+      fenGarcon: '\u041c\u0430\u043b\u044c\u0447\u0438\u043a',
+      fenFille: '\u0414\u0435\u0432\u043e\u0447\u043a\u0430',
+      fenHomme: '\u041c\u0443\u0436\u0447\u0438\u043d\u0430',
+      fenFemme: '\u0416\u0435\u043d\u0449\u0438\u043d\u0430',
+      compteLect: '\u0415\u0441\u043b\u0438 \u043d\u0435 \u0445\u043e\u0447\u0435\u0448\u044c \u043f\u043e\u0442\u0435\u0440\u044f\u0442\u044c \u0441\u0432\u043e\u0439 \u043f\u0440\u043e\u0433\u0440\u0435\u0441\u0441, \u043f\u043e\u0434\u0443\u043c\u0430\u0439 \u043e \u0442\u043e\u043c, \u0447\u0442\u043e\u0431\u044b \u0441\u043e\u0437\u0434\u0430\u0442\u044c \u0430\u043a\u043a\u0430\u0443\u043d\u0442.',
+      compteTitre: '\u0421\u043e\u0445\u0440\u0430\u043d\u0438 \u0441\u0432\u043e\u0439 \u043f\u0440\u043e\u0433\u0440\u0435\u0441\u0441',
+      compteTexte: '\u0414\u043e\u0441\u0442\u0430\u0442\u043e\u0447\u043d\u043e \u044d\u043b\u0435\u043a\u0442\u0440\u043e\u043d\u043d\u043e\u0439 \u043f\u043e\u0447\u0442\u044b: \u043c\u044b \u043f\u0440\u0438\u0448\u043b\u0451\u043c \u043a\u043e\u0434, \u043f\u0430\u0440\u043e\u043b\u044c \u043d\u0435 \u043d\u0443\u0436\u0435\u043d.',
+      compteCreer: '\u0421\u043e\u0437\u0434\u0430\u0442\u044c \u0430\u043a\u043a\u0430\u0443\u043d\u0442',
+      comptePlusTard: '\u041f\u043e\u0437\u0436\u0435',
       suite: '\u0414\u0430\u043b\u044c\u0448\u0435',
       sonBouton: '\u0417\u0432\u0443\u043a',
       astuceClavier: '\u041f\u043e\u0434\u0441\u043a\u0430\u0437\u043a\u0430: \u0441\u043b\u043e\u0432\u0430 \u043c\u043e\u0436\u043d\u043e \u0432\u0432\u043e\u0434\u0438\u0442\u044c \u0438 \u0441 \u043a\u043b\u0430\u0432\u0438\u0430\u0442\u0443\u0440\u044b.',
@@ -1246,7 +1523,7 @@
     const reduit = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
     const lect = window.KebBekLecteur;
     // 🆕 identité recueillie au réveil (sinon pas de scène de rencontre)
-    const IDENTITE = (options.identite && typeof options.identite === 'object' && options.identite.prenom)
+    let IDENTITE = (options.identite && typeof options.identite === 'object' && options.identite.prenom)
       ? { prenom: String(options.identite.prenom), genre: options.identite.genre === 'f' ? 'f' : 'm', adulte: !!options.identite.adulte }
       : null;
     const iconeLecteur = (lect && typeof lect.htmlIcone === 'function') ? lect.htmlIcone(options, 'lect-lecteur-img') : '';
@@ -2030,6 +2307,130 @@
       await lecteurDit(T('rencLect5'));
     }
 
+    // ---------- 🆕 Fenêtre « vérification des informations » (voix du système) ----------
+    // Pré-remplie avec ce que l'élève a donné au réveil ; il peut corriger son prénom et
+    // choisir un autre profil (garçon/fille 0–17, homme/femme 18+). Style plat des fenêtres
+    // du Lecteur (sequence-lecteur.css). Résout avec { prenom, genre, adulte }.
+    function fenetreIdentite() {
+      return new Promise(function (resolve) {
+        let profil = PROFILS.filter(function (p) { return p.genre === IDENTITE.genre && p.adulte === IDENTITE.adulte; })[0] || PROFILS[0];
+        let touche = false;
+        const rtl = LANGUES_DROITE_A_GAUCHE.indexOf(langue) !== -1;
+        const voile = document.createElement('div');
+        voile.className = 'lect-voile mem-fen-voile';
+        voile.innerHTML =
+          '<div class="lect-carte mem-fen" role="dialog" aria-modal="true" aria-labelledby="memFenTitre"' + (rtl ? ' dir="rtl"' : '') + '>' +
+            '<div class="lect-entete">' +
+              '<span class="mem-fen-icone" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg></span>' +
+              '<h2 class="lect-titre" id="memFenTitre">' + echapper(T('fenTitre')) + '</h2>' +
+            '</div>' +
+            '<label class="mem-fen-etiquette" for="memFenPrenom">' + echapper(T('fenPrenom')) + '</label>' +
+            '<input class="mem-fen-champ" id="memFenPrenom" type="text" maxlength="20" autocomplete="off" autocapitalize="words" spellcheck="false" dir="auto">' +
+            '<p class="mem-fen-erreur" role="alert"></p>' +
+            '<div class="mem-fen-profils" role="radiogroup" aria-labelledby="memFenTitre">' +
+              PROFILS.map(function (p) {
+                return '<button type="button" class="mem-fen-profil" role="radio" data-id="' + p.id + '">' +
+                  '<span class="mem-fen-mot">' + echapper(T('fen' + p.id)) + '</span>' +
+                  '<span class="mem-fen-age" dir="ltr">' + p.age + '</span></button>';
+              }).join('') +
+            '</div>' +
+            '<div class="lect-boutons"><button type="button" class="lect-btn mem-fen-ok">' + echapper(T('fenConfirmer')) + '</button></div>' +
+          '</div>';
+        scene.appendChild(voile);
+        const carte = voile.querySelector('.mem-fen');
+        const champ = voile.querySelector('.mem-fen-champ');
+        const erreur = voile.querySelector('.mem-fen-erreur');
+        const ok = voile.querySelector('.mem-fen-ok');
+        const boutons = Array.prototype.slice.call(voile.querySelectorAll('.mem-fen-profil'));
+        champ.value = IDENTITE.prenom;
+
+        function valide() { return REGEX_PRENOM.test(champ.value.trim()); }
+        function maj() {
+          const v = valide();
+          ok.disabled = !v;
+          champ.classList.toggle('mem-fen-champ-faux', !v && touche);
+          erreur.textContent = (!v && touche) ? T('fenErreur') : '';
+          boutons.forEach(function (b) {
+            const sel = b.dataset.id === profil.id;
+            b.classList.toggle('mem-fen-profil-choisi', sel);
+            b.setAttribute('aria-checked', sel ? 'true' : 'false');
+          });
+        }
+        function fermer(identite) {
+          carte.classList.remove('lect-carte-visible');
+          voile.classList.remove('lect-voile-visible');
+          planifier(function () { voile.remove(); resolve(identite); }, 320);
+        }
+        function confirmer() {
+          touche = true;
+          maj();
+          if (!valide()) { champ.focus(); return; }
+          ok.disabled = true;
+          fermer({ prenom: champ.value.trim(), genre: profil.genre, adulte: profil.adulte });
+        }
+        champ.addEventListener('input', function () { touche = true; maj(); });
+        champ.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); confirmer(); } });
+        boutons.forEach(function (b) {
+          b.addEventListener('click', function () {
+            profil = PROFILS.filter(function (p) { return p.id === b.dataset.id; })[0];
+            maj();
+          });
+        });
+        ok.addEventListener('click', confirmer);
+        maj();
+        planifier(function () {
+          voile.classList.add('lect-voile-visible');
+          carte.classList.add('lect-carte-visible');
+        }, 40);
+        planifier(function () { ok.focus({ preventScroll: true }); }, 450);
+      });
+    }
+
+    // ---------- 🆕 Fenêtre « compte » (voix du système) ----------
+    // Après la confirmation d'identité : « Si tu ne veux pas perdre tes progrès… » (dit par le
+    // Lecteur), puis une fenêtre à deux boutons. Elle ne crée AUCUN compte elle-même : elle
+    // résout 'creer' ou 'plus-tard', et finMemoire passe la main à la page hôte (onCompte).
+    function fenetreCompte() {
+      return new Promise(function (resolve) {
+        const rtl = LANGUES_DROITE_A_GAUCHE.indexOf(langue) !== -1;
+        const voile = document.createElement('div');
+        voile.className = 'lect-voile mem-fen-voile';
+        voile.innerHTML =
+          '<div class="lect-carte mem-fen mem-cpt" role="dialog" aria-modal="true" aria-labelledby="memCptTitre"' + (rtl ? ' dir="rtl"' : '') + '>' +
+            '<div class="lect-entete">' +
+              '<span class="mem-fen-icone" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 4h11l3 3v13H5z"/><path d="M8 4v5h7V4"/><path d="M8 20v-6h8v6"/></svg></span>' +
+              '<h2 class="lect-titre" id="memCptTitre">' + echapper(T('compteTitre')) + '</h2>' +
+            '</div>' +
+            '<p class="lect-texte">' + echapper(T('compteTexte')) + '</p>' +
+            '<div class="lect-boutons mem-cpt-boutons">' +
+              '<button type="button" class="lect-btn lect-btn-clair mem-cpt-plus-tard">' + echapper(T('comptePlusTard')) + '</button>' +
+              '<button type="button" class="lect-btn mem-cpt-creer">' + echapper(T('compteCreer')) + '</button>' +
+            '</div>' +
+          '</div>';
+        scene.appendChild(voile);
+        const carte = voile.querySelector('.mem-cpt');
+        const creer = voile.querySelector('.mem-cpt-creer');
+        const plusTard = voile.querySelector('.mem-cpt-plus-tard');
+        let fait = false;
+        function choisir(choix) {
+          if (fait) return;
+          fait = true;
+          creer.disabled = true;
+          plusTard.disabled = true;
+          carte.classList.remove('lect-carte-visible');
+          voile.classList.remove('lect-voile-visible');
+          planifier(function () { voile.remove(); resolve(choix); }, 320);
+        }
+        creer.addEventListener('click', function () { choisir('creer'); });
+        plusTard.addEventListener('click', function () { choisir('plus-tard'); });
+        planifier(function () {
+          voile.classList.add('lect-voile-visible');
+          carte.classList.add('lect-carte-visible');
+        }, 40);
+        planifier(function () { creer.focus({ preventScroll: true }); }, 450);
+      });
+    }
+
     // Dernière réplique du Lecteur, puis la rencontre (si l'identité est connue)
     async function finMemoire() {
       if (lecteurEl) await direLecteur(T('lecteurFin'));
@@ -2037,9 +2438,27 @@
       if (IDENTITE && options.rencontre !== false && lecteurEl && lb) {
         await rencontre();
         if (arrete) return;
-        if (typeof callbacks.onConfirmerIdentite === 'function') {
-          try { callbacks.onConfirmerIdentite(Object.assign({}, IDENTITE)); } catch (e) { console.warn('onConfirmerIdentite a échoué.', e); }
-          return;
+        IDENTITE = await fenetreIdentite();       // l'élève confirme ou corrige ; IDENTITE est mise à jour
+        if (arrete) return;
+        lecteurReagit('mem-lecteur-saut', 650);
+        // 🆕 Étape C : la fenêtre du compte n'apparaît que si la page hôte fournit onCompte
+        const avecCompte = typeof callbacks.onCompte === 'function' && options.compte !== false;
+        if (typeof callbacks.onIdentiteConfirmee === 'function') {
+          try { callbacks.onIdentiteConfirmee(Object.assign({}, IDENTITE)); } catch (e) { console.warn('onIdentiteConfirmee a échoué.', e); }
+          if (!avecCompte) return;                // sans onCompte : onIdentiteConfirmee prend la suite, comme avant
+        }
+        if (avecCompte) {
+          await attendre(500);
+          if (arrete) return;
+          await lecteurDit(T('compteLect'));
+          if (arrete) return;
+          const choix = await fenetreCompte();
+          if (arrete) return;
+          if (choix === 'creer') {
+            try { callbacks.onCompte(Object.assign({}, IDENTITE)); } catch (e) { console.warn('onCompte a échoué.', e); }
+            return;                               // la page hôte lance la création du compte
+          }
+          // « Plus tard » : on retombe sur onTermine ci-dessous
         }
       }
       if (typeof callbacks.onTermine === 'function') {

@@ -59,6 +59,18 @@
    ignorés. Un mauvais mot se comporte exactement comme au toucher
    (la tuile se secoue, le son d'erreur, l'indice après deux erreurs).
 
+   🆕 (01-11-2026) OUVERTURE RETRAVAILLÉE — cinq temps d'émotion au lieu de trois
+   poses enchaînées (voir OUVERTURE, tous les délais s'y règlent) :
+     1. concentrée (elle cherche) ;
+     2. penchée : elle CHERCHE, balancement lent, doute ;
+     3. elle RETIENT SON SOUFFLE (silence ; la pose facultative « déclic » —
+        yeux qui s'écarquillent — s'y glisse si l'image existe) ;
+     4. ÉCLAT : une lumière jaillit derrière sa tête (halo, rayons, anneau,
+        étincelles, petit carillon), elle se redresse, CONFIANTE : le déclic ;
+     5. elle savoure, puis pose la main sur le cœur, SOLENNELLE (fondu lent).
+   L'éclat tombe pile quand l'image « confiante » apparaît (coupe quasi nette,
+   masquée par la lumière) : c'est l'instant de la prise de conscience.
+
    Aucune « corruption » du texte : c'est une seule bonne mémoire, et c'est
    l'élève qui la reconstruit.
 
@@ -94,6 +106,18 @@
     { places: [0],    distracteurs: [],          pose: 'tendue',     zoom: 1.12 },
     { places: [],     distracteurs: ['parles'],  pose: 'emue',       zoom: 1.25 }
   ];
+  // Les temps de l'ouverture, en millisecondes. Tout se règle ici.
+  const OUVERTURE = {
+    depart: 1500,            // Bek apparaît, concentrée
+    fonduPenchee: 650,       // concentrée → penchée (fondu doux)
+    cherche: 2000,           // penchée : elle cherche, le balancement lent
+    silence: 500,            // elle retient son souffle (ou pose « déclic », si l'image existe)
+    declic: 650,             // durée de la pose « déclic » (facultative) avant l'éclat
+    fonduEclat: 120,         // penchée/déclic → confiante : presque une coupe, masquée par la lumière
+    confiante: 1900,         // elle savoure sa trouvaille
+    fonduSolennelle: 800,    // confiante → solennelle (fondu lent)
+    solennelle: 1500         // main sur le cœur, avant l'arrivée de la bulle
+  };
   // Nombre de syllabes de chaque mot : la bouche de Bek s'ouvre autant de fois.
   const SYLLABES = { je: 1, parle: 1, francais: 2, parles: 1 };
   const SON_PAR_DEFAUT = true;            // ← mettre false pour démarrer en silence
@@ -238,6 +262,9 @@
     // 🎨 Optionnelles : l'ouverture et les postures des trois tours. Absentes,
     // on retombe sur les poses existantes (voir EXPRESSIONS).
     'bek-penchee':          'images/reveil/bek_penchee_01-01.webp',
+    // 🎨 Facultative : le « déclic » (yeux écarquillés, bouche en petit « o ») qui
+    // s'intercale entre la penchée et la confiante. Absente, l'étape est simulée.
+    'bek-declic':           'images/reveil/bek_declic_01-01.webp',
     'bek-confiante':        'images/reveil/bek_confiante_01-01.webp',
     'bek-solennelle-ferme': 'images/reveil/bek_solennelle_bouche-fermee_01-01.webp',
     'bek-solennelle-ouvert':'images/reveil/bek_solennelle_bouche-ouverte_01-01.webp',
@@ -249,7 +276,7 @@
   const POSES = [
     'bek-heureuse-ferme', 'bek-heureuse-ouvert', 'bek-concentree-ferme', 'bek-concentree-ouvert',
     'bek-perplexe-05', 'bek-perplexe-06', 'bek-soulagee', 'bek-decue',
-    'bek-penchee', 'bek-confiante',
+    'bek-penchee', 'bek-declic', 'bek-confiante',
     'bek-solennelle-ferme', 'bek-solennelle-ouvert', 'bek-tendue-ferme', 'bek-tendue-ouvert',
     'bek-emue-ferme', 'bek-emue-ouvert'
   ];
@@ -259,6 +286,7 @@
     triste:   { fixe: 'bek-decue', repli: 'bek-perplexe-05' },
     // ouverture de la mémoire (images uniques : elle ne parle pas encore)
     penchee:   { fixe: 'bek-penchee',   repli: 'bek-concentree-ferme' },
+    declic:    { fixe: 'bek-declic',    repli: 'bek-penchee' },
     confiante: { fixe: 'bek-confiante', repli: 'bek-heureuse-ferme' },
     // postures des trois tours (paires fermée/ouverte ; `alt` = expression de repli)
     solennelle: { ferme: 'bek-solennelle-ferme', ouvert: 'bek-solennelle-ouvert', alt: 'heureuse' },
@@ -346,7 +374,10 @@
       '<div class="rbek-scene mem-scene mem-souvenir" style="opacity:1;transition:none">' +
         '<div class="mem-fond-souvenir"></div>' +
         '<div class="mem-grain" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>' +
+        '<div class="mem-flash" aria-hidden="true"></div>' +
         '<div class="rbek-fond mem-bek-fond" role="img" aria-label="Bek">' +
+          '<div class="mem-eclat" aria-hidden="true"><i class="mem-eclat-halo"></i><i class="mem-eclat-rayons"></i><i class="mem-eclat-anneau"></i></div>' +
+          '<span class="mem-tete" aria-hidden="true"></span>' +
           '<div class="rbek-zoom"><div class="rbek-bek"></div></div>' +
         '</div>' +
         '<div class="mem-cadre" aria-hidden="true"></div>' +
@@ -399,6 +430,9 @@
     const lb = conteneur.querySelector('.mem-lb');
     const invite = conteneur.querySelector('.mem-invite');
     const astuce = conteneur.querySelector('.mem-astuce');
+    const eclatEl = conteneur.querySelector('.mem-eclat');
+    const flashEl = conteneur.querySelector('.mem-flash');
+    const teteEl = conteneur.querySelector('.mem-tete');
     const zoomEl = conteneur.querySelector('.rbek-zoom');
     const boutonSon = conteneur.querySelector('.mem-son');
     const aide = conteneur.querySelector('.mem-aide');
@@ -504,6 +538,12 @@
     function sonErreur() { note(196, 0, 0.2, 'triangle', 0.1); note(174.6, 0.09, 0.22, 'triangle', 0.08); }
     function sonPhrase() {
       [0, 2, 3, 5].forEach(function (k, i) { note(GAMME[k], i * 0.1, 0.8, 'sine', 0.1); });
+    }
+    // Le « déclic » : trois notes vives qui montent, puis une paillette aiguë
+    function sonDeclic() {
+      [2, 3, 5].forEach(function (k, i) { note(GAMME[k], i * 0.075, 0.5, 'sine', 0.12); });
+      note(GAMME[5] * 1.5, 0.24, 0.9, 'triangle', 0.05);
+      note(GAMME[0] / 2, 0, 0.35, 'sine', 0.08);       // petit « boum » grave sous l'éclat
     }
     function sonRestauration() {
       [0, 1, 2, 3, 4, 5].forEach(function (k, i) { note(GAMME[k], i * 0.12, 1.1, 'sine', 0.08); });
@@ -961,6 +1001,16 @@
       });
     }
 
+    // ---------- L'éclat du déclic ----------
+    // Lumière derrière la tête (halo + rayons + anneau), voile lumineux sur la scène,
+    // étincelles qui jaillissent, carillon. Rejouable : on relance les animations.
+    function eclat() {
+      [eclatEl, flashEl].forEach(function (e) { if (!e) return; e.classList.remove('mem-eclat-actif'); void e.offsetWidth; e.classList.add('mem-eclat-actif'); });
+      sonDeclic();
+      if (teteEl) etincelles(teteEl, 30, true);
+      planifier(function () { if (eclatEl) eclatEl.classList.remove('mem-eclat-actif'); if (flashEl) flashEl.classList.remove('mem-eclat-actif'); }, 2200);
+    }
+
     // ---------- L'aide du Lecteur ----------
     function getAide(id) {
       return (AIDE[langue] && AIDE[langue][id]) || (AIDE.en && AIDE.en[id]) || (AIDE.fr && AIDE.fr[id]) || null;
@@ -1129,24 +1179,36 @@
       scene.classList.add('mem-prete');
       scene.addEventListener('pointerdown', sauterOuverture);
 
-      // --- Ouverture : elle cherche, se redresse, pose la main sur le cœur ---
-      await pause(1500);
-      if (!sauter) {                                // tête penchée
-        if (disponible('bek-penchee')) exprimer('penchee', 380);
+      // --- Ouverture : elle cherche, retient son souffle, DÉCLIC, savoure, devient solennelle ---
+      const O = OUVERTURE;
+      await pause(O.depart);
+      if (!sauter) {                                // 1-2. tête penchée : elle cherche
+        if (disponible('bek-penchee')) exprimer('penchee', O.fonduPenchee);
         else bek.classList.add('mem-penche-css');   // sans l'image : inclinaison simulée
-        await pause(1150);
+        bek.classList.add('mem-cherche');           // balancement lent, hésitant
+        await pause(O.cherche);
       }
-      if (!sauter) {                                // elle la relève, avec confiance
-        bek.classList.remove('mem-penche-css');
-        exprimer('confiante', 260);
+      if (!sauter) {                                // 3. elle retient son souffle (… et le déclic approche)
+        bek.classList.add('mem-retient');
+        if (disponible('bek-declic')) {             // pose facultative : les yeux s'écarquillent
+          exprimer('declic', 220);
+          await pause(O.silence + O.declic);
+        } else {
+          await pause(O.silence);
+        }
+      }
+      if (!sauter) {                                // 4. ÉCLAT : elle se redresse, confiante
+        bek.classList.remove('mem-cherche', 'mem-penche-css', 'mem-retient');
+        eclat();
+        exprimer('confiante', O.fonduEclat);
         bek.classList.remove('rbek-sursaut');
         void bek.offsetWidth;
         bek.classList.add('rbek-sursaut');
-        await pause(850);
+        await pause(O.confiante);                   // 5. elle savoure
       }
-      bek.classList.remove('mem-penche-css');
-      exprimer('solennelle', sauter ? 0 : 380);     // main sur la poitrine, l'air solennel
-      if (!sauter) await pause(950);
+      bek.classList.remove('mem-cherche', 'mem-penche-css', 'mem-retient');
+      exprimer('solennelle', sauter ? 0 : O.fonduSolennelle);   // main sur le cœur, l'air solennel
+      if (!sauter) await pause(O.solennelle);
       scene.removeEventListener('pointerdown', sauterOuverture);
 
       bulle.classList.remove('rbek-bulle-cachee');

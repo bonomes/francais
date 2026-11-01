@@ -739,3 +739,87 @@
 @media (prefers-reduced-motion: reduce) {
   .mem-case .mem-frappe::after, .mem-case .mem-frappe.mem-frappe-non { animation: none; }
 }
+
+
+/* ==================================================================
+   🆕 (01-11-2026) OUVERTURE : balancement de la recherche, souffle retenu,
+   ÉCLAT du déclic (halo, rayons, anneau, voile lumineux).
+   ================================================================== */
+
+/* Elle cherche : balancement lent et hésitant (propriété `rotate`, qui s'ajoute
+   à l'inclinaison de secours et au sursaut sans les remplacer). */
+.mem-scene .rbek-bek.mem-cherche { animation: memCherche 2.8s ease-in-out infinite; }
+@keyframes memCherche {
+  0%, 100% { rotate: 0deg; }
+  30%      { rotate: -1.4deg; }
+  62%      { rotate: 0.9deg; }
+}
+/* Elle retient son souffle : elle se tasse très légèrement, immobile. */
+.mem-scene .rbek-bek.mem-retient { animation: none; transform: scale(0.99, 0.985); transition: transform 0.5s ease; }
+
+/* Le point d'ancrage de la lumière : le visage de Bek (≈ 36 % de la hauteur) */
+.mem-tete { position: absolute; left: 50%; top: 36%; width: 2px; height: 2px; pointer-events: none; }
+
+.mem-eclat {
+  position: absolute;
+  left: 50%;
+  top: 36%;
+  width: 150%;
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  opacity: 0;
+}
+.mem-eclat i { position: absolute; inset: 0; display: block; border-radius: 50%; opacity: 0; }
+.mem-eclat-halo {
+  background: radial-gradient(circle, rgba(255, 252, 232, 0.98) 0%, rgba(255, 226, 150, 0.6) 24%, rgba(255, 214, 150, 0) 58%);
+}
+.mem-eclat-rayons {
+  background: repeating-conic-gradient(from 0deg, rgba(255, 238, 175, 0.85) 0 5deg, rgba(255, 238, 175, 0) 5deg 15deg);
+  -webkit-mask-image: radial-gradient(circle, #000 12%, transparent 58%);
+  mask-image: radial-gradient(circle, #000 12%, transparent 58%);
+}
+.mem-eclat-anneau { inset: 22%; border: 5px solid rgba(255, 226, 130, 0.9); box-shadow: 0 0 22px 4px rgba(255, 226, 130, 0.6); }
+
+.mem-eclat.mem-eclat-actif { opacity: 1; }
+.mem-eclat.mem-eclat-actif .mem-eclat-halo   { animation: memHaloEclat 1.9s cubic-bezier(.2,.7,.2,1) forwards; }
+.mem-eclat.mem-eclat-actif .mem-eclat-rayons { animation: memRayonsEclat 2s cubic-bezier(.2,.7,.2,1) forwards; }
+.mem-eclat.mem-eclat-actif .mem-eclat-anneau { animation: memAnneauEclat 1.1s cubic-bezier(.2,.6,.3,1) forwards; }
+@keyframes memHaloEclat {
+  0%   { opacity: 0;    transform: scale(0.25); }
+  14%  { opacity: 1;    transform: scale(0.9); }
+  100% { opacity: 0;    transform: scale(1.15); }
+}
+@keyframes memRayonsEclat {
+  0%   { opacity: 0;    transform: scale(0.3) rotate(0deg); }
+  16%  { opacity: 0.95; transform: scale(0.8) rotate(10deg); }
+  100% { opacity: 0;    transform: scale(1.2) rotate(34deg); }
+}
+@keyframes memAnneauEclat {
+  0%   { opacity: 0.95; transform: scale(0.15); }
+  100% { opacity: 0;    transform: scale(1.35); }
+}
+
+/* Voile lumineux sur toute la scène : l'instant du déclic « blanchit » l'écran un éclair */
+.mem-flash {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+  opacity: 0;
+  background: radial-gradient(circle at 50% 38%, rgba(255, 255, 250, 0.95) 0%, rgba(255, 240, 200, 0.55) 38%, rgba(255, 240, 200, 0) 72%);
+}
+.mem-flash.mem-eclat-actif { animation: memFlash 1s ease-out forwards; }
+@keyframes memFlash {
+  0%   { opacity: 0; }
+  10%  { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mem-scene .rbek-bek.mem-cherche { animation: none; }
+  .mem-eclat.mem-eclat-actif .mem-eclat-rayons, .mem-eclat.mem-eclat-actif .mem-eclat-anneau { animation: none; opacity: 0; }
+  .mem-eclat.mem-eclat-actif .mem-eclat-halo { animation: memFlashDoux 1.2s ease-out forwards; }
+  .mem-flash.mem-eclat-actif { animation: memFlashDoux 1.2s ease-out forwards; }
+  @keyframes memFlashDoux { 0% { opacity: 0; } 20% { opacity: 0.8; } 100% { opacity: 0; } }
+}

@@ -193,3 +193,36 @@
 /* Menu à une seule ligne (avant la première mémoire) : la carte épouse ses lignes, sans hauteur minimale héritée. */
 .mns-carte-menu { height: auto; min-height: 0; }
 .mns-carte-menu .kbm-liste { flex: 0 0 auto; min-height: 0; }
+
+/* ---------- 🆕 Écran d'assemblage (le Lecteur « réfléchit » et « organise ») ---------- */
+.mns-carte-assemblage { width: min(92vw, 360px); text-align: center; }
+.lect-lecteur.mns-assemble-lecteur { width: 72px; margin: 0 auto 6px; }
+.mns-assemble-titre { margin-bottom: 4px; font-size: 1.02rem; }
+.mns-etapes { margin: 14px 0 16px; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 9px; text-align: left; }
+.mns-etape {
+  display: flex; align-items: center; gap: 10px;
+  font-size: 0.92rem; color: #4A3F38;
+  opacity: 0; transform: translateY(6px);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+.mns-etape.mns-etape-visible { opacity: 1; transform: translateY(0); }
+.mns-etape-puce {
+  flex-shrink: 0; position: relative; box-sizing: border-box;
+  width: 18px; height: 18px; border-radius: 50%;
+  border: 2.5px solid #EFE9E3;
+}
+.mns-etape-encours .mns-etape-puce { border-top-color: var(--peche-fonce, #E08867); animation: mnsTourne 0.8s linear infinite; }
+.mns-etape-faite .mns-etape-puce { border-color: #3d7a3d; background: #3d7a3d; }
+.mns-etape-faite .mns-etape-puce::after {
+  content: '\2713'; position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.7rem; font-weight: 800; color: #FFFFFF; line-height: 1;
+}
+.mns-etape-faite { color: #6B5D54; }
+.mns-assemble-barre { transition: transform 0.6s ease; }
+.mns-carte-assemblage.lect-carte-termine .lect-titre { color: #3d7a3d; }
+@keyframes mnsTourne { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) {
+  .mns-etape-encours .mns-etape-puce { animation: none; border-color: var(--peche-fonce, #E08867); }
+  .mns-etape, .mns-assemble-barre { transition: opacity 0.2s ease; }
+}

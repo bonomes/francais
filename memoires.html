@@ -442,8 +442,11 @@ header, .chemin { position: relative; z-index: 1; }
       if (mots && mots.length) {
         // quelques mots (au plus 24, tirés au hasard) + quelques « ? » : ce qu'il reste à découvrir
         const tires = mots.slice().sort(function () { return Math.random() - .5; }).slice(0, 24);
-        tires.forEach(function (m) { poser(m); });
+        // peu de mots (début du parcours) : chacun flotte deux fois, et des lettres comblent le reste du fond
+        const affiches = tires.length < 8 ? tires.concat(tires) : tires;
+        affiches.forEach(function (m) { poser(m); });
         for (let k = 0; k < 4; k++) poser('?');
+        for (let k = affiches.length + 4; k < 22; k++) poser(SIGNES[Math.floor(Math.random() * SIGNES.length)]);
       } else {
         for (let k = 0; k < 22; k++) poser(SIGNES[Math.floor(Math.random() * SIGNES.length)]);
       }

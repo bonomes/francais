@@ -1,39 +1,52 @@
 /* ==================================================================
-   sequence-menu.js — le menu « simple » : première visite, pas à pas.
+   sequence-menu.js — le menu « simple » : le Lecteur mène la première visite.
 
-   🆕 (01-11-2026) Suite de sequence-compte.js. Trois temps, dans un seul
-   conteneur (scène .rbek-scene, même habillage que le réveil et la mémoire) :
+   🆕 (01-11-2026, refonte) Plus de visite guidée par Bek. Dans un seul
+   conteneur (scène .rbek-scene), le déroulé de la PREMIÈRE visite est :
 
-     1. LA DEMANDE DU LECTEUR (facultative, options.permission !== false) :
-        Bek (pose « observe ») regarde le Lecteur, qui demande l'accès à « tous
-        les fichiers téléversés » ; fenêtre système Refuser / Autoriser ; un refus
-        est respecté (il redemande UNE fois, puis laisse tomber) ; une
-        autorisation donne une confirmation qui promet un retrait « à tout moment
-        dans les paramètres ». C'est du décor : rien n'est réellement autorisé.
-     2. LA VISITE : à côté du menu (vide au départ), Bek (bras tendu vers lui)
-        présente chaque entrée à son tour ; les boutons apparaissent un à un et
-        ne sont cliquables qu'à la fin (ou après « Passer la visite »).
-          · Mémoires et histoires  → callbacks.onHistoires
-          · Paramètres             → fenêtre (vrais + faux réglages)
-          · Cours privés           → callbacks.onPrives
-     3. LES PARAMÈTRES :
-          vrais : Son (kebbek_son, même clé que la mémoire), Langue (si
-                  callbacks.onChangerLangue), Compte (créer / se déconnecter) ;
-          faux  : « Autorisation du Lecteur » → « Retirer » échoue toujours
-                  (serveurs occupés, réessaie plus tard…).
+     1. Le menu ne compte qu'UNE ligne : « Mémoires ».
+     2. Sous cette ligne, un aperçu du chemin des mémoires : une case
+        ouverte, quelques cases verrouillées (APERCU_CASES).
+     3. Le Lecteur explique le chemin, puis demande des « autorisations »
+        (fenêtre système). Gag : refuser ne mène nulle part — la seconde
+        fenêtre n'offre que « Autoriser » et « Autoriser aussi ». Elle
+        promet que l'autorisation pourra être retirée dans les paramètres.
+     4. L'aperçu se replie et les autres lignes apparaissent une à une,
+        dans l'ordre de ENTREES : Cours privés, Connexion / Créer un compte
+        (ou Mon compte), [Mode professeur], Paramètres (toujours la dernière).
+     5. Dans Paramètres, « Retirer » l'autorisation échoue toujours.
+
+   Bek reste muette : elle observe, à droite, bouche fermée.
+
+   Visites suivantes (kebbek_menu_visite) : le menu complet s'affiche
+   directement. options.visite : true = toujours rejouer, false = jamais.
+   Sans window.KebBekLecteur, le tutoriel est sauté (menu complet).
+
+   Entrées : la liste ENTREES (dans demarrerMenuSimple). Ajouter une entrée =
+   une ligne + son libellé (menu…) + une icône + son callback.
+     · Mémoires → callbacks.onMemoires (onHistoires accepté)
+       ⚠️ titre PROVISOIRE : un terme plus large est à trouver (mémoires,
+       histoires, exercices…)
+     · Cours privés → callbacks.onPrives
+     · Connexion / Créer un compte (invité) → callbacks.onCreerCompte
+       « Mon compte » (connecté) → fenêtre avec « Se déconnecter »
+     · Mode professeur (seulement si callbacks.onModeProfesseur est fourni)
+     · Paramètres → fenêtre : Son (vrai), Langue (si callbacks.onChangerLangue),
+       Autorisation du Lecteur (FAUX : le retrait échoue toujours)
 
    Dépend de sequence-reveil-bek.css (.rbek-scene, .rbek-pose), de
-   sequence-lecteur.css (.lect-voile / .lect-carte / .lect-btn, icône du Lecteur)
-   et de menu-principal.css (.kbm-bouton, .kbm-icone-chip) — à charger avant
-   sequence-menu.css. Sans window.KebBekLecteur, la demande du Lecteur est sautée.
+   sequence-lecteur.css/.js (fenêtres, icône du Lecteur) et de
+   menu-principal.css (.kbm-bouton, .kbm-icone-chip), à charger avant
+   sequence-menu.css.
+
+   ⚠️ fr et en complets ; les autres langues retombent sur l'anglais (tu/vous
+   à décider langue par langue au moment de traduire).
 
    @param {string} idConteneur
-   @param {object} options : langue ; identite { prenom } (salutation) ;
-                             permission (défaut true) ; dossierImages, extension,
-                             sources (comme sequence-memoire.js)
-   @param {object} callbacks : onHistoires(), onPrives(),
-                               onCreerCompte() (si invité), onChangerLangue()
-                               (sinon la ligne Langue n'est pas affichée),
+   @param {object} options : langue ; identite { prenom } ; visite (true/false/absent) ;
+                             dossierImages, extension, sources
+   @param {object} callbacks : onMemoires(), onPrives(), onModeProfesseur() (optionnel),
+                               onCreerCompte(), onChangerLangue() (optionnel),
                                onPermission(accordee: bool)
    @returns {{ arreter: function }}
    ================================================================== */
@@ -43,103 +56,91 @@
   const CLE_LANGUE = 'kebbek_langue';
   const CLE_SON = 'kebbek_son';
   const CLE_AUTORISATION = 'kebbek_autorisation_lecteur';   // 'oui' | 'non' — décor seulement
+  const CLE_VISITE = 'kebbek_menu_visite';                  // '1' une fois le tutoriel terminé
   const LANGUES_DROITE_A_GAUCHE = ['fa'];
-  const VITESSE_TEXTE = 28;
-  const PAUSE_FORTE = 240;
-  const PAUSE_FAIBLE = 110;
   const DUREE_ENCOURS = 1200;     // « Retirer » semble réfléchir avant d'échouer
+  const APERCU_CASES = 5;         // aperçu du chemin : la 1re ouverte, les autres verrouillées
 
   const SOURCES_PAR_DEFAUT = {
-    'bek-heureuse-ferme':  'images/reveil/bek_heureuse_bouche-fermee_01-01.webp',
-    'bek-heureuse-ouvert': 'images/reveil/bek_heureuse_bouche-ouverte_01-01.webp',
-    'bek-tendue-ferme':    'images/reveil/bek_tendue_bouche-fermee_01-01.webp',
-    'bek-tendue-ouvert':   'images/reveil/bek_tendue_bouche-ouverte_01-01.webp',
-    'bek-observe':         'images/reveil/bek_observe_01-01.webp'
+    'bek-observe':        'images/reveil/bek_observe_01-01.webp',
+    'bek-heureuse-ferme': 'images/reveil/bek_heureuse_bouche-fermee_01-01.webp'
   };
   const POSES = Object.keys(SOURCES_PAR_DEFAUT);
-  const EXPRESSIONS = {
-    observe:  { fixe: 'bek-observe', repli: 'bek-heureuse-ferme' },
-    heureuse: { ferme: 'bek-heureuse-ferme', ouvert: 'bek-heureuse-ouvert' },
-    // le bras tendu de « tendue » est à GAUCHE de l'image : le menu est à gauche de Bek
-    tendue:   { ferme: 'bek-tendue-ferme', ouvert: 'bek-tendue-ouvert', alt: 'heureuse' }
-  };
 
-  // ⚠️ fr et en complets ; les autres langues retombent sur l'anglais (à traduire une
-  // fois les textes validés, comme pour sequence-compte.js).
   const DICO = {
     fr: {
-      lecteurDemande: 'Peux-tu m\u2019autoriser \u00e0 acc\u00e9der \u00e0 tous les fichiers que tu as t\u00e9l\u00e9vers\u00e9s\u00a0? Je m\u2019occupe de les trier.',
-      autoTitre: 'Demande d\u2019autorisation',
-      autoTexte: 'Le Lecteur demande l\u2019acc\u00e8s \u00e0 tous les fichiers t\u00e9l\u00e9vers\u00e9s.',
+      lecteurChemin: 'Voici le chemin de tes mémoires. Une case est ouverte ; les autres s’ouvriront à mesure que tu avances.',
+      lecteurDemande: 'Avant de continuer… peux-tu m’autoriser quelques petites choses ? Rien de grave.',
+      suite: 'Suite',
+      autoTitre: 'Demande d’autorisation',
+      autoTexte: 'Le Lecteur demande l’autorisation de :',
+      autoListe: ['Lire tes souvenirs', 'Te corriger poliment', 'Rester dans les parages'],
       autoRefuser: 'Refuser',
       autoAutoriser: 'Autoriser',
-      refus1: 'Oh\u2026 sans acc\u00e8s, je ne peux rien ranger. Je te redemande, d\u2019accord\u00a0?',
-      refus2: 'Pas de souci. Tu pourras changer d\u2019avis dans les param\u00e8tres.',
-      confTitre: 'Autorisation accord\u00e9e',
-      confTexte: 'Tu pourras retirer cette autorisation \u00e0 tout moment dans les param\u00e8tres.',
+      autoAutoriserAussi: 'Autoriser aussi',
+      refus1: 'Je comprends. Mais je dois te redemander : c’est le règlement.',
+      confTitre: 'Autorisation accordée',
+      confTexte: 'Tu pourras retirer cette autorisation à tout moment dans les paramètres.',
+      lecteurFin: 'Parfait ! Le reste du menu est à toi.',
       ok: 'OK',
-      salutation: 'Salut, {prenom}\u00a0!',
-      salutationInvite: 'Bienvenue\u00a0!',
-      menuHistoires: 'M\u00e9moires et histoires',
-      menuParametres: 'Param\u00e8tres',
-      menuPrives: 'Cours priv\u00e9s',
-      passer: 'Passer la visite',
-      suite: 'Suite',
-      bekIntro: 'Voici ton menu\u00a0! Je te fais visiter.',
-      bekHistoires: 'Ici, on reconstruit mes m\u00e9moires\u2026 et tu peux lire les histoires de mon journal.',
-      bekParametres: 'Ici, tu r\u00e8gles le son, ton compte\u2026 et ce que le Lecteur a le droit de faire.',
-      bekPrives: 'Et ici, des cours avec un vrai professeur, pour aller plus loin.',
-      bekFin: '\u00c0 toi de jouer\u00a0!',
-      paramTitre: 'Param\u00e8tres',
+      salutation: 'Salut, {prenom} !',
+      salutationInvite: 'Bienvenue !',
+      menuMemoires: 'Mémoires',   // titre PROVISOIRE
+      apercuNom: 'Aperçu du chemin : une case ouverte, les autres verrouillées',
+      menuPrives: 'Cours privés',
+      menuCompteInvite: 'Connexion / Créer un compte',
+      menuCompteConnecte: 'Mon compte',
+      menuProfesseur: 'Mode professeur',
+      menuParametres: 'Paramètres',
+      paramTitre: 'Paramètres',
       paramSon: 'Son',
-      sonOui: 'Activ\u00e9',
-      sonNon: 'D\u00e9sactiv\u00e9',
+      sonOui: 'Activé',
+      sonNon: 'Désactivé',
       sonCouper: 'Couper',
       sonActiver: 'Activer',
       paramLangue: 'Langue',
       paramChanger: 'Changer',
-      paramCompte: 'Compte',
-      compteInvite: 'Invit\u00e9',
-      compteConnecte: 'Connect\u00e9',
-      creerCompte: 'Cr\u00e9er un compte',
-      deconnexion: 'Se d\u00e9connecter',
+      compteTitre: 'Mon compte',
+      compteTexte: 'Ta progression est enregistrée sur ton compte.',
+      deconnexion: 'Se déconnecter',
       paramAutorisation: 'Autorisation du Lecteur',
-      autoAccordee: 'Accord\u00e9e',
-      autoRefusee: 'Refus\u00e9e',
+      autoAccordee: 'Accordée',
+      autoRefusee: 'Refusée',
       retirer: 'Retirer',
       accorder: 'Accorder',
       fermer: 'Fermer',
-      enCours: '\u2026',
+      enCours: '…',
       erreurTitre: 'Erreur',
       excuses: [
-        'Les serveurs sont tr\u00e8s occup\u00e9s en ce moment. R\u00e9essaie plus tard.',
-        'Une erreur est survenue. R\u00e9essaie dans quelques minutes.',
-        'Cette op\u00e9ration est momentan\u00e9ment indisponible.'
+        'Impossible de retirer l’autorisation : Le Lecteur a déjà tout lu.',
+        'Le Lecteur a demandé de ne pas être dérangé pour le moment.',
+        'Opération refusée par Le Lecteur.'
       ]
     },
     en: {
-      lecteurDemande: 'Can you grant me access to all the files you\u2019ve uploaded? I\u2019ll sort them out.',
+      lecteurChemin: 'This is the path of your memories. One square is open; the others will open as you go.',
+      lecteurDemande: 'Before we go on… could you allow me a few small things? Nothing serious.',
+      suite: 'Next',
       autoTitre: 'Permission request',
-      autoTexte: 'The Reader is requesting access to all uploaded files.',
+      autoTexte: 'The Reader is requesting permission to:',
+      autoListe: ['Read your memories', 'Politely correct you', 'Stay around'],
       autoRefuser: 'Deny',
       autoAutoriser: 'Allow',
-      refus1: 'Oh\u2026 without access, I can\u2019t sort anything. Can I ask again?',
-      refus2: 'No worries. You can change your mind in the settings.',
+      autoAutoriserAussi: 'Also allow',
+      refus1: 'I understand. But I have to ask again: it’s the rules.',
       confTitre: 'Permission granted',
       confTexte: 'You can withdraw this permission at any time in the settings.',
+      lecteurFin: 'Perfect! The rest of the menu is yours.',
       ok: 'OK',
       salutation: 'Hi, {prenom}!',
       salutationInvite: 'Welcome!',
-      menuHistoires: 'Memories & stories',
-      menuParametres: 'Settings',
+      menuMemoires: 'Memories',   // PROVISIONAL title
+      apercuNom: 'Path preview: one open square, the others locked',
       menuPrives: 'Private lessons',
-      passer: 'Skip the tour',
-      suite: 'Next',
-      bekIntro: 'Here\u2019s your menu! Let me show you around.',
-      bekHistoires: 'Here, we rebuild my memories\u2026 and you can read the stories from my diary.',
-      bekParametres: 'Here, you adjust the sound, your account\u2026 and what the Reader is allowed to do.',
-      bekPrives: 'And here, lessons with a real teacher, to go further.',
-      bekFin: 'Your turn!',
+      menuCompteInvite: 'Sign in / Create an account',
+      menuCompteConnecte: 'My account',
+      menuProfesseur: 'Teacher mode',
+      menuParametres: 'Settings',
       paramTitre: 'Settings',
       paramSon: 'Sound',
       sonOui: 'On',
@@ -148,10 +149,8 @@
       sonActiver: 'Turn on',
       paramLangue: 'Language',
       paramChanger: 'Change',
-      paramCompte: 'Account',
-      compteInvite: 'Guest',
-      compteConnecte: 'Signed in',
-      creerCompte: 'Create an account',
+      compteTitre: 'My account',
+      compteTexte: 'Your progress is saved to your account.',
       deconnexion: 'Sign out',
       paramAutorisation: 'Reader permission',
       autoAccordee: 'Granted',
@@ -159,20 +158,22 @@
       retirer: 'Withdraw',
       accorder: 'Grant',
       fermer: 'Close',
-      enCours: '\u2026',
+      enCours: '…',
       erreurTitre: 'Error',
       excuses: [
-        'The servers are very busy right now. Please try again later.',
-        'Something went wrong. Please try again in a few minutes.',
-        'This operation is temporarily unavailable.'
+        'Can’t withdraw the permission: The Reader has already read everything.',
+        'The Reader asked not to be disturbed right now.',
+        'Operation refused by The Reader.'
       ]
     }
   };
 
   const ICONES = {
-    histoires: '<path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H12v18H6.5A2.5 2.5 0 0 1 4 18.5v-13Z"/><path d="M20 5.5A2.5 2.5 0 0 0 17.5 3H12v18h5.5a2.5 2.5 0 0 0 2.5-2.5v-13Z"/>',
+    memoires: '<path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H12v18H6.5A2.5 2.5 0 0 1 4 18.5v-13Z"/><path d="M20 5.5A2.5 2.5 0 0 0 17.5 3H12v18h5.5a2.5 2.5 0 0 0 2.5-2.5v-13Z"/>',
     parametres: '<path d="M4 6h8M19 6h1"/><circle cx="15.5" cy="6" r="2.2"/><path d="M4 12h2M13 12h7"/><circle cx="9.5" cy="12" r="2.2"/><path d="M4 18h9M20 18h0"/><circle cx="16.5" cy="18" r="2.2"/>',
     prives: '<rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8M12 17v4"/>',
+    compte: '<circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 4-6 8-6s8 2 8 6"/>',
+    professeur: '<rect x="3" y="4" width="18" height="14" rx="2"/><path d="M7 9h10M7 13h6"/><path d="M9 21h6"/>',
     cadenas: '<rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>'
   };
   function svg(id, classe) { return '<svg class="' + classe + '" viewBox="0 0 24 24" aria-hidden="true">' + ICONES[id] + '</svg>'; }
@@ -205,6 +206,12 @@
   function ecrireSon(actif) {
     try { localStorage.setItem(CLE_SON, actif ? '1' : '0'); } catch (e) {}
   }
+  function visiteFaite() {
+    try { return localStorage.getItem(CLE_VISITE) === '1'; } catch (e) { return false; }
+  }
+  function ecrireVisiteFaite() {
+    try { localStorage.setItem(CLE_VISITE, '1'); } catch (e) {}
+  }
   function lireAutorisation() {
     try { return localStorage.getItem(CLE_AUTORISATION) === 'oui'; } catch (e) { return false; }
   }
@@ -234,79 +241,100 @@
     const lect = window.KebBekLecteur;
     const iconeLecteur = (lect && typeof lect.htmlIcone === 'function') ? lect.htmlIcone(options, 'lect-lecteur-img') : '';
     const prenom = options.identite && options.identite.prenom ? String(options.identite.prenom) : '';
-    const avecPermission = options.permission !== false && !!iconeLecteur;
+
+    const prog = window.KebBekProgression || null;
+    function estConnecte() {
+      return !!(prog && typeof prog.estInvite === 'function' && !prog.estInvite() && prog.session);
+    }
+    const connecte = estConnecte();
+    const jouerTutoriel = !!iconeLecteur && (options.visite === true || (options.visite !== false && !visiteFaite()));
+
+    // ENTREES : l'ordre d'ici est l'ordre du menu. Paramètres reste la dernière.
+    // La première entrée (Mémoires) est la seule visible au début du tutoriel.
+    const ENTREES = [
+      { id: 'memoires', icone: 'memoires', libelle: 'menuMemoires',
+        action: callbacks.onMemoires || callbacks.onHistoires },
+      { id: 'prives', icone: 'prives', libelle: 'menuPrives',
+        action: callbacks.onPrives },
+      { id: 'compte', icone: 'compte',
+        libelle: connecte ? 'menuCompteConnecte' : 'menuCompteInvite',
+        action: connecte ? function () { ouvrirCompte(); } : callbacks.onCreerCompte,
+        afficher: connecte || typeof callbacks.onCreerCompte === 'function' },
+      { id: 'professeur', icone: 'professeur', libelle: 'menuProfesseur',
+        action: callbacks.onModeProfesseur, afficher: typeof callbacks.onModeProfesseur === 'function' },
+      { id: 'parametres', icone: 'parametres', libelle: 'menuParametres',
+        action: function () { ouvrirParametres(); } }
+    ].filter(function (e) { return e.afficher !== false; });
 
     let arrete = false;
-    let sauter = false;           // « Passer la visite »
-    let avancerCourant = null;    // fait avancer la réplique de Bek en cours
     let numeroExcuse = 0;
     let niveau = 1;
     let courante = null;
-    let jetonBouche = 0;
     const poses = {};
     const minuteurs = [];
     function planifier(fn, ms) { const id = setTimeout(function () { if (!arrete) fn(); }, ms); minuteurs.push(id); return id; }
     function attendre(ms) { return new Promise(function (resolve) { planifier(resolve, reduit ? Math.min(ms, 60) : ms); }); }
 
     // ---------- Scène ----------
+    function boutonMenu(e, index) {
+      // pendant le tutoriel, seule la première entrée est visible
+      const cache = jouerTutoriel && index > 0;
+      return '<button type="button" class="kbm-bouton kbm-entree-cachee mns-inactif' + (cache ? ' mns-off' : '') + '" data-menu="' + e.id + '" tabindex="-1">' +
+        '<span class="kbm-icone-chip">' + svg(e.icone, 'kbm-icone') + '</span>' +
+        '<span>' + echapper(T(e.libelle)) + '</span></button>';
+    }
+    function apercuHtml() {
+      let cases = '';
+      for (let i = 0; i < APERCU_CASES; i++) {
+        cases += i === 0
+          ? '<span class="mns-case mns-case-ouverte">1</span>'
+          : '<span class="mns-case mns-case-fermee">' + svg('cadenas', 'mns-case-svg') + '</span>';
+      }
+      return '<div class="mns-apercu mns-off" role="img" aria-label="' + echapper(T('apercuNom')) + '">' + cases + '</div>';
+    }
+    const lignesHtml = ENTREES.map(function (e, i) {
+      return boutonMenu(e, i) + (i === 0 && jouerTutoriel ? apercuHtml() : '');
+    }).join('');
+
     const scene = document.createElement('div');
     scene.className = 'rbek-scene mns-scene';
     scene.innerHTML =
       '<div class="mns-disposition">' +
         '<div class="mns-col-gauche">' +
-          (iconeLecteur ?
-            '<div class="mns-lect mns-off">' +
-              '<div class="lect-lecteur-bulle mns-lect-bulle" role="status"' + (rtl ? ' dir="rtl"' : '') + '>' +
-                '<p class="lect-lecteur-texte mns-lect-texte"></p>' +
-              '</div>' +
-              '<div class="lect-lecteur mns-lect-icone">' + iconeLecteur + '</div>' +
-            '</div>' : '') +
-          '<div class="mns-menu mns-off">' +
+          '<div class="mns-menu mns-menu-visible">' +
             '<div class="kbm-carte mns-carte-menu">' +
               '<div class="kbm-salutation"' + (rtl ? ' dir="rtl"' : '') + '>' +
                 echapper(prenom ? T('salutation').replace('{prenom}', prenom) : T('salutationInvite')) +
               '</div>' +
-              '<div class="kbm-liste">' +
-                boutonMenu('histoires', 'menuHistoires') +
-                boutonMenu('parametres', 'menuParametres') +
-                boutonMenu('prives', 'menuPrives') +
-              '</div>' +
-              '<button type="button" class="mns-passer">' + echapper(T('passer')) + '</button>' +
+              '<div class="kbm-liste">' + lignesHtml + '</div>' +
             '</div>' +
           '</div>' +
+          (jouerTutoriel ?
+            '<div class="mns-lect mns-off">' +
+              '<div class="lect-lecteur-bulle mns-lect-bulle" role="status"' + (rtl ? ' dir="rtl"' : '') + '>' +
+                '<p class="lect-lecteur-texte mns-lect-texte"></p>' +
+                '<button type="button" class="lect-btn mns-lect-suite lect-cache">' + echapper(T('suite')) + '</button>' +
+              '</div>' +
+              '<div class="lect-lecteur mns-lect-icone">' + iconeLecteur + '</div>' +
+            '</div>' : '') +
         '</div>' +
         '<div class="mns-col-bek">' +
-          '<div class="mns-bulle mns-bulle-cachee" aria-live="polite"' + (rtl ? ' dir="rtl"' : '') + '>' +
-            '<p class="mns-bulle-texte"><span class="mns-tape"></span><span class="mns-reste"></span></p>' +
-            '<button type="button" class="mns-fleche" aria-label="' + echapper(T('suite')) + '">' +
-              '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>' +
-            '</button>' +
-          '</div>' +
           '<div class="mns-bek"><div class="rbek-bek mns-bek-calque"></div></div>' +
         '</div>' +
       '</div>';
-    function boutonMenu(id, cleTexte) {
-      return '<button type="button" class="kbm-bouton kbm-entree-cachee mns-inactif" data-menu="' + id + '" tabindex="-1">' +
-        '<span class="kbm-icone-chip">' + svg(id, 'kbm-icone') + '</span>' +
-        '<span>' + echapper(T(cleTexte)) + '</span></button>';
-    }
     conteneur.innerHTML = '';
     conteneur.appendChild(scene);
     planifier(function () { scene.classList.add('rbek-prete'); }, 30);
 
     const lectZone = scene.querySelector('.mns-lect');
     const lectTexte = scene.querySelector('.mns-lect-texte');
-    const menu = scene.querySelector('.mns-menu');
+    const lectSuite = scene.querySelector('.mns-lect-suite');
+    const apercu = scene.querySelector('.mns-apercu');
     const bouton = {};
     Array.prototype.forEach.call(scene.querySelectorAll('.kbm-bouton'), function (b) { bouton[b.getAttribute('data-menu')] = b; });
-    const passer = scene.querySelector('.mns-passer');
-    const bulle = scene.querySelector('.mns-bulle');
-    const tape = scene.querySelector('.mns-tape');
-    const reste = scene.querySelector('.mns-reste');
-    const fleche = scene.querySelector('.mns-fleche');
     const calque = scene.querySelector('.mns-bek-calque');
 
-    // ---------- Poses de Bek ----------
+    // ---------- Bek (muette : elle observe) ----------
     function creerPoses(etat) {
       POSES.forEach(function (nom) {
         if (etat[nom] === false) return;
@@ -319,31 +347,16 @@
         poses[nom] = img;
       });
     }
-    function disponible(nom) { return !!(nom && poses[nom]); }
-    function montrer(nom, fondu) {
-      const cible = poses[nom];
+    function montrer(nom) {
+      const cible = poses[nom] || poses['bek-heureuse-ferme'] || poses['bek-observe'];
       if (!cible || cible === courante) return;
       const ancienne = courante;
-      const ms = reduit ? 0 : (fondu || 0);
-      cible.style.transitionDuration = ms + 'ms';
+      cible.style.transitionDuration = '0ms';
       cible.style.zIndex = String(++niveau);
       cible.classList.add('rbek-pose-visible');
       courante = cible;
-      if (!ancienne) return;
-      if (ms) {
-        ancienne.style.transitionDuration = '0ms';
-        planifier(function () { if (ancienne !== courante) ancienne.classList.remove('rbek-pose-visible'); }, ms + 40);
-      } else {
-        ancienne.classList.remove('rbek-pose-visible');
-      }
+      if (ancienne) ancienne.classList.remove('rbek-pose-visible');
     }
-    function formes(exp) {
-      const e = EXPRESSIONS[exp];
-      if (disponible(e.ferme) && disponible(e.ouvert)) return { ferme: e.ferme, ouvert: e.ouvert };
-      if (e.alt) return formes(e.alt);
-      return { fixe: [e.fixe, e.ferme, e.repli, 'bek-heureuse-ferme'].find(disponible) };
-    }
-    function exprimer(exp, fondu) { const f = formes(exp); montrer(f.ferme || f.fixe, fondu); }
 
     // ---------- Fenêtres « système » (même habillage que le Lecteur) ----------
     function creerFenetre(contenuHtml, classeCarte) {
@@ -367,14 +380,16 @@
       return '<div class="lect-entete">' + icone + '<h2 class="lect-titre" id="' + idTitre + '">' + echapper(titre) + '</h2></div>';
     }
     const ICONE_ALERTE = '<span class="lect-alerte" aria-hidden="true">!</span>';
+    const ICONE_COMPTE = '<span class="mns-icone" aria-hidden="true">' + svg('compte', 'mns-icone-svg') + '</span>';
     const ICONE_CADENAS = '<span class="mns-icone" aria-hidden="true">' + svg('cadenas', 'mns-icone-svg') + '</span>';
 
-    // fenêtre simple : titre + texte + boutons ; résout la valeur du bouton cliqué
+    // fenêtre simple : titre + texte (+ liste) + boutons ; résout la valeur du bouton cliqué
     function fenetre(def) {
       return new Promise(function (resolve) {
         const f = creerFenetre(
           entete(def.icone || ICONE_ALERTE, def.titre, 'mnsFenTitre') +
-          '<p class="lect-texte">' + echapper(def.texte) + '</p>' +
+          '<p class="lect-texte"' + (def.liste ? ' style="margin-bottom:8px"' : '') + '>' + echapper(def.texte) + '</p>' +
+          (def.liste ? '<ul class="mns-perms">' + def.liste.map(function (l) { return '<li>' + echapper(l) + '</li>'; }).join('') + '</ul>' : '') +
           '<div class="lect-boutons">' +
             def.boutons.map(function (b, i) {
               return '<button type="button" class="lect-btn' + (b.clair ? ' lect-btn-clair' : '') + '" data-i="' + i + '">' + echapper(b.label) + '</button>';
@@ -389,154 +404,114 @@
             planifier(function () { resolve(def.boutons[Number(b.getAttribute('data-i'))].valeur); }, 280);
           });
         });
-        planifier(function () { (btns[btns.length - 1] || {}).focus && btns[btns.length - 1].focus({ preventScroll: true }); }, 350);
+        planifier(function () { const d = btns[btns.length - 1]; if (d) d.focus({ preventScroll: true }); }, 350);
       });
     }
 
-    // ---------- 1. La demande du Lecteur ----------
-    function lecteurDit(texte) {
-      lectTexte.textContent = texte;
-      lectZone.classList.remove('mns-off');
-      lectZone.classList.add('mns-lect-visible');
-    }
-    async function phasePermission() {
-      exprimer('observe');                 // elle regarde vers le Lecteur (à sa gauche)
-      await attendre(500);
-      lecteurDit(T('lecteurDemande'));
-      await attendre(Math.max(2200, Array.from(T('lecteurDemande')).length * 55));
-      const demande = { icone: ICONE_CADENAS, titre: T('autoTitre'), texte: T('autoTexte'),
-        boutons: [{ label: T('autoRefuser'), clair: true, valeur: 'non' }, { label: T('autoAutoriser'), valeur: 'oui' }] };
-      let accordee = (await fenetre(demande)) === 'oui';
-      if (!accordee) {
-        lecteurDit(T('refus1'));
-        await attendre(2800);
-        accordee = (await fenetre(demande)) === 'oui';
-      }
-      if (accordee) {
-        await fenetre({ icone: ICONE_CADENAS, titre: T('confTitre'), texte: T('confTexte'), boutons: [{ label: T('ok'), valeur: 'ok' }] });
-      } else {
-        lecteurDit(T('refus2'));
-        await attendre(2800);
-      }
-      ecrireAutorisation(accordee);
-      if (typeof callbacks.onPermission === 'function') {
-        try { callbacks.onPermission(accordee); } catch (e) { console.warn('onPermission a échoué.', e); }
-      }
-      lectZone.classList.remove('mns-lect-visible');
-      await attendre(450);
-      lectZone.classList.add('mns-off');
-    }
-
-    // ---------- 2. La visite ----------
-    // Réplique de Bek : texte tapé, bouche synchronisée, flèche « suite ».
-    function dire(texte, exp, opts) {
-      opts = opts || {};
+    // ---------- Le Lecteur parle ----------
+    function lecteurAffiche() { lectZone.classList.remove('mns-off'); planifier(function () { lectZone.classList.add('mns-lect-visible'); }, 30); }
+    async function lecteurMasque() { lectZone.classList.remove('mns-lect-visible'); await attendre(450); lectZone.classList.add('mns-off'); }
+    function lecteurDit(texte, avecSuite) {
       return new Promise(function (resolve) {
-        const f = formes(exp);
-        montrer(f.ferme || f.fixe, 250);
-        bulle.classList.remove('mns-bulle-cachee', 'mns-bulle-suite');
-        const signes = Array.from(texte);
-        let i = 0, fini = false, ouverte = false, avance = false;
-        tape.textContent = '';
-        reste.textContent = texte;
-        const mon = ++jetonBouche;
-
-        function avancer() {
-          if (avance) return;
-          avance = true;
-          avancerCourant = null;
-          bulle.removeEventListener('click', clic);
-          fleche.removeEventListener('click', avancer);
-          bulle.classList.remove('mns-bulle-suite');
-          planifier(resolve, 120);
-        }
-        function terminer() {
-          if (fini) return;
-          fini = true;
-          tape.textContent = texte;
-          reste.textContent = '';
-          if (f.ferme) montrer(f.ferme);
-          if (opts.sansSuite) { planifier(resolve, 200); return; }
-          if (sauter) { avancer(); return; }
-          planifier(function () {
-            bulle.classList.add('mns-bulle-suite');
-            avancerCourant = avancer;
-            fleche.addEventListener('click', avancer);
-            planifier(function () { if (!avance) fleche.focus({ preventScroll: true }); }, 150);
-          }, 200);
-        }
-        function clic() { if (!fini) terminer(); else avancer(); }
-        function bougerBouche() {
-          if (fini || mon !== jetonBouche) return;
-          ouverte = !ouverte;
-          if (f.ferme) montrer(ouverte ? f.ouvert : f.ferme);
-          planifier(bougerBouche, 90 + Math.random() * 110);
-        }
-        function taper() {
-          if (fini) return;
-          i++;
-          tape.textContent = signes.slice(0, i).join('');
-          reste.textContent = signes.slice(i).join('');
-          if (i >= signes.length) { terminer(); return; }
-          const c = signes[i - 1];
-          const pause = '.?!\u2026\u3002\uff01\uff1f'.indexOf(c) !== -1 ? PAUSE_FORTE : (',;:\uff0c\u3001'.indexOf(c) !== -1 ? PAUSE_FAIBLE : 0);
-          planifier(taper, VITESSE_TEXTE + pause);
-        }
-        bulle.addEventListener('click', clic);
-        if (f.ferme) bougerBouche();
-        if (sauter || reduit) { i = signes.length - 1; }
-        taper();
+        lectTexte.textContent = texte;
+        lectSuite.classList.toggle('lect-cache', !avecSuite);
+        if (!avecSuite) { resolve(); return; }
+        function clic() { lectSuite.removeEventListener('click', clic); lectSuite.classList.add('lect-cache'); resolve(); }
+        lectSuite.addEventListener('click', clic);
+        planifier(function () { lectSuite.focus({ preventScroll: true }); }, 450);
       });
     }
-    function reveler(id) { bouton[id].classList.remove('kbm-entree-cachee'); }
-    async function visite() {
-      menu.classList.remove('mns-off');
-      menu.classList.add('mns-menu-visible');
-      exprimer('heureuse', 400);
+
+    // ---------- Le tutoriel (première visite) ----------
+    function revelerLigne(id) {
+      const b = bouton[id];
+      b.classList.remove('mns-off');
+      void b.offsetWidth;
+      b.classList.remove('kbm-entree-cachee');
+    }
+    async function tutoriel() {
+      montrer('bek-observe');
+      revelerLigne(ENTREES[0].id);
       await attendre(500);
-      passer.addEventListener('click', function () {
-        sauter = true;
-        if (avancerCourant) avancerCourant();
-      });
-      passer.classList.add('mns-passer-visible');
-      await dire(T('bekIntro'), 'heureuse');
-      const etapes = [
-        { id: 'histoires', texte: 'bekHistoires' },
-        { id: 'parametres', texte: 'bekParametres' },
-        { id: 'prives', texte: 'bekPrives' }
-      ];
-      for (let k = 0; k < etapes.length && !sauter; k++) {
-        const b = bouton[etapes[k].id];
-        reveler(etapes[k].id);
-        b.classList.add('mns-actif');
-        await dire(T(etapes[k].texte), 'tendue');
-        b.classList.remove('mns-actif');
+      // 1. l'aperçu du chemin
+      apercu.classList.remove('mns-off');
+      void apercu.offsetWidth;
+      apercu.classList.add('mns-apercu-visible');
+      bouton[ENTREES[0].id].classList.add('mns-actif');
+      await attendre(700);
+      lecteurAffiche();
+      await attendre(350);
+      await lecteurDit(T('lecteurChemin'), true);
+      bouton[ENTREES[0].id].classList.remove('mns-actif');
+
+      // 2. la demande d'autorisation (refuser ne mène nulle part)
+      await lecteurDit(T('lecteurDemande'), false);
+      await attendre(900);
+      const demande = { icone: ICONE_CADENAS, titre: T('autoTitre'), texte: T('autoTexte'), liste: T('autoListe') };
+      const premiere = await fenetre(Object.assign({ boutons: [
+        { label: T('autoRefuser'), clair: true, valeur: 'non' }, { label: T('autoAutoriser'), valeur: 'oui' }] }, demande));
+      if (premiere !== 'oui') {
+        await lecteurDit(T('refus1'), false);
+        await attendre(2600);
+        await fenetre(Object.assign({ boutons: [
+          { label: T('autoAutoriser'), clair: true, valeur: 'oui' }, { label: T('autoAutoriserAussi'), valeur: 'oui' }] }, demande));
       }
-      passer.classList.remove('mns-passer-visible');
-      etapes.forEach(function (e) { reveler(e.id); bouton[e.id].classList.remove('mns-actif'); });
-      await dire(T('bekFin'), 'heureuse', { sansSuite: true });
+      await fenetre({ icone: ICONE_CADENAS, titre: T('confTitre'), texte: T('confTexte'), boutons: [{ label: T('ok'), valeur: 'ok' }] });
+      ecrireAutorisation(true);
+      if (typeof callbacks.onPermission === 'function') {
+        try { callbacks.onPermission(true); } catch (e) { console.warn('onPermission a échoué.', e); }
+      }
+
+      // 3. le reste du menu apparaît
+      await lecteurDit(T('lecteurFin'), false);
+      await attendre(1600);
+      await lecteurMasque();
+      apercu.classList.remove('mns-apercu-visible');
+      await attendre(450);
+      apercu.classList.add('mns-off');
+      for (let k = 1; k < ENTREES.length; k++) {
+        revelerLigne(ENTREES[k].id);
+        await attendre(220);
+      }
+      ecrireVisiteFaite();
+      activerMenu();
+    }
+    // Visites suivantes : le menu complet est là, actif.
+    function menuDirect() {
+      ENTREES.forEach(function (e) { revelerLigne(e.id); });
+      montrer('bek-heureuse-ferme');
       activerMenu();
     }
     function activerMenu() {
-      Object.keys(bouton).forEach(function (id) {
-        const b = bouton[id];
+      ENTREES.forEach(function (e) {
+        const b = bouton[e.id];
         b.classList.remove('mns-inactif');
         b.removeAttribute('tabindex');
+        b.addEventListener('click', function () { if (typeof e.action === 'function') e.action(); });
       });
-      bouton.histoires.addEventListener('click', function () { if (typeof callbacks.onHistoires === 'function') callbacks.onHistoires(); });
-      bouton.prives.addEventListener('click', function () { if (typeof callbacks.onPrives === 'function') callbacks.onPrives(); });
-      bouton.parametres.addEventListener('click', ouvrirParametres);
-      planifier(function () { bouton.histoires.focus({ preventScroll: true }); }, 300);
+      planifier(function () { bouton[ENTREES[0].id].focus({ preventScroll: true }); }, 300);
     }
 
-    // ---------- 3. Les paramètres (vrais et faux) ----------
+    // ---------- Mon compte (connecté) ----------
+    // Invité : la ligne appelle directement callbacks.onCreerCompte.
+    async function ouvrirCompte() {
+      const choix = await fenetre({
+        icone: ICONE_COMPTE, titre: T('compteTitre'), texte: T('compteTexte'),
+        boutons: [{ label: T('deconnexion'), clair: true, valeur: 'sortir' }, { label: T('fermer'), valeur: 'fermer' }]
+      });
+      if (choix === 'sortir') {
+        try { if (prog && prog.deconnecter) await prog.deconnecter(); } catch (e) { console.warn('Déconnexion échouée.', e); }
+        window.location.reload();
+        return;
+      }
+      if (bouton.compte) bouton.compte.focus({ preventScroll: true });
+    }
+
+    // ---------- Les paramètres (vrais et faux) ----------
     function ouvrirParametres() {
-      const prog = window.KebBekProgression || null;
-      const connecte = !!(prog && typeof prog.estInvite === 'function' && !prog.estInvite() && prog.session);
       const lignes = [];
       lignes.push({ id: 'son', nom: T('paramSon') });
       if (typeof callbacks.onChangerLangue === 'function') lignes.push({ id: 'langue', nom: T('paramLangue') });
-      if (connecte || typeof callbacks.onCreerCompte === 'function') lignes.push({ id: 'compte', nom: T('paramCompte') });
       lignes.push({ id: 'autorisation', nom: T('paramAutorisation') });
 
       const f = creerFenetre(
@@ -580,24 +555,6 @@
         lg.btn.addEventListener('click', function () { fermerParametres(); callbacks.onChangerLangue(); });
       }
 
-      // — Compte (vrai) —
-      const cp = ligne('compte');
-      if (cp) {
-        cp.etat.textContent = connecte ? T('compteConnecte') : T('compteInvite');
-        cp.btn.textContent = connecte ? T('deconnexion') : T('creerCompte');
-        cp.btn.addEventListener('click', async function () {
-          if (connecte) {
-            cp.btn.disabled = true;
-            cp.btn.textContent = T('enCours');
-            try { if (prog && prog.deconnecter) await prog.deconnecter(); } catch (e) { console.warn('Déconnexion échouée.', e); }
-            window.location.reload();
-          } else {
-            fermerParametres();
-            callbacks.onCreerCompte();
-          }
-        });
-      }
-
       // — Autorisation du Lecteur (FAUX : le retrait échoue toujours) —
       const au = ligne('autorisation');
       function rafraichirAutorisation() {
@@ -622,13 +579,12 @@
     }
 
     // ---------- Lancement ----------
-    async function lancer(etat) {
-      creerPoses(etat || {});
-      if (avecPermission) await phasePermission();
+    precharger(POSES, urlImage).then(function (etat) {
       if (arrete) return;
-      await visite();
-    }
-    precharger(POSES, urlImage).then(function (etat) { if (!arrete) lancer(etat); });
+      creerPoses(etat || {});
+      if (jouerTutoriel) tutoriel().catch(function (e) { console.warn('Tutoriel du menu interrompu.', e); });
+      else menuDirect();
+    });
 
     return {
       arreter: function () {

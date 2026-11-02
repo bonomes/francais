@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Mémoires</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* ==================================================================
+   memoires.html — le chemin des mémoires (PROTOTYPE, 02-11-2026).
+   Remplace parcours.html : mêmes couleurs et même ton que le menu simple
+   et la séquence du Lecteur (boutons en relief, beige / brun / pêche).
+   ⚠️ Tout le contenu (titres, résumés, personnages, images) est PROVISOIRE :
+   voir MEMOIRES plus bas. Les textes ne sont qu'en français pour l'instant.
+   ================================================================== */
+:root {
+  --beige: #FFF5E8; --brun-fonce: #4A3B33; --brun-clair: #8A7364;
+  --peche: #F0A98B; --peche-fonce: #E08867; --peche-pale: rgba(240,169,139,.16);
+  --ombre: rgba(102,80,69,.18); --vert: #6FAE7B;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; min-height: 100%; }
+body {
+  font-family: 'Baloo 2', sans-serif; color: var(--brun-fonce);
+  background:
+    radial-gradient(circle at 12% 8%, rgba(240,169,139,.18) 0 90px, transparent 91px),
+    radial-gradient(circle at 88% 30%, rgba(240,169,139,.14) 0 130px, transparent 131px),
+    radial-gradient(circle at 20% 78%, rgba(255,214,150,.22) 0 110px, transparent 111px),
+    var(--beige);
+  background-attachment: fixed;
+}
+.retour {
+  position: fixed; top: 14px; left: 14px; z-index: 30; width: 40px; height: 40px;
+  display: flex; align-items: center; justify-content: center; text-decoration: none;
+  font-size: 1.6rem; line-height: 1; color: var(--peche-fonce);
+  background: rgba(255,255,255,.7); border: 1.5px solid var(--peche); border-radius: 50%;
+  box-shadow: 2px 2px 8px var(--ombre);
+}
+header { text-align: center; padding: 22px 16px 6px; }
+h1 { margin: 0; font-size: clamp(1.9rem, 6vw, 2.6rem); font-weight: 800; }
+.sous-titre { margin: 2px 0 0; color: var(--brun-clair); font-weight: 600; }
+
+/* ---------- Le chemin : cases en zigzag reliées par un pointillé ---------- */
+.chemin { position: relative; max-width: 760px; margin: 18px auto 0; padding: 0 16px 280px; }
+.chemin::before {                 /* le fil qui relie les cases */
+  content: ''; position: absolute; left: 50%; top: 40px; bottom: 300px;
+  border-left: 4px dotted var(--peche); transform: translateX(-50%); opacity: .8;
+}
+.rang { position: relative; display: flex; margin-bottom: 26px; }
+.rang:nth-child(odd)  { justify-content: flex-start; }
+.rang:nth-child(even) { justify-content: flex-end; }
+
+.case {
+  position: relative; width: min(74%, 330px); padding: 0; text-align: left; cursor: pointer;
+  font-family: inherit; color: inherit; background: #FFFFFF; overflow: visible;
+  border: 2.5px solid var(--brun-fonce); border-radius: 26px;
+  box-shadow: 0 6px 0 0 var(--brun-fonce), 4px 10px 20px var(--ombre);
+  transition: transform .18s cubic-bezier(.34,1.6,.4,1), box-shadow .15s ease;
+  opacity: 0; transform: translateY(18px);
+}
+.case.vue { opacity: 1; transform: none; transition: opacity .5s ease, transform .5s cubic-bezier(.2,.8,.3,1.2), box-shadow .15s ease; }
+.case:hover { transform: translateY(-3px) rotate(-.6deg); box-shadow: 0 9px 0 0 var(--brun-fonce), 5px 14px 24px var(--ombre); }
+.case:active { transform: translateY(5px); box-shadow: 0 1px 0 0 var(--brun-fonce), 1px 3px 8px var(--ombre); }
+.case:focus-visible { outline: 3px solid var(--peche-fonce); outline-offset: 4px; }
+.case.choisie { box-shadow: 0 6px 0 0 var(--peche-fonce), 0 0 0 5px rgba(224,136,103,.35), 4px 10px 20px var(--ombre); }
+
+.vignette {                       /* zone d'image : une illustration générée viendra ici */
+  position: relative; height: 150px; overflow: hidden; border-radius: 23px 23px 0 0;
+  background: linear-gradient(160deg, var(--teinte1, #FFE3CF), var(--teinte2, #F6C2A4));
+  display: flex; align-items: center; justify-content: center;
+}
+.vignette img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.vignette .motif { width: 64px; height: 64px; fill: none; stroke: rgba(255,255,255,.9); stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; filter: drop-shadow(0 3px 0 rgba(74,59,51,.25)); }
+.numero {
+  position: absolute; top: 10px; left: 10px; min-width: 34px; height: 34px; padding: 0 8px;
+  display: flex; align-items: center; justify-content: center; font-weight: 800; color: #fff;
+  background: var(--peche-fonce); border: 2px solid var(--brun-fonce); border-radius: 12px;
+  box-shadow: 0 3px 0 0 var(--brun-fonce);
+}
+.etat {
+  position: absolute; top: 10px; right: 10px; width: 36px; height: 36px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center; background: #fff;
+  border: 2px solid var(--brun-fonce); box-shadow: 0 3px 0 0 var(--brun-fonce);
+}
+.etat svg { width: 18px; height: 18px; fill: none; stroke: var(--brun-fonce); stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+.case.complete .etat { background: var(--vert); }
+.case.complete .etat svg { stroke: #fff; }
+.corps { padding: 12px 16px 16px; }
+.corps .titre { font-weight: 800; font-size: 1.15rem; line-height: 1.15; }
+.corps .teaser { margin: 4px 0 0; font-size: .88rem; color: var(--brun-clair); font-weight: 600; }
+
+.case.verrouille .vignette { filter: grayscale(.85) brightness(1.04); }
+.case.verrouille { background: #F6F1EB; border-color: var(--brun-clair); box-shadow: 0 6px 0 0 var(--brun-clair), 4px 10px 20px var(--ombre); }
+.case.verrouille .corps .titre { color: var(--brun-clair); }
+.case.actuel .vignette::after {   /* petit scintillement : c'est la prochaine à ouvrir */
+  content: ''; position: absolute; inset: 0;
+  background: radial-gradient(circle at 80% 20%, rgba(255,255,255,.7), transparent 45%);
+  animation: brille 2.4s ease-in-out infinite;
+}
+@keyframes brille { 0%,100% { opacity: .3; } 50% { opacity: 1; } }
+
+/* ---------- Les personnages qui surgissent ---------- */
+.scene-persos {
+  position: fixed; left: 0; right: 0; bottom: 0; height: 190px; z-index: 19; pointer-events: none;
+}
+.perso {
+  position: absolute; bottom: 0; width: clamp(120px, 24vw, 190px); aspect-ratio: 2 / 3;
+  display: flex; flex-direction: column; align-items: center; justify-content: flex-end;
+  transform: translateY(110%) scale(.85); opacity: 0;
+  transition: transform .55s cubic-bezier(.2,.9,.3,1.35), opacity .3s ease;
+}
+.perso.visible { transform: none; opacity: 1; }
+.perso img { width: 100%; height: 100%; object-fit: contain; position: absolute; inset: 0; }
+.perso .silhouette {              /* personnage dont on ne sait pas encore qui il est */
+  width: 78%; height: 88%; position: absolute; bottom: 0;
+}
+.perso .nom {
+  position: relative; z-index: 1; margin-bottom: 78px; padding: 3px 12px; font-weight: 800; font-size: .95rem;
+  background: #fff; border: 2px solid var(--brun-fonce); border-radius: 999px; box-shadow: 0 3px 0 0 var(--brun-fonce);
+}
+.perso.avatar .rond {             /* en attendant les vrais dessins : pastille colorée */
+  position: absolute; bottom: 0; width: 70%; aspect-ratio: 1; border-radius: 50% 50% 18px 18px / 60% 60% 18px 18px;
+  background: var(--c, #E08867); border: 3px solid var(--brun-fonce); box-shadow: 0 5px 0 0 var(--brun-fonce);
+}
+
+/* ---------- Le panneau de résumé ---------- */
+.panneau {
+  position: fixed; left: 50%; bottom: 0; z-index: 20; width: min(100%, 520px);
+  transform: translate(-50%, 105%); transition: transform .45s cubic-bezier(.2,.85,.3,1.1);
+  padding: 18px 20px calc(18px + env(safe-area-inset-bottom));
+  background: #fff; border: 2.5px solid var(--brun-fonce); border-bottom: 0; border-radius: 28px 28px 0 0;
+  box-shadow: 0 -8px 30px var(--ombre);
+}
+.panneau.ouvert { transform: translate(-50%, 0); }
+.panneau h2 { margin: 0; font-size: 1.35rem; font-weight: 800; }
+.panneau .qui { margin: 2px 0 6px; font-size: .84rem; font-weight: 700; color: var(--peche-fonce); text-transform: uppercase; letter-spacing: .04em; }
+.panneau .resume { margin: 0 0 14px; font-size: .98rem; line-height: 1.4; font-weight: 600; }
+.panneau .fermer {
+  position: absolute; top: 10px; right: 12px; width: 34px; height: 34px; border: 0; border-radius: 50%;
+  font-size: 1.3rem; line-height: 1; color: var(--brun-clair); background: var(--peche-pale); cursor: pointer;
+}
+.bouton {
+  display: block; width: 100%; padding: 13px 18px; font-family: inherit; font-weight: 800; font-size: 1.05rem; color: #fff; cursor: pointer;
+  background: var(--peche-fonce); border: 0; border-radius: 22px; box-shadow: 0 4px 0 0 var(--brun-fonce);
+  transition: transform .18s cubic-bezier(.34,1.6,.4,1), box-shadow .15s ease;
+}
+.bouton:hover { transform: translateY(-2px); }
+.bouton:active { transform: translateY(3px); box-shadow: 0 0 0 0 var(--brun-fonce); }
+.bouton:disabled { background: #D9CFC6; color: #8A7364; box-shadow: 0 4px 0 0 #B9AB9F; cursor: default; transform: none; }
+.indice { margin: 8px 0 0; text-align: center; font-size: .86rem; color: var(--brun-clair); font-weight: 600; }
+
+@media (max-width: 560px) {
+  .case { width: 82%; }
+  .vignette { height: 124px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .case, .perso, .panneau { transition: opacity .2s ease; }
+  .case.actuel .vignette::after { animation: none; }
+}
+.fond-anime { position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; }
+.fond-anime b {                   /* lettres et accents qui dérivent vers le haut */
+  position: absolute; bottom: -60px; left: var(--x); font-weight: 800; font-size: var(--t); line-height: 1;
+  color: var(--c, rgba(224,136,103,.28)); animation: derive var(--d) ease-in-out var(--r) infinite;
+}
+@keyframes derive {
+  0%   { transform: translate(0, 0) rotate(var(--a0)); opacity: 0; }
+  12%  { opacity: 1; }
+  50%  { transform: translate(var(--dx), -58vh) rotate(0deg); }
+  88%  { opacity: 1; }
+  100% { transform: translate(calc(var(--dx) * -.6), -118vh) rotate(var(--a1)); opacity: 0; }
+}
+.fond-anime u {                   /* petites étoiles fixes qui scintillent */
+  position: absolute; left: var(--x); top: var(--y); width: var(--t); height: var(--t); text-decoration: none;
+  background: #FFC94D; clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%);
+  opacity: .0; animation: scintille var(--d) ease-in-out var(--r) infinite;
+}
+@keyframes scintille { 0%,100% { opacity: 0; transform: scale(.4) rotate(0); } 50% { opacity: .85; transform: scale(1) rotate(45deg); } }
+.fond-anime s {                   /* étoile filante : un souhait qui traverse l'écran */
+  position: absolute; top: var(--y); left: -10vw; width: 120px; height: 3px; border-radius: 3px; text-decoration: none;
+  background: linear-gradient(90deg, rgba(255,201,77,0), #FFC94D 80%, #fff);
+  transform: rotate(18deg); transform-origin: right center; opacity: 0;
+  animation: filante 14s ease-in var(--r) infinite;
+}
+@keyframes filante {
+  0%, 82% { transform: translate(0, 0) rotate(18deg); opacity: 0; }
+  84% { opacity: 1; }
+  96% { transform: translate(115vw, 38vw) rotate(18deg); opacity: 1; }
+  100% { transform: translate(120vw, 40vw) rotate(18deg); opacity: 0; }
+}
+header, .chemin { position: relative; z-index: 1; }
+/* les cases flottent doucement, chacune à son rythme ; le fil respire */
+.case.vue:not(:hover):not(:active):not(.choisie) { animation: flotte 5s ease-in-out var(--dl, 0s) infinite; }
+.case.verrouille.vue:not(:hover) { animation-duration: 7s; }
+@keyframes flotte { 0%,100% { transform: translateY(0) rotate(0); } 50% { transform: translateY(-6px) rotate(.4deg); } }
+.chemin::before { animation: fil 1.2s linear infinite; background: none; }
+@keyframes fil { to { background-position: 0 8px; } }
+.case.actuel::after {             /* étincelles autour de la prochaine mémoire */
+  content: '\2726'; position: absolute; top: -14px; right: 22px; font-size: 1.4rem; color: #FFC94D;
+  text-shadow: 0 2px 0 var(--brun-fonce); animation: etincelle 1.8s ease-in-out infinite;
+}
+@keyframes etincelle { 0%,100% { transform: scale(.6) rotate(0); opacity: .5; } 50% { transform: scale(1.15) rotate(20deg); opacity: 1; } }
+
+/* plusieurs fichiers dans une même mémoire (souhaits mêlés aux vrais souvenirs) */
+.pile {
+  position: absolute; left: 10px; bottom: 10px; display: flex; align-items: center; gap: 4px; padding: 3px 10px;
+  font-weight: 800; font-size: .8rem; background: #fff; border: 2px solid var(--brun-fonce); border-radius: 999px; box-shadow: 0 3px 0 0 var(--brun-fonce);
+}
+.pile svg { width: 14px; height: 14px; fill: none; stroke: var(--brun-fonce); stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+.fichiers { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 14px; }
+.fichier {
+  display: flex; align-items: center; gap: 6px; padding: 6px 12px; font-weight: 800; font-size: .88rem;
+  background: #F8F4F0; border: 2px solid var(--brun-clair); border-radius: 12px;
+  animation: secoue 3.2s ease-in-out infinite;
+}
+.fichier:nth-child(2) { animation-delay: .6s; } .fichier:nth-child(3) { animation-delay: 1.2s; }
+.fichier svg { width: 16px; height: 16px; fill: none; stroke: var(--peche-fonce); stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+@keyframes secoue { 0%,88%,100% { transform: rotate(0); } 92% { transform: rotate(-3deg); } 96% { transform: rotate(3deg); } }
+@media (prefers-reduced-motion: reduce) {
+  .fond-anime b, .fond-anime u, .fond-anime s, .case.vue, .chemin::before, .case.actuel::after, .fichier { animation: none !important; }
+}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="progression.js"></script>
+<script src="mots.js"></script>
+</head>
+<body>
+<div class="fond-anime" id="fondAnime" aria-hidden="true"></div>
+<a class="retour" href="index.html" aria-label="Retour">&#8249;</a>
+<header>
+  <h1>Mémoires</h1>
+  <p class="sous-titre" id="sousTitre"></p>
+</header>
+<main class="chemin" id="chemin"></main>
+<div class="scene-persos" id="scenePersos" aria-hidden="true"></div>
+<aside class="panneau" id="panneau" role="dialog" aria-labelledby="pTitre">
+  <button type="button" class="fermer" id="pFermer" aria-label="Fermer">&times;</button>
+  <div class="qui" id="pQui"></div>
+  <h2 id="pTitre"></h2>
+  <p class="resume" id="pResume"></p>
+  <div class="fichiers" id="pFichiers"></div>
+  <button type="button" class="bouton" id="pBouton"></button>
+  <p class="indice" id="pIndice"></p>
+</aside>
+
+<script>
+(function () {
+  'use strict';
+
+  // ================================================================
+  // CONTENU PROVISOIRE — tout est à remplacer (titres, résumés, personnages).
+  //   id        : identifiant stable (sert à la progression)
+  //   page      : adresse de la leçon ; absente = « encore en préparation »
+  //   image     : illustration générée (facultative) ; sinon motif + teintes
+  //   personnages : { id, mystere:true } = silhouette + « ? »
+  // ================================================================
+  const PERSONNAGES = {          // 🎨 'img' : le vrai dessin viendra ici
+    keb:  { nom: 'Keb',  couleur: '#7FB7E6', img: null },
+    bek:  { nom: 'Bek',  couleur: '#E08867', img: null },
+    kloe: { nom: 'Kloé', couleur: '#E8B04A', img: null }
+  };
+  const MEMOIRES = [
+    { id: 'm1', titre: 'Première mémoire *', teaser: 'Tout commence ici…', motif: 'etoile', teintes: ['#FFE3CF', '#F6C2A4'],
+      resume: 'Résumé provisoire : une première mémoire, à définir. Ici viendra une courte description de ce que tu vas vivre.',
+      personnages: [{ id: 'keb' }, { id: 'bek' }] },
+    { id: 'm2', titre: 'Une mémoire à venir *', teaser: 'Quelqu’un est là…', motif: 'livre', teintes: ['#DDEBFA', '#A9C9EA'],
+      resume: 'Résumé provisoire. Un personnage mystère se cache dans cette mémoire.',
+      personnages: [{ id: 'bek' }, { mystere: true }] },
+    { id: 'm3', titre: 'Une mémoire à venir *', teaser: 'Trois fichiers… un seul est vrai', motif: 'nuage', teintes: ['#FFE9B8', '#F2C46B'],
+      fichiers: ['souvenir-1.mem', 'souvenir-2.mem', 'souhait-3.mem'],   // 🧩 vrais souvenirs mêlés à des souhaits
+      resume: 'Résumé provisoire. Cette mémoire concerne plusieurs personnages.',
+      personnages: [{ id: 'keb' }, { id: 'kloe' }, { mystere: true }] },
+    { id: 'm4', titre: 'Une mémoire à venir *', teaser: 'À découvrir', motif: 'cle', teintes: ['#DDF1E0', '#A8D5B0'],
+      resume: 'Résumé provisoire.', personnages: [{ id: 'kloe' }] }
+  ];
+  const MOTIFS = {
+    etoile: '<path d="M12 2.5l2.9 6.1 6.6.7-4.9 4.6 1.3 6.6L12 17.3 6.1 20.5l1.3-6.6-4.9-4.6 6.6-.7Z"/>',
+    livre: '<path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H12v18H6.5A2.5 2.5 0 0 1 4 18.5v-13Z"/><path d="M20 5.5A2.5 2.5 0 0 0 17.5 3H12v18h5.5a2.5 2.5 0 0 0 2.5-2.5v-13Z"/>',
+    nuage: '<path d="M7 18a4 4 0 0 1-.6-7.96A5.5 5.5 0 0 1 17 8.5a4.75 4.75 0 0 1 .5 9.5Z"/>',
+    cle: '<circle cx="8" cy="15" r="4"/><path d="M11 12l9-9M16 7l3 3M14 9l2 2"/>'
+  };
+  const ICONES = {
+    verrou: '<rect x="5" y="10.5" width="14" height="9" rx="2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/>',
+    coche: '<path d="M4 12.5 9.5 18 20 6"/>',
+    play: '<path d="M8 5l11 7-11 7Z"/>',
+    fichier: '<path d="M6 3h8l4 4v14H6Z"/><path d="M14 3v4h4"/>'
+  };
+  const T = {
+    sousTitre: 'Choisis une mémoire', commencer: 'Commencer', revoir: 'Revoir', verrouille: 'Termine la mémoire précédente pour l’ouvrir.',
+    preparation: 'Cette mémoire est encore en préparation ✏️', avec: 'Avec', mystere: 'Quelqu’un de mystérieux'
+  };
+
+  // ---------- Progression (même module que le reste du site) ----------
+  const prog = window.KebBekProgression || null;
+  let faites = {};            // { id: true }
+  let professeur = false;
+  const demo = new URLSearchParams(location.search).get('demo');   // ?demo=1 : la 1re est terminée, ?demo=2 : les deux premières, ?demo=mots : exemple de banque de mots (aperçu des états)
+
+  function etatDe(index) {
+    const m = MEMOIRES[index];
+    if (faites[m.id]) return 'complete';
+    const precedenteFaite = index === 0 || faites[MEMOIRES[index - 1].id];
+    return precedenteFaite || professeur ? 'actuel' : 'verrouille';
+  }
+  async function chargerProgression() {
+    try {
+      if (prog) {
+        await prog.restaurerSessionEtProfil();
+        faites = (await prog.lireProgression()) || {};
+        if (prog.session && prog.essayerModeProfesseur) professeur = !!(await prog.essayerModeProfesseur());
+      }
+    } catch (e) { console.warn('Progression indisponible.', e); }
+    if (demo && demo !== 'mots') { faites.m1 = true; if (demo === '2') faites.m2 = true; }
+  }
+
+  // ---------- Rendu ----------
+  const chemin = document.getElementById('chemin');
+  const scenePersos = document.getElementById('scenePersos');
+  const panneau = document.getElementById('panneau');
+  const el = {
+    qui: document.getElementById('pQui'), titre: document.getElementById('pTitre'), resume: document.getElementById('pResume'),
+    fichiers: document.getElementById('pFichiers'), bouton: document.getElementById('pBouton'), indice: document.getElementById('pIndice')
+  };
+  document.getElementById('sousTitre').textContent = T.sousTitre;
+  let choisie = null;
+
+  function svg(chemins) { return '<svg viewBox="0 0 24 24" aria-hidden="true">' + chemins + '</svg>'; }
+  function echapper(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+
+  function rendre() {
+    chemin.innerHTML = '';
+    MEMOIRES.forEach(function (m, i) {
+      const etat = etatDe(i);
+      const rang = document.createElement('div');
+      rang.className = 'rang';
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.style.setProperty('--dl', (-i * 1.3) + 's');
+      b.className = 'case ' + etat + (choisie === i ? ' choisie' : '');
+      b.setAttribute('aria-label', m.titre + (etat === 'verrouille' ? ' — verrouillée' : etat === 'complete' ? ' — terminée' : ''));
+      b.innerHTML =
+        '<div class="vignette" style="--teinte1:' + m.teintes[0] + ';--teinte2:' + m.teintes[1] + '">' +
+          (m.image ? '<img src="' + echapper(m.image) + '" alt="" loading="lazy">' : '<svg class="motif" viewBox="0 0 24 24" aria-hidden="true">' + MOTIFS[m.motif] + '</svg>') +
+          '<span class="numero">' + (i + 1) + '</span>' +
+          (m.fichiers && etat !== 'verrouille' ? '<span class="pile">' + svg(ICONES.fichier) + m.fichiers.length + '</span>' : '') +
+          '<span class="etat">' + svg(etat === 'verrouille' ? ICONES.verrou : etat === 'complete' ? ICONES.coche : ICONES.play) + '</span>' +
+        '</div>' +
+        '<div class="corps"><div class="titre">' + echapper(m.titre) + '</div>' +
+        '<p class="teaser">' + echapper(etat === 'verrouille' ? '???' : m.teaser) + '</p></div>';
+      b.addEventListener('click', function () { choisir(i); });
+      rang.appendChild(b);
+      chemin.appendChild(rang);
+    });
+    // apparition en cascade à la première vue
+    Array.prototype.forEach.call(chemin.querySelectorAll('.case'), function (c, k) {
+      setTimeout(function () { c.classList.add('vue'); }, 80 + k * 110);
+    });
+  }
+
+  // ---------- Les personnages arrivent ----------
+  function silhouetteSvg() {
+    return '<svg class="silhouette" viewBox="0 0 100 130" aria-hidden="true"><path d="M50 8c-13 0-22 10-22 24 0 9 4 16 10 21-18 5-28 20-28 45v32h80v-32c0-25-10-40-28-45 6-5 10-12 10-21 0-14-9-24-22-24Z" fill="#6B5D54"/>' +
+      '<text x="50" y="82" text-anchor="middle" font-family="Baloo 2, sans-serif" font-weight="800" font-size="44" fill="#fff">?</text></svg>';
+  }
+  function montrerPersonnages(m, verrouillee) {
+    scenePersos.innerHTML = '';
+    const liste = m.personnages || [];
+    const n = liste.length;
+    liste.forEach(function (p, k) {
+      const mystere = p.mystere || verrouillee;     // une mémoire verrouillée ne révèle personne
+      const def = mystere ? null : PERSONNAGES[p.id];
+      const d = document.createElement('div');
+      d.className = 'perso' + (def && !def.img ? ' avatar' : '');
+      d.style.left = ((k + 1) / (n + 1) * 100) + '%';
+      d.style.marginLeft = 'calc(clamp(120px, 24vw, 190px) / -2)';
+      d.style.setProperty('--c', def ? def.couleur : '#6B5D54');
+      d.innerHTML = mystere ? silhouetteSvg()
+        : (def.img ? '<img src="' + echapper(def.img) + '" alt="">' : '<span class="rond"></span>') +
+          '<span class="nom">' + echapper(def.nom) + '</span>';
+      scenePersos.appendChild(d);
+      setTimeout(function () { d.classList.add('visible'); }, 120 + k * 140);
+    });
+  }
+
+  function choisir(i) {
+    const m = MEMOIRES[i], etat = etatDe(i), verrouillee = etat === 'verrouille';
+    choisie = i;
+    Array.prototype.forEach.call(chemin.querySelectorAll('.case'), function (c, k) { c.classList.toggle('choisie', k === i); });
+    const noms = verrouillee ? [T.mystere] : (m.personnages || []).map(function (p) { return p.mystere ? T.mystere : PERSONNAGES[p.id].nom; });
+    el.qui.textContent = noms.length ? T.avec + ' ' + noms.join(', ') : '';
+    el.titre.textContent = verrouillee ? '???' : m.titre;
+    el.resume.textContent = verrouillee ? '' : m.resume;
+    el.resume.style.display = verrouillee ? 'none' : '';
+    el.fichiers.innerHTML = verrouillee || !m.fichiers ? '' : m.fichiers.map(function (f) { return '<span class="fichier">' + svg(ICONES.fichier) + echapper(f) + '</span>'; }).join('');
+    el.bouton.textContent = etat === 'complete' ? T.revoir : T.commencer;
+    el.bouton.disabled = verrouillee;
+    el.bouton.onclick = function () {
+      if (m.page) window.location.href = m.page;
+      else el.indice.textContent = T.preparation;
+    };
+    el.indice.textContent = verrouillee ? T.verrouille : '';
+    panneau.classList.add('ouvert');
+    scenePersos.style.bottom = (panneau.offsetHeight - 14) + 'px';   // ils se tiennent sur le bord du panneau
+    montrerPersonnages(m, verrouillee);
+    // garde la case visible au-dessus du panneau
+    const c = chemin.querySelectorAll('.case')[i];
+    if (c) c.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+  function fermer() {
+    choisie = null;
+    panneau.classList.remove('ouvert');
+    Array.prototype.forEach.call(scenePersos.children, function (d) { d.classList.remove('visible'); });
+    Array.prototype.forEach.call(chemin.querySelectorAll('.case'), function (c) { c.classList.remove('choisie'); });
+  }
+  document.getElementById('pFermer').addEventListener('click', fermer);
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') fermer(); });
+
+  // fond animé : lettres et accents qui dérivent, étoiles qui scintillent, étoile filante (un souhait)
+  (function () {
+    const f = document.getElementById('fondAnime');
+    // Banque vide (ou pas encore chargée) : lettres et accents. Sinon : les VRAIS mots de l'élève.
+    const SIGNES = ['é', 'à', 'ç', 'ê', 'è', 'â', 'î', 'ô', 'ù', 'œ', 'a', 'e', 'm', 'l', '?', '?', '!', '\u00ab', '\u00bb', ','];
+    const alea = function (min, max) { return min + Math.random() * (max - min); };
+    const items = [];
+    function poser(texte, nb) {
+      const l = document.createElement('b');
+      l.textContent = texte;
+      const mot = texte.length > 1 && /[\p{L}]/u.test(texte);
+      l.style.setProperty('--x', Math.round(alea(0, mot ? 82 : 96)) + '%');
+      l.style.setProperty('--t', (mot ? alea(22, 40) : alea(28, 76)) + 'px');
+      l.style.setProperty('--d', alea(20, 36) + 's');
+      l.style.setProperty('--r', -alea(0, 36) + 's');
+      l.style.setProperty('--dx', alea(-40, 40) + 'px');
+      l.style.setProperty('--a0', alea(-18, 18) + 'deg');
+      l.style.setProperty('--a1', alea(-18, 18) + 'deg');
+      if (texte === '?') l.style.setProperty('--c', 'rgba(224,136,103,.42)');
+      f.appendChild(l);
+      items.push(l);
+    }
+    function remplir(mots) {
+      items.forEach(function (n) { n.remove(); }); items.length = 0;
+      if (mots && mots.length) {
+        // quelques mots (au plus 24, tirés au hasard) + quelques « ? » : ce qu'il reste à découvrir
+        const tires = mots.slice().sort(function () { return Math.random() - .5; }).slice(0, 24);
+        tires.forEach(function (m) { poser(m); });
+        for (let k = 0; k < 4; k++) poser('?');
+      } else {
+        for (let k = 0; k < 22; k++) poser(SIGNES[Math.floor(Math.random() * SIGNES.length)]);
+      }
+    }
+    remplir(null);
+    if (window.KebBekMots) {
+      window.KebBekMots.lire().then(function (mots) {
+        if (demo === 'mots') mots = ['je', 'parle', 'parler', 'fran\u00e7ais'];
+        if (mots && mots.length) remplir(mots);
+      });
+    }
+    for (let k = 0; k < 14; k++) {
+      const e = document.createElement('u');
+      e.style.setProperty('--x', Math.round(alea(2, 96)) + '%');
+      e.style.setProperty('--y', Math.round(alea(4, 92)) + '%');
+      e.style.setProperty('--t', alea(8, 18) + 'px');
+      e.style.setProperty('--d', alea(3, 6) + 's');
+      e.style.setProperty('--r', -alea(0, 6) + 's');
+      f.appendChild(e);
+    }
+    [4, 11].forEach(function (r, k) {
+      const e = document.createElement('s');
+      e.style.setProperty('--y', (8 + k * 22) + '%');
+      e.style.setProperty('--r', (-r) + 's');
+      f.appendChild(e);
+    });
+  })();
+  chargerProgression().then(rendre);
+})();
+</script>
+</body>
+</html>

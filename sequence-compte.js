@@ -13,6 +13,13 @@
                        + enregistrerIdentite ;
           1 profil   → reconnexion normale : on adopte ce profil, rien n'est créé ;
           2+ profils → écran « Qui es-tu ? » (un bouton par prénom + « Ajouter un profil »).
+        🆕 Compte DÉJÀ existant ET progression faite en invité : la progression du compte a
+        préséance, mais l'élève choisit (écran « conflit ») :
+          · garder celle du compte → la progression d'invité est effacée, après confirmation ;
+          · garder la nouvelle → elle est migrée dans un NOUVEAU profil du même courriel
+            (nécessite options.identite, sinon ce choix n'est pas proposé) ;
+          · « Continuer sans compte » → déconnexion, l'invité retrouve sa progression intacte.
+        Sans progression d'invité (identité seule), rien n'est demandé : comme avant.
      À tout moment : « Continuer sans compte » rend la main (onAnnule) — l'élève
      reste invité, rien n'est perdu ni écrit.
 
@@ -37,6 +44,24 @@
 
   const CLE_LANGUE = 'kebbek_langue';
   const CLE_INVITE = 'kebbek_invite';      // ⚠️ dupliquée de CLE_INVITE_LOCALE (progression.js, non exposée)
+  // ⚠️ Clés locales de l'invité, dupliquées de progression.js (non exposées). Une progression
+  // d'invité = chapitres, conditions ou positions de leçon ; le personnage choisi s'efface avec
+  // elles mais ne compte pas pour détecter un conflit ; l'identité (prénom…) n'est jamais effacée.
+  const CLES_PROGRES_INVITE = ['kebbek_progression_invite', 'kebbek_conditions_invite', 'kebbek_position_lecon_invite', 'kebbek_mots_invite'];
+  const CLES_EFFACEES_INVITE = CLES_PROGRES_INVITE.concat(['kebbek_personnage_choisi_invite']);
+  function progresInviteLocal() {
+    return CLES_PROGRES_INVITE.some(function (cle) {
+      try {
+        const v = localStorage.getItem(cle);
+        if (!v) return false;
+        const o = JSON.parse(v);
+        return !!o && typeof o === 'object' && Object.keys(o).length > 0;
+      } catch (e) { return false; }
+    });
+  }
+  function effacerProgresInvite() {
+    CLES_EFFACEES_INVITE.forEach(function (cle) { try { localStorage.removeItem(cle); } catch (e) {} });
+  }
   const LANGUES_DROITE_A_GAUCHE = ['fa'];
   const DICO = {
     fr: {
@@ -56,7 +81,15 @@
       avertInvite: 'Tu pourrais perdre ta progression si les donn\u00e9es de ton navigateur sont effac\u00e9es.',
       codeInvalide: 'Code incorrect ou expir\u00e9.',
       profilTitre: 'Qui es-tu ?',
-      profilAjouter: '+ Ajouter un profil'
+      profilAjouter: '+ Ajouter un profil',
+      conflitTitre: 'Ce compte a d\u00e9j\u00e0 une progression',
+      conflitTexte: 'Tu as aussi avanc\u00e9 sans te connecter. Quelle progression veux-tu garder\u00a0?',
+      conflitGarder: 'Garder celle du compte',
+      conflitNouveau: 'Garder la nouvelle, dans un nouveau profil',
+      effacerTitre: 'Effacer ta progression\u00a0?',
+      effacerTexte: 'Ce que tu as fait sans te connecter sera effac\u00e9 d\u00e9finitivement.',
+      effacer: 'Effacer',
+      retour: 'Retour'
     },
     en: {
       titre: 'Create your account',
@@ -75,7 +108,15 @@
       avertInvite: 'Your progress could be lost if your browser data is cleared.',
       codeInvalide: 'Incorrect or expired code.',
       profilTitre: 'Who are you?',
-      profilAjouter: '+ Add a profile'
+      profilAjouter: '+ Add a profile',
+      conflitTitre: 'This account already has progress',
+      conflitTexte: 'You also made progress without signing in. Which progress do you want to keep?',
+      conflitGarder: 'Keep the account\'s progress',
+      conflitNouveau: 'Keep the new one, in a new profile',
+      effacerTitre: 'Erase your progress?',
+      effacerTexte: 'What you did without signing in will be erased for good.',
+      effacer: 'Erase',
+      retour: 'Back'
     },
     es: {
       titre: 'Crea tu cuenta',
@@ -444,6 +485,7 @@
     const P = function () { return window.KebBekProgression; };
 
     let arrete = false;
+    let invitePrecedent = null;     // valeur de kebbek_invite avant la connexion (restaurée si l'élève renonce)
     const minuteurs = [];
     function planifier(fn, ms) { minuteurs.push(setTimeout(function () { if (!arrete) fn(); }, ms)); }
 
@@ -602,7 +644,7 @@
           return;
         }
         prog.definirSession(res.data.session);
-        try { localStorage.removeItem(CLE_INVITE); } catch (e) {}
+        try { invitePrecedent = localStorage.getItem(CLE_INVITE); localStorage.removeItem(CLE_INVITE); } catch (e) {}
         await apresAuthentification();
       }
       verifier.addEventListener('click', verif);
@@ -615,9 +657,13 @@
       let profils = [];
       try { profils = await P().profilsDuCompte(); } catch (e) { console.warn('profilsDuCompte a échoué.', e); }
       if (arrete) return;
+      if (profils.length >= 1 && progresInviteLocal()) { etapeConflit(profils); return; }
+      suiteProfilsExistants(profils);
+    }
+    function suiteProfilsExistants(profils) {
       if (profils.length === 1) { utiliserProfil(profils[0]); return; }
       if (profils.length > 1) { etapeChoixProfil(profils); return; }
-      await creerNouveauProfil();
+      creerNouveauProfil();
     }
 
     // Adopte un profil DÉJÀ existant : jamais de migration invité→compte ici (règle de
@@ -646,12 +692,66 @@
           if (typeof prog[migrations[i]] !== 'function') continue;
           try { await prog[migrations[i]](id); } catch (e) { console.warn(migrations[i] + ' a échoué.', e); }
         }
+        // 🆕 (02-11-2026) banque de mots de l'élève (mots.js) : même moment, même règle
+        if (window.KebBekMots && typeof window.KebBekMots.migrerInviteVersCompte === 'function') {
+          try { await window.KebBekMots.migrerInviteVersCompte(id); } catch (e) { console.warn('migrerMotsInviteVersCompte a échoué.', e); }
+        }
       }
       // prénom déjà écrit par creerProfil ; nationalité non collectée ici (undefined = ne pas toucher)
       try { await prog.enregistrerIdentite(IDENTITE.genre, undefined, undefined, IDENTITE.adulte); }
       catch (e) { console.warn('enregistrerIdentite a échoué.', e); }
       if (arrete) return;
       terminer(Object.assign({}, IDENTITE));
+    }
+
+    // ---------- conflit : le compte a déjà une progression, l'invité aussi ----------
+    function texteEtBoutons(texte, boutons) {
+      corps.innerHTML = '';
+      const p = document.createElement('p');
+      p.className = 'lect-texte';
+      p.textContent = texte;
+      corps.appendChild(p);
+      boutons.forEach(function (b) { corps.appendChild(b); });
+      return corps;
+    }
+    function etapeConflit(profils) {
+      titre.textContent = T('conflitTitre');
+      const garder = bouton(T('conflitGarder'));
+      garder.addEventListener('click', function () { etapeConfirmerEffacement(profils); });
+      const boutons = [garder];
+      if (IDENTITE) {
+        const nouveau = bouton(T('conflitNouveau'));
+        nouveau.classList.add('lect-btn-clair');
+        nouveau.addEventListener('click', function () { nouveau.disabled = true; creerNouveauProfil(); });
+        boutons.push(nouveau);
+      }
+      texteEtBoutons(T('conflitTexte'), boutons);
+      const lien = document.createElement('button');
+      lien.type = 'button';
+      lien.className = 'cpt-lien';
+      lien.textContent = T('lienInvite');
+      lien.addEventListener('click', sortirSansCompte);
+      corps.appendChild(lien);
+      planifier(function () { garder.focus({ preventScroll: true }); }, 100);
+    }
+    function etapeConfirmerEffacement(profils) {
+      titre.textContent = T('effacerTitre');
+      const effacer = bouton(T('effacer'));
+      effacer.addEventListener('click', function () {
+        effacerProgresInvite();
+        suiteProfilsExistants(profils);
+      });
+      const retour = bouton(T('retour'));
+      retour.classList.add('lect-btn-clair');
+      retour.addEventListener('click', function () { etapeConflit(profils); });
+      texteEtBoutons(T('effacerTexte'), [retour, effacer]);
+      planifier(function () { retour.focus({ preventScroll: true }); }, 100);
+    }
+    // Renoncer APRÈS la connexion : on se déconnecte et l'invité retrouve tout tel quel.
+    async function sortirSansCompte() {
+      try { if (P() && P().deconnecter) await P().deconnecter(); } catch (e) { console.warn('deconnecter a échoué.', e); }
+      try { if (invitePrecedent !== null) localStorage.setItem(CLE_INVITE, invitePrecedent); } catch (e) {}
+      if (!arrete) annuler();
     }
 
     function etapeErreurFinale() {

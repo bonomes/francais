@@ -7,9 +7,8 @@
      menu-principal.css      : .kbm-carte / .kbm-bouton / .kbm-icone-chip
    Tout ce qui est propre au module est préfixé mns-.
 
-   Disposition : menu à GAUCHE, Bek à DROITE (son bras tendu — pose « tendue » —
-   pointe vers la gauche de l'image, donc vers le menu). Sur téléphone, les deux
-   colonnes s'empilent : menu en haut, bulle puis Bek en dessous.
+   Disposition : menu (puis le Lecteur, en dessous) à GAUCHE, Bek muette à DROITE.
+   Sur téléphone, les deux colonnes s'empilent : menu et Lecteur en haut, Bek dessous.
    ================================================================== */
 
 .mns-scene {
@@ -55,99 +54,10 @@
 }
 .mns-bek .rbek-pose { object-fit: cover; object-position: 50% 64%; }
 
-/* ---------- Bulle de Bek (même famille que .rbek-bulle, mais dans le flux) ---------- */
-.mns-bulle {
-  position: relative;
-  width: min(92vw, 400px);
-  min-height: 5.6em;
-  box-sizing: border-box;
-  margin: 0 0 16px;
-  padding: 14px 18px;
-  border: 2px solid var(--brun-fonce, #4A3B33);
-  border-radius: 22px;
-  background: rgba(255, 255, 255, 0.97);
-  box-shadow: 0 4px 0 0 var(--brun-fonce, #4A3B33), 3px 6px 14px var(--ombre, rgba(102, 80, 69, 0.18));
-  cursor: pointer;
-  transition: opacity 0.25s ease, transform 0.25s cubic-bezier(.2,.8,.3,1.2), visibility 0s;
-}
-.mns-bulle::after {
-  content: '';
-  position: absolute;
-  left: 50%;
-  bottom: -11px;
-  width: 18px;
-  height: 18px;
-  background: rgba(255, 255, 255, 0.97);
-  border-right: 2px solid var(--brun-fonce, #4A3B33);
-  border-bottom: 2px solid var(--brun-fonce, #4A3B33);
-  transform: translateX(-50%) rotate(45deg);
-}
-.mns-bulle.mns-bulle-cachee {
-  opacity: 0;
-  visibility: hidden;
-  pointer-events: none;
-  transform: translateY(-8px) scale(0.96);
-  transition: opacity 0.2s ease, transform 0.2s ease, visibility 0s linear 0.2s;
-}
-.mns-bulle-texte {
-  margin: 0;
-  font-family: 'Baloo 2', sans-serif;
-  font-weight: 700;
-  font-size: clamp(1rem, 2.4dvh, 1.15rem);
-  line-height: 1.35;
-  color: var(--brun-fonce, #4A3B33);
-  text-align: center;
-}
-.mns-reste { visibility: hidden; }   /* réserve la place du texte à venir */
-
-.mns-fleche {
-  position: absolute;
-  right: 14px;
-  bottom: -18px;
-  z-index: 1;
-  width: 38px;
-  height: 38px;
-  padding: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 2px solid var(--brun-fonce, #4A3B33);
-  border-radius: 50%;
-  background: var(--peche-fonce, #E08867);
-  box-shadow: 0 3px 0 0 var(--brun-fonce, #4A3B33);
-  cursor: pointer;
-  opacity: 0;
-  visibility: hidden;
-  transform: scale(0.6);
-  transition: opacity 0.2s ease, transform 0.25s cubic-bezier(.2,.8,.3,1.4), visibility 0s linear 0.2s;
-}
-.mns-bulle.mns-bulle-suite .mns-fleche {
-  opacity: 1;
-  visibility: visible;
-  transform: scale(1);
-  transition: opacity 0.25s ease, transform 0.3s cubic-bezier(.2,.8,.3,1.4), visibility 0s;
-}
-.mns-fleche svg {
-  width: 20px;
-  height: 20px;
-  stroke: #FFFFFF;
-  fill: none;
-  stroke-width: 3;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  animation: mnsFleche 1s ease-in-out infinite;
-}
-.mns-fleche:focus-visible { outline: 3px solid var(--brun-fonce, #4A3B33); outline-offset: 3px; }
-@keyframes mnsFleche {
-  0%, 100% { transform: translateX(-2px); }
-  50%      { transform: translateX(3px); }
-}
-[dir="rtl"].mns-bulle .mns-fleche { right: auto; left: 14px; }
-[dir="rtl"].mns-bulle .mns-fleche svg { transform: scaleX(-1); animation: none; }
-
 /* ---------- Le Lecteur (demande d'autorisation) ---------- */
 .mns-lect {
   width: min(92vw, 340px);
+  margin-top: 14px;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -174,25 +84,6 @@
   0%, 100% { transform: translateY(0); }
   50%      { transform: translateY(-3px); }
 }
-
-.mns-passer {
-  align-self: center;
-  margin-top: 4px;
-  padding: 8px 12px;
-  font-family: 'Baloo 2', sans-serif;
-  font-size: 0.86rem;
-  color: var(--brun-clair, #8A7364);
-  text-decoration: underline;
-  background: none;
-  border: none;
-  cursor: pointer;
-  opacity: 0;
-  visibility: hidden;
-  transition: opacity 0.3s ease, visibility 0s linear 0.3s;
-}
-.mns-passer.mns-passer-visible { opacity: 1; visibility: visible; transition: opacity 0.3s ease, visibility 0s; }
-.mns-passer:hover { color: var(--brun-fonce, #4A3B33); }
-.mns-passer:focus-visible { outline: 3px solid var(--brun-fonce, #4A3B33); outline-offset: 2px; border-radius: 6px; }
 
 /* ---------- Fenêtres (voix du système) ---------- */
 .mns-voile { z-index: 40; }
@@ -229,12 +120,67 @@
   .mns-disposition { flex-direction: column; gap: 8px; justify-content: flex-start; padding-top: 4px; }
   .mns-col-gauche { flex: 0 0 auto; width: 100%; }
   .mns-bek { height: clamp(180px, calc(100dvh - 500px), 340px); }
-  .mns-bulle { min-height: 5.2em; margin-bottom: 14px; }
   .mns-carte-menu { padding: 12px 14px 6px; gap: 10px; }
   .mns-carte-menu .kbm-salutation { font-size: 1.3rem; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .mns-fleche svg, .kbm-bouton.mns-actif { animation: none; }
-  .mns-menu, .mns-lect, .mns-bulle { transition: opacity 0.2s ease; }
+  .kbm-bouton.mns-actif { animation: none; }
+  .mns-menu, .mns-lect, .mns-apercu { transition: opacity 0.2s ease; }
 }
+
+/* ---------- Aperçu du chemin des mémoires (tutoriel) ---------- */
+.mns-apercu {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-sizing: border-box;
+  max-height: 0;
+  margin: -2px 4px 0;
+  padding: 0 16px;
+  overflow: hidden;
+  opacity: 0;
+  background: var(--peche-pale, rgba(240, 169, 139, 0.16));
+  border-radius: 16px;
+  transition: max-height 0.45s ease, padding 0.45s ease, opacity 0.35s ease;
+}
+.mns-apercu.mns-apercu-visible { max-height: 84px; padding: 14px 16px; opacity: 1; }
+.mns-apercu::before {            /* le chemin qui relie les cases */
+  content: '';
+  position: absolute;
+  left: 34px;
+  right: 34px;
+  top: 50%;
+  border-top: 3px dotted var(--peche, #F0A98B);
+}
+.mns-case {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  box-sizing: border-box;
+  font-family: 'Baloo 2', sans-serif;
+  font-weight: 700;
+  font-size: 1.05rem;
+  border-radius: 12px;
+}
+.mns-case-ouverte {
+  color: #FFFFFF;
+  background: var(--peche-fonce, #E08867);
+  border: 2px solid var(--brun-fonce, #4A3B33);
+  box-shadow: 0 3px 0 0 var(--brun-fonce, #4A3B33);
+}
+.mns-case-fermee {
+  background: #F3EEE9;
+  border: 2px solid var(--brun-clair, #8A7364);
+  opacity: 0.85;
+}
+.mns-case-svg { width: 18px; height: 18px; fill: none; stroke: var(--brun-clair, #8A7364); stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+
+/* ---------- Fenêtre de permissions ---------- */
+.mns-perms { margin: 0 0 16px; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 6px; }
+.mns-perms li { display: flex; gap: 8px; padding: 8px 10px; font-size: 0.9rem; color: #4A3F38; background: #F8F4F0; border-radius: 10px; }
+.mns-perms li::before { content: '\2713'; font-weight: 800; color: #3d7a3d; }

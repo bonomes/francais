@@ -1705,7 +1705,9 @@
     function finDuParcoursAccueil(codeLangueChoisie) {
       finaliserLangueApresReveil(codeLangueChoisie);
       if (window.KebBekMenuSimple) {
-        allerAuMenuSimple({ identite: identiteReveil });
+        // visite: true — on sort de l'accueil : le Lecteur refait TOUJOURS sa visite (même si une
+        // ancienne visite a laissé un drapeau dans localStorage, ex. test avec ?nouvelaccueil=1).
+        allerAuMenuSimple({ identite: identiteReveil, visite: true });
         return;
       }
       conteneur.style.display = 'none';
@@ -2168,7 +2170,8 @@
     cible.innerHTML = '<div id="nouvelDemarrageContenu" style="width:100%; display:flex; justify-content:center;"></div>';
     menuSimpleActif = window.KebBekMenuSimple.demarrerMenuSimple('nouvelDemarrageContenu', {
       langue: langueActuelle,
-      identite: identiteMenuSimple
+      identite: identiteMenuSimple,
+      visite: opts.visite          // true = rejouer ; absent = seulement si jamais vue
     }, {
       onMemoires: function () { window.location.href = 'memoires.html'; },
       onPrives: function () { window.location.href = 'cours-prives/'; },
@@ -2253,6 +2256,7 @@
   // supplémentaire (l'appel est idempotent, donc sans coût réel).
   async function allerAuMenuPrincipal(reponse) {
     // 🆕 (01-11-2026) Le menu simple prend la place de l'ancien menu (voir allerAuMenuSimple).
+    if (!window.KebBekMenuSimple) console.warn('sequence-menu.js absent ou en erreur : repli sur l\'ancien menu.');
     if (window.KebBekMenuSimple && new URLSearchParams(window.location.search).get('ancienmenu') !== '1') {
       return allerAuMenuSimple();
     }

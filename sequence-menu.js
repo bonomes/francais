@@ -80,7 +80,7 @@
 
   const DICO = {
     fr: {
-      lecteurChemin: 'Voici le chemin de tes mémoires. Une case est ouverte ; les autres s’ouvriront à mesure que tu avances.',
+      lecteurChemin: 'Voici le chemin des mémoires de Bek. Une case est ouverte ; les autres s’ouvriront à mesure que tu avances.',
       lecteurDemande: 'Avant de continuer… peux-tu m’autoriser quelques petites choses ? Rien de grave.',
       suite: 'Suite',
       autoTitre: 'Demande d’autorisation',
@@ -129,7 +129,7 @@
       ]
     },
     en: {
-      lecteurChemin: 'This is the path of your memories. One square is open; the others will open as you go.',
+      lecteurChemin: 'This is the path of Bek’s memories. One square is open; the others will open as you go.',
       lecteurDemande: 'Before we go on… could you allow me a few small things? Nothing serious.',
       suite: 'Next',
       autoTitre: 'Permission request',
@@ -468,15 +468,13 @@
 
       // 2. la demande d'autorisation (refuser ne mène nulle part)
       montrer('bek-concentree');                     // « quelques petites choses ? » : elle se méfie
-      await lecteurDit(T('lecteurDemande'), false);
-      await attendre(900);
+      await lecteurDit(T('lecteurDemande'), true);   // l'élève lit à son rythme : la fenêtre s'ouvre après « Suite »
       const demande = { icone: ICONE_CADENAS, titre: T('autoTitre'), texte: T('autoTexte'), liste: T('autoListe') };
       const premiere = await fenetre(Object.assign({ pose: 'bek-conscience', boutons: [
         { label: T('autoRefuser'), clair: true, valeur: 'non' }, { label: T('autoAutoriser'), valeur: 'oui' }] }, demande));
       if (premiere !== 'oui') {
         montrer('bek-decue');                        // le Lecteur insiste : elle soupire
-        await lecteurDit(T('refus1'), false);
-        await attendre(2600);
+        await lecteurDit(T('refus1'), true);
         await fenetre(Object.assign({ pose: 'bek-tres-concentree', boutons: [
           { label: T('autoAutoriser'), clair: true, valeur: 'oui' }, { label: T('autoAutoriserAussi'), valeur: 'oui' }] }, demande));
       }

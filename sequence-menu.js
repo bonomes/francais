@@ -16,7 +16,9 @@
         (ou Mon compte), [Mode professeur], Paramètres (toujours la dernière).
      5. Dans Paramètres, « Retirer » l'autorisation échoue toujours.
 
-   Bek reste muette : elle observe, à droite, bouche fermée.
+   Bek reste muette (bouche fermée) mais RÉAGIT, à droite : son expression change
+   à chaque réplique du Lecteur et à chaque fenêtre (voir tutoriel()). Les poses
+   sont dans SOURCES_PAR_DEFAUT ; en changer une = changer le nom passé à montrer().
 
    Visites suivantes (kebbek_menu_visite) : le menu complet s'affiche
    directement. options.visite : true = toujours rejouer, false = jamais.
@@ -56,14 +58,23 @@
   const CLE_LANGUE = 'kebbek_langue';
   const CLE_SON = 'kebbek_son';
   const CLE_AUTORISATION = 'kebbek_autorisation_lecteur';   // 'oui' | 'non' — décor seulement
-  const CLE_VISITE = 'kebbek_menu_visite';                  // '1' une fois le tutoriel terminé
+  const CLE_VISITE = 'kebbek_menu_visite_v2';               // '1' une fois le tutoriel terminé (v2 : l'ancienne visite de Bek avait posé 'kebbek_menu_visite')
   const LANGUES_DROITE_A_GAUCHE = ['fa'];
   const DUREE_ENCOURS = 1200;     // « Retirer » semble réfléchir avant d'échouer
+  const DUREE_FONDU = 180;        // fondu enchaîné entre deux expressions de Bek
   const APERCU_CASES = 5;         // aperçu du chemin : la 1re ouverte, les autres verrouillées
 
+  // Toutes bouche fermée : Bek ne parle pas, elle réagit.
   const SOURCES_PAR_DEFAUT = {
-    'bek-observe':        'images/reveil/bek_observe_01-01.webp',
-    'bek-heureuse-ferme': 'images/reveil/bek_heureuse_bouche-fermee_01-01.webp'
+    'bek-observe':        'images/reveil/bek_observe_01-01.webp',                          // regard de côté, curieuse
+    'bek-examine':        'images/reveil/bek-examine_bouche-fermee_01-01.webp',            // main au front, scrute
+    'bek-tendue':         'images/reveil/bek_tendue_bouche-fermee_01-01.webp',             // bras tendu : « voilà le chemin »
+    'bek-concentree':     'images/reveil/bek_concentree_bouche-fermee_01-01.webp',         // main au menton : elle réfléchit
+    'bek-conscience':     'images/reveil/bek-prise-de-conscience_bouche-fermee_01-01.webp',// mains levées, yeux ronds
+    'bek-decue':          'images/reveil/bek_decue_01-01.webp',                            // déçue, soupire
+    'bek-tres-concentree':'images/reveil/bek_tres-concentree_01-01.webp',                  // grimace de réflexion intense
+    'bek-solennelle':     'images/reveil/bek_solennelle_bouche-fermee_01-01.webp',         // main sur le cœur, très sérieuse
+    'bek-heureuse-ferme': 'images/reveil/bek_heureuse_bouche-fermee_01-01.webp'            // grand sourire, bras ouverts
   };
   const POSES = Object.keys(SOURCES_PAR_DEFAUT);
 
@@ -351,11 +362,19 @@
       const cible = poses[nom] || poses['bek-heureuse-ferme'] || poses['bek-observe'];
       if (!cible || cible === courante) return;
       const ancienne = courante;
-      cible.style.transitionDuration = '0ms';
+      // la nouvelle pose apparaît PAR-DESSUS l'ancienne (fondu), puis l'ancienne est retirée
+      const ms = (reduit || !ancienne) ? 0 : DUREE_FONDU;
+      cible.style.transitionDuration = ms + 'ms';
       cible.style.zIndex = String(++niveau);
       cible.classList.add('rbek-pose-visible');
       courante = cible;
-      if (ancienne) ancienne.classList.remove('rbek-pose-visible');
+      if (!ancienne) return;
+      if (ms === 0) { ancienne.classList.remove('rbek-pose-visible'); return; }
+      planifier(function () {
+        if (ancienne === courante) return;       // revenue entre-temps : on la garde
+        ancienne.style.transitionDuration = '0ms';
+        ancienne.classList.remove('rbek-pose-visible');
+      }, ms + 30);
     }
 
     // ---------- Fenêtres « système » (même habillage que le Lecteur) ----------
@@ -385,6 +404,7 @@
 
     // fenêtre simple : titre + texte (+ liste) + boutons ; résout la valeur du bouton cliqué
     function fenetre(def) {
+      if (def.pose) montrer(def.pose);               // Bek réagit à la fenêtre
       return new Promise(function (resolve) {
         const f = creerFenetre(
           entete(def.icone || ICONE_ALERTE, def.titre, 'mnsFenTitre') +
@@ -433,7 +453,8 @@
       montrer('bek-observe');
       revelerLigne(ENTREES[0].id);
       await attendre(500);
-      // 1. l'aperçu du chemin
+      // 1. l'aperçu du chemin : Bek le scrute, puis le désigne quand le Lecteur l'explique
+      montrer('bek-examine');
       apercu.classList.remove('mns-off');
       void apercu.offsetWidth;
       apercu.classList.add('mns-apercu-visible');
@@ -441,28 +462,32 @@
       await attendre(700);
       lecteurAffiche();
       await attendre(350);
+      montrer('bek-tendue');
       await lecteurDit(T('lecteurChemin'), true);
       bouton[ENTREES[0].id].classList.remove('mns-actif');
 
       // 2. la demande d'autorisation (refuser ne mène nulle part)
+      montrer('bek-concentree');                     // « quelques petites choses ? » : elle se méfie
       await lecteurDit(T('lecteurDemande'), false);
       await attendre(900);
       const demande = { icone: ICONE_CADENAS, titre: T('autoTitre'), texte: T('autoTexte'), liste: T('autoListe') };
-      const premiere = await fenetre(Object.assign({ boutons: [
+      const premiere = await fenetre(Object.assign({ pose: 'bek-conscience', boutons: [
         { label: T('autoRefuser'), clair: true, valeur: 'non' }, { label: T('autoAutoriser'), valeur: 'oui' }] }, demande));
       if (premiere !== 'oui') {
+        montrer('bek-decue');                        // le Lecteur insiste : elle soupire
         await lecteurDit(T('refus1'), false);
         await attendre(2600);
-        await fenetre(Object.assign({ boutons: [
+        await fenetre(Object.assign({ pose: 'bek-tres-concentree', boutons: [
           { label: T('autoAutoriser'), clair: true, valeur: 'oui' }, { label: T('autoAutoriserAussi'), valeur: 'oui' }] }, demande));
       }
-      await fenetre({ icone: ICONE_CADENAS, titre: T('confTitre'), texte: T('confTexte'), boutons: [{ label: T('ok'), valeur: 'ok' }] });
+      await fenetre({ pose: 'bek-solennelle', icone: ICONE_CADENAS, titre: T('confTitre'), texte: T('confTexte'), boutons: [{ label: T('ok'), valeur: 'ok' }] });
       ecrireAutorisation(true);
       if (typeof callbacks.onPermission === 'function') {
         try { callbacks.onPermission(true); } catch (e) { console.warn('onPermission a échoué.', e); }
       }
 
       // 3. le reste du menu apparaît
+      montrer('bek-heureuse-ferme');
       await lecteurDit(T('lecteurFin'), false);
       await attendre(1600);
       await lecteurMasque();

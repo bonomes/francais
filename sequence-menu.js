@@ -1,6 +1,14 @@
 /* ==================================================================
    sequence-menu.js — le menu « simple » : le Lecteur mène la première visite.
 
+   🆕 (02-11-2026) Ordre de la PREMIÈRE visite : 1. le Lecteur demande la permission
+   d'ouvrir les fichiers .mem (lire et organiser les mémoires) ; 2. écran d'ASSEMBLAGE
+   (assembler()) : il « réfléchit » et « organise », étape par étape, comme une IA ;
+   3. le menu apparaît (une ligne + aperçu du chemin), le Lecteur explique le chemin ;
+   4. SECONDE demande, « quelques choses de plus » (gérer et créer tes contacts = il
+   cherche un professeur ; te corriger poliment ; travailler en arrière-plan), puis
+   la fenêtre de confirmation. Le gag du refus vaut pour les deux demandes.
+
    🆕 (02-11-2026) Le menu complet n'arrive plus qu'APRÈS la première mémoire.
    Trois états, mémorisés dans kebbek_menu_etape :
      ''          première visite : tutoriel ci-dessous (étapes 1 à 4), qui se
@@ -21,7 +29,7 @@
      1. Le menu ne compte qu'UNE ligne : « Mémoires ».
      2. Sous cette ligne, un aperçu du chemin des mémoires : une case
         ouverte, quelques cases verrouillées (APERCU_CASES).
-     3. Le Lecteur explique le chemin, puis demande des « autorisations »
+     3. (ordre réel : voir plus haut) Le Lecteur demande des « autorisations »
         (fenêtre système). Gag : refuser ne mène nulle part — la seconde
         fenêtre n'offre que « Autoriser » et « Autoriser aussi ». Elle
         promet que l'autorisation pourra être retirée dans les paramètres.
@@ -97,14 +105,19 @@
   const DICO = {
     fr: {
       lecteurChemin: 'Voici le chemin des mémoires de Bek. Une case est ouverte ; les autres s’ouvriront à mesure que tu avances.',
-      lecteurDemande: 'Avant de continuer… peux-tu m’autoriser quelques petites choses ? Rien de grave.',
+      lecteurDemande: 'Avant de commencer… j’aurais besoin de ton autorisation pour ouvrir quelques fichiers. Rien de grave.',
       suite: 'Suite',
       autoTitre: 'Demande d’autorisation',
-      autoTexte: 'Le Lecteur demande l’autorisation de :',
-      autoListe: ['Lire tes souvenirs', 'Te corriger poliment', 'Travailler en arrière-plan'],
+      autoFichier: '*.mem',
+      autoTexte: 'Le Lecteur demande l’autorisation d’ouvrir ces fichiers pour :',
+      autoListe: ['Lire tes souvenirs', 'Les organiser'],
+      lecteurPlus: 'Tant que j’y suis… peux-tu m’autoriser quelques petites choses de plus\u00a0? Rien de grave non plus.',
+      autoTexte2: 'Le Lecteur demande l’autorisation de\u00a0:',
+      autoListe2: ['Gérer et créer tes contacts', 'Te corriger poliment', 'Travailler en arrière-plan'],
       autoRefuser: 'Refuser',
       autoAutoriser: 'Autoriser',
       autoAutoriserAussi: 'Autoriser aussi',
+      refus2: 'Encore\u00a0? Oui, encore. Toujours le règlement.',
       refus1: 'Je comprends. Mais je dois te redemander : c’est le règlement.',
       confTitre: 'Autorisation accordée',
       confTexte: 'Tu pourras retirer cette autorisation à tout moment dans les paramètres.',
@@ -133,7 +146,10 @@
       compteTitre: 'Mon compte',
       compteTexte: 'Ta progression est enregistrée sur ton compte.',
       deconnexion: 'Se déconnecter',
-      paramAutorisation: 'Autorisation du Lecteur',
+      paramAutorisation: 'Autorisations du Lecteur',
+      assembleTitre: 'Le Lecteur assemble les mémoires',
+      assembleFini: 'Les mémoires sont prêtes',
+      assembleEtapes: ['Ouverture des fichiers .mem', 'Réflexion', 'Organisation des souvenirs', 'Assemblage du chemin des mémoires'],
       autoAccordee: 'Accordée',
       autoRefusee: 'Refusée',
       retirer: 'Retirer',
@@ -149,14 +165,19 @@
     },
     en: {
       lecteurChemin: 'This is the path of Bek’s memories. One square is open; the others will open as you go.',
-      lecteurDemande: 'Before we go on… could you allow me a few small things? Nothing serious.',
+      lecteurDemande: 'Before we start… I’ll need your permission to open a few files. Nothing serious.',
       suite: 'Next',
       autoTitre: 'Permission request',
-      autoTexte: 'The Reader is requesting permission to:',
-      autoListe: ['Read your memories', 'Politely correct you', 'Work in the background'],
+      autoFichier: '*.mem',
+      autoTexte: 'The Reader is requesting permission to open these files in order to:',
+      autoListe: ['Read your memories', 'Organize them'],
+      lecteurPlus: 'While I’m at it… could you allow me a few MORE things? Nothing serious either.',
+      autoTexte2: 'The Reader is requesting permission to:',
+      autoListe2: ['Manage and create your contacts', 'Politely correct you', 'Work in the background'],
       autoRefuser: 'Deny',
       autoAutoriser: 'Allow',
       autoAutoriserAussi: 'Also allow',
+      refus2: 'Again? Yes, again. Still the rules.',
       refus1: 'I understand. But I have to ask again: it’s the rules.',
       confTitre: 'Permission granted',
       confTexte: 'You can withdraw this permission at any time in the settings.',
@@ -185,7 +206,10 @@
       compteTitre: 'My account',
       compteTexte: 'Your progress is saved to your account.',
       deconnexion: 'Sign out',
-      paramAutorisation: 'Reader permission',
+      paramAutorisation: 'Reader permissions',
+      assembleTitre: 'The Reader is assembling the memories',
+      assembleFini: 'The memories are ready',
+      assembleEtapes: ['Opening .mem files', 'Thinking', 'Organizing the memories', 'Assembling the memory path'],
       autoAccordee: 'Granted',
       autoRefusee: 'Denied',
       retirer: 'Withdraw',
@@ -347,7 +371,7 @@
     scene.innerHTML =
       '<div class="mns-disposition">' +
         '<div class="mns-col-gauche">' +
-          '<div class="mns-menu mns-menu-visible">' +
+          '<div class="mns-menu' + (jouerTutoriel ? ' mns-off' : ' mns-menu-visible') + '">' +
             '<div class="kbm-carte mns-carte-menu">' +
               '<div class="kbm-salutation"' + (rtl ? ' dir="rtl"' : '') + '>' +
                 echapper(prenom ? T('salutation').replace('{prenom}', prenom) : T('salutationInvite')) +
@@ -372,6 +396,7 @@
     conteneur.appendChild(scene);
     planifier(function () { scene.classList.add('rbek-prete'); }, 30);
 
+    const menuEl = scene.querySelector('.mns-menu');
     const lectZone = scene.querySelector('.mns-lect');
     const lectTexte = scene.querySelector('.mns-lect-texte');
     const lectSuite = scene.querySelector('.mns-lect-suite');
@@ -444,6 +469,7 @@
       return new Promise(function (resolve) {
         const f = creerFenetre(
           entete(def.icone || ICONE_ALERTE, def.titre, 'mnsFenTitre') +
+          (def.fichier ? '<span class="lect-fichier">' + echapper(def.fichier) + '</span>' : '') +
           '<p class="lect-texte"' + (def.liste ? ' style="margin-bottom:8px"' : '') + '>' + echapper(def.texte) + '</p>' +
           (def.liste ? '<ul class="mns-perms">' + def.liste.map(function (l) { return '<li>' + echapper(l) + '</li>'; }).join('') + '</ul>' : '') +
           '<div class="lect-boutons">' +
@@ -491,42 +517,99 @@
       void b.offsetWidth;
       b.classList.remove('kbm-entree-cachee');
     }
+    // Écran d'assemblage : le Lecteur « réfléchit » puis « organise », étape par étape (comme une IA).
+    async function assembler() {
+      const etapes = T('assembleEtapes');
+      const DUREES = [1100, 1600, 1400, 1200];
+      montrer('bek-concentree');
+      const f = creerFenetre(
+        '<div class="lect-lecteur mns-assemble-lecteur">' + iconeLecteur + '</div>' +
+        '<h2 class="lect-titre mns-assemble-titre" id="mnsAssTitre">' + echapper(T('assembleTitre')) + '</h2>' +
+        '<ul class="mns-etapes">' + etapes.map(function (e) {
+          return '<li class="mns-etape"><span class="mns-etape-puce" aria-hidden="true"></span><span>' + echapper(e) + '</span></li>';
+        }).join('') + '</ul>' +
+        '<div class="lect-barre"><span class="lect-barre-remplie mns-assemble-barre"></span></div>',
+        'mns-carte-assemblage');
+      f.carte.setAttribute('role', 'status');
+      f.carte.removeAttribute('aria-modal');
+      f.carte.setAttribute('aria-labelledby', 'mnsAssTitre');
+      const lis = Array.prototype.slice.call(f.carte.querySelectorAll('.mns-etape'));
+      const barre = f.carte.querySelector('.mns-assemble-barre');
+      const titre = f.carte.querySelector('.mns-assemble-titre');
+      await attendre(700);
+      for (let i = 0; i < lis.length; i++) {
+        lis[i].classList.add('mns-etape-visible', 'mns-etape-encours');
+        if (i === 2) montrer('bek-tres-concentree');            // « Organisation » : elle plisse le front
+        await attendre(DUREES[i % DUREES.length]);
+        lis[i].classList.remove('mns-etape-encours');
+        lis[i].classList.add('mns-etape-faite');
+        barre.style.transform = 'scaleX(' + ((i + 1) / lis.length) + ')';
+      }
+      await attendre(450);
+      titre.textContent = T('assembleFini');
+      f.carte.classList.add('lect-carte-termine');
+      montrer('bek-heureuse-ferme');
+      await attendre(1100);
+      f.fermer();
+      await attendre(350);
+    }
+    // Demande d'autorisation : refuser ne mène nulle part (la seconde fenêtre n'offre que deux « Autoriser »).
+    // poses : [fenêtre, Lecteur qui insiste, seconde fenêtre]
+    async function demanderPermission(demande, cleRefus, poses) {
+      const premiere = await fenetre(Object.assign({ pose: poses[0], boutons: [
+        { label: T('autoRefuser'), clair: true, valeur: 'non' }, { label: T('autoAutoriser'), valeur: 'oui' }] }, demande));
+      if (premiere === 'oui') return;
+      montrer(poses[1]);                              // le Lecteur insiste : elle soupire
+      await lecteurDit(T(cleRefus), true);
+      await fenetre(Object.assign({ pose: poses[2], boutons: [
+        { label: T('autoAutoriser'), clair: true, valeur: 'oui' }, { label: T('autoAutoriserAussi'), valeur: 'oui' }] }, demande));
+    }
     async function tutoriel() {
       montrer('bek-observe');
+      await attendre(700);
+      // 1. première demande : les fichiers .mem (lire et organiser les mémoires)
+      lecteurAffiche(T('lecteurDemande'));
+      await attendre(350);
+      montrer('bek-concentree');                     // « quelques fichiers ? » : elle se méfie
+      await lecteurDit(T('lecteurDemande'), true);   // l'élève lit à son rythme : la fenêtre s'ouvre après « Suite »
+      await demanderPermission({ icone: ICONE_CADENAS, titre: T('autoTitre'), fichier: T('autoFichier'),
+        texte: T('autoTexte'), liste: T('autoListe') }, 'refus1', ['bek-conscience', 'bek-decue', 'bek-tres-concentree']);
+      await lecteurMasque();
+
+      // 2. l'assemblage des mémoires (le menu n'existe pas encore à l'écran)
+      await assembler();
+
+      // 3. le menu apparaît (une ligne + l'aperçu du chemin) ; Bek le scrute, puis le désigne quand le Lecteur l'explique
+      montrer('bek-observe');
+      menuEl.classList.remove('mns-off');
+      void menuEl.offsetWidth;
+      menuEl.classList.add('mns-menu-visible');
       revelerLigne(ENTREES[0].id);
-      await attendre(500);
-      // 1. l'aperçu du chemin : Bek le scrute, puis le désigne quand le Lecteur l'explique
+      await attendre(600);
       montrer('bek-examine');
       apercu.classList.remove('mns-off');
       void apercu.offsetWidth;
       apercu.classList.add('mns-apercu-visible');
       bouton[ENTREES[0].id].classList.add('mns-actif');
       await attendre(700);
-      lecteurAffiche();
+      lecteurAffiche(T('lecteurChemin'));
       await attendre(350);
       montrer('bek-tendue');
       await lecteurDit(T('lecteurChemin'), true);
       bouton[ENTREES[0].id].classList.remove('mns-actif');
 
-      // 2. la demande d'autorisation (refuser ne mène nulle part)
-      montrer('bek-concentree');                     // « quelques petites choses ? » : elle se méfie
-      await lecteurDit(T('lecteurDemande'), true);   // l'élève lit à son rythme : la fenêtre s'ouvre après « Suite »
-      const demande = { icone: ICONE_CADENAS, titre: T('autoTitre'), texte: T('autoTexte'), liste: T('autoListe') };
-      const premiere = await fenetre(Object.assign({ pose: 'bek-conscience', boutons: [
-        { label: T('autoRefuser'), clair: true, valeur: 'non' }, { label: T('autoAutoriser'), valeur: 'oui' }] }, demande));
-      if (premiere !== 'oui') {
-        montrer('bek-decue');                        // le Lecteur insiste : elle soupire
-        await lecteurDit(T('refus1'), true);
-        await fenetre(Object.assign({ pose: 'bek-tres-concentree', boutons: [
-          { label: T('autoAutoriser'), clair: true, valeur: 'oui' }, { label: T('autoAutoriserAussi'), valeur: 'oui' }] }, demande));
-      }
+      // 4. seconde demande : « quelques choses de plus » (dont les contacts : il cherche un professeur)
+      montrer('bek-concentree');
+      await lecteurDit(T('lecteurPlus'), true);
+      await demanderPermission({ icone: ICONE_CADENAS, titre: T('autoTitre'),
+        texte: T('autoTexte2'), liste: T('autoListe2') }, 'refus2', ['bek-tres-concentree', 'bek-decue', 'bek-concentree']);
       await fenetre({ pose: 'bek-solennelle', icone: ICONE_CADENAS, titre: T('confTitre'), texte: T('confTexte'), boutons: [{ label: T('ok'), valeur: 'ok' }] });
       ecrireAutorisation(true);
       if (typeof callbacks.onPermission === 'function') {
         try { callbacks.onPermission(true); } catch (e) { console.warn('onPermission a échoué.', e); }
       }
 
-      // 3. l'aperçu se replie ; Mémoires reste seule : le reste viendra après la première mémoire
+      // 5. l'aperçu se replie ; Mémoires reste seule : le reste viendra après la première mémoire
       montrer('bek-heureuse-ferme');
       await lecteurDit(T('lecteurFin'), true);
       await lecteurMasque();

@@ -151,6 +151,10 @@
   // 🆕 Rencontre : bout du doigt de Bek dans l'image « pointe » (fraction de la boîte
   // de Bek : 0 = bord gauche / haut). Le Lecteur vient s'y poser.
   const DOIGT = { x: 0.178, y: 0.547 };
+  // 🆕 (02-11-2026) Une fois le bras baissé (pose « observe »), le Lecteur monte à hauteur des
+  // YEUX de Bek, à gauche de sa tête (mêmes fractions de la boîte de Bek) : yeux à 38 % de la
+  // hauteur, bord gauche des cheveux à 26 % de la largeur, menton à 50 % de la hauteur.
+  const YEUX = { x: 0.263, y: 0.384, menton: 0.5 };
   // Même règle que sequence-reveil-bek.js : 1 à 20 caractères, lettres de toute écriture
   const REGEX_PRENOM = /^[\p{L}\p{M}][\p{L}\p{M}'\u2019 .\-]{0,19}$/u;
   const PROFILS = [           // mêmes valeurs que le réveil ; l'âge s'affiche à côté du mot
@@ -2210,6 +2214,22 @@
       lecteurEl.style.left = Math.max(6, Math.round(bx - taille - 10)) + 'px';
       lecteurEl.style.bottom = Math.round(s.height - (by + taille / 2)) + 'px';
     }
+    // 🆕 Le Lecteur monte à hauteur des yeux de Bek, juste à gauche de sa tête (même trajet
+    // animé que placerLecteurPresDeBek : .mem-lecteur-voyage). Après l'appel, attendre la fin
+    // du trajet (≈ 1,2 s) avant de caler la bulle (placerBulleLecteur lit sa position).
+    let lecteurAuxYeux = false;
+    function placerLecteurAuxYeux() {
+      if (!lecteurEl) return;
+      const s = scene.getBoundingClientRect();
+      const r = bek.getBoundingClientRect();
+      const taille = lecteurEl.offsetWidth || 70;
+      const bx = (r.left - s.left) + YEUX.x * r.width;
+      const by = (r.top - s.top) + YEUX.y * r.height;
+      lecteurAuxYeux = true;
+      lecteurEl.classList.add('mem-lecteur-voyage');
+      lecteurEl.style.left = Math.max(6, Math.round(bx - taille - 14)) + 'px';
+      lecteurEl.style.bottom = Math.round(s.height - (by + taille / 2)) + 'px';
+    }
     // La bulle du Lecteur se place SOUS lui (le visage de Bek reste dégagé), queue vers le haut.
     function placerBulleLecteur() {
       const s = scene.getBoundingClientRect();
@@ -2219,7 +2239,12 @@
       const gauche = Math.min(Math.max(8, centre - 40), Math.max(8, s.width - w - 8));
       lb.classList.add('mem-lb-sous');
       lb.style.left = Math.round(gauche) + 'px';
-      lb.style.top = Math.round((l.bottom - s.top) + 18) + 'px';
+      let haut = (l.bottom - s.top) + 18;
+      if (lecteurAuxYeux) {                    // Lecteur au niveau des yeux : la bulle passe sous le menton
+        const r = bek.getBoundingClientRect();
+        haut = Math.min(Math.max(haut, (r.top - s.top) + YEUX.menton * r.height), haut + 24);
+      }
+      lb.style.top = Math.round(haut) + 'px';
       lb.style.bottom = 'auto';
       lb.style.setProperty('--queue', Math.round(Math.min(Math.max(16, centre - gauche - 9), w - 40)) + 'px');
     }
@@ -2294,14 +2319,22 @@
       // 3. l'élève se le dit à voix basse ; Bek, muette, garde le doigt pointé
       await pensee(T('rencPensee'));
       await attendre(600);
-      // 4. le Lecteur se présente et demande de l'aide : dès qu'il parle, Bek baisse le
-      //    bras mais continue de le regarder (pose « observe », fondu doux)
+      // 4. Bek baisse le bras mais continue de regarder le Lecteur (pose « observe », fondu doux) ;
+      //    le Lecteur monte alors à hauteur de ses yeux, puis se présente et demande de l'aide.
+      //    Bek (muette) réagit à CHAQUE réplique : elle l'observe, a un déclic, devient
+      //    perplexe (« un humain ? »), puis se tourne vers l'élève.
       lecteurReagit('mem-lecteur-saut', 650);
       exprimer('observe', 350);
-      await lecteurDit(T('rencLect1'));
-      await lecteurDit(T('rencLect2'));
-      await lecteurDit(T('rencLect3'));
-      await lecteurQuestion(T('rencLect4'), T('rencReponse'));
+      await attendre(reduit ? 150 : 450);
+      placerLecteurAuxYeux();
+      await attendre(reduit ? 300 : 1300);       // le temps du trajet : la bulle se cale sur sa position finale
+      await lecteurDit(T('rencLect1'));          // « Salut Bek, je me présente… »  → elle l'observe
+      exprimer('declic', 300);
+      await lecteurDit(T('rencLect2'));          // « Je peux t'aider à retrouver tes mémoires »  → déclic
+      exprimer('perplexe', 300);
+      await lecteurDit(T('rencLect3'));          // « J'ai besoin d'un humain… »  → perplexe, doigt au menton
+      exprimer('confiante', 300);
+      await lecteurQuestion(T('rencLect4'), T('rencReponse'));   // « Humain, veux-tu nous aider ? »  → elle regarde l'élève
       if (!IDENTITE) return;
       // 5. Bek présente l'élève, le Lecteur demande confirmation
       const mot = IDENTITE.adulte ? (IDENTITE.genre === 'f' ? 'Femme' : 'Homme') : (IDENTITE.genre === 'f' ? 'Fille' : 'Garcon');

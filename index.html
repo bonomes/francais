@@ -37,6 +37,7 @@
 <link rel="stylesheet" href="sequence-lecteur.css">
 <link rel="stylesheet" href="sequence-memoire.css">
 <link rel="stylesheet" href="sequence-compte.css">
+<link rel="stylesheet" href="sequence-menu.css">
 <style>
   /* ==================================================================
      index.html — page d'accueil officielle du site (voir BONOMES_v61,
@@ -1458,6 +1459,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script src="sac-a-dos.js"></script>
 <script src="progression.js"></script>
+<script src="mots.js"></script>
 <script src="identite-eleve.js"></script>
 <script src="menu-principal.js"></script>
 <!-- 🆕 session-classe.js (14-08-2026) — module de navigation partagée
@@ -1487,6 +1489,7 @@
 <script src="sequence-reveil-bek.js"></script>
 <script src="sequence-memoire.js"></script>
 <script src="sequence-compte.js"></script>
+<script src="sequence-menu.js"></script>
 <script>
   // ================================================================
   // 🆕 (18-09-2026) Orchestration de la nouvelle scène d'accueil :
@@ -1696,8 +1699,15 @@
     // 🚧 PROVISOIRE : ce qui suit la première mémoire n'est pas encore décidé.
     // En attendant, on enregistre enfin la langue et on retombe sur
     // l'ancienne destination (bloc « Première leçon / Se connecter »).
+    // 🆕 (01-11-2026) Suite branchée : le menu simple (sequence-menu.js) prend la
+    // suite dans le même conteneur — demande du Lecteur + visite, la toute première
+    // fois. Sans le module, on retombe sur l'ancien bloc « Première leçon / Se connecter ».
     function finDuParcoursAccueil(codeLangueChoisie) {
       finaliserLangueApresReveil(codeLangueChoisie);
+      if (window.KebBekMenuSimple) {
+        allerAuMenuSimple({ identite: identiteReveil });
+        return;
+      }
       conteneur.style.display = 'none';
       afficherConnexionChoix();
     }
@@ -2115,6 +2125,105 @@
   }
   rafraichirConnexionBoutons();
 
+  // ==================================================================
+  // 🆕 (01-11-2026) Le menu « simple » (sequence-menu.js) remplace l'ancien menu
+  // principal comme destination : fin du parcours d'accueil, chargement avec une
+  // langue enregistrée, reconnexion automatique. allerAuMenuPrincipal() lui passe
+  // la main (voir sa première ligne) ; ?ancienmenu=1 dans l'URL rouvre l'ancien
+  // (dev). Même conteneur que le reste de l'accueil (#nouvelDemarrageContenu).
+  // ⚠️ « Ma fiche » et « Contact » de l'ancien menu n'ont pas (encore) d'équivalent ici ;
+  // « Mode professeur » est une entrée du menu simple, réservée aux comptes enseignants.
+  // ==================================================================
+  let menuSimpleActif = null;
+  let identiteMenuSimple = null;      // { prenom, genre, adulte } de l'invité, tant qu'on la connaît
+
+  async function allerAuMenuSimple(opts) {
+    opts = opts || {};
+    if (opts.identite) identiteMenuSimple = opts.identite;
+    sequenceIdentite.style.display = 'none';
+    sceneRangee.style.display = 'none';
+    lienCoursPrives.style.display = 'none';
+    document.getElementById('menuPrincipal').style.display = 'none';
+    const cible = document.getElementById('nouvelDemarrage');
+    cible.style.display = 'flex';
+    cible.innerHTML = '<div id="nouvelDemarrageContenu" style="width:100%; display:flex; justify-content:center;"></div>';
+
+    if (window.KebBekProgression) {
+      try { await KebBekProgression.restaurerSessionEtProfil(); }
+      catch (e) { console.warn('Restauration de la session impossible.', e); }
+    }
+    if (window.KebBekWidgetSessionProf) window.KebBekWidgetSessionProf.initialiser();
+
+    // Identité (salutation) : celle du profil actif ou, à défaut, de l'invité — jamais devinée.
+    const identiteLue = await identiteDepuisProgression();
+    if (identiteLue) identiteMenuSimple = identiteLue;
+    // « Mode professeur » : seulement pour un compte enseignant reconnu (même vérification que l'ancien menu).
+    let estProfesseur = false;
+    if (window.KebBekProgression && KebBekProgression.session && KebBekProgression.essayerModeProfesseur) {
+      try { estProfesseur = !!(await KebBekProgression.essayerModeProfesseur()); } catch (e) {}
+    }
+
+    // deux appels rapprochés (chargement + reconnexion automatique) : un seul menu reste
+    if (menuSimpleActif) menuSimpleActif.arreter();
+    cible.innerHTML = '<div id="nouvelDemarrageContenu" style="width:100%; display:flex; justify-content:center;"></div>';
+    menuSimpleActif = window.KebBekMenuSimple.demarrerMenuSimple('nouvelDemarrageContenu', {
+      langue: langueActuelle,
+      identite: identiteMenuSimple
+    }, {
+      onMemoires: function () { window.location.href = 'memoires.html'; },
+      onPrives: function () { window.location.href = 'cours-prives/'; },
+      onCreerCompte: function () { ouvrirCompteDepuisMenuSimple(); },
+      onModeProfesseur: estProfesseur ? function () { allerAuModeProfesseurDepuisMenuSimple(); } : undefined
+    });
+  }
+
+  // { prenom, genre: 'm'|'f', adulte } depuis progression.js (profil actif, sinon invité).
+  // null si le prénom ou le genre manque : sequence-compte.js ne doit pas inventer un genre.
+  async function identiteDepuisProgression() {
+    if (!window.KebBekProgression || !KebBekProgression.lireIdentite) return null;
+    try {
+      const i = await KebBekProgression.lireIdentite();
+      if (!i || !i.prenom || (i.genre !== 'm' && i.genre !== 'f')) return null;
+      return { prenom: i.prenom, genre: i.genre, adulte: i.adulte === true };
+    } catch (e) { return null; }
+  }
+
+  // Même bascule que allerAuModeProfesseur(), mais depuis le menu simple.
+  function allerAuModeProfesseurDepuisMenuSimple() {
+    const cible = document.getElementById('nouvelDemarrage');
+    cible.style.display = 'none';
+    document.getElementById('ecranProfesseur').style.display = '';
+    KebBekProfesseur.demarrerEcranProfesseur('ecranProfesseur', {
+      onRetour: function () {
+        document.getElementById('ecranProfesseur').style.display = 'none';
+        cible.style.display = 'flex';
+      }
+    });
+  }
+
+  // Ligne « Connexion / Créer un compte » : même module que la fin de la mémoire
+  // (sequence-compte.js), posé sur la scène du menu. Sans identité d'invité connue,
+  // il sait retrouver un compte existant mais ne crée rien (onAnnule). Si le compte
+  // existe déjà ET que l'invité a de la progression, le module demande laquelle garder.
+  async function ouvrirCompteDepuisMenuSimple() {
+    if (!window.KebBekCompte) {
+      console.warn('Création de compte indisponible (module manquant).');
+      return;
+    }
+    // l'invité n'a pas encore de profil actif : lireIdentite() renvoie alors son identité locale
+    const identite = (await identiteDepuisProgression()) || identiteMenuSimple;
+    window.KebBekCompte.demarrerCompte('nouvelDemarrageContenu', {
+      langue: langueActuelle,
+      identite: identite
+    }, {
+      onComplet: function () {
+        if (typeof rafraichirSoldeSac === 'function') rafraichirSoldeSac();
+        allerAuMenuSimple();      // la ligne devient « Mon compte »
+      },
+      onAnnule: function () {}    // la fenêtre se ferme, le menu reste tel quel
+    });
+  }
+
   // 🆕 allerAuMenuPrincipal() n'est plus un stub — branché sur le
   // nouveau module menu-principal.js. sequenceIdentite (ou sceneRangee,
   // selon la réponse "Non" à "First time?") se cache, menuPrincipal
@@ -2143,6 +2252,10 @@
   // l'appel explicite ici reste néanmoins fait, par précaution
   // supplémentaire (l'appel est idempotent, donc sans coût réel).
   async function allerAuMenuPrincipal(reponse) {
+    // 🆕 (01-11-2026) Le menu simple prend la place de l'ancien menu (voir allerAuMenuSimple).
+    if (window.KebBekMenuSimple && new URLSearchParams(window.location.search).get('ancienmenu') !== '1') {
+      return allerAuMenuSimple();
+    }
     sequenceIdentite.style.display = 'none';
     sceneRangee.style.display = 'none';
     lienCoursPrives.style.display = 'none';

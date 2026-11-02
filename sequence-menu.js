@@ -1,6 +1,20 @@
 /* ==================================================================
    sequence-menu.js — le menu « simple » : le Lecteur mène la première visite.
 
+   🆕 (02-11-2026) Le menu complet n'arrive plus qu'APRÈS la première mémoire.
+   Trois états, mémorisés dans kebbek_menu_etape :
+     ''          première visite : tutoriel ci-dessous (étapes 1 à 4), qui se
+                 termine sur un menu à UNE ligne (Mémoires, qui pulse) → 'autorise' ;
+     'autorise'  menu à une ligne. Dès que la première mémoire (ID_PREMIERE_MEMOIRE,
+                 lue via KebBekProgression.lireProgression()) est terminée, le Lecteur
+                 ANNONCE ce qu'il a ajouté « pendant que nous faisions la première
+                 leçon » (dont un professeur : la ligne Cours privés), les autres
+                 lignes apparaissent, puis → 'complet' ;
+     'complet'   menu complet directement.
+   Pour tester sans refaire la mémoire : ?menu=annonce (rejoue l'annonce),
+   ?menu=reduit (menu à une ligne), ?menu=complet — rien n'est enregistré.
+   Sans window.KebBekProgression, on ne peut pas savoir : menu complet.
+
    🆕 (01-11-2026, refonte) Plus de visite guidée par Bek. Dans un seul
    conteneur (scène .rbek-scene), le déroulé de la PREMIÈRE visite est :
 
@@ -11,7 +25,8 @@
         (fenêtre système). Gag : refuser ne mène nulle part — la seconde
         fenêtre n'offre que « Autoriser » et « Autoriser aussi ». Elle
         promet que l'autorisation pourra être retirée dans les paramètres.
-     4. L'aperçu se replie et les autres lignes apparaissent une à une,
+     4. L'aperçu se replie ; Mémoires reste SEULE (elle pulse : « vas-y »).
+        Les autres lignes viendront après la première mémoire (annonce()),
         dans l'ordre de ENTREES : Cours privés, Connexion / Créer un compte
         (ou Mon compte), [Mode professeur], Paramètres (toujours la dernière).
      5. Dans Paramètres, « Retirer » l'autorisation échoue toujours.
@@ -20,9 +35,8 @@
    à chaque réplique du Lecteur et à chaque fenêtre (voir tutoriel()). Les poses
    sont dans SOURCES_PAR_DEFAUT ; en changer une = changer le nom passé à montrer().
 
-   Visites suivantes (kebbek_menu_visite) : le menu complet s'affiche
-   directement. options.visite : true = toujours rejouer, false = jamais.
-   Sans window.KebBekLecteur, le tutoriel est sauté (menu complet).
+   options.visite : true = toujours rejouer le tutoriel, false = jamais (menu complet).
+   Sans window.KebBekLecteur, tout est sauté (menu complet).
 
    Entrées : la liste ENTREES (dans demarrerMenuSimple). Ajouter une entrée =
    une ligne + son libellé (menu…) + une icône + son callback.
@@ -58,7 +72,9 @@
   const CLE_LANGUE = 'kebbek_langue';
   const CLE_SON = 'kebbek_son';
   const CLE_AUTORISATION = 'kebbek_autorisation_lecteur';   // 'oui' | 'non' — décor seulement
-  const CLE_VISITE = 'kebbek_menu_visite_v2';               // '1' une fois le tutoriel terminé (v2 : l'ancienne visite de Bek avait posé 'kebbek_menu_visite')
+  const CLE_VISITE = 'kebbek_menu_visite_v2';               // ANCIEN drapeau (tutoriel terminé, menu complet d'office) : lu seulement pour migrer
+  const CLE_ETAPE = 'kebbek_menu_etape';                    // 'autorise' (menu à une ligne) | 'complet'
+  const ID_PREMIERE_MEMOIRE = 'm1';                         // même id que MEMOIRES dans memoires.html
   const LANGUES_DROITE_A_GAUCHE = ['fa'];
   const DUREE_ENCOURS = 1200;     // « Retirer » semble réfléchir avant d'échouer
   const DUREE_FONDU = 180;        // fondu enchaîné entre deux expressions de Bek
@@ -85,14 +101,17 @@
       suite: 'Suite',
       autoTitre: 'Demande d’autorisation',
       autoTexte: 'Le Lecteur demande l’autorisation de :',
-      autoListe: ['Lire tes souvenirs', 'Te corriger poliment', 'Rester dans les parages'],
+      autoListe: ['Lire tes souvenirs', 'Te corriger poliment', 'Travailler en arrière-plan'],
       autoRefuser: 'Refuser',
       autoAutoriser: 'Autoriser',
       autoAutoriserAussi: 'Autoriser aussi',
       refus1: 'Je comprends. Mais je dois te redemander : c’est le règlement.',
       confTitre: 'Autorisation accordée',
       confTexte: 'Tu pourras retirer cette autorisation à tout moment dans les paramètres.',
-      lecteurFin: 'Parfait ! Le reste du menu est à toi.',
+      lecteurFin: 'Parfait ! Ouvre ta première mémoire. Pendant ce temps, je m’occupe du reste en arrière-plan.',
+      annonce1: 'Te revoilà ! Pendant que nous faisions la première leçon, j’ai travaillé en arrière-plan, comme tu me l’as autorisé.',
+      annonce2: 'J’ai ajouté quelques parties au menu. J’ai même trouvé un professeur qui pourra nous aider avec le français… vu qu’on aura visiblement besoin d’aide.',
+      annonceFin: 'Le menu est à toi. De rien.',
       ok: 'OK',
       salutation: 'Salut, {prenom} !',
       salutationInvite: 'Bienvenue !',
@@ -134,14 +153,17 @@
       suite: 'Next',
       autoTitre: 'Permission request',
       autoTexte: 'The Reader is requesting permission to:',
-      autoListe: ['Read your memories', 'Politely correct you', 'Stay around'],
+      autoListe: ['Read your memories', 'Politely correct you', 'Work in the background'],
       autoRefuser: 'Deny',
       autoAutoriser: 'Allow',
       autoAutoriserAussi: 'Also allow',
       refus1: 'I understand. But I have to ask again: it’s the rules.',
       confTitre: 'Permission granted',
       confTexte: 'You can withdraw this permission at any time in the settings.',
-      lecteurFin: 'Perfect! The rest of the menu is yours.',
+      lecteurFin: 'Perfect! Go ahead and open your first memory. Meanwhile, I’ll take care of the rest in the background.',
+      annonce1: 'You’re back! While we were doing the first lesson, I worked in the background, as you allowed me to.',
+      annonce2: 'I added a few parts to the menu. I even found a teacher who can help us with French… since we’ll obviously need the help.',
+      annonceFin: 'The menu is yours. You’re welcome.',
       ok: 'OK',
       salutation: 'Hi, {prenom}!',
       salutationInvite: 'Welcome!',
@@ -217,11 +239,15 @@
   function ecrireSon(actif) {
     try { localStorage.setItem(CLE_SON, actif ? '1' : '0'); } catch (e) {}
   }
-  function visiteFaite() {
-    try { return localStorage.getItem(CLE_VISITE) === '1'; } catch (e) { return false; }
+  function lireEtape() {
+    try {
+      const e = localStorage.getItem(CLE_ETAPE);
+      if (e === 'autorise' || e === 'complet') return e;
+      return localStorage.getItem(CLE_VISITE) === '1' ? 'complet' : '';   // ancienne version : menu déjà vu en entier
+    } catch (e) { return ''; }
   }
-  function ecrireVisiteFaite() {
-    try { localStorage.setItem(CLE_VISITE, '1'); } catch (e) {}
+  function ecrireEtape(etape) {
+    try { localStorage.setItem(CLE_ETAPE, etape); } catch (e) {}
   }
   function lireAutorisation() {
     try { return localStorage.getItem(CLE_AUTORISATION) === 'oui'; } catch (e) { return false; }
@@ -258,7 +284,16 @@
       return !!(prog && typeof prog.estInvite === 'function' && !prog.estInvite() && prog.session);
     }
     const connecte = estConnecte();
-    const jouerTutoriel = !!iconeLecteur && (options.visite === true || (options.visite !== false && !visiteFaite()));
+    // forcer : ?menu=annonce | reduit | complet — pour tester ; n'enregistre rien
+    let forcer = '';
+    try { forcer = new URLSearchParams(window.location.search).get('menu') || ''; } catch (e) {}
+    if (['annonce', 'reduit', 'complet'].indexOf(forcer) === -1) forcer = '';
+    const persister = !forcer;
+    let etape = forcer === 'complet' ? 'complet' : forcer ? 'autorise' : lireEtape();
+    const jouerTutoriel = !!iconeLecteur && !forcer && (options.visite === true || (options.visite !== false && etape === ''));
+    // porte : menu à une ligne, en attendant la première mémoire (puis annonce du Lecteur)
+    const porte = !jouerTutoriel && !!iconeLecteur && options.visite !== false && etape === 'autorise';
+    const lecteurPresent = jouerTutoriel || porte;
 
     // ENTREES : l'ordre d'ici est l'ordre du menu. Paramètres reste la dernière.
     // La première entrée (Mémoires) est la seule visible au début du tutoriel.
@@ -289,7 +324,7 @@
     // ---------- Scène ----------
     function boutonMenu(e, index) {
       // pendant le tutoriel, seule la première entrée est visible
-      const cache = jouerTutoriel && index > 0;
+      const cache = lecteurPresent && index > 0;
       return '<button type="button" class="kbm-bouton kbm-entree-cachee mns-inactif' + (cache ? ' mns-off' : '') + '" data-menu="' + e.id + '" tabindex="-1">' +
         '<span class="kbm-icone-chip">' + svg(e.icone, 'kbm-icone') + '</span>' +
         '<span>' + echapper(T(e.libelle)) + '</span></button>';
@@ -320,7 +355,7 @@
               '<div class="kbm-liste">' + lignesHtml + '</div>' +
             '</div>' +
           '</div>' +
-          (jouerTutoriel ?
+          (lecteurPresent ?
             '<div class="mns-lect mns-off">' +
               '<div class="lect-lecteur-bulle mns-lect-bulle" role="status"' + (rtl ? ' dir="rtl"' : '') + '>' +
                 '<p class="lect-lecteur-texte mns-lect-texte"></p>' +
@@ -340,6 +375,7 @@
     const lectZone = scene.querySelector('.mns-lect');
     const lectTexte = scene.querySelector('.mns-lect-texte');
     const lectSuite = scene.querySelector('.mns-lect-suite');
+    const lectBulle = scene.querySelector('.mns-lect-bulle');
     const apercu = scene.querySelector('.mns-apercu');
     const bouton = {};
     Array.prototype.forEach.call(scene.querySelectorAll('.kbm-bouton'), function (b) { bouton[b.getAttribute('data-menu')] = b; });
@@ -429,11 +465,17 @@
     }
 
     // ---------- Le Lecteur parle ----------
-    function lecteurAffiche() { lectZone.classList.remove('mns-off'); planifier(function () { lectZone.classList.add('mns-lect-visible'); }, 30); }
+    function lecteurAffiche(texte) {
+      if (texte) lectTexte.textContent = texte;     // le texte est posé AVANT l'apparition : pas de flash de l'ancien
+      lectZone.classList.remove('mns-off');
+      planifier(function () { lectZone.classList.add('mns-lect-visible'); }, 30);
+    }
     async function lecteurMasque() { lectZone.classList.remove('mns-lect-visible'); await attendre(450); lectZone.classList.add('mns-off'); }
     function lecteurDit(texte, avecSuite) {
       return new Promise(function (resolve) {
         lectTexte.textContent = texte;
+        // sans « Suite », la bulle se resserre sur le texte (plus de grande boîte à moitié vide)
+        lectBulle.classList.toggle('mns-sans-suite', !avecSuite);
         lectSuite.classList.toggle('lect-cache', !avecSuite);
         if (!avecSuite) { resolve(); return; }
         function clic() { lectSuite.removeEventListener('click', clic); lectSuite.classList.add('lect-cache'); resolve(); }
@@ -484,29 +526,84 @@
         try { callbacks.onPermission(true); } catch (e) { console.warn('onPermission a échoué.', e); }
       }
 
-      // 3. le reste du menu apparaît
+      // 3. l'aperçu se replie ; Mémoires reste seule : le reste viendra après la première mémoire
       montrer('bek-heureuse-ferme');
-      await lecteurDit(T('lecteurFin'), false);
-      await attendre(1600);
+      await lecteurDit(T('lecteurFin'), true);
       await lecteurMasque();
       apercu.classList.remove('mns-apercu-visible');
       await attendre(450);
       apercu.classList.add('mns-off');
+      if (persister) ecrireEtape('autorise');
+      attendreMemoire();
+    }
+    // Menu à une ligne : Mémoires pulse, elle seule est active.
+    function attendreMemoire() {
+      bouton[ENTREES[0].id].classList.add('mns-actif');
+      activerMenu([ENTREES[0]]);
+    }
+    // Retour après la première mémoire : le Lecteur annonce ses ajouts, le reste du menu apparaît.
+    async function annonce() {
+      montrer('bek-observe');
+      await attendre(500);
+      lecteurAffiche(T('annonce1'));
+      await attendre(350);
+      montrer('bek-heureuse-ferme');
+      await lecteurDit(T('annonce1'), true);
+      await lecteurMasque();
+      // les nouvelles lignes arrivent, Bek est surprise
+      montrer('bek-conscience');
       for (let k = 1; k < ENTREES.length; k++) {
         revelerLigne(ENTREES[k].id);
         await attendre(220);
       }
-      ecrireVisiteFaite();
-      activerMenu();
+      await attendre(500);
+      // le professeur, c'est la ligne « Cours privés » ; Bek relève le sarcasme
+      const ligneProf = bouton.prives;
+      if (ligneProf) ligneProf.classList.add('mns-actif');
+      montrer('bek-decue');
+      lecteurAffiche(T('annonce2'));
+      await attendre(350);
+      await lecteurDit(T('annonce2'), true);
+      if (ligneProf) ligneProf.classList.remove('mns-actif');
+      montrer('bek-heureuse-ferme');
+      await lecteurDit(T('annonceFin'), false);
+      await attendre(1800);
+      await lecteurMasque();
+      if (persister) ecrireEtape('complet');
+      activerMenu(ENTREES);
+    }
+    // Première mémoire terminée ? null = impossible à savoir (pas de module de progression).
+    async function premiereMemoireFaite() {
+      if (forcer) return forcer === 'annonce';
+      if (!prog || typeof prog.lireProgression !== 'function') return null;
+      try {
+        const faites = (await prog.lireProgression()) || {};
+        return !!faites[ID_PREMIERE_MEMOIRE];
+      } catch (e) {
+        console.warn('menu : progression illisible, le menu reste à une ligne.', e);
+        return false;
+      }
+    }
+    async function menuPorte() {
+      montrer('bek-heureuse-ferme');
+      revelerLigne(ENTREES[0].id);
+      const faite = await premiereMemoireFaite();
+      if (arrete) return;
+      if (faite === null) { menuDirect(); return; }
+      if (faite) await annonce(); else attendreMemoire();
     }
     // Visites suivantes : le menu complet est là, actif.
     function menuDirect() {
       ENTREES.forEach(function (e) { revelerLigne(e.id); });
       montrer('bek-heureuse-ferme');
+      if (persister && etape !== 'complet' && !jouerTutoriel) ecrireEtape('complet');
       activerMenu();
     }
-    function activerMenu() {
-      ENTREES.forEach(function (e) {
+    const actives = {};
+    function activerMenu(liste) {
+      (liste || ENTREES).forEach(function (e) {
+        if (actives[e.id]) return;
+        actives[e.id] = true;
         const b = bouton[e.id];
         b.classList.remove('mns-inactif');
         b.removeAttribute('tabindex');
@@ -606,6 +703,7 @@
       if (arrete) return;
       creerPoses(etat || {});
       if (jouerTutoriel) tutoriel().catch(function (e) { console.warn('Tutoriel du menu interrompu.', e); });
+      else if (porte) menuPorte().catch(function (e) { console.warn('Menu interrompu.', e); menuDirect(); });
       else menuDirect();
     });
 

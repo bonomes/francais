@@ -119,6 +119,17 @@
 
   // La phrase à reconstruire, et tous les mots possibles (y compris le piège).
   const PHRASE = ['je', 'parle', 'francais'];
+  // 🆕 (02-11-2026) Les premiers mots de la banque de l'élève (mots.js) : ceux de cette mémoire.
+  // Écrits tels qu'on les lit dans une phrase (minuscules, accent) ; memoires.html les fait flotter.
+  const MOTS_APPRIS = ['je', 'parle', 'fran\u00e7ais'];
+  function enregistrerMots() {
+    const banque = window.KebBekMots;
+    if (!banque || typeof banque.ajouter !== 'function') return;     // sans mots.js : la mémoire se joue quand même
+    try {
+      const p = banque.ajouter(MOTS_APPRIS);                         // pas de await : la sortie du souvenir n'attend pas
+      if (p && typeof p.catch === 'function') p.catch(function (e) { console.warn('Enregistrement des mots impossible.', e); });
+    } catch (e) { console.warn('Enregistrement des mots impossible.', e); }
+  }
   const MOTS = {
     je: 'Je', parle: 'parle', francais: 'fran\u00e7ais', parles: 'parles'
   };
@@ -2613,6 +2624,7 @@
 
     // ---------- Souvenir reconstitué : on sort de la mémoire ----------
     async function restauration() {
+      enregistrerMots();                        // « je », « parle », « français » : les premiers mots de la banque
       aideBloquee = true;                       // plus d'aide pendant la sortie du souvenir
       if (aideOuverte) fermerAide();
       masquerInvite();
@@ -2683,6 +2695,7 @@
         scene.classList.add('mem-restauree');
         if (lecteurEl) { lecteurEl.classList.remove('mem-lecteur-cache'); lecteurEl.classList.add('mem-lecteur-inactif'); }
         exprimer('triste');
+        enregistrerMots();                        // l'aperçu donne aussi les trois mots (pour voir la page Mémoires)
         await attendre(800);
         await finMemoire();
         return;

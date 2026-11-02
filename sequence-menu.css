@@ -184,3 +184,12 @@
 .mns-perms { margin: 0 0 16px; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 6px; }
 .mns-perms li { display: flex; gap: 8px; padding: 8px 10px; font-size: 0.9rem; color: #4A3F38; background: #F8F4F0; border-radius: 10px; }
 .mns-perms li::before { content: '\2713'; font-weight: 800; color: #3d7a3d; }
+
+/* ---------- 🆕 (02-11-2026) Boîtes ajustées à leur contenu ---------- */
+/* Bulle du Lecteur sans « Suite » : le bouton (invisible) ne réserve plus sa place, la bulle se resserre sur le texte. */
+.mns-lect-bulle.mns-sans-suite .mns-lect-suite { display: none; }
+.mns-lect-bulle.mns-sans-suite .lect-lecteur-texte { margin-bottom: 0; }
+.mns-lect-bulle .lect-lecteur-texte:empty { display: none; }
+/* Menu à une seule ligne (avant la première mémoire) : la carte épouse ses lignes, sans hauteur minimale héritée. */
+.mns-carte-menu { height: auto; min-height: 0; }
+.mns-carte-menu .kbm-liste { flex: 0 0 auto; min-height: 0; }

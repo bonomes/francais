@@ -27,21 +27,57 @@
 <script>
 (function () {
   'use strict';
-  // ⚠️ TEMPORAIRE : progression.js n'expose pas (à ma connaissance) de fonction pour marquer une mémoire
-  // terminée. En attendant, un drapeau local est lu par memoires.html et sequence-menu.js.
-  // À remplacer par l'appel de progression.js (écriture de 'm1' dans lireProgression()).
-  const CLE_M1_LOCAL = 'kebbek_m1_terminee';
+  // Progression : progression.js (compte ou invité). Les drapeaux locaux restent en filet de sécurité :
+  // memoires.html et sequence-menu.js les lisent aussi, au cas où l'écriture dans le compte échouerait
+  // (⚠️ à vérifier côté Supabase : que 'm1' existe comme chapitre et que 'm1_f1' / 'm1_f2' soient acceptés comme conditions).
+  const CLE_M1_LOCAL = 'kebbek_m1_terminee';       // la MÉMOIRE est terminée
+  const CLE_F1_LOCAL = 'kebbek_m1_f1';             // fragment 1 récupéré
+  const CLE_F2_LOCAL = 'kebbek_m1_f2';             // fragment 2 récupéré
   const prog = window.KebBekProgression || null;
+  const params = new URLSearchParams(window.location.search);
+  let instance = null;
+
+  function marquer(cle) { try { localStorage.setItem(cle, '1'); } catch (e) {} }
+  function lu(cle) { try { return localStorage.getItem(cle) === '1'; } catch (e) { return false; } }
+  function versMemoires() { window.location.href = 'memoires.html'; }
+  // Enregistre dans progression.js sans jamais bloquer ni faire échouer la mémoire.
+  function enregistrer(fonction, id) {
+    try {
+      if (prog && typeof prog[fonction] === 'function') return Promise.resolve(prog[fonction](id)).catch(function (e) { console.warn('Progression non enregistrée (' + id + ').', e); return false; });
+    } catch (e) { console.warn('Progression non enregistrée (' + id + ').', e); }
+    return Promise.resolve(false);
+  }
+
+  // La mémoire est faite de fragments. Fragment 1 → fragment 2 → (⚠️ provisoire) mémoire terminée.
+  // Tant que la « réparation » (format sequence-memoire) n'existe pas, c'est la fin du fragment 2 qui termine la mémoire.
+  // ?f=1 ou ?f=2 force un fragment (test). Sans paramètre : si le fragment 1 est déjà récupéré mais pas la mémoire, on reprend au 2.
+  function lancerFragment(n) {
+    if (instance) { try { instance.arreter(); } catch (e) {} }
+    instance = window.KebBekM1.demarrer('memoire', { fragment: n, suite: n === 1 }, {
+      onTermine: async function () {
+        if (n === 1) {
+          marquer(CLE_F1_LOCAL);
+          enregistrer('marquerConditionComplete', 'm1_f1');
+          lancerFragment(2);
+          return;
+        }
+        marquer(CLE_F2_LOCAL);
+        marquer(CLE_M1_LOCAL);
+        // on laisse 3 s au plus à l'écriture (compte) avant de quitter la page
+        await Promise.race([
+          Promise.all([enregistrer('marquerConditionComplete', 'm1_f2'), enregistrer('marquerChapitreComplete', 'm1')]),
+          new Promise(function (resolve) { setTimeout(resolve, 3000); })
+        ]);
+        versMemoires();
+      },
+      onQuitter: versMemoires
+    });
+  }
 
   async function lancer() {
     try { if (prog && prog.restaurerSessionEtProfil) await prog.restaurerSessionEtProfil(); } catch (e) { console.warn('Session indisponible.', e); }
-    window.KebBekM1.demarrer('memoire', {}, {
-      onTermine: function () {
-        try { localStorage.setItem(CLE_M1_LOCAL, '1'); } catch (e) {}
-        window.location.href = 'memoires.html';
-      },
-      onQuitter: function () { window.location.href = 'memoires.html'; }
-    });
+    const f = params.get('f');
+    lancerFragment(f === '2' ? 2 : f === '1' ? 1 : (lu(CLE_F1_LOCAL) && !lu(CLE_M1_LOCAL) ? 2 : 1));
   }
   lancer();
 })();

@@ -35,6 +35,22 @@
    sequence-lecteur.css/.js (bulle et icône du Lecteur), sequence-m1.css.
    Facultatif : window.KebBekMots (mots.js) — les mots appris y sont ajoutés.
 
+   🆕 (03-11-2026) FRAGMENT 2 — options.fragment = 2 : « REGARDER ».
+   La mémoire est faite de fragments ; celui-ci enseigne le verbe « regarde » (en -er, comme « mange »).
+   Mots introduits : regarde, film (masculin : un film). « mange » revient en rappel.
+   Déroulé (mêmes 6 segments) :
+     1. « Je regarde. » + remarque : verbe en -er, et l'objet vient directement (pas de petit mot) ;
+     2. « Je regarde un film. » — lecture, ordre (pièges : une, mange), écriture (regarde, film) + carte « film » ;
+     3. « Je regarde une poutine. » — lecture, ordre (piège : un), écriture de la phrase entière ;
+     4. contraste : Bek REGARDE un sandwich (image), puis le MANGE (image existante) — le verbe change tout ;
+     5. exercice audio : « Je regarde. », « Je regarde un film. », puis le rappel « Je mange une poutine. »
+   Voix : ids m1-je-regarde, m1-je-regarde-un-film, m1-je-regarde-une-poutine, m1-je-regarde-un-sandwich, regarde, film.
+   Images à produire (repli : pose existante + vignette dessinée) :
+     images/m1/bek_regarde-film_01-01.webp, bek_regarde-sandwich_01-01.webp, bek_regarde-poutine_01-01.webp.
+   options.suite = true (fragment 1) : le Lecteur dit que le souvenir n'est pas encore entier (au lieu de « reconstitué »).
+   Textes nouveaux : fr + en seulement ; les 18 autres langues retombent sur l'anglais (à traduire).
+   onTermine({ mots, fragments }) : fragments = numéro du fragment terminé.
+
    @param {string} idConteneur
    @param {object} options   : langue ; dossierAudio ('audio/fr/') ; voixLangue ('fr-CA') ;
                                imageLecteur ; sources { pose: url }
@@ -51,6 +67,8 @@
   const CLE_LANGUE = 'kebbek_langue';
   const CLE_SON = 'kebbek_son';
   const MOTS_APPRIS = ['mange', 'un', 'une', 'sandwich', 'poutine'];
+  // 🆕 (03-11-2026) Fragment 2 : « regarder ». Mots introduits (le rappel de « mange » ne compte pas).
+  const MOTS_APPRIS_2 = ['regarde', 'film'];
   const ETAPES_TOTAL = 6;
 
   // Poses : toutes bouche fermée (Bek réagit, elle ne parle pas).
@@ -64,6 +82,11 @@
     // (enthousiasme très bas : poli, un peu éteint — pas une grimace)
     'bek-mange-sandwich': 'images/m1/bek_mange-sandwich_01-01.webp',
     'bek-mange-poutine':  'images/m1/bek_mange-poutine_01-01.webp',
+    // 🎨 fragment 2 (à produire) : Bek qui REGARDE. Film : concentrée, yeux sur l'écran ; sandwich : elle a faim mais patiente ;
+    // poutine : enthousiasme très bas, poli mais éteint.
+    'bek-regarde-film':     'images/m1/bek_regarde-film_01-01.webp',
+    'bek-regarde-sandwich': 'images/m1/bek_regarde-sandwich_01-01.webp',
+    'bek-regarde-poutine':  'images/m1/bek_regarde-poutine_01-01.webp',
     // 🎨 facultatives : variante « bouche ouverte » (elle dit la phrase) et images de l'animation « elle mange »
     'bek-sandwich-ouverte':   'images/m1/bek_mange-sandwich_bouche-ouverte_01-01.webp',
     'bek-sandwich-bouchee':   'images/m1/bek_mange-sandwich_bouchee_01-01.webp',
@@ -82,21 +105,29 @@
     poutine:  { base: 'bek-mange-poutine',  ouverte: 'bek-poutine-ouverte',  bouchee: 'bek-poutine-bouchee',
                 mastique: ['bek-poutine-mastique-a', 'bek-poutine-mastique-b'],   msBouchee: 650, msMastique: 480, tours: 2, pause: 2400 }
   };
-  const POSE_DE_REPLI = { 'bek-mange-sandwich': 'bek-heureuse-ferme', 'bek-mange-poutine': 'bek-observe' };
-  const VIGNETTE_DE = { 'bek-mange-sandwich': 'sandwich', 'bek-mange-poutine': 'poutine' };
+  const POSE_DE_REPLI = { 'bek-mange-sandwich': 'bek-heureuse-ferme', 'bek-mange-poutine': 'bek-observe',
+                          'bek-regarde-film': 'bek-concentree', 'bek-regarde-sandwich': 'bek-observe', 'bek-regarde-poutine': 'bek-observe' };
+  const VIGNETTE_DE = { 'bek-mange-sandwich': 'sandwich', 'bek-mange-poutine': 'poutine',
+                        'bek-regarde-film': 'film', 'bek-regarde-sandwich': 'sandwich', 'bek-regarde-poutine': 'poutine' };
   const POSES = Object.keys(SOURCES_PAR_DEFAUT);
 
-  const AFFICHE = { je: 'je', mange: 'mange', parle: 'parle', un: 'un', une: 'une', sandwich: 'sandwich', poutine: 'poutine', francais: 'français' };
-  const ROLE = { je: 's', mange: 'v', parle: 'v', un: 'o', une: 'o', sandwich: 'o', poutine: 'o', francais: 'o' };
-  const GENRE = { sandwich: 'genre_m', poutine: 'genre_f' };
+  const AFFICHE = { je: 'je', mange: 'mange', regarde: 'regarde', film: 'film', parle: 'parle', un: 'un', une: 'une', sandwich: 'sandwich', poutine: 'poutine', francais: 'français' };
+  const ROLE = { je: 's', mange: 'v', regarde: 'v', film: 'o', parle: 'v', un: 'o', une: 'o', sandwich: 'o', poutine: 'o', francais: 'o' };
+  const GENRE = { sandwich: 'genre_m', poutine: 'genre_f', film: 'genre_m' };
 
   const PHRASES = {
     mange:    { mots: ['je', 'mange'],                  texte: 'Je mange.',               audio: 'm1-je-mange',             tr: 'tr_mange' },
     sandwich: { mots: ['je', 'mange', 'un', 'sandwich'], texte: 'Je mange un sandwich.',   audio: 'm1-je-mange-un-sandwich', tr: 'tr_sandwich' },
     poutine:  { mots: ['je', 'mange', 'une', 'poutine'], texte: 'Je mange une poutine.',   audio: 'm1-je-mange-une-poutine', tr: 'tr_poutine' },
-    parle:    { mots: ['je', 'parle', 'francais'],      texte: 'Je parle français.',      audio: 'm1-je-parle-francais',    tr: 'tr_parle' }
+    parle:    { mots: ['je', 'parle', 'francais'],      texte: 'Je parle français.',      audio: 'm1-je-parle-francais',    tr: 'tr_parle' },
+    // fragment 2
+    regarde:     { mots: ['je', 'regarde'],                  texte: 'Je regarde.',               audio: 'm1-je-regarde',             tr: 'tr_regarde' },
+    film:        { mots: ['je', 'regarde', 'un', 'film'],    texte: 'Je regarde un film.',       audio: 'm1-je-regarde-un-film',     tr: 'tr_film' },
+    regpoutine:  { mots: ['je', 'regarde', 'une', 'poutine'], texte: 'Je regarde une poutine.',  audio: 'm1-je-regarde-une-poutine', tr: 'tr_regpoutine' },
+    regsandwich: { mots: ['je', 'regarde', 'un', 'sandwich'], texte: 'Je regarde un sandwich.',  audio: 'm1-je-regarde-un-sandwich', tr: 'tr_regsandwich' }
   };
   const BANQUE_LIBRE = ['je', 'mange', 'parle', 'un', 'une', 'sandwich', 'poutine', 'francais'];
+  const BANQUE_2 = ['je', 'mange', 'regarde', 'un', 'une', 'sandwich', 'poutine', 'film'];   // fragment 2 (pas « parle », pas « français »)
 
   const DICO = {
     fr: {
@@ -126,7 +157,22 @@
       cult_titre: 'Savais-tu\u00a0?',
       cult_sandwich: 'Selon la légende, le mot «\u00a0sandwich\u00a0» vient d’un comte anglais qui mangeait sa viande entre deux tranches de pain pour ne pas quitter sa partie de cartes.',
       cult_poutine: 'La poutine, ce sont des frites, du fromage en grains (qui fait «\u00a0squick\u00a0» sous la dent) et de la sauce brune. Elle est née au Québec vers la fin des années 1950, et plusieurs villages s’en disputent l’honneur.',
-      fin: 'Souvenir reconstitué. Tu sais maintenant dire ce que tu manges. Ce que tu ne manges pas… ça viendra.'
+      fin: 'Souvenir reconstitué. Tu sais maintenant dire ce que tu manges. Ce que tu ne manges pas… ça viendra.',
+      // ---- 🆕 fragment 2 : « regarder » ----
+      intro2: 'Un autre morceau du même souvenir. Cette fois, elle ne mange pas. Elle regarde. Nuance.',
+      finSuite: 'Premier morceau récupéré. Le souvenir n’est pas encore entier. Il y en a d’autres.',
+      fin2: 'Deuxième morceau récupéré. Tu sais maintenant dire ce que tu regardes et ce que tu manges. Ne confonds pas les deux.',
+      sens_regarde: 'regarder (moi)', sens_film: 'film',
+      tr_regarde: '', tr_film: '', tr_regpoutine: '', tr_regsandwich: '',
+      noteR_titre: 'Remarque',
+      noteR: 'Encore un verbe en -er\u00a0: je regard-e. Et on regarde quelque chose directement\u00a0: pas de petit mot entre le verbe et ce qu’on regarde.',
+      quipFilm: 'Un film. Enfin quelque chose de sensé.',
+      quipRegPoutine: 'Regarder une poutine. Voilà qui est… contemplatif.',
+      quipRegSandwich: 'Elle regarde le sandwich. Elle a faim, mais elle patiente. Admirable.',
+      quipVerbe: 'Elle ne mange pas. Elle regarde. Le verbe compte.',
+      quipFilmMange: 'Manger un film. Original. Mais non.',
+      quipUn: 'Un film, pas «\u00a0une\u00a0». Le mot est masculin.',
+      cult_film: 'Le mot «\u00a0film\u00a0» vient de l’anglais, où il désignait une mince pellicule. En français, il est masculin\u00a0: un film.'
     },
     en: {
       titre: 'First memory', quitter: 'Leave the memory', son: 'Sound', suite: 'Next', continuer: 'Continue', valider: 'Check',
@@ -155,7 +201,22 @@
       cult_titre: 'Did you know?',
       cult_sandwich: 'According to legend, the word “sandwich” comes from an English earl who ate his meat between two slices of bread so he wouldn’t have to leave his card game.',
       cult_poutine: 'Poutine is fries, cheese curds (which squeak against your teeth) and brown gravy. It was born in Quebec in the late 1950s, and several villages claim the honour.',
-      fin: 'Memory restored. You can now say what you eat. What you don’t eat… that will come.'
+      fin: 'Memory restored. You can now say what you eat. What you don’t eat… that will come.',
+      // ---- 🆕 fragment 2: “regarder” ----
+      intro2: 'Another piece of the same memory. This time she isn’t eating. She’s looking. Nuance.',
+      finSuite: 'First piece recovered. The memory isn’t whole yet. There are more.',
+      fin2: 'Second piece recovered. You can now say what you watch and what you eat. Don’t mix them up.',
+      sens_regarde: 'look at / watch', sens_film: 'film, movie',
+      tr_regarde: 'I look. / I watch.', tr_film: 'I watch a movie.', tr_regpoutine: 'I look at a poutine.', tr_regsandwich: 'I look at a sandwich.',
+      noteR_titre: 'Note',
+      noteR: 'Another -er verb: je regard-e. And you “regarde” something directly: no little word between the verb and what you look at. Not “at”.',
+      quipFilm: 'A movie. Finally, something sensible.',
+      quipRegPoutine: 'Looking at a poutine. How… contemplative.',
+      quipRegSandwich: 'She’s looking at the sandwich. She’s hungry, but she’s waiting. Admirable.',
+      quipVerbe: 'She isn’t eating. She’s looking. The verb matters.',
+      quipFilmMange: 'Eating a movie. Original. But no.',
+      quipUn: '“Un film”, not “une”. The word is masculine.',
+      cult_film: 'The word “film” comes from English, where it meant a thin layer. In French it is masculine: un film.'
     },  // ---- 🆕 (03-11-2026) autres langues : mêmes 20 langues que le menu ----
     es: {
       titre: 'Primer recuerdo',
@@ -1061,7 +1122,8 @@
 
   const DESSINS = {   // vignettes provisoires (traits à la main, sans emoji)
     sandwich: '<path d="M10 38c0-12 12-20 30-20s30 8 30 20c0 3-2 4-4 4H14c-2 0-4-1-4-4Z" fill="#F2C98B"/><path d="M12 46c10 3 14-3 22 0s12-3 22 0 10-2 12 0v4H12Z" fill="#8DBF6A"/><path d="M12 53c8 3 16 0 26 2s18 0 28-2v6c0 3-2 5-5 5H17c-3 0-5-2-5-5Z" fill="#F2C98B"/><path d="M10 38c0-12 12-20 30-20s30 8 30 20M12 46c10 3 14-3 22 0s12-3 22 0 10-2 12 0M12 53v6c0 3 2 5 5 5h46c3 0 5-2 5-5v-6" fill="none" stroke="#4A3B33" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>',
-    poutine: '<path d="M8 40h64c0 14-12 26-32 26S8 54 8 40Z" fill="#F7F1E8"/><path d="M14 42l6-18 5 17 7-20 5 19 7-17 4 17 6-14 3 16Z" fill="#F0C75E"/><path d="M12 42c6 4 10-2 16 1s10-3 16 0 10-2 16 0 8-1 10 0c-2 6-8 8-20 8s-30 0-38-9Z" fill="#8A5A3C"/><circle cx="26" cy="38" r="4" fill="#FFF6D8"/><circle cx="42" cy="36" r="4.5" fill="#FFF6D8"/><circle cx="56" cy="39" r="3.5" fill="#FFF6D8"/><path d="M8 40h64c0 14-12 26-32 26S8 54 8 40Z" fill="none" stroke="#4A3B33" stroke-width="3" stroke-linejoin="round"/>'
+    poutine: '<path d="M8 40h64c0 14-12 26-32 26S8 54 8 40Z" fill="#F7F1E8"/><path d="M14 42l6-18 5 17 7-20 5 19 7-17 4 17 6-14 3 16Z" fill="#F0C75E"/><path d="M12 42c6 4 10-2 16 1s10-3 16 0 10-2 16 0 8-1 10 0c-2 6-8 8-20 8s-30 0-38-9Z" fill="#8A5A3C"/><circle cx="26" cy="38" r="4" fill="#FFF6D8"/><circle cx="42" cy="36" r="4.5" fill="#FFF6D8"/><circle cx="56" cy="39" r="3.5" fill="#FFF6D8"/><path d="M8 40h64c0 14-12 26-32 26S8 54 8 40Z" fill="none" stroke="#4A3B33" stroke-width="3" stroke-linejoin="round"/>',
+    film: '<rect x="8" y="14" width="64" height="42" rx="6" fill="#4A3B33"/><rect x="13" y="19" width="54" height="32" rx="3" fill="#D4E6F7"/><path d="M34 27l16 8-16 8Z" fill="#E08867"/><rect x="28" y="60" width="24" height="5" rx="2.5" fill="#4A3B33"/>'
   };
 
   function langueActuelle(options) {
@@ -1102,6 +1164,8 @@
     const conteneur = document.getElementById(idConteneur);
     if (!conteneur) { console.warn('sequence-m1 : conteneur introuvable (' + idConteneur + ').'); return { arreter: function () {} }; }
 
+    const fragment = options.fragment === 2 ? 2 : 1;                    // 🆕 1 = « manger » (défaut), 2 = « regarder »
+    const banqueDefaut = fragment === 2 ? BANQUE_2 : BANQUE_LIBRE;
     const langue = langueActuelle(options);
     function T(cle) {
       const v = (DICO[langue] && DICO[langue][cle]);
@@ -1447,7 +1511,10 @@
           } else {
             erreurs++;
             secouer(t);
-            lecteurIndice(id === 'un' && attendu === 'une' ? T('quipUne') : auHasard(T('quipErreur')), 4200);
+            lecteurIndice(id === 'un' && attendu === 'une' ? T('quipUne')
+              : id === 'une' && attendu === 'un' ? T('quipUn')
+              : id === 'mange' && attendu === 'regarde' ? T('quipVerbe')
+              : auHasard(T('quipErreur')), 4200);
             if (erreurs >= 2) {      // la bonne tuile se met à briller
               const bonne = plateau.querySelector('.m1-tuile[data-id="' + attendu + '"]:not(.m1-tuile-partie)');
               if (bonne) bonne.classList.add('m1-indice');
@@ -1590,7 +1657,7 @@
         });
         bValider.disabled = termine || !choisis.length;
       }
-      melanger(options2.banque || BANQUE_LIBRE).forEach(function (id) {
+      melanger(options2.banque || banqueDefaut).forEach(function (id) {
         const t = tuile(id);
         t.addEventListener('click', function () {
           if (termine || t.classList.contains('m1-tuile-partie')) return;
@@ -1616,7 +1683,9 @@
         erreurs++;
         secouer(plateauPhrase);
         const uneMalPlacee = phrase.mots.indexOf('une') !== -1 && choisis.indexOf('un') !== -1;
-        lecteurIndice(uneMalPlacee ? T('quipUne') : auHasard(T('quipErreur')), 4200);
+        const filmMange = choisis.indexOf('film') !== -1 && choisis.indexOf('mange') !== -1;
+        const unMalPlace = phrase.mots.indexOf('film') !== -1 && choisis.indexOf('une') !== -1;
+        lecteurIndice(filmMange ? T('quipFilmMange') : uneMalPlacee ? T('quipUne') : unMalPlace ? T('quipUn') : auHasard(T('quipErreur')), 4200);
         if (erreurs >= 3) {          // on montre la bonne phrase, sans bloquer
           termine = true; bValider.disabled = true;
           choisis.length = 0;
@@ -1650,10 +1719,10 @@
       zone.appendChild(c);
       await boutonAction(T('continuer'));
     }
-    function pairesE() {          // parl|e  mang|e : le -e est surligné
+    function pairesE(liste) {          // parl|e  mang|e : le -e est surligné
       const d = document.createElement('div');
       d.className = 'm1-paire';
-      [['parl', 'e'], ['mang', 'e']].forEach(function (p) {
+      (liste || [['parl', 'e'], ['mang', 'e']]).forEach(function (p) {
         const s = document.createElement('span');
         s.className = 'm1-radical';
         s.innerHTML = '<b>je</b> ' + echapper(p[0]) + '<i>' + echapper(p[1]) + '</i>';
@@ -1716,30 +1785,77 @@
       await attente;
     }
 
+    // ---------- 🆕 Fragment 2 : « regarder » ----------
+    async function etapeRegarde() {
+      etape(0); montrer('bek-observe');
+      consigne(T('c_mange'));
+      await lecture(PHRASES.regarde, 'regarde');
+      await carte(T('noteR_titre'), T('noteR'), pairesE([['regard', 'e'], ['mang', 'e']]));
+    }
+    async function etapeRegardePhrase(cle, n) {
+      etape(n);
+      const ph = PHRASES[cle];
+      montrer(cle === 'film' ? 'bek-regarde-film' : 'bek-regarde-poutine');
+      consigne(T('c_lire'));
+      planifier(function () { lecteurIndice(cle === 'film' ? T('quipFilm') : T('quipRegPoutine'), 6000); }, 1500);
+      await lecture(ph, cle);
+      consigne(T('c_ordre'));
+      await ordre(ph, cle, cle === 'film' ? ['une', 'mange'] : ['un']);
+      consigne(cle === 'film' ? T('c_ecrire_part') : T('c_ecrire'));
+      await ecrire(ph, cle, cle === 'film' ? [1, 3] : null);
+      if (cle === 'film') await carte(T('cult_titre'), T('cult_film'));
+    }
+    // Même objet, deux verbes : Bek REGARDE le sandwich, puis elle le MANGE. Le verbe change tout.
+    async function etapeContraste() {
+      etape(3);
+      montrer('bek-regarde-sandwich');
+      consigne(T('c_image'));
+      planifier(function () { lecteurIndice(T('quipRegSandwich'), 5500); }, 1200);
+      await construire(PHRASES.regsandwich, 'image-regsandwich', { banque: BANQUE_2 });
+      etape(4);
+      montrer('bek-mange-sandwich');
+      consigne(T('c_image'));
+      const arreter = animerManger('sandwich');
+      await construire(PHRASES.sandwich, 'image-sandwich-2', { banque: BANQUE_2 });
+      arreter();
+      await bekDit('sandwich', 1500);
+    }
+
     async function fin() {
       etape(ETAPES_TOTAL);
       montrer('bek-heureuse-ferme');
       try {
         const banque = window.KebBekMots;
         if (banque && typeof banque.ajouter === 'function') {
-          const p = banque.ajouter(MOTS_APPRIS);       // pas de await : la sortie ne dépend pas du réseau
+          const p = banque.ajouter(fragment === 2 ? MOTS_APPRIS_2 : MOTS_APPRIS);       // pas de await : la sortie ne dépend pas du réseau
           if (p && typeof p.catch === 'function') p.catch(function (e) { console.warn('sequence-m1 : mots non enregistrés.', e); });
         }
       } catch (e) { console.warn('sequence-m1 : mots non enregistrés.', e); }
       vider();
       consigne('');
-      await lecteurDit(T('fin'));
+      await lecteurDit(T(fragment === 2 ? 'fin2' : (options.suite ? 'finSuite' : 'fin')));
       await attendre(300);
       if (typeof callbacks.onTermine === 'function') {
-        try { callbacks.onTermine({ mots: MOTS_APPRIS.slice(), fragments: 1 }); } catch (e) { console.warn('onTermine a échoué.', e); }
+        try { callbacks.onTermine({ mots: (fragment === 2 ? MOTS_APPRIS_2 : MOTS_APPRIS).slice(), fragments: fragment }); } catch (e) { console.warn('onTermine a échoué.', e); }
       }
     }
 
     async function deroule() {
       await attendre(500);
-      lecteurAfficher(T('intro'), true);
+      lecteurAfficher(T(fragment === 2 ? 'intro2' : 'intro'), true);
       montrer('bek-observe');
       await new Promise(function (resolve) { lectSuite.onclick = function () { lectSuite.onclick = null; lecteurMasquer(); resolve(); }; });
+      if (fragment === 2) {
+        await etapeRegarde();
+        await etapeRegardePhrase('film', 1);
+        await etapeRegardePhrase('regpoutine', 2);
+        await etapeContraste();
+        // étape 6 : écoute (« Je regarde. », « Je regarde un film. », puis le rappel « Je mange une poutine. »)
+        etape(5); montrer('bek-observe'); consigne(T('c_audio'));
+        for (const cle of ['regarde', 'film', 'poutine']) await construireAudio(PHRASES[cle], 'audio-' + cle);
+        await fin();
+        return;
+      }
       await etapeMange();
       await etapePhrase('sandwich', 1);
       await etapePhrase('poutine', 2);
@@ -1773,5 +1889,5 @@
     };
   }
 
-  window.KebBekM1 = { demarrer: demarrer, MOTS_APPRIS: MOTS_APPRIS };
+  window.KebBekM1 = { demarrer: demarrer, MOTS_APPRIS: MOTS_APPRIS, MOTS_APPRIS_2: MOTS_APPRIS_2 };
 })();

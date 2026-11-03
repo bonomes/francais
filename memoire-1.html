@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Première mémoire — Le français avec Keb &amp; Bek</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&display=swap" rel="stylesheet">
+<!-- Même ordre que index.html : le réveil de Bek (scène, poses), le Lecteur, puis la mémoire -->
+<link rel="stylesheet" href="sequence-reveil-bek.css">
+<link rel="stylesheet" href="sequence-lecteur.css">
+<link rel="stylesheet" href="sequence-m1.css">
+<style>
+  :root { --peche: #F0A98B; --peche-fonce: #E08867; --peche-pale: rgba(240, 169, 139, 0.16); --brun-fonce: #4A3B33; --brun-clair: #8A7364; --ombre: rgba(102, 80, 69, 0.18); }
+  html, body { height: 100%; margin: 0; background: #FCF5EA; font-family: 'Baloo 2', sans-serif; }
+  #memoire { position: fixed; inset: 0; }
+</style>
+</head>
+<body>
+<div id="memoire"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="progression.js"></script>
+<script src="mots.js"></script>
+<script src="sequence-lecteur.js"></script>
+<script src="sequence-m1.js"></script>
+<script>
+(function () {
+  'use strict';
+  // ⚠️ TEMPORAIRE : progression.js n'expose pas (à ma connaissance) de fonction pour marquer une mémoire
+  // terminée. En attendant, un drapeau local est lu par memoires.html et sequence-menu.js.
+  // À remplacer par l'appel de progression.js (écriture de 'm1' dans lireProgression()).
+  const CLE_M1_LOCAL = 'kebbek_m1_terminee';
+  const prog = window.KebBekProgression || null;
+
+  async function lancer() {
+    try { if (prog && prog.restaurerSessionEtProfil) await prog.restaurerSessionEtProfil(); } catch (e) { console.warn('Session indisponible.', e); }
+    window.KebBekM1.demarrer('memoire', {}, {
+      onTermine: function () {
+        try { localStorage.setItem(CLE_M1_LOCAL, '1'); } catch (e) {}
+        window.location.href = 'memoires.html';
+      },
+      onQuitter: function () { window.location.href = 'memoires.html'; }
+    });
+  }
+  lancer();
+})();
+</script>
+</body>
+</html>

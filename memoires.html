@@ -219,6 +219,52 @@ header, .chemin { position: relative; z-index: 1; }
 @media (prefers-reduced-motion: reduce) {
   .fond-anime b, .fond-anime u, .fond-anime s, .case.vue, .chemin::before, .case.actuel::after, .fichier { animation: none !important; }
 }
+
+/* ---------- 🆕 (03-11-2026) Au programme : notions + fragments avec vocabulaire (menu dépliant facultatif) ---------- */
+.notions { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 12px; }
+.notion {
+  padding: 4px 11px; font-weight: 700; font-size: .84rem; line-height: 1.25;
+  color: var(--brun-fonce); background: var(--peche-pale); border-radius: 999px;
+}
+.programme { margin: 0 0 14px; border: 2px solid #EADFD5; border-radius: 16px; background: #FBF8F4; }
+.programme > summary {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 9px 14px; cursor: pointer;
+  list-style: none; font-weight: 800; font-size: .92rem; color: var(--brun-fonce); border-radius: 14px;
+}
+.programme > summary::-webkit-details-marker { display: none; }
+.programme > summary::after {
+  content: ''; width: 9px; height: 9px; margin-right: 3px; flex-shrink: 0;
+  border-right: 2.5px solid var(--peche-fonce); border-bottom: 2.5px solid var(--peche-fonce);
+  transform: rotate(45deg) translateY(-2px); transition: transform .2s ease;
+}
+.programme[open] > summary::after { transform: rotate(-135deg) translateY(-2px); }
+.programme > summary:focus-visible { outline: 3px solid var(--peche-fonce); outline-offset: 2px; }
+.programme-liste { max-height: 34dvh; overflow-y: auto; padding: 2px 14px 12px; display: flex; flex-direction: column; gap: 12px; }
+.frag { padding-top: 10px; border-top: 2px dotted #E4D6C9; }
+.frag:first-child { border-top: 0; padding-top: 4px; }
+.frag-tete { display: flex; align-items: center; gap: 8px; }
+.frag-num {
+  display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; flex-shrink: 0;
+  font-weight: 800; font-size: .8rem; color: #fff; background: var(--peche-fonce); border-radius: 8px;
+}
+.frag-titre { flex: 1; font-weight: 800; font-size: .98rem; }
+.frag-coche { display: none; width: 22px; height: 22px; align-items: center; justify-content: center; background: var(--vert); border-radius: 50%; }
+.frag-coche svg { width: 13px; height: 13px; fill: none; stroke: #fff; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+.frag.fait .frag-coche { display: flex; }
+.frag-notions { margin: 6px 0 8px; padding-left: 20px; font-size: .88rem; font-weight: 600; line-height: 1.4; color: var(--brun-clair); }
+.mots { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.mot {
+  display: inline-flex; align-items: baseline; gap: 4px; padding: 3px 10px; font-weight: 700; font-size: .92rem;
+  color: var(--brun-fonce); background: #fff; border: 2px solid #E4D6C9; border-radius: 10px;
+}
+.mot small { font-size: .68rem; font-weight: 800; letter-spacing: .02em; }
+.mot.m { background: #D4E6F7; border-color: #6FA3D4; }
+.mot.f { background: #FBDCCB; border-color: #E08867; }
+.mot.m small { color: #4E81B4; } .mot.f small { color: #C4694A; }
+.mots-rappel { margin-top: 6px; font-size: .78rem; font-weight: 700; color: var(--brun-clair); }
+.mots-rappel .mot { font-size: .8rem; padding: 1px 8px; opacity: .8; }
+.legende-genre { margin: 2px 0 0; font-size: .76rem; font-weight: 600; color: var(--brun-clair); }
+@media (prefers-reduced-motion: reduce) { .programme > summary::after { transition: none; } }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script src="progression.js"></script>
@@ -238,6 +284,8 @@ header, .chemin { position: relative; z-index: 1; }
   <div class="qui" id="pQui"></div>
   <h2 id="pTitre"></h2>
   <p class="resume" id="pResume"></p>
+  <div class="notions" id="pNotions"></div>
+  <details class="programme" id="pProgramme"><summary id="pProgrammeTitre"></summary><div class="programme-liste" id="pProgrammeListe"></div></details>
   <div class="fichiers" id="pFichiers"></div>
   <button type="button" class="bouton" id="pBouton"></button>
   <p class="indice" id="pIndice"></p>
@@ -262,6 +310,17 @@ header, .chemin { position: relative; z-index: 1; }
   const MEMOIRES = [
     { id: 'm1', titre: 'Première mémoire *', teaser: 'Tout commence ici…', motif: 'etoile', teintes: ['#FFE3CF', '#F6C2A4'], page: 'memoire-1.html',
       resume: 'Résumé provisoire : une première mémoire, à définir. Ici viendra une courte description de ce que tu vas vivre.',
+      // 🆕 Au programme (dérivé des fragments construits ; à mettre à jour à chaque nouveau fragment)
+      notions: ['L’ordre de la phrase', 'Masculin et féminin', 'Les verbes en -er avec « je »'],
+      fragments: [
+        { titre: 'Je mange', id: 'f1',
+          notions: ['L’ordre de la phrase : sujet, verbe, objet', 'Un nom est masculin (un) ou féminin (une)', 'Avec « je », un verbe en -er se termine par -e'],
+          mots: [{ mot: 'je' }, { mot: 'mange' }, { mot: 'parle' }, { mot: 'un', genre: 'm' }, { mot: 'une', genre: 'f' }, { mot: 'sandwich', genre: 'm' }, { mot: 'poutine', genre: 'f' }, { mot: 'français' }] },
+        { titre: 'Je regarde', id: 'f2',
+          notions: ['Un autre verbe en -er : regarder', 'L’objet vient directement après le verbe, sans petit mot', 'Le verbe choisit son objet : regarder n’est pas manger'],
+          mots: [{ mot: 'regarde' }, { mot: 'film', genre: 'm' }],
+          rappel: [{ mot: 'mange' }, { mot: 'un', genre: 'm' }, { mot: 'une', genre: 'f' }, { mot: 'sandwich', genre: 'm' }, { mot: 'poutine', genre: 'f' }] }
+      ],
       personnages: [{ id: 'keb' }, { id: 'bek' }] },
     { id: 'm2', titre: 'Une mémoire à venir *', teaser: 'Quelqu’un est là…', motif: 'livre', teintes: ['#DDEBFA', '#A9C9EA'],
       resume: 'Résumé provisoire. Un personnage mystère se cache dans cette mémoire.',
@@ -287,7 +346,8 @@ header, .chemin { position: relative; z-index: 1; }
   };
   const T = {
     sousTitre: 'Choisis une mémoire', commencer: 'Commencer', revoir: 'Revoir', verrouille: 'Termine la mémoire précédente pour l’ouvrir.',
-    preparation: 'Cette mémoire est encore en préparation ✏️', avec: 'Avec', mystere: 'Quelqu’un de mystérieux'
+    preparation: 'Cette mémoire est encore en préparation ✏️', avec: 'Avec', mystere: 'Quelqu’un de mystérieux',
+    programme: 'Fragments et vocabulaire', rappel: 'Pour réviser\u00a0:', legende: 'm. = masculin · f. = féminin'
   };
 
   // ---------- Progression (même module que le reste du site) ----------
@@ -310,6 +370,14 @@ header, .chemin { position: relative; z-index: 1; }
         if (prog.session && prog.essayerModeProfesseur) professeur = !!(await prog.essayerModeProfesseur());
       }
     } catch (e) { console.warn('Progression indisponible.', e); }
+    // 🆕 Le personnage de la première mémoire est celui que l'élève a choisi au départ (l'autre n'y est pas).
+    // progression.js : lirePersonnageChoisi() → 'Keb' | 'Bek' | null. ?perso=keb|bek force le choix (test).
+    let premier = null;
+    try { if (prog && typeof prog.lirePersonnageChoisi === 'function') premier = await prog.lirePersonnageChoisi(); } catch (e) { console.warn('Personnage choisi indisponible.', e); }
+    const force = new URLSearchParams(location.search).get('perso');
+    if (force) premier = force;
+    const premierId = String(premier || '').toLowerCase() === 'keb' ? 'keb' : 'bek';   // repli : Bek (aucun choix lisible)
+    MEMOIRES.forEach(function (m) { if (m.id === 'm1') m.personnages = [{ id: premierId }]; });
     try { if (localStorage.getItem('kebbek_m1_terminee') === '1') faites.m1 = true; } catch (e) {}   // TEMPORAIRE : voir memoire-1.html
     if (demo && demo !== 'mots') { faites.m1 = true; if (demo === '2') faites.m2 = true; }
   }
@@ -320,6 +388,8 @@ header, .chemin { position: relative; z-index: 1; }
   const panneau = document.getElementById('panneau');
   const el = {
     qui: document.getElementById('pQui'), titre: document.getElementById('pTitre'), resume: document.getElementById('pResume'),
+    notions: document.getElementById('pNotions'), programme: document.getElementById('pProgramme'),
+    programmeTitre: document.getElementById('pProgrammeTitre'), programmeListe: document.getElementById('pProgrammeListe'),
     fichiers: document.getElementById('pFichiers'), bouton: document.getElementById('pBouton'), indice: document.getElementById('pIndice')
   };
   document.getElementById('sousTitre').textContent = T.sousTitre;
@@ -383,6 +453,38 @@ header, .chemin { position: relative; z-index: 1; }
     });
   }
 
+  // ---------- 🆕 Au programme : notions + fragments (menu dépliant) ----------
+  function fragmentFait(m, f) {
+    if (faites[m.id]) return true;
+    try { return localStorage.getItem('kebbek_' + m.id + '_' + f.id) === '1'; } catch (e) { return false; }   // TEMPORAIRE : drapeaux locaux (progression.js ne relit pas les conditions)
+  }
+  function motHtml(w) {
+    return '<span class="mot' + (w.genre ? ' ' + w.genre : '') + '">' + echapper(w.mot) + (w.genre ? '<small>' + w.genre + '.</small>' : '') + '</span>';
+  }
+  function rendreProgramme(m, verrouillee) {
+    const a = !verrouillee && m.notions && m.notions.length;
+    el.notions.style.display = a ? '' : 'none';
+    el.notions.innerHTML = a ? m.notions.map(function (n) { return '<span class="notion">' + echapper(n) + '</span>'; }).join('') : '';
+    const b = !verrouillee && m.fragments && m.fragments.length;
+    el.programme.style.display = b ? '' : 'none';
+    el.programme.open = false;
+    if (!b) { el.programmeListe.innerHTML = ''; return; }
+    el.programmeTitre.textContent = T.programme + ' (' + m.fragments.length + ')';
+    let aGenre = false;
+    el.programmeListe.innerHTML = m.fragments.map(function (f, k) {
+      (f.mots || []).concat(f.rappel || []).forEach(function (w) { if (w.genre) aGenre = true; });
+      return '<div class="frag' + (fragmentFait(m, f) ? ' fait' : '') + '">' +
+        '<div class="frag-tete"><span class="frag-num">' + (k + 1) + '</span><span class="frag-titre">' + echapper(f.titre) + '</span>' +
+          '<span class="frag-coche" role="img" aria-label="récupéré">' + svg(ICONES.coche) + '</span></div>' +
+        '<ul class="frag-notions">' + (f.notions || []).map(function (n) { return '<li>' + echapper(n) + '</li>'; }).join('') + '</ul>' +
+        '<div class="mots">' + (f.mots || []).map(motHtml).join('') + '</div>' +
+        (f.rappel && f.rappel.length ? '<div class="mots mots-rappel">' + echapper(T.rappel) + ' ' + f.rappel.map(motHtml).join('') + '</div>' : '') +
+      '</div>';
+    }).join('') + (aGenre ? '<p class="legende-genre">' + echapper(T.legende) + '</p>' : '');
+  }
+  function ajusterPersonnages() { scenePersos.style.bottom = (panneau.offsetHeight - 14) + 'px'; }   // ils se tiennent sur le bord du panneau
+  el.programme.addEventListener('toggle', function () { setTimeout(ajusterPersonnages, 30); });
+
   function choisir(i) {
     const m = MEMOIRES[i], etat = etatDe(i), verrouillee = etat === 'verrouille';
     choisie = i;
@@ -392,6 +494,7 @@ header, .chemin { position: relative; z-index: 1; }
     el.titre.textContent = verrouillee ? '???' : m.titre;
     el.resume.textContent = verrouillee ? '' : m.resume;
     el.resume.style.display = verrouillee ? 'none' : '';
+    rendreProgramme(m, verrouillee);
     el.fichiers.innerHTML = verrouillee || !m.fichiers ? '' : m.fichiers.map(function (f) { return '<span class="fichier">' + svg(ICONES.fichier) + echapper(f) + '</span>'; }).join('');
     el.bouton.textContent = etat === 'complete' ? T.revoir : T.commencer;
     el.bouton.disabled = verrouillee;
@@ -401,7 +504,7 @@ header, .chemin { position: relative; z-index: 1; }
     };
     el.indice.textContent = verrouillee ? T.verrouille : '';
     panneau.classList.add('ouvert');
-    scenePersos.style.bottom = (panneau.offsetHeight - 14) + 'px';   // ils se tiennent sur le bord du panneau
+    ajusterPersonnages();
     montrerPersonnages(m, verrouillee);
     // garde la case visible au-dessus du panneau
     const c = chemin.querySelectorAll('.case')[i];

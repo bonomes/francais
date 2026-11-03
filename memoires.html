@@ -260,7 +260,7 @@ header, .chemin { position: relative; z-index: 1; }
     kloe: { nom: 'Kloé', couleur: '#E8B04A', img: null }
   };
   const MEMOIRES = [
-    { id: 'm1', titre: 'Première mémoire *', teaser: 'Tout commence ici…', motif: 'etoile', teintes: ['#FFE3CF', '#F6C2A4'],
+    { id: 'm1', titre: 'Première mémoire *', teaser: 'Tout commence ici…', motif: 'etoile', teintes: ['#FFE3CF', '#F6C2A4'], page: 'memoire-1.html',
       resume: 'Résumé provisoire : une première mémoire, à définir. Ici viendra une courte description de ce que tu vas vivre.',
       personnages: [{ id: 'keb' }, { id: 'bek' }] },
     { id: 'm2', titre: 'Une mémoire à venir *', teaser: 'Quelqu’un est là…', motif: 'livre', teintes: ['#DDEBFA', '#A9C9EA'],
@@ -310,6 +310,7 @@ header, .chemin { position: relative; z-index: 1; }
         if (prog.session && prog.essayerModeProfesseur) professeur = !!(await prog.essayerModeProfesseur());
       }
     } catch (e) { console.warn('Progression indisponible.', e); }
+    try { if (localStorage.getItem('kebbek_m1_terminee') === '1') faites.m1 = true; } catch (e) {}   // TEMPORAIRE : voir memoire-1.html
     if (demo && demo !== 'mots') { faites.m1 = true; if (demo === '2') faites.m2 = true; }
   }
 

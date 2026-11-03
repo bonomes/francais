@@ -1,0 +1,159 @@
+/* ==================================================================
+   sequence-m1.css — habillage de sequence-m1.js (la première mémoire).
+
+   À charger APRÈS : sequence-reveil-bek.css (.rbek-scene, .rbek-bek, .rbek-pose)
+                     sequence-lecteur.css (.lect-lecteur-bulle, .lect-btn, .lect-lecteur…)
+   Tout ce qui est propre au module est préfixé m1-.
+   Disposition : la leçon à GAUCHE, Bek à DROITE (téléphone : Bek sous la leçon).
+   Les mots sont colorés selon leur rôle : sujet (pêche), verbe (bleu), objet (vert).
+   ================================================================== */
+.m1-scene { display: flex; align-items: center; justify-content: center; padding: 12px; box-sizing: border-box; }
+.m1-off { display: none !important; }
+
+.m1-quitter, .m1-son {
+  position: absolute; top: 12px; z-index: 5; width: 40px; height: 40px;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--brun-fonce, #4A3B33); background: rgba(255, 255, 255, 0.85);
+  border: 2px solid var(--brun-fonce, #4A3B33); border-radius: 50%; cursor: pointer;
+  font: 700 1.6rem/1 'Baloo 2', sans-serif; padding: 0;
+}
+.m1-quitter { left: 12px; padding-bottom: 4px; }
+.m1-son { right: 12px; }
+.m1-son svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.m1-son.m1-son-coupe .m1-son-ondes { display: none; }
+.m1-quitter:focus-visible, .m1-son:focus-visible { outline: 3px solid var(--brun-fonce, #4A3B33); outline-offset: 2px; }
+
+.m1-disposition {
+  display: flex; align-items: center; justify-content: center;
+  gap: clamp(12px, 4vw, 56px); width: 100%; max-width: 1020px; max-height: 100%;
+}
+.m1-col-gauche { flex: 0 1 440px; display: flex; flex-direction: column; align-items: center; min-width: 0; }
+.m1-col-bek { flex: 0 1 auto; position: relative; display: flex; flex-direction: column; align-items: center; min-width: 0; }
+.m1-bek { position: relative; height: min(66dvh, 110vw); aspect-ratio: 1024 / 1106; pointer-events: none; }
+.m1-bek .rbek-pose { object-fit: cover; object-position: 50% 64%; }
+.m1-vignette {
+  position: absolute; left: 4%; bottom: 14%; width: clamp(64px, 12dvh, 96px); aspect-ratio: 1;
+  padding: 8px; box-sizing: border-box; background: rgba(255, 255, 255, 0.92);
+  border: 2px dashed var(--peche, #F0A98B); border-radius: 50%;
+  transform: rotate(-6deg);
+}
+.m1-vignette svg { width: 100%; height: 100%; display: block; }
+
+/* ---------- La carte de leçon ---------- */
+.m1-carte {
+  width: min(94vw, 440px); box-sizing: border-box; padding: 16px 18px 14px;
+  font-family: 'Baloo 2', sans-serif; color: var(--brun-fonce, #4A3B33);
+  background: rgba(255, 255, 255, 0.96); border: 2px solid var(--brun-fonce, #4A3B33);
+  border-radius: 22px; box-shadow: 0 4px 0 0 var(--brun-fonce, #4A3B33), 3px 6px 14px var(--ombre, rgba(102, 80, 69, 0.18));
+}
+.m1-progres { display: flex; gap: 5px; margin-bottom: 10px; }
+.m1-segment { flex: 1; height: 6px; border-radius: 999px; background: #EFE3D8; transition: background 0.3s ease; }
+.m1-segment.m1-segment-fait { background: var(--peche-fonce, #E08867); }
+.m1-consigne { min-height: 1.3em; margin: 0 0 12px; font-weight: 700; font-size: 1.08rem; line-height: 1.3; text-align: center; }
+.m1-zone { display: flex; flex-direction: column; align-items: stretch; gap: 10px; }
+.m1-actions { display: flex; justify-content: center; gap: 10px; margin-top: 12px; min-height: 0; }
+.m1-actions:empty { display: none; }
+.m1-btn { font-family: 'Baloo 2', sans-serif; border-radius: 999px; padding: 10px 28px; box-shadow: 0 3px 0 0 var(--brun-fonce, #4A3B33); }
+.m1-btn:active:not(:disabled) { transform: translateY(2px); box-shadow: none; }
+
+/* ---------- La phrase : groupes sujet / verbe / objet ---------- */
+.m1-phrase { display: flex; align-items: flex-end; justify-content: center; flex-wrap: wrap; gap: 6px 10px; }
+.m1-groupe { display: flex; flex-direction: column; align-items: center; gap: 3px; }
+.m1-rang { display: flex; gap: 6px; }
+.m1-role { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; opacity: 0.8; }
+.m1-point { align-self: flex-end; font-weight: 800; font-size: 1.5rem; line-height: 1.4; }
+.m1-role-s { --role-fond: #FBDCCB; --role-bord: #E08867; }
+.m1-role-v { --role-fond: #D4E6F7; --role-bord: #6FA3D4; }
+.m1-role-o { --role-fond: #DDEFD6; --role-bord: #7DB26A; }
+.m1-role.m1-role-s, .m1-role.m1-role-v, .m1-role.m1-role-o { color: var(--role-bord); }
+
+.m1-tuile, .m1-case, .m1-champ {
+  box-sizing: border-box; min-width: 52px; min-height: 46px; padding: 6px 14px;
+  font-family: 'Baloo 2', sans-serif; font-weight: 700; font-size: 1.2rem; line-height: 1.2; text-align: center;
+  color: var(--brun-fonce, #4A3B33); background: var(--role-fond, #F3EEE9);
+  border: 2px solid var(--role-bord, #8A7364); border-radius: 14px;
+}
+.m1-tuile { cursor: pointer; box-shadow: 0 3px 0 0 var(--role-bord, #8A7364); transition: transform 0.12s ease, box-shadow 0.12s ease, opacity 0.2s ease; }
+.m1-tuile:active:not(:disabled) { transform: translateY(2px); box-shadow: none; }
+.m1-tuile:focus-visible, .m1-champ:focus-visible { outline: 3px solid var(--brun-fonce, #4A3B33); outline-offset: 2px; }
+.m1-tuile-choisie { transform: translateY(-2px); box-shadow: 0 5px 0 0 var(--role-bord, #8A7364); }
+.m1-tuile-donnee { cursor: default; box-shadow: none; opacity: 0.85; }
+.m1-tuile-partie { opacity: 0.25; pointer-events: none; box-shadow: none; }
+.m1-tuile.m1-indice { animation: m1Brille 0.9s ease-in-out infinite; }
+@keyframes m1Brille { 0%, 100% { box-shadow: 0 3px 0 0 var(--role-bord, #8A7364), 0 0 0 0 rgba(240, 169, 139, 0); } 50% { box-shadow: 0 3px 0 0 var(--role-bord, #8A7364), 0 0 0 7px rgba(240, 169, 139, 0.55); } }
+
+.m1-case { display: inline-flex; align-items: center; justify-content: center; min-width: 64px; background: rgba(255, 255, 255, 0.6); border-style: dashed; border-color: #CDBFB3; }
+.m1-case.m1-case-pleine { border-style: solid; border-color: var(--role-bord); background: var(--role-fond); animation: m1Pose 0.25s ease; }
+@keyframes m1Pose { from { transform: scale(0.85); } to { transform: scale(1); } }
+
+.m1-plateau { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; min-height: 52px; margin-top: 6px; }
+.m1-sens { min-height: 1.4em; margin: 0; font-size: 0.95rem; text-align: center; color: var(--brun-clair, #8A7364); }
+.m1-trad { margin: 0; font-size: 0.98rem; font-style: italic; text-align: center; color: var(--brun-clair, #8A7364); }
+.m1-genre { margin: 0; font-size: 0.88rem; font-weight: 700; text-align: center; color: var(--peche-fonce, #E08867); }
+
+/* ---------- Écriture ---------- */
+.m1-champ { background: #FFFFFF; border-style: solid; text-align: center; font-weight: 600; }
+.m1-champ:focus { outline: none; border-color: var(--peche-fonce, #E08867); box-shadow: 0 0 0 3px rgba(240, 169, 139, 0.28); }
+.m1-champ-phrase { width: 100%; text-align: left; padding: 10px 14px; --role-bord: #CFC6BE; }
+.m1-champ.m1-ok { background: #EAF5E5; border-color: #5D9A4B; }
+.m1-champ.m1-ko { background: #FBE7E1; border-color: #C9604A; }
+.m1-champ.m1-role-s, .m1-champ.m1-role-v, .m1-champ.m1-role-o { background: #FFFFFF; }
+
+/* ---------- Construction libre ---------- */
+.m1-construction {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 6px;
+  min-height: 62px; padding: 8px; box-sizing: border-box;
+  background: #FBF6F1; border: 2px dashed #CDBFB3; border-radius: 16px;
+}
+.m1-construction.m1-ok { border-style: solid; border-color: #5D9A4B; background: #EAF5E5; }
+.m1-construction-vide { font-size: 0.9rem; color: var(--brun-clair, #8A7364); }
+.m1-tuile-posee { box-shadow: 0 2px 0 0 var(--role-bord); }
+
+/* ---------- Écoute ---------- */
+.m1-ecoute { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.m1-haut-parleur {
+  display: inline-flex; align-items: center; gap: 10px; padding: 10px 22px;
+  font: 700 1.05rem 'Baloo 2', sans-serif; color: #FFFFFF; background: var(--peche-fonce, #E08867);
+  border: none; border-radius: 999px; box-shadow: 0 3px 0 0 var(--brun-fonce, #4A3B33); cursor: pointer;
+}
+.m1-haut-parleur svg { width: 24px; height: 24px; fill: none; stroke: #FFFFFF; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.m1-haut-parleur:active { transform: translateY(2px); box-shadow: none; }
+.m1-haut-parleur:focus-visible, .m1-lien:focus-visible { outline: 3px solid var(--brun-fonce, #4A3B33); outline-offset: 2px; }
+.m1-lien { padding: 6px 10px; font: inherit; font-size: 0.85rem; text-decoration: underline; color: var(--brun-clair, #8A7364); background: none; border: none; cursor: pointer; }
+.m1-texte-revele { margin: 0; font-weight: 700; font-size: 1.15rem; }
+
+/* ---------- Cartes : remarque et « Savais-tu ? » ---------- */
+.m1-note { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 14px; background: var(--peche-pale, rgba(240, 169, 139, 0.16)); border-radius: 16px; text-align: center; }
+.m1-note-titre { margin: 0; font-weight: 800; font-size: 1rem; color: var(--peche-fonce, #E08867); }
+.m1-note-texte { margin: 0; font-size: 0.98rem; line-height: 1.4; }
+.m1-paire { display: flex; gap: 18px; justify-content: center; }
+.m1-radical { font-weight: 700; font-size: 1.3rem; }
+.m1-radical b { margin-right: 4px; color: #E08867; }
+.m1-radical i { font-style: normal; padding: 0 3px; color: var(--brun-fonce); background: #F6C2A4; border-radius: 6px; }
+
+/* ---------- Le Lecteur (sous la carte) ---------- */
+.m1-lect {
+  width: min(94vw, 360px); margin-top: 12px; display: flex; flex-direction: column; align-items: flex-start; gap: 4px;
+  opacity: 0; transform: translateY(12px); transition: opacity 0.35s ease, transform 0.45s cubic-bezier(.2,.8,.3,1.3);
+}
+.m1-lect.m1-lect-visible { opacity: 1; transform: translateY(0); }
+.m1-lect-bulle { align-self: stretch; }
+.m1-lect-bulle.m1-sans-suite .lect-lecteur-texte { margin-bottom: 0; }
+.m1-lect-icone { margin: 8px 0 0 14px; }
+
+/* ---------- Secousse (erreur douce) ---------- */
+.m1-secoue { animation: m1Secoue 0.35s ease; }
+@keyframes m1Secoue { 0%, 100% { transform: translateX(0); } 20% { transform: translateX(-6px); } 40% { transform: translateX(6px); } 60% { transform: translateX(-4px); } 80% { transform: translateX(4px); } }
+
+/* ---------- Téléphone : la leçon en haut, Bek dessous ---------- */
+@media (max-width: 719px) {
+  .m1-scene { align-items: flex-start; overflow-y: auto; padding-top: 58px; }
+  .m1-disposition { flex-direction: column; gap: 8px; justify-content: flex-start; }
+  .m1-col-gauche { flex: 0 0 auto; width: 100%; }
+  .m1-bek { height: clamp(160px, calc(100dvh - 560px), 300px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .m1-tuile.m1-indice, .m1-secoue, .m1-case.m1-case-pleine { animation: none; }
+  .m1-tuile.m1-indice { outline: 3px solid var(--peche-fonce, #E08867); }
+  .m1-lect, .m1-tuile { transition: opacity 0.2s ease; }
+}

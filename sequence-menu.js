@@ -1690,7 +1690,10 @@
       if (!prog || typeof prog.lireProgression !== 'function') return null;
       try {
         const faites = (await prog.lireProgression()) || {};
-        return !!faites[ID_PREMIERE_MEMOIRE];
+        // TEMPORAIRE : memoire-1.html pose ce drapeau local tant que progression.js ne sait pas enregistrer 'm1'
+        let localeFaite = false;
+        try { localeFaite = localStorage.getItem('kebbek_m1_terminee') === '1'; } catch (e) {}
+        return !!faites[ID_PREMIERE_MEMOIRE] || localeFaite;
       } catch (e) {
         console.warn('menu : progression illisible, le menu reste à une ligne.', e);
         return false;

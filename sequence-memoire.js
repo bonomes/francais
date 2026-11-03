@@ -1903,11 +1903,19 @@
       cacherSens();
     }
 
+    // 🆕 (03-11-2026) CLIC = PLACER, sans confirmation (souris, stylet, clavier). Avant, un clic sur « parle »
+    // ne servait qu'à en montrer le sens si le survol n'avait pas atteint CETTE tuile (« parle » collée à
+    // « parles ») : il fallait cliquer deux fois. Seul le DOIGT sur écran tactile garde le double geste
+    // (1er toucher : le sens ; 2e toucher : on place), faute de survol. La confirmation sert à la SAISIE
+    // au clavier (deux mots possibles), pas au clic.
+    let dernierPointeur = 'mouse';
+    plateau.addEventListener('pointerdown', function (e) { dernierPointeur = e.pointerType || dernierPointeur; });
     plateau.addEventListener('click', function (e) {
       const t = e.target.closest ? e.target.closest('.mem-tuile') : null;
       if (!t || verrou || t.classList.contains('mem-tuile-partie')) return;
-      // 1er toucher : on montre le sens ; 2e toucher (ou survol déjà fait) : on place
-      if (t.dataset.vu !== '1') { selectionner(t); return; }
+      // detail === 0 : clic synthétique du clavier (Entrée/Espace sur le bouton) → jamais un toucher
+      const doigt = (e.pointerType || dernierPointeur) === 'touch' && e.detail !== 0;
+      if (doigt && t.dataset.vu !== '1') { selectionner(t); return; }
       placer(t);
     });
     plateau.addEventListener('pointerover', function (e) {

@@ -357,7 +357,7 @@ header, .chemin { position: relative; z-index: 1; }
     fichier: '<path d="M6 3h8l4 4v14H6Z"/><path d="M14 3v4h4"/>'
   };
   const T = {
-    sousTitre: 'Choisis une mémoire', commencer: 'Commencer', revoir: 'Revoir', verrouille: 'Termine la mémoire précédente pour l’ouvrir.',
+    sousTitre: 'Choisis une mémoire', commencer: 'Commencer', continuer: 'Continuer', fragmentSur: 'Fragment {k} sur {n}', revoir: 'Revoir', verrouille: 'Termine la mémoire précédente pour l’ouvrir.',
     preparation: 'Cette mémoire est encore en préparation ✏️', avec: 'Avec', mystere: 'Quelqu’un de mystérieux',
     programme: 'Fragments et vocabulaire', rappel: 'Pour réviser\u00a0:', legende: 'm. = masculin · f. = féminin'
   };
@@ -470,6 +470,10 @@ header, .chemin { position: relative; z-index: 1; }
     if (faites[m.id]) return true;
     try { return localStorage.getItem('kebbek_' + m.id + '_' + f.id) === '1'; } catch (e) { return false; }   // TEMPORAIRE : drapeaux locaux (progression.js ne relit pas les conditions)
   }
+  // 🆕 position en cours (quitter et continuer plus tard) : gardée par la page de la leçon sur cet appareil
+  function positionLocale(m) {
+    try { const p = JSON.parse(localStorage.getItem('kebbek_' + m.id + '_position') || 'null'); return p && p.segment > 0 ? p : null; } catch (e) { return null; }
+  }
   function motHtml(w) {
     return '<span class="mot' + (w.genre ? ' ' + w.genre : '') + '">' + echapper(w.mot) + (w.genre ? '<small>' + w.genre + '.</small>' : '') + '</span>';
   }
@@ -508,13 +512,16 @@ header, .chemin { position: relative; z-index: 1; }
     el.resume.style.display = verrouillee ? 'none' : '';
     rendreProgramme(m, verrouillee);
     el.fichiers.innerHTML = verrouillee || !m.fichiers ? '' : m.fichiers.map(function (f) { return '<span class="fichier">' + svg(ICONES.fichier) + echapper(f) + '</span>'; }).join('');
-    el.bouton.textContent = etat === 'complete' ? T.revoir : T.commencer;
+    const frs = m.fragments || [];
+    const nbFaits = frs.filter(function (f) { return fragmentFait(m, f); }).length;
+    const enCours = !verrouillee && etat !== 'complete' && frs.length > 0 && (nbFaits > 0 || !!positionLocale(m));
+    el.bouton.textContent = etat === 'complete' ? T.revoir : (enCours ? T.continuer : T.commencer);
     el.bouton.disabled = verrouillee;
     el.bouton.onclick = function () {
       if (m.page) window.location.href = m.page;
       else el.indice.textContent = T.preparation;
     };
-    el.indice.textContent = verrouillee ? T.verrouille : '';
+    el.indice.textContent = verrouillee ? T.verrouille : (enCours ? T.fragmentSur.replace('{k}', Math.min(nbFaits + 1, frs.length)).replace('{n}', frs.length) : '');
     panneau.classList.add('ouvert');
     ajusterPersonnages();
     montrerPersonnages(m, verrouillee);

@@ -36,6 +36,7 @@
   const CLE_F3_LOCAL = 'kebbek_m1_f3';             // fragment 3 récupéré (regarder)
   const CLE_F4_LOCAL = 'kebbek_m1_f4';             // fragment 4 récupéré (j'aime)
   const CLE_F5_LOCAL = 'kebbek_m1_f5';             // la RÉPARATION (fragment 5) terminée
+  const CLE_POSITION_LOCALE = 'kebbek_m1_position';  // 🆕 { fragment, segment } : où l'élève s'est arrêté (quitter et continuer plus tard)
   const prog = window.KebBekProgression || null;
   const params = new URLSearchParams(window.location.search);
   let instance = null;
@@ -51,6 +52,29 @@
     return Promise.resolve(false);
   }
 
+  // 🆕 POSITION. Écrite à chaque segment (callbacks.onPosition) : toujours sur l'appareil, et dans progression.js
+  // (invité : localStorage ; compte : fonctions enregistrer_position_lecon / lire_position_lecon / effacer_position_lecon,
+  //  voir migration-position-lecon.sql — tant qu'elles n'existent pas côté Supabase, seule la copie locale sert).
+  function ecrirePosition(p) {
+    try { localStorage.setItem(CLE_POSITION_LOCALE, JSON.stringify(p)); } catch (e) {}
+    try { if (prog && prog.enregistrerPositionLecon) Promise.resolve(prog.enregistrerPositionLecon('m1', 'f' + p.fragment + '-s' + p.segment, p)).catch(function () {}); } catch (e) {}
+  }
+  function effacerPosition() {
+    try { localStorage.removeItem(CLE_POSITION_LOCALE); } catch (e) {}
+    try { if (prog && prog.effacerPositionLecon) Promise.resolve(prog.effacerPositionLecon('m1')).catch(function () {}); } catch (e) {}
+  }
+  async function lirePosition() {
+    try {
+      if (prog && prog.lirePositionLecon) {
+        const r = await prog.lirePositionLecon('m1');
+        const p = r && r.reponses;
+        if (p && p.fragment && p.segment) return { fragment: Number(p.fragment), segment: Number(p.segment) };
+      }
+    } catch (e) {}
+    try { const p = JSON.parse(localStorage.getItem(CLE_POSITION_LOCALE) || 'null'); if (p && p.fragment && p.segment) return p; } catch (e) {}
+    return null;
+  }
+
   // La mémoire est faite de fragments. Fragment 1 (manger) → 2 (un/une, le/la) → 3 (regarder) → 4 (j'aime) → 5 (la RÉPARATION) → mémoire terminée.
   // Tant que la « réparation » (format sequence-memoire) n'existe pas, c'est la fin du dernier fragment (DERNIER = la réparation) qui termine la mémoire.
   // ?f=1 à ?f=5 force un fragment (test). Sans paramètre : on reprend au premier fragment non récupéré
@@ -58,10 +82,12 @@
   // ⚠️ progression.js ne relit pas les conditions : la reprise lit les drapeaux LOCAUX (donc par appareil).
   const DERNIER = 5;
   const CLES_LOCALES = { 1: CLE_F1_LOCAL, 2: CLE_F2_LOCAL, 3: CLE_F3_LOCAL, 4: CLE_F4_LOCAL, 5: CLE_F5_LOCAL };
-  function lancerFragment(n) {
+  function lancerFragment(n, reprendreA) {
     if (instance) { try { instance.arreter(); } catch (e) {} }
-    instance = window.KebBekM1.demarrer('memoire', { fragment: n, suite: n < DERNIER }, {
+    instance = window.KebBekM1.demarrer('memoire', { fragment: n, suite: n < DERNIER, reprendreA: reprendreA || 0 }, {
+      onPosition: function (p) { ecrirePosition(p); },
       onTermine: async function () {
+        effacerPosition();                        // le fragment est fini : le suivant recommence à son introduction
         if (n < DERNIER) {
           marquer(CLES_LOCALES[n]);
           enregistrer('marquerConditionComplete', 'm1_f' + n);
@@ -84,10 +110,18 @@
   async function lancer() {
     try { if (prog && prog.restaurerSessionEtProfil) await prog.restaurerSessionEtProfil(); } catch (e) { console.warn('Session indisponible.', e); }
     const f = params.get('f');
-    let debut = 1;
-    if (f === '1' || f === '2' || f === '3' || f === '4' || f === '5') debut = Number(f);
-    else if (!lu(CLE_M1_LOCAL)) { while (debut < DERNIER && lu(CLES_LOCALES[debut])) debut++; }   // premier fragment non récupéré
-    lancerFragment(debut);
+    let debut = 1, reprendreA = 0;
+    if (f === '1' || f === '2' || f === '3' || f === '4' || f === '5') {
+      debut = Number(f);
+      reprendreA = Math.max(0, Math.min(5, Number(params.get('s')) || 0));      // test : ?f=3&s=4 reprend le fragment 3 au segment 4
+    } else if (!lu(CLE_M1_LOCAL)) {
+      while (debut < DERNIER && lu(CLES_LOCALES[debut])) debut++;                // premier fragment non récupéré
+      const pos = await lirePosition();                                          // …et, s'il était entamé, le segment où l'élève s'est arrêté
+      if (pos && pos.fragment === debut && pos.segment >= 1 && pos.segment <= 5) reprendreA = pos.segment;
+    } else {
+      effacerPosition();                                                         // mémoire terminée : on la rejoue depuis le début
+    }
+    lancerFragment(debut, reprendreA);
   }
   lancer();
 })();

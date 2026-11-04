@@ -29,10 +29,13 @@
   'use strict';
   // Progression : progression.js (compte ou invité). Les drapeaux locaux restent en filet de sécurité :
   // memoires.html et sequence-menu.js les lisent aussi, au cas où l'écriture dans le compte échouerait
-  // (⚠️ à vérifier côté Supabase : que 'm1' existe comme chapitre et que 'm1_f1' / 'm1_f2' soient acceptés comme conditions).
+  // (vérifié côté Supabase le 03-11-2026 : chapitre_id et condition_id sont du texte libre, 'm1' et 'm1_f1'…'m1_f5' sont acceptés (m1_f5 = la réparation)).
   const CLE_M1_LOCAL = 'kebbek_m1_terminee';       // la MÉMOIRE est terminée
   const CLE_F1_LOCAL = 'kebbek_m1_f1';             // fragment 1 récupéré
-  const CLE_F2_LOCAL = 'kebbek_m1_f2';             // fragment 2 récupéré
+  const CLE_F2_LOCAL = 'kebbek_m1_f2';             // fragment 2 récupéré (un/une, le/la)
+  const CLE_F3_LOCAL = 'kebbek_m1_f3';             // fragment 3 récupéré (regarder)
+  const CLE_F4_LOCAL = 'kebbek_m1_f4';             // fragment 4 récupéré (j'aime)
+  const CLE_F5_LOCAL = 'kebbek_m1_f5';             // la RÉPARATION (fragment 5) terminée
   const prog = window.KebBekProgression || null;
   const params = new URLSearchParams(window.location.search);
   let instance = null;
@@ -48,24 +51,28 @@
     return Promise.resolve(false);
   }
 
-  // La mémoire est faite de fragments. Fragment 1 → fragment 2 → (⚠️ provisoire) mémoire terminée.
-  // Tant que la « réparation » (format sequence-memoire) n'existe pas, c'est la fin du fragment 2 qui termine la mémoire.
-  // ?f=1 ou ?f=2 force un fragment (test). Sans paramètre : si le fragment 1 est déjà récupéré mais pas la mémoire, on reprend au 2.
+  // La mémoire est faite de fragments. Fragment 1 (manger) → 2 (un/une, le/la) → 3 (regarder) → 4 (j'aime) → 5 (la RÉPARATION) → mémoire terminée.
+  // Tant que la « réparation » (format sequence-memoire) n'existe pas, c'est la fin du dernier fragment (DERNIER = la réparation) qui termine la mémoire.
+  // ?f=1 à ?f=5 force un fragment (test). Sans paramètre : on reprend au premier fragment non récupéré
+  // (tant que la mémoire n'est pas terminée).
+  // ⚠️ progression.js ne relit pas les conditions : la reprise lit les drapeaux LOCAUX (donc par appareil).
+  const DERNIER = 5;
+  const CLES_LOCALES = { 1: CLE_F1_LOCAL, 2: CLE_F2_LOCAL, 3: CLE_F3_LOCAL, 4: CLE_F4_LOCAL, 5: CLE_F5_LOCAL };
   function lancerFragment(n) {
     if (instance) { try { instance.arreter(); } catch (e) {} }
-    instance = window.KebBekM1.demarrer('memoire', { fragment: n, suite: n === 1 }, {
+    instance = window.KebBekM1.demarrer('memoire', { fragment: n, suite: n < DERNIER }, {
       onTermine: async function () {
-        if (n === 1) {
-          marquer(CLE_F1_LOCAL);
-          enregistrer('marquerConditionComplete', 'm1_f1');
-          lancerFragment(2);
+        if (n < DERNIER) {
+          marquer(CLES_LOCALES[n]);
+          enregistrer('marquerConditionComplete', 'm1_f' + n);
+          lancerFragment(n + 1);
           return;
         }
-        marquer(CLE_F2_LOCAL);
+        marquer(CLES_LOCALES[n]);
         marquer(CLE_M1_LOCAL);
         // on laisse 3 s au plus à l'écriture (compte) avant de quitter la page
         await Promise.race([
-          Promise.all([enregistrer('marquerConditionComplete', 'm1_f2'), enregistrer('marquerChapitreComplete', 'm1')]),
+          Promise.all([enregistrer('marquerConditionComplete', 'm1_f' + n), enregistrer('marquerChapitreComplete', 'm1')]),
           new Promise(function (resolve) { setTimeout(resolve, 3000); })
         ]);
         versMemoires();
@@ -77,7 +84,10 @@
   async function lancer() {
     try { if (prog && prog.restaurerSessionEtProfil) await prog.restaurerSessionEtProfil(); } catch (e) { console.warn('Session indisponible.', e); }
     const f = params.get('f');
-    lancerFragment(f === '2' ? 2 : f === '1' ? 1 : (lu(CLE_F1_LOCAL) && !lu(CLE_M1_LOCAL) ? 2 : 1));
+    let debut = 1;
+    if (f === '1' || f === '2' || f === '3' || f === '4' || f === '5') debut = Number(f);
+    else if (!lu(CLE_M1_LOCAL)) { while (debut < DERNIER && lu(CLES_LOCALES[debut])) debut++; }   // premier fragment non récupéré
+    lancerFragment(debut);
   }
   lancer();
 })();

@@ -91,13 +91,17 @@
         redit la phrase. Pas de carte de remarque, pas de lecture : le Lecteur ne parle qu'entre deux phrases.
         TOUT SE RÈGLE DANS LE TABLEAU REPARATION (phrases, mots déjà placés, pièges, image, pique d'après). Le CSS propre à ce mode est
         injecté par le script (REPARATION_CSS) : à déplacer dans sequence-m1.css si tu préfères. C'est la FIN de la mémoire (onTermine).
+     🆕 (04-11-2026) QUITTER ET CONTINUER PLUS TARD : options.reprendreA = n (1 à 5) reprend le fragment au segment n (n segments déjà faits ;
+        l'introduction est remplacée par « On reprend là où on s'était arrêtés »). callbacks.onPosition({ fragment, segment }) est appelé au début
+        de chaque segment (jamais à 0 ni à la fin) : la page hôte y garde la position (voir memoire-1.html). Le bouton « ‹ » ouvre une
+        confirmation « Quitter et continuer plus tard ? » (Quitter / Rester) ; onQuitter n'est appelé que si l'élève confirme.
      Un « ' » ou un « ’ » tapé sont équivalents ; « jaime » ou « j aime » donnent « Presque ! N'oublie pas l'apostrophe. »
    onTermine({ mots, fragments }) : fragments = numéro du fragment terminé.
 
    @param {string} idConteneur
    @param {object} options   : langue ; dossierAudio ('audio/fr/') ; voixLangue ('fr-CA') ;
                                imageLecteur ; sources { pose: url }
-   @param {object} callbacks : onTermine({ mots, fragments }) ; onQuitter()
+   @param {object} callbacks : onTermine({ mots, fragments }) ; onQuitter() ; onPosition({ fragment, segment })
    Principe du projet : le module ne navigue jamais lui-même.
    🆕 Textes : les 20 langues du projet (fr, en, es, it, pt, ca, eo, zh, ja, ko, vi, ht, tl, id,
    nl, de, fa, sv, no, ru). Tutoiement ; « poutine » reste en lettres latines en ko, ru et fa
@@ -220,6 +224,13 @@
     '.m1-corrompu .m1-col-bek{filter:grayscale(calc(var(--m1-abime,1)*.85)) blur(calc(var(--m1-abime,1)*1.8px)) contrast(calc(1 + var(--m1-abime,1)*.15));transition:filter .9s ease}',
     '@media (prefers-reduced-motion:reduce){.m1-corrompu .m1-col-bek,.m1-rep-ligne{transition:none}}'
   ].join('\n');
+  const QUITTER_CSS = [
+    '.m1-quitter-voile{position:absolute;inset:0;z-index:60;display:flex;align-items:center;justify-content:center;background:rgba(74,59,51,.45);padding:1rem;box-sizing:border-box}',
+    '.m1-quitter-boite{max-width:22rem;width:100%;background:#FCF5EA;border-radius:1.2rem;padding:1.2rem 1.3rem;box-shadow:0 10px 30px rgba(74,59,51,.35);text-align:center;color:var(--brun-fonce,#4A3B33)}',
+    '.m1-quitter-titre{margin:0 0 .3rem;font-weight:800;font-size:1.15rem}',
+    '.m1-quitter-info{margin:0 0 1rem;opacity:.85}',
+    '.m1-quitter-boutons{display:flex;gap:.6rem;justify-content:center;flex-wrap:wrap}'
+  ].join('\n');
   const BANQUE_4 = ['j', 'je', 'aime', 'manger', 'mange', 'regarder', 'regarde', 'jouer', 'la', 'poutine', 'tele'];   // fragment 4 : j'aime (je, mange, regarde = pièges) (pas « parle », pas « français »)
 
   const DICO = {
@@ -272,6 +283,9 @@
       quipLaPoutine: 'La poutine. On ne l’a pas oubliée, celle-là. Dommage.',
       quipPizza: 'Une pizza. Là, au moins, personne ne se dispute.',
       cult_pizza: 'Le mot «\u00a0pizza\u00a0» vient de l’italien. En français, il est féminin\u00a0: une pizza, la pizza.',
+      // ---- 🆕 quitter / reprendre ----
+      reprise: 'On reprend là où on s’était arrêtés. Moi, je n’ai rien oublié.',
+      quitter_titre: 'Quitter et continuer plus tard\u00a0?', quitter_info: 'Ta progression est gardée.', quitter_oui: 'Quitter', quitter_non: 'Rester',
       // ---- 🆕 fragment 5 : la réparation ----
       intro5: 'Les quatre morceaux sont là. Il reste à les assembler, seul. Je ne dirai rien. Enfin, presque rien.',
       fin5: 'Souvenir réparé. Quatre morceaux, six phrases, un peu de poutine. Ça aurait pu être pire.',
@@ -362,6 +376,9 @@
       quipLaPoutine: 'The poutine. We haven’t forgotten that one. Pity.',
       quipPizza: 'A pizza. At least nobody argues about that one.',
       cult_pizza: 'The word “pizza” comes from Italian. In French it is feminine: une pizza, la pizza.',
+      // ---- 🆕 leave / resume ----
+      reprise: 'Picking up where we left off. I haven’t forgotten anything, you’ll notice.',
+      quitter_titre: 'Leave and continue later?', quitter_info: 'Your progress is saved.', quitter_oui: 'Leave', quitter_non: 'Stay',
       // ---- 🆕 fragment 5: the repair ----
       intro5: 'All four pieces are here. Now to put them together, on your own. I won’t say anything. Well, almost nothing.',
       fin5: 'Memory repaired. Four pieces, six sentences, a little poutine. It could have been worse.',
@@ -1563,7 +1580,13 @@
     // ---------- Aides d'affichage ----------
     function consigne(txt) { elConsigne.textContent = txt; }
     function vider() { zone.innerHTML = ''; actions.innerHTML = ''; zone.removeAttribute('data-mode'); zone.removeAttribute('data-phrase'); }
-    function etape(n) { Array.prototype.forEach.call(segs, function (s, i) { s.classList.toggle('m1-segment-fait', i < n); }); }
+    function etape(n) {
+      Array.prototype.forEach.call(segs, function (s, i) { s.classList.toggle('m1-segment-fait', i < n); });
+      // 🆕 n segments sont faits : c'est un point de reprise (jamais 0, jamais la fin)
+      if (n > 0 && n < ETAPES_TOTAL && typeof callbacks.onPosition === 'function') {
+        try { callbacks.onPosition({ fragment: fragment, segment: n }); } catch (e) { console.warn('onPosition a échoué.', e); }
+      }
+    }
     function boutonAction(label, clair) {
       return new Promise(function (resolve) {
         const b = document.createElement('button');
@@ -2088,12 +2111,14 @@
       if (cle === 'film') await carte(T('cult_titre'), T('cult_film'));
     }
     // Même objet, deux verbes : Bek REGARDE le sandwich, puis elle le MANGE. Le verbe change tout.
-    async function etapeContraste() {
+    async function etapeContraste3() {
       etape(3);
       montrer('bek-regarde-sandwich');
       consigne(T('c_image'));
       planifier(function () { lecteurIndice(T('quipRegSandwich'), 5500); }, 1200);
       await construire(PHRASES.regsandwich, 'image-regsandwich', { banque: BANQUE_3 });
+    }
+    async function etapeContraste4() {
       etape(4);
       montrer('bek-mange-sandwich');
       consigne(T('c_image'));
@@ -2142,19 +2167,21 @@
     }
 
     // ---------- 🆕 Fragment 5 : LA RÉPARATION (le cadre) ----------
-    function injecterStyleReparation() {
-      if (document.getElementById('m1-reparation-style')) return;
+    function injecterStyle(id, css) {
+      if (document.getElementById(id)) return;
       const st = document.createElement('style');
-      st.id = 'm1-reparation-style';
-      st.textContent = REPARATION_CSS;
+      st.id = id;
+      st.textContent = css;
       document.head.appendChild(st);
     }
+    function injecterStyleReparation() { injecterStyle('m1-reparation-style', REPARATION_CSS); }
     const cleSaisie = function (t) { return sansAccents(String(t).toLowerCase()).replace(/['’‘`´\s]/g, ''); };
 
-    async function reparation() {
+    async function reparation(depart) {
+      depart = depart || 0;
       injecterStyleReparation();
       scene.classList.add('m1-corrompu');
-      scene.style.setProperty('--m1-abime', '1');
+      scene.style.setProperty('--m1-abime', String(1 - depart / REPARATION.length));
       vider();
       zone.setAttribute('data-mode', 'reparation');
       consigne(T('c_rep'));
@@ -2172,11 +2199,18 @@
       actions.appendChild(bSon);
 
       // le souvenir : toutes les phrases, abîmées tant qu'elles ne sont pas réparées
-      const lignes = REPARATION.map(function (r) {
+      const lignes = REPARATION.map(function (r, idx) {
         const ph = PHRASES[r.cle];
         const el = document.createElement('div');
         el.className = 'm1-rep-ligne';
         el.setAttribute('data-cle', r.cle);
+        if (idx < depart) {            // reprise : les phrases déjà réparées sont rétablies
+          el.classList.add('m1-rep-faite');
+          ph.mots.forEach(function (id) { el.appendChild(tuile(id, 'm1-tuile-posee')); });
+          const pt = document.createElement('span'); pt.className = 'm1-point'; pt.textContent = '.'; el.appendChild(pt);
+          liste.appendChild(el);
+          return el;
+        }
         ph.mots.forEach(function (id) {
           const b = document.createElement('span');
           b.className = 'm1-abime';
@@ -2253,7 +2287,7 @@
             }
           }
           function surFrappe(e) {
-            if (termine || e.ctrlKey || e.metaKey || e.altKey) return;
+            if (termine || e.ctrlKey || e.metaKey || e.altKey || scene.querySelector('.m1-quitter-voile')) return;
             if (e.target && /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) return;
             const touche = e.key;
             if (touche === 'Escape' || touche === 'Backspace') {
@@ -2292,7 +2326,7 @@
         });
       }
 
-      for (let i = 0; i < REPARATION.length; i++) {
+      for (let i = depart; i < REPARATION.length; i++) {
         await reparerLigne(i);
         etape(i + 1);
         scene.style.setProperty('--m1-abime', String(1 - (i + 1) / REPARATION.length));
@@ -2321,70 +2355,97 @@
       }
     }
 
+    // Un segment « exercice audio » (le dernier de chaque fragment)
+    function segAudio(cles) {
+      return async function () {
+        etape(5); montrer('bek-observe'); consigne(T('c_audio'));
+        for (const cle of cles) await construireAudio(PHRASES[cle], 'audio-' + cle);
+      };
+    }
+    // Les 6 segments de chaque fragment (la réparation a son propre déroulé). Reprendre = commencer au segment n.
+    function segmentsDuFragment() {
+      if (fragment === 2) return [
+        etapeArticles, etapePoutineLa, etapePizza,
+        function () { return etapeNouveauConnu(3, 'sandwich'); },
+        function () { return etapeNouveauConnu(4, 'poutine'); },
+        segAudio(['sandwichle', 'poutinela', 'pizzala'])
+      ];
+      if (fragment === 3) return [
+        etapeRegarde,
+        function () { return etapeRegardePhrase('film', 1); },
+        function () { return etapeRegardePhrase('regpoutine', 2); },
+        etapeContraste3, etapeContraste4,
+        segAudio(['regarde', 'film', 'poutine'])           // le rappel « Je mange une poutine. » en dernier
+      ];
+      if (fragment === 4) return [
+        function () { return segmentAime(0, 'aimepoutine', 'bek-mange-poutine', ['je'], [0, 1], 'quipAimePoutine',
+          { avant: true, titre: 'noteJ_titre', texte: 'noteJ', visuel: pairesElision }); },
+        function () { return segmentAime(1, 'aimemanger', 'bek-mange-sandwich', ['mange'], [2], 'quipAimeManger',
+          { avant: true, titre: 'noteI_titre', texte: 'noteI', visuel: pairesInfinitif }); },
+        function () { return segmentAime(2, 'aimetele', 'bek-regarde-film', ['regarde'], null, null,
+          { avant: false, titre: 'cult_titre', texte: 'cult_tele' }); },
+        function () { return segmentAime(3, 'aimejouer', 'bek-aime-jouer', ['manger'], null, 'quipAimeJouer'); },
+        async function () {
+          etape(4); montrer('bek-regarde-poutine');
+          consigne(T('c_audio'));
+          planifier(function () { lecteurIndice(T('quipAimeRegPoutine'), 5000); }, 4000);
+          await construireAudio(PHRASES.aimeregpoutine, 'audio-aimeregpoutine');
+          montrer('bek-mange-poutine');
+          await construireAudio(PHRASES.aimemangerpoutine, 'audio-aimemangerpoutine');
+        },
+        segAudio(['aimemanger', 'aimetele', 'aimejouer'])
+      ];
+      return [                                              // fragment 1
+        etapeMange,
+        function () { return etapePhrase('sandwich', 1); },
+        function () { return etapePhrase('poutine', 2); },
+        function () { return etapeImage('sandwich', 3); },
+        function () { return etapeImage('poutine', 4); },
+        segAudio(['parle', 'mange', 'poutine'])
+      ];
+    }
+
     async function deroule() {
+      const depart = Math.max(0, Math.min(ETAPES_TOTAL - 1, Math.floor(Number(options.reprendreA) || 0)));
       await attendre(500);
-      lecteurAfficher(T(fragment === 1 ? 'intro' : 'intro' + fragment), true);
       montrer('bek-observe');
+      lecteurAfficher(T(depart > 0 ? 'reprise' : (fragment === 1 ? 'intro' : 'intro' + fragment)), true);
+      if (depart > 0) etape(depart);
       await new Promise(function (resolve) { lectSuite.onclick = function () { lectSuite.onclick = null; lecteurMasquer(); resolve(); }; });
-      if (fragment === 2) {
-        await etapeArticles();
-        await etapePoutineLa();
-        await etapePizza();
-        await etapeNouveauConnu(3, 'sandwich');
-        await etapeNouveauConnu(4, 'poutine');
-        etape(5); montrer('bek-observe'); consigne(T('c_audio'));
-        for (const cle of ['sandwichle', 'poutinela', 'pizzala']) await construireAudio(PHRASES[cle], 'audio-' + cle);
-        await fin();
-        return;
-      }
-      if (fragment === 5) {
-        await reparation();
-        return;
-      }
-      if (fragment === 4) {
-        await segmentAime(0, 'aimepoutine', 'bek-mange-poutine', ['je'], [0, 1], 'quipAimePoutine',
-          { avant: true, titre: 'noteJ_titre', texte: 'noteJ', visuel: pairesElision });
-        await segmentAime(1, 'aimemanger', 'bek-mange-sandwich', ['mange'], [2], 'quipAimeManger',
-          { avant: true, titre: 'noteI_titre', texte: 'noteI', visuel: pairesInfinitif });
-        await segmentAime(2, 'aimetele', 'bek-regarde-film', ['regarde'], null, null,
-          { avant: false, titre: 'cult_titre', texte: 'cult_tele' });
-        await segmentAime(3, 'aimejouer', 'bek-aime-jouer', ['manger'], null, 'quipAimeJouer');
-        etape(4); montrer('bek-regarde-poutine');
-        consigne(T('c_audio'));
-        planifier(function () { lecteurIndice(T('quipAimeRegPoutine'), 5000); }, 4000);
-        await construireAudio(PHRASES.aimeregpoutine, 'audio-aimeregpoutine');
-        montrer('bek-mange-poutine');
-        await construireAudio(PHRASES.aimemangerpoutine, 'audio-aimemangerpoutine');
-        etape(5); montrer('bek-observe'); consigne(T('c_audio'));
-        for (const cle of ['aimemanger', 'aimetele', 'aimejouer']) await construireAudio(PHRASES[cle], 'audio-' + cle);
-        await fin();
-        return;
-      }
-      if (fragment === 3) {
-        await etapeRegarde();
-        await etapeRegardePhrase('film', 1);
-        await etapeRegardePhrase('regpoutine', 2);
-        await etapeContraste();
-        // étape 6 : écoute (« Je regarde. », « Je regarde un film. », puis le rappel « Je mange une poutine. »)
-        etape(5); montrer('bek-observe'); consigne(T('c_audio'));
-        for (const cle of ['regarde', 'film', 'poutine']) await construireAudio(PHRASES[cle], 'audio-' + cle);
-        await fin();
-        return;
-      }
-      await etapeMange();
-      await etapePhrase('sandwich', 1);
-      await etapePhrase('poutine', 2);
-      await etapeImage('sandwich', 3);
-      await etapeImage('poutine', 4);
-      // étape 6 : écoute puis cases (la phrase d'abord, « Je mange. » ensuite, puis la poutine)
-      etape(5); montrer('bek-observe'); consigne(T('c_audio'));
-      for (const cle of ['parle', 'mange', 'poutine']) await construireAudio(PHRASES[cle], 'audio-' + cle);
+      if (fragment === 5) { await reparation(depart); return; }
+      const segmentsF = segmentsDuFragment();
+      for (let i = depart; i < segmentsF.length; i++) await segmentsF[i]();
       await fin();
     }
 
-    q('.m1-quitter').addEventListener('click', function () {
-      if (typeof callbacks.onQuitter === 'function') callbacks.onQuitter();
-    });
+    // 🆕 « ‹ » : on demande confirmation (la progression est déjà gardée par onPosition) avant de quitter
+    function demanderQuitter() {
+      if (scene.querySelector('.m1-quitter-voile')) return;
+      injecterStyle('m1-quitter-style', QUITTER_CSS);
+      const voile = document.createElement('div');
+      voile.className = 'm1-quitter-voile';
+      voile.setAttribute('role', 'dialog'); voile.setAttribute('aria-modal', 'true');
+      voile.innerHTML = '<div class="m1-quitter-boite">' +
+        '<p class="m1-quitter-titre">' + echapper(T('quitter_titre')) + '</p>' +
+        '<p class="m1-quitter-info">' + echapper(T('quitter_info')) + '</p>' +
+        '<div class="m1-quitter-boutons">' +
+          '<button type="button" class="lect-btn m1-btn m1-quitter-oui">' + echapper(T('quitter_oui')) + '</button>' +
+          '<button type="button" class="lect-btn m1-btn m1-quitter-non">' + echapper(T('quitter_non')) + '</button>' +
+        '</div></div>';
+      scene.appendChild(voile);
+      function fermer() { document.removeEventListener('keydown', surEchap); if (voile.parentNode) voile.parentNode.removeChild(voile); }
+      function surEchap(e) { if (e.key === 'Escape') { e.preventDefault(); fermer(); } }
+      document.addEventListener('keydown', surEchap);
+      nettoyages.push(function () { document.removeEventListener('keydown', surEchap); });
+      voile.querySelector('.m1-quitter-non').addEventListener('click', fermer);
+      voile.querySelector('.m1-quitter-oui').addEventListener('click', function () {
+        fermer();
+        if (typeof callbacks.onQuitter === 'function') callbacks.onQuitter();
+      });
+      voile.querySelector('.m1-quitter-non').focus();
+    }
+
+    q('.m1-quitter').addEventListener('click', demanderQuitter);
 
     // ---------- Lancement ----------
     precharger(POSES, function (nom) { return sources[nom]; }).then(function (etat) {

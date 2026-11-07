@@ -135,7 +135,15 @@
       avertInvite: 'Tu progreso podr\u00eda perderse si se borran los datos del navegador.',
       codeInvalide: 'C\u00f3digo incorrecto o caducado.',
       profilTitre: '\u00bfQui\u00e9n eres?',
-      profilAjouter: '+ A\u00f1adir un perfil'
+      profilAjouter: '+ A\u00f1adir un perfil',
+      conflitTitre: 'Esta cuenta ya tiene progreso',
+      conflitTexte: 'Tambi\u00e9n avanzaste sin iniciar sesi\u00f3n. \u00bfQu\u00e9 progreso quieres conservar?',
+      conflitGarder: 'Conservar el de la cuenta',
+      conflitNouveau: 'Conservar el nuevo, en un perfil nuevo',
+      effacerTitre: '\u00bfBorrar tu progreso?',
+      effacerTexte: 'Lo que hiciste sin iniciar sesi\u00f3n se borrar\u00e1 para siempre.',
+      effacer: 'Borrar',
+      retour: 'Volver'
     },
     it: {
       titre: 'Crea il tuo account',
@@ -154,7 +162,15 @@
       avertInvite: 'I tuoi progressi potrebbero andare persi se i dati del browser vengono cancellati.',
       codeInvalide: 'Codice errato o scaduto.',
       profilTitre: 'Chi sei?',
-      profilAjouter: '+ Aggiungi un profilo'
+      profilAjouter: '+ Aggiungi un profilo',
+      conflitTitre: 'Questo account ha gi\u00e0 dei progressi',
+      conflitTexte: 'Hai anche proseguito senza accedere. Quali progressi vuoi tenere?',
+      conflitGarder: 'Tieni quelli dell\'account',
+      conflitNouveau: 'Tieni quelli nuovi, in un nuovo profilo',
+      effacerTitre: 'Cancellare i tuoi progressi?',
+      effacerTexte: 'Ci\u00f2 che hai fatto senza accedere verr\u00e0 cancellato definitivamente.',
+      effacer: 'Cancella',
+      retour: 'Indietro'
     },
     pt: {
       titre: 'Crie sua conta',
@@ -173,7 +189,15 @@
       avertInvite: 'Seu progresso pode ser perdido se os dados do navegador forem apagados.',
       codeInvalide: 'C\u00f3digo incorreto ou expirado.',
       profilTitre: 'Quem \u00e9 voc\u00ea?',
-      profilAjouter: '+ Adicionar um perfil'
+      profilAjouter: '+ Adicionar um perfil',
+      conflitTitre: 'Esta conta j\u00e1 tem progresso',
+      conflitTexte: 'Voc\u00ea tamb\u00e9m avan\u00e7ou sem entrar. Qual progresso voc\u00ea quer manter?',
+      conflitGarder: 'Manter o da conta',
+      conflitNouveau: 'Manter o novo, em um novo perfil',
+      effacerTitre: 'Apagar seu progresso?',
+      effacerTexte: 'O que voc\u00ea fez sem entrar ser\u00e1 apagado para sempre.',
+      effacer: 'Apagar',
+      retour: 'Voltar'
     },
     ca: {
       titre: 'Crea el teu compte',
@@ -192,7 +216,15 @@
       avertInvite: 'El teu progr\u00e9s es podria perdre si s\'esborren les dades del navegador.',
       codeInvalide: 'Codi incorrecte o caducat.',
       profilTitre: 'Qui ets?',
-      profilAjouter: '+ Afegeix un perfil'
+      profilAjouter: '+ Afegeix un perfil',
+      conflitTitre: 'Aquest compte ja t\u00e9 progr\u00e9s',
+      conflitTexte: 'Tamb\u00e9 has avan\u00e7at sense iniciar la sessi\u00f3. Quin progr\u00e9s vols conservar?',
+      conflitGarder: 'Conserva el del compte',
+      conflitNouveau: 'Conserva el nou, en un perfil nou',
+      effacerTitre: 'Vols esborrar el teu progr\u00e9s?',
+      effacerTexte: 'El que has fet sense iniciar la sessi\u00f3 s\'esborrar\u00e0 per sempre.',
+      effacer: 'Esborra',
+      retour: 'Enrere'
     },
     eo: {
       titre: 'Kreu vian konton',
@@ -211,7 +243,15 @@
       avertInvite: 'Via progreso povus perdi\u011di se la retumilaj datumoj estas vi\u015ditaj.',
       codeInvalide: 'Mal\u011dusta a\u016d eksvalidi\u011dinta kodo.',
       profilTitre: 'Kiu vi estas?',
-      profilAjouter: '+ Aldoni profilon'
+      profilAjouter: '+ Aldoni profilon',
+      conflitTitre: '\u0108i tiu konto jam havas progreson',
+      conflitTexte: 'Vi anka\u016d progresis sen ensaluti. Kiun progreson vi volas konservi?',
+      conflitGarder: 'Konservi tiun de la konto',
+      conflitNouveau: 'Konservi la novan, en nova profilo',
+      effacerTitre: '\u0108u forvi\u015di vian progreson?',
+      effacerTexte: 'Tio, kion vi faris sen ensaluti, estos forvi\u015dita por\u0109iam.',
+      effacer: 'Forvi\u015di',
+      retour: 'Reen'
     },
     zh: {
       titre: '\u521b\u5efa\u4f60\u7684\u8d26\u53f7',
@@ -230,7 +270,15 @@
       avertInvite: '\u5982\u679c\u6e05\u9664\u6d4f\u89c8\u5668\u6570\u636e\uff0c\u4f60\u7684\u5b66\u4e60\u8fdb\u5ea6\u53ef\u80fd\u4f1a\u4e22\u5931\u3002',
       codeInvalide: '\u9a8c\u8bc1\u7801\u4e0d\u6b63\u786e\u6216\u5df2\u8fc7\u671f\u3002',
       profilTitre: '\u4f60\u662f\u8c01\uff1f',
-      profilAjouter: '+ \u6dfb\u52a0\u4e00\u4e2a\u6863\u6848'
+      profilAjouter: '+ \u6dfb\u52a0\u4e00\u4e2a\u6863\u6848',
+      conflitTitre: '\u8fd9\u4e2a\u8d26\u53f7\u5df2\u7ecf\u6709\u5b66\u4e60\u8fdb\u5ea6',
+      conflitTexte: '\u4f60\u4e4b\u524d\u6ca1\u767b\u5f55\u65f6\u4e5f\u5b66\u4e86\u4e00\u4e9b\u5185\u5bb9\u3002\u4f60\u60f3\u4fdd\u7559\u54ea\u4e00\u4efd\u8fdb\u5ea6\uff1f',
+      conflitGarder: '\u4fdd\u7559\u8d26\u53f7\u91cc\u7684\u8fdb\u5ea6',
+      conflitNouveau: '\u4fdd\u7559\u65b0\u7684\u8fdb\u5ea6\uff0c\u653e\u8fdb\u65b0\u6863\u6848',
+      effacerTitre: '\u8981\u6e05\u9664\u4f60\u7684\u8fdb\u5ea6\u5417\uff1f',
+      effacerTexte: '\u4f60\u6ca1\u767b\u5f55\u65f6\u5b66\u7684\u5185\u5bb9\u4f1a\u88ab\u6c38\u4e45\u6e05\u9664\u3002',
+      effacer: '\u6e05\u9664',
+      retour: '\u8fd4\u56de'
     },
     ja: {
       titre: '\u30a2\u30ab\u30a6\u30f3\u30c8\u3092\u4f5c\u6210\u3059\u308b',
@@ -276,7 +324,15 @@
       avertInvite: '\ube0c\ub77c\uc6b0\uc800 \ub370\uc774\ud130\ub97c \uc9c0\uc6b0\uba74 \uc9c4\ud589 \uc0c1\ud669\uc774 \uc0ac\ub77c\uc9c8 \uc218 \uc788\uc5b4\uc694.',
       codeInvalide: '\ucf54\ub4dc\uac00 \uc62c\ubc14\ub974\uc9c0 \uc54a\uac70\ub098 \ub9cc\ub8cc\ub418\uc5c8\uc5b4\uc694.',
       profilTitre: '\ub204\uad6c\uc138\uc694?',
-      profilAjouter: '+ \ud504\ub85c\ud544 \ucd94\uac00'
+      profilAjouter: '+ \ud504\ub85c\ud544 \ucd94\uac00',
+      conflitTitre: '\uc774 \uacc4\uc815\uc5d0\ub294 \uc774\ubbf8 \uc9c4\ud589 \uc0c1\ud669\uc774 \uc788\uc5b4\uc694',
+      conflitTexte: '\ub85c\uadf8\uc778\ud558\uc9c0 \uc54a\uace0 \uc9c4\ud589\ud55c \ub0b4\uc6a9\ub3c4 \uc788\uc5b4\uc694. \uc5b4\ub290 \ucabd \uc9c4\ud589 \uc0c1\ud669\uc744 \ub0a8\uae38\uae4c\uc694?',
+      conflitGarder: '\uacc4\uc815\uc758 \uc9c4\ud589 \uc0c1\ud669 \ub0a8\uae30\uae30',
+      conflitNouveau: '\uc0c8 \uc9c4\ud589 \uc0c1\ud669\uc744 \uc0c8 \ud504\ub85c\ud544\uc5d0 \ub0a8\uae30\uae30',
+      effacerTitre: '\uc9c4\ud589 \uc0c1\ud669\uc744 \uc9c0\uc6b8\uae4c\uc694?',
+      effacerTexte: '\ub85c\uadf8\uc778\ud558\uc9c0 \uc54a\uace0 \uc9c4\ud589\ud55c \ub0b4\uc6a9\uc740 \uc644\uc804\ud788 \uc9c0\uc6cc\uc838\uc694.',
+      effacer: '\uc9c0\uc6b0\uae30',
+      retour: '\ub4a4\ub85c'
     },
     vi: {
       titre: 'T\u1ea1o t\u00e0i kho\u1ea3n c\u1ee7a b\u1ea1n',
@@ -295,7 +351,15 @@
       avertInvite: 'Ti\u1ebfn tr\u00ecnh c\u1ee7a b\u1ea1n c\u00f3 th\u1ec3 b\u1ecb m\u1ea5t n\u1ebfu d\u1eef li\u1ec7u tr\u00ecnh duy\u1ec7t b\u1ecb x\u00f3a.',
       codeInvalide: 'M\u00e3 kh\u00f4ng \u0111\u00fang ho\u1eb7c \u0111\u00e3 h\u1ebft h\u1ea1n.',
       profilTitre: 'B\u1ea1n l\u00e0 ai?',
-      profilAjouter: '+ Th\u00eam h\u1ed3 s\u01a1'
+      profilAjouter: '+ Th\u00eam h\u1ed3 s\u01a1',
+      conflitTitre: 'T\u00e0i kho\u1ea3n n\u00e0y \u0111\u00e3 c\u00f3 ti\u1ebfn tr\u00ecnh',
+      conflitTexte: 'B\u1ea1n c\u0169ng \u0111\u00e3 h\u1ecdc m\u00e0 ch\u01b0a \u0111\u0103ng nh\u1eadp. B\u1ea1n mu\u1ed1n gi\u1eef ti\u1ebfn tr\u00ecnh n\u00e0o?',
+      conflitGarder: 'Gi\u1eef ti\u1ebfn tr\u00ecnh c\u1ee7a t\u00e0i kho\u1ea3n',
+      conflitNouveau: 'Gi\u1eef ti\u1ebfn tr\u00ecnh m\u1edbi, trong m\u1ed9t h\u1ed3 s\u01a1 m\u1edbi',
+      effacerTitre: 'X\u00f3a ti\u1ebfn tr\u00ecnh c\u1ee7a b\u1ea1n?',
+      effacerTexte: 'Nh\u1eefng g\u00ec b\u1ea1n \u0111\u00e3 l\u00e0m khi ch\u01b0a \u0111\u0103ng nh\u1eadp s\u1ebd b\u1ecb x\u00f3a v\u0129nh vi\u1ec5n.',
+      effacer: 'X\u00f3a',
+      retour: 'Quay l\u1ea1i'
     },
     ht: {
       titre: 'Kreye kont ou',
@@ -314,7 +378,15 @@
       avertInvite: 'Pwogr\u00e8 ou ka p\u00e8di si done navigat\u00e8 a efase.',
       codeInvalide: 'K\u00f2d la pa bon oswa li ekspire.',
       profilTitre: 'Ki moun ou ye?',
-      profilAjouter: '+ Ajoute yon pwofil'
+      profilAjouter: '+ Ajoute yon pwofil',
+      conflitTitre: 'Kont sa a gen pwogr\u00e8 deja',
+      conflitTexte: 'Ou te avanse san ou pa konekte tou. Ki pwogr\u00e8 ou vle kenbe?',
+      conflitGarder: 'Kenbe pwogr\u00e8 kont lan',
+      conflitNouveau: 'Kenbe nouvo a, nan yon nouvo pwofil',
+      effacerTitre: 'Efase pwogr\u00e8 ou?',
+      effacerTexte: 'Sa ou te f\u00e8 san ou pa konekte a pral efase pou tout bon.',
+      effacer: 'Efase',
+      retour: 'Retounen'
     },
     tl: {
       titre: 'Gumawa ng iyong account',
@@ -333,7 +405,15 @@
       avertInvite: 'Maaaring mawala ang iyong progreso kung mabubura ang data ng browser.',
       codeInvalide: 'Mali o expired na ang code.',
       profilTitre: 'Sino ka?',
-      profilAjouter: '+ Magdagdag ng profile'
+      profilAjouter: '+ Magdagdag ng profile',
+      conflitTitre: 'May progreso na ang account na ito',
+      conflitTexte: 'Nagpatuloy ka rin nang hindi naka-sign in. Aling progreso ang gusto mong panatilihin?',
+      conflitGarder: 'Panatilihin ang progreso ng account',
+      conflitNouveau: 'Panatilihin ang bago, sa bagong profile',
+      effacerTitre: 'Buburahin ang iyong progreso?',
+      effacerTexte: 'Ang ginawa mo nang hindi naka-sign in ay buburahin nang tuluyan.',
+      effacer: 'Burahin',
+      retour: 'Bumalik'
     },
     id: {
       titre: 'Buat akunmu',
@@ -352,7 +432,15 @@
       avertInvite: 'Progresmu bisa hilang jika data browser dihapus.',
       codeInvalide: 'Kode salah atau sudah kedaluwarsa.',
       profilTitre: 'Siapa kamu?',
-      profilAjouter: '+ Tambah profil'
+      profilAjouter: '+ Tambah profil',
+      conflitTitre: 'Akun ini sudah punya progres',
+      conflitTexte: 'Kamu juga sudah belajar tanpa masuk. Progres mana yang ingin kamu simpan?',
+      conflitGarder: 'Simpan progres akun',
+      conflitNouveau: 'Simpan yang baru, di profil baru',
+      effacerTitre: 'Hapus progresmu?',
+      effacerTexte: 'Yang kamu kerjakan tanpa masuk akan dihapus permanen.',
+      effacer: 'Hapus',
+      retour: 'Kembali'
     },
     nl: {
       titre: 'Maak je account aan',
@@ -371,7 +459,15 @@
       avertInvite: 'Je voortgang kan verloren gaan als je browsergegevens worden gewist.',
       codeInvalide: 'Onjuiste of verlopen code.',
       profilTitre: 'Wie ben jij?',
-      profilAjouter: '+ Profiel toevoegen'
+      profilAjouter: '+ Profiel toevoegen',
+      conflitTitre: 'Dit account heeft al voortgang',
+      conflitTexte: 'Je bent ook verder gekomen zonder in te loggen. Welke voortgang wil je bewaren?',
+      conflitGarder: 'Bewaar die van het account',
+      conflitNouveau: 'Bewaar de nieuwe, in een nieuw profiel',
+      effacerTitre: 'Je voortgang wissen?',
+      effacerTexte: 'Wat je zonder inloggen hebt gedaan, wordt definitief gewist.',
+      effacer: 'Wissen',
+      retour: 'Terug'
     },
     de: {
       titre: 'Erstelle dein Konto',
@@ -390,7 +486,15 @@
       avertInvite: 'Dein Fortschritt k\u00f6nnte verloren gehen, wenn deine Browserdaten gel\u00f6scht werden.',
       codeInvalide: 'Falscher oder abgelaufener Code.',
       profilTitre: 'Wer bist du?',
-      profilAjouter: '+ Profil hinzuf\u00fcgen'
+      profilAjouter: '+ Profil hinzuf\u00fcgen',
+      conflitTitre: 'Dieses Konto hat bereits Fortschritte',
+      conflitTexte: 'Du bist auch ohne Anmeldung vorangekommen. Welchen Fortschritt m\u00f6chtest du behalten?',
+      conflitGarder: 'Fortschritt des Kontos behalten',
+      conflitNouveau: 'Den neuen behalten, in einem neuen Profil',
+      effacerTitre: 'Deinen Fortschritt l\u00f6schen?',
+      effacerTexte: 'Was du ohne Anmeldung gemacht hast, wird endg\u00fcltig gel\u00f6scht.',
+      effacer: 'L\u00f6schen',
+      retour: 'Zur\u00fcck'
     },
     fa: {
       titre: '\u062d\u0633\u0627\u0628 \u06a9\u0627\u0631\u0628\u0631\u06cc\u200c\u0627\u062a \u0631\u0627 \u0628\u0633\u0627\u0632',
@@ -409,7 +513,15 @@
       avertInvite: '\u0627\u06af\u0631 \u062f\u0627\u062f\u0647\u200c\u0647\u0627\u06cc \u0645\u0631\u0648\u0631\u06af\u0631 \u067e\u0627\u06a9 \u0634\u0648\u062f\u060c \u0645\u0645\u06a9\u0646 \u0627\u0633\u062a \u067e\u06cc\u0634\u0631\u0641\u062a\u062a \u0627\u0632 \u0628\u06cc\u0646 \u0628\u0631\u0648\u062f.',
       codeInvalide: '\u06a9\u062f \u0646\u0627\u062f\u0631\u0633\u062a \u0627\u0633\u062a \u06cc\u0627 \u0645\u0646\u0642\u0636\u06cc \u0634\u062f\u0647.',
       profilTitre: '\u062a\u0648 \u06a9\u06cc \u0647\u0633\u062a\u06cc\u061f',
-      profilAjouter: '+ \u0627\u0641\u0632\u0648\u062f\u0646 \u0646\u0645\u0627\u06cc\u0647'
+      profilAjouter: '+ \u0627\u0641\u0632\u0648\u062f\u0646 \u0646\u0645\u0627\u06cc\u0647',
+      conflitTitre: '\u0627\u06cc\u0646 \u062d\u0633\u0627\u0628 \u0627\u0632 \u0642\u0628\u0644 \u067e\u06cc\u0634\u0631\u0641\u062a \u062f\u0627\u0631\u062f',
+      conflitTexte: '\u0628\u062f\u0648\u0646 \u0648\u0631\u0648\u062f \u0647\u0645 \u067e\u06cc\u0634 \u0631\u0641\u062a\u06cc. \u06a9\u062f\u0627\u0645 \u067e\u06cc\u0634\u0631\u0641\u062a \u0631\u0627 \u0645\u06cc\u200c\u062e\u0648\u0627\u0647\u06cc \u0646\u06af\u0647 \u062f\u0627\u0631\u06cc\u061f',
+      conflitGarder: '\u067e\u06cc\u0634\u0631\u0641\u062a \u062d\u0633\u0627\u0628 \u0631\u0627 \u0646\u06af\u0647 \u062f\u0627\u0631',
+      conflitNouveau: '\u067e\u06cc\u0634\u0631\u0641\u062a \u062c\u062f\u06cc\u062f \u0631\u0627 \u062f\u0631 \u06cc\u06a9 \u0646\u0645\u0627\u06cc\u0647\u0654 \u062c\u062f\u06cc\u062f \u0646\u06af\u0647 \u062f\u0627\u0631',
+      effacerTitre: '\u067e\u06cc\u0634\u0631\u0641\u062a\u062a \u067e\u0627\u06a9 \u0634\u0648\u062f\u061f',
+      effacerTexte: '\u0622\u0646\u0686\u0647 \u0628\u062f\u0648\u0646 \u0648\u0631\u0648\u062f \u0627\u0646\u062c\u0627\u0645 \u062f\u0627\u062f\u06cc \u0628\u0631\u0627\u06cc \u0647\u0645\u06cc\u0634\u0647 \u067e\u0627\u06a9 \u0645\u06cc\u200c\u0634\u0648\u062f.',
+      effacer: '\u067e\u0627\u06a9 \u06a9\u0646',
+      retour: '\u0628\u0627\u0632\u06af\u0634\u062a'
     },
     sv: {
       titre: 'Skapa ditt konto',
@@ -428,7 +540,15 @@
       avertInvite: 'Dina framsteg kan g\u00e5 f\u00f6rlorade om webbl\u00e4sarens data rensas.',
       codeInvalide: 'Felaktig eller utg\u00e5ngen kod.',
       profilTitre: 'Vem \u00e4r du?',
-      profilAjouter: '+ L\u00e4gg till en profil'
+      profilAjouter: '+ L\u00e4gg till en profil',
+      conflitTitre: 'Det h\u00e4r kontot har redan framsteg',
+      conflitTexte: 'Du har ocks\u00e5 kommit fram\u00e5t utan att logga in. Vilka framsteg vill du beh\u00e5lla?',
+      conflitGarder: 'Beh\u00e5ll kontots framsteg',
+      conflitNouveau: 'Beh\u00e5ll de nya, i en ny profil',
+      effacerTitre: 'Radera dina framsteg?',
+      effacerTexte: 'Det du gjorde utan att logga in raderas permanent.',
+      effacer: 'Radera',
+      retour: 'Tillbaka'
     },
     no: {
       titre: 'Opprett kontoen din',
@@ -447,7 +567,15 @@
       avertInvite: 'Fremgangen din kan g\u00e5 tapt hvis nettleserdataene slettes.',
       codeInvalide: 'Feil eller utl\u00f8pt kode.',
       profilTitre: 'Hvem er du?',
-      profilAjouter: '+ Legg til en profil'
+      profilAjouter: '+ Legg til en profil',
+      conflitTitre: 'Denne kontoen har allerede fremgang',
+      conflitTexte: 'Du har ogs\u00e5 kommet videre uten \u00e5 logge inn. Hvilken fremgang vil du beholde?',
+      conflitGarder: 'Behold kontoens fremgang',
+      conflitNouveau: 'Behold den nye, i en ny profil',
+      effacerTitre: 'Slette fremgangen din?',
+      effacerTexte: 'Det du gjorde uten \u00e5 logge inn, blir slettet for godt.',
+      effacer: 'Slett',
+      retour: 'Tilbake'
     },
     ru: {
       titre: '\u0421\u043e\u0437\u0434\u0430\u0439 \u0441\u0432\u043e\u0439 \u0430\u043a\u043a\u0430\u0443\u043d\u0442',
@@ -466,7 +594,15 @@
       avertInvite: '\u0422\u0432\u043e\u0439 \u043f\u0440\u043e\u0433\u0440\u0435\u0441\u0441 \u043c\u043e\u0436\u0435\u0442 \u0431\u044b\u0442\u044c \u043f\u043e\u0442\u0435\u0440\u044f\u043d, \u0435\u0441\u043b\u0438 \u0434\u0430\u043d\u043d\u044b\u0435 \u0431\u0440\u0430\u0443\u0437\u0435\u0440\u0430 \u0431\u0443\u0434\u0443\u0442 \u043e\u0447\u0438\u0449\u0435\u043d\u044b.',
       codeInvalide: '\u041d\u0435\u0432\u0435\u0440\u043d\u044b\u0439 \u0438\u043b\u0438 \u043f\u0440\u043e\u0441\u0440\u043e\u0447\u0435\u043d\u043d\u044b\u0439 \u043a\u043e\u0434.',
       profilTitre: '\u041a\u0442\u043e \u0442\u044b?',
-      profilAjouter: '+ \u0414\u043e\u0431\u0430\u0432\u0438\u0442\u044c \u043f\u0440\u043e\u0444\u0438\u043b\u044c'
+      profilAjouter: '+ \u0414\u043e\u0431\u0430\u0432\u0438\u0442\u044c \u043f\u0440\u043e\u0444\u0438\u043b\u044c',
+      conflitTitre: '\u0412 \u044d\u0442\u043e\u043c \u0430\u043a\u043a\u0430\u0443\u043d\u0442\u0435 \u0443\u0436\u0435 \u0435\u0441\u0442\u044c \u043f\u0440\u043e\u0433\u0440\u0435\u0441\u0441',
+      conflitTexte: '\u0411\u0435\u0437 \u0432\u0445\u043e\u0434\u0430 \u0432 \u0430\u043a\u043a\u0430\u0443\u043d\u0442 \u0442\u043e\u0436\u0435 \u043d\u0430\u043a\u043e\u043f\u0438\u043b\u0441\u044f \u043f\u0440\u043e\u0433\u0440\u0435\u0441\u0441. \u041a\u0430\u043a\u043e\u0439 \u0438\u0437 \u043d\u0438\u0445 \u0445\u043e\u0447\u0435\u0448\u044c \u043e\u0441\u0442\u0430\u0432\u0438\u0442\u044c?',
+      conflitGarder: '\u041e\u0441\u0442\u0430\u0432\u0438\u0442\u044c \u043f\u0440\u043e\u0433\u0440\u0435\u0441\u0441 \u0430\u043a\u043a\u0430\u0443\u043d\u0442\u0430',
+      conflitNouveau: '\u041e\u0441\u0442\u0430\u0432\u0438\u0442\u044c \u043d\u043e\u0432\u044b\u0439, \u0432 \u043d\u043e\u0432\u043e\u043c \u043f\u0440\u043e\u0444\u0438\u043b\u0435',
+      effacerTitre: '\u0423\u0434\u0430\u043b\u0438\u0442\u044c \u0442\u0432\u043e\u0439 \u043f\u0440\u043e\u0433\u0440\u0435\u0441\u0441?',
+      effacerTexte: '\u0422\u043e, \u0447\u0442\u043e \u0431\u044b\u043b\u043e \u0441\u0434\u0435\u043b\u0430\u043d\u043e \u0431\u0435\u0437 \u0432\u0445\u043e\u0434\u0430 \u0432 \u0430\u043a\u043a\u0430\u0443\u043d\u0442, \u0431\u0443\u0434\u0435\u0442 \u0443\u0434\u0430\u043b\u0435\u043d\u043e \u043d\u0430\u0432\u0441\u0435\u0433\u0434\u0430.',
+      effacer: '\u0423\u0434\u0430\u043b\u0438\u0442\u044c',
+      retour: '\u041d\u0430\u0437\u0430\u0434'
     }
   };
 

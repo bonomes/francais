@@ -91,6 +91,13 @@
         redit la phrase. Pas de carte de remarque, pas de lecture : le Lecteur ne parle qu'entre deux phrases.
         TOUT SE RÈGLE DANS LE TABLEAU REPARATION (phrases, mots déjà placés, pièges, image, pique d'après). Le CSS propre à ce mode est
         injecté par le script (REPARATION_CSS) : à déplacer dans sequence-m1.css si tu préfères. C'est la FIN de la mémoire (onTermine).
+     🆕 (07-11-2026) « LE / LA » DANS LE FRAGMENT 3 ET « JE JOUE » DANS LE FRAGMENT 4 :
+        • Fragment 3 : « Je regarde la poutine. » s'ajoute au segment 2 (ordre + écriture de l'article) ; au segment 3, « Je regarde un sandwich. »
+          est suivi de « Je regarde le sandwich. » (le MÊME sandwich, maintenant connu) ; au segment 4, Bek MANGE ce sandwich : « Je mange le sandwich. »
+          (avant : « un sandwich »). L'exercice audio devient : « Je regarde un film. », « Je regarde le sandwich. », « Je mange la poutine. »
+        • Fragment 4 : après « J'aime jouer. », une construction « Je joue. » (image de Bek qui joue) oppose la forme conjuguée (jou-e) à l'infinitif
+          (jou-er). Nouveau mot : « joue » (voix : bek_joue_01). L'exercice audio du fragment 4 : « J'aime manger. », « J'aime jouer. », « Je joue. »
+        Nouvelles voix (phrases) : bek_je-regarde-la-poutine_01, bek_je-regarde-le-sandwich_01, bek_je-joue_01 ; (mot) bek_joue_01.
      🆕 (04-11-2026) QUITTER ET CONTINUER PLUS TARD : options.reprendreA = n (1 à 5) reprend le fragment au segment n (n segments déjà faits ;
         l'introduction est remplacée par « On reprend là où on s'était arrêtés »). callbacks.onPosition({ fragment, segment }) est appelé au début
         de chaque segment (jamais à 0 ni à la fin) : la page hôte y garde la position (voir memoire-1.html). Le bouton « ‹ » ouvre une
@@ -117,7 +124,7 @@
   // 🆕 (03-11-2026) Fragment 2 : « regarder ». Mots introduits (le rappel de « mange » ne compte pas).
   const MOTS_APPRIS_2 = ['le', 'la', 'pizza'];       // fragment 2 : un/une, le/la
   const MOTS_APPRIS_3 = ['regarde', 'film'];       // fragment 3 : regarder (ancien fragment 2)
-  const MOTS_APPRIS_4 = ['j', 'aime', 'manger', 'regarder', 'jouer', 'tele'];   // fragment 4 : j'aime + infinitif
+  const MOTS_APPRIS_4 = ['j', 'aime', 'manger', 'regarder', 'jouer', 'joue', 'tele'];   // fragment 4 : j'aime + infinitif
   const MOTS_APPRIS_5 = [];                       // fragment 5 : la réparation n'apprend aucun mot nouveau
   const ETAPES_TOTAL = 6;
 
@@ -170,9 +177,9 @@
   const POSES = Object.keys(SOURCES_PAR_DEFAUT);
 
   const AFFICHE = { je: 'je', mange: 'mange', regarde: 'regarde', film: 'film', parle: 'parle', un: 'un', une: 'une', le: 'le', la: 'la', sandwich: 'sandwich', poutine: 'poutine', pizza: 'pizza', francais: 'français',
-                    j: 'j’', aime: 'aime', manger: 'manger', regarder: 'regarder', jouer: 'jouer', tele: 'télé' };
+                    j: 'j’', aime: 'aime', manger: 'manger', regarder: 'regarder', jouer: 'jouer', joue: 'joue', tele: 'télé' };
   const ROLE = { je: 's', mange: 'v', regarde: 'v', film: 'o', parle: 'v', un: 'o', une: 'o', le: 'o', la: 'o', sandwich: 'o', poutine: 'o', pizza: 'o', francais: 'o',
-                  j: 's', aime: 'v', manger: 'o', regarder: 'o', jouer: 'o', tele: 'o' };   // un infinitif après « aimer » est l'objet de « aime »
+                  j: 's', aime: 'v', manger: 'o', regarder: 'o', jouer: 'o', joue: 'v', tele: 'o' };   // un infinitif après « aimer » est l'objet de « aime »
   const GENRE = { sandwich: 'genre_m', poutine: 'genre_f', film: 'genre_m', pizza: 'genre_f', tele: 'genre_f' };
 
   const PHRASES = {
@@ -185,6 +192,11 @@
     film:        { mots: ['je', 'regarde', 'un', 'film'],    texte: 'Je regarde un film.',       audio: 'je-regarde-un-film',     tr: 'tr_film' },
     regpoutine:  { mots: ['je', 'regarde', 'une', 'poutine'], texte: 'Je regarde une poutine.',  audio: 'je-regarde-une-poutine', tr: 'tr_regpoutine' },
     regsandwich: { mots: ['je', 'regarde', 'un', 'sandwich'], texte: 'Je regarde un sandwich.',  audio: 'je-regarde-un-sandwich', tr: 'tr_regsandwich' },
+    // fragment 3 (suite) : regarder + le/la
+    regpoutinela:  { mots: ['je', 'regarde', 'la', 'poutine'],   texte: 'Je regarde la poutine.',  audio: 'je-regarde-la-poutine',  tr: 'tr_regpoutinela' },
+    regsandwichle: { mots: ['je', 'regarde', 'le', 'sandwich'],  texte: 'Je regarde le sandwich.', audio: 'je-regarde-le-sandwich', tr: 'tr_regsandwichle' },
+    // fragment 4 (suite) : la forme conjuguée de « jouer »
+    jejoue:        { mots: ['je', 'joue'],                       texte: 'Je joue.',                audio: 'je-joue',                tr: 'tr_jejoue' },
     // fragment 2 : un/une, le/la
     sandwichle: { mots: ['je', 'mange', 'le', 'sandwich'], texte: 'Je mange le sandwich.', audio: 'je-mange-le-sandwich', tr: 'tr_sandwichle' },
     poutinela:  { mots: ['je', 'mange', 'la', 'poutine'],  texte: 'Je mange la poutine.',   audio: 'je-mange-la-poutine',   tr: 'tr_poutinela' },
@@ -201,7 +213,7 @@
   };
   const BANQUE_LIBRE = ['je', 'mange', 'parle', 'un', 'une', 'sandwich', 'poutine', 'francais'];
   const BANQUE_2 = ['je', 'mange', 'un', 'une', 'le', 'la', 'sandwich', 'poutine', 'pizza'];   // fragment 2 : un/une, le/la
-  const BANQUE_3 = ['je', 'mange', 'regarde', 'un', 'une', 'sandwich', 'poutine', 'film'];   // fragment 3 : regarder
+  const BANQUE_3 = ['je', 'mange', 'regarde', 'un', 'une', 'le', 'la', 'sandwich', 'poutine', 'film'];   // fragment 3 : regarder
   // 🆕 LA RÉPARATION — le souvenir abîmé : 6 phrases, de plus en plus seul (fixes = indices des mots déjà en place)
   const REPARATION = [
     { cle: 'film',       fixes: [0, 1], pieges: ['une', 'mange'],  pose: 'bek-regarde-film',    apres: 'repApres1' },
@@ -283,6 +295,12 @@
       quipLaPoutine: 'La poutine. On ne l’a pas oubliée, celle-là. Dommage.',
       quipPizza: 'Une pizza. Là, au moins, personne ne se dispute.',
       cult_pizza: 'Le mot «\u00a0pizza\u00a0» vient de l’italien. En français, il est féminin\u00a0: une pizza, la pizza.',
+      // ---- 🆕 (07-11-2026) fragment 3 : le/la ; fragment 4 : je joue ----
+      sens_joue: 'jouer (moi)',
+      tr_regpoutinela: '', tr_regsandwichle: '', tr_jejoue: '',
+      quipRegPoutineLa: 'La poutine. Toujours regardée, jamais mangée. Elle a des principes.',
+      quipRegSandwichLe: 'Le même sandwich. Elle le connaît, maintenant. Elle ne le mange toujours pas.',
+      quipJeJoue: 'Avec «\u00a0je\u00a0», le verbe perd son -r\u00a0: jouer → joue. Comme mange, comme regarde.',
       // ---- 🆕 quitter / reprendre ----
       reprise: 'On reprend là où on s’était arrêtés. Moi, je n’ai rien oublié.',
       quitter_titre: 'Quitter et continuer plus tard\u00a0?', quitter_info: 'Ta progression est gardée.', quitter_oui: 'Quitter', quitter_non: 'Rester',
@@ -376,6 +394,12 @@
       quipLaPoutine: 'The poutine. We haven’t forgotten that one. Pity.',
       quipPizza: 'A pizza. At least nobody argues about that one.',
       cult_pizza: 'The word “pizza” comes from Italian. In French it is feminine: une pizza, la pizza.',
+      // ---- 🆕 (07-11-2026) fragment 3: le/la; fragment 4: je joue ----
+      sens_joue: 'play (I play)',
+      tr_regpoutinela: 'I watch the poutine.', tr_regsandwichle: 'I watch the sandwich.', tr_jejoue: 'I play.',
+      quipRegPoutineLa: 'The poutine. Still watched, never eaten. She has principles.',
+      quipRegSandwichLe: 'The same sandwich. She knows it by now. She still isn’t eating it.',
+      quipJeJoue: 'With “je”, the verb loses its -r: jouer → joue. Like mange, like regarde.',
       // ---- 🆕 leave / resume ----
       reprise: 'Picking up where we left off. I haven’t forgotten anything, you’ll notice.',
       quitter_titre: 'Leave and continue later?', quitter_info: 'Your progress is saved.', quitter_oui: 'Leave', quitter_non: 'Stay',
@@ -1788,7 +1812,8 @@
         if (fragment === 4) return null;
       }
       if (ART[id] && ART[attendu]) {
-        if (fragment === 2 || fragment === 5) {
+        // fragment 3 : les piques propres à un/une (« Un film, pas une ») restent ; le/la utilisent les piques génériques
+        if (fragment === 2 || fragment === 5 || (fragment === 3 && (ART[id] === 'd' || ART[attendu] === 'd'))) {
           if (ART[id] !== ART[attendu]) return T(ART[attendu] === 'd' ? 'quipDef' : 'quipIndef');
           return T(attendu === 'le' ? 'quipLe' : attendu === 'la' ? 'quipLa' : attendu === 'une' ? 'quipUne2' : 'quipUn2');
         }
@@ -2016,9 +2041,12 @@
         const filmMange = choisis.indexOf('film') !== -1 && choisis.indexOf('mange') !== -1;
         const unMalPlace = phrase.mots.indexOf('film') !== -1 && choisis.indexOf('une') !== -1;
         let quipArt = null;
-        if (fragment === 2 || fragment === 4) {      // l'article / l'élision / l'infinitif qui ne va pas : une pique précise (indéfini/défini, masculin/féminin)
+        if (fragment === 2 || fragment === 3 || fragment === 4) {      // l'article / l'élision / l'infinitif qui ne va pas : une pique précise (indéfini/défini, masculin/féminin)
           for (let i = 0; i < phrase.mots.length && i < choisis.length; i++) {
-            if (choisis[i] !== phrase.mots[i]) { quipArt = quipChoix(choisis[i], phrase.mots[i]); break; }
+            if (choisis[i] !== phrase.mots[i]) {
+              if (fragment !== 3 || ART[choisis[i]] === 'd' || ART[phrase.mots[i]] === 'd') quipArt = quipChoix(choisis[i], phrase.mots[i]);
+              break;
+            }
           }
         }
         lecteurIndice(quipArt || (fragment === 2 || fragment === 4 ? auHasard(T('quipErreur'))
@@ -2200,6 +2228,13 @@
       consigne(cle === 'film' ? T('c_ecrire_part') : T('c_ecrire'));
       await ecrire(ph, cle, cle === 'film' ? [1, 3] : null);
       if (cle === 'film') await carte(T('cult_titre'), T('cult_film'));
+      if (cle === 'regpoutine') {       // 🆕 la même poutine, maintenant connue : « la »
+        planifier(function () { lecteurIndice(T('quipRegPoutineLa'), 5500); }, 600);
+        consigne(T('c_ordre'));
+        await ordre(PHRASES.regpoutinela, 'regpoutinela', ['le', 'une']);
+        consigne(T('c_ecrire_part'));
+        await ecrire(PHRASES.regpoutinela, 'regpoutinela', [2]);       // on écrit l'article
+      }
     }
     // Même objet, deux verbes : Bek REGARDE le sandwich, puis elle le MANGE. Le verbe change tout.
     async function etapeContraste3() {
@@ -2208,13 +2243,17 @@
       consigne(T('c_image'));
       planifier(function () { lecteurIndice(T('quipRegSandwich'), 5500); }, 1200);
       await construire(PHRASES.regsandwich, 'image-regsandwich', { banque: BANQUE_3 });
+      // 🆕 le MÊME sandwich, maintenant connu : « le »
+      consigne(T('c_connu'));
+      planifier(function () { lecteurIndice(T('quipRegSandwichLe'), 5500); }, 800);
+      await construire(PHRASES.regsandwichle, 'image-regsandwichle', { banque: BANQUE_3 });
     }
     async function etapeContraste4() {
       etape(4);
       montrer('bek-mange-sandwich');
       consigne(T('c_image'));
       const arreter = animerManger('sandwich');
-      await construire(PHRASES.sandwich, 'image-sandwich-2', { banque: BANQUE_3 });
+      await construire(PHRASES.sandwichle, 'image-sandwich-2', { banque: BANQUE_3 });   // 🆕 le sandwich qu'elle regardait
       arreter();
       await bekDit('sandwich', 1500);
     }
@@ -2466,7 +2505,7 @@
         function () { return etapeRegardePhrase('film', 1); },
         function () { return etapeRegardePhrase('regpoutine', 2); },
         etapeContraste3, etapeContraste4,
-        segAudio(['regarde', 'film', 'poutine'])           // le rappel « Je mange une poutine. » en dernier
+        segAudio(['film', 'regsandwichle', 'poutinela'])    // un film, le sandwich (regarder), la poutine (rappel de « manger »)
       ];
       if (fragment === 4) return [
         function () { return segmentAime(0, 'aimepoutine', 'bek-mange-poutine', ['je'], [0, 1], 'quipAimePoutine',
@@ -2475,7 +2514,14 @@
           { avant: true, titre: 'noteI_titre', texte: 'noteI', visuel: pairesInfinitif }); },
         function () { return segmentAime(2, 'aimetele', 'bek-regarde-film', ['regarde'], null, null,
           { avant: false, titre: 'cult_titre', texte: 'cult_tele' }); },
-        function () { return segmentAime(3, 'aimejouer', 'bek-aime-jouer', ['manger'], null, 'quipAimeJouer'); },
+        async function () {
+          await segmentAime(3, 'aimejouer', 'bek-aime-jouer', ['manger'], null, 'quipAimeJouer');
+          // 🆕 la forme conjuguée : « Je joue. » (jou-er → jou-e)
+          montrer('bek-aime-jouer');
+          consigne(T('c_image'));
+          planifier(function () { lecteurIndice(T('quipJeJoue'), 6000); }, 1000);
+          await construire(PHRASES.jejoue, 'image-jejoue', { banque: ['je', 'joue', 'jouer', 'j', 'aime'] });
+        },
         async function () {
           etape(4); montrer('bek-regarde-poutine');
           consigne(T('c_audio'));
@@ -2484,7 +2530,7 @@
           montrer('bek-mange-poutine');
           await construireAudio(PHRASES.aimemangerpoutine, 'audio-aimemangerpoutine');
         },
-        segAudio(['aimemanger', 'aimetele', 'aimejouer'])
+        segAudio(['aimemanger', 'aimejouer', 'jejoue'])
       ];
       return [                                              // fragment 1
         etapeMange,

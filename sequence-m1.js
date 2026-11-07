@@ -22,7 +22,7 @@
    Bek réagit avec subtilité : à la poutine, son enthousiasme est très bas
    (un indice pour plus tard — le système Bravo ; rien n'est expliqué ici).
 
-   VOIX : audio/fr/<id>.mp3 s'il existe (enregistrements de Raphaël, à venir),
+   VOIX : audio/fr/<voix>_<id>_<version>.mp3 (ou .wav), ex. bek_je_01.mp3  s'il existe (enregistrements de Raphaël, à venir),
    sinon la synthèse vocale du navigateur. Ids : les mots (je, mange, un, une,
    sandwich, poutine, parle, francais) et les phrases (m1-je-mange,
    m1-je-mange-un-sandwich, m1-je-mange-une-poutine, m1-je-parle-francais).
@@ -99,7 +99,7 @@
    onTermine({ mots, fragments }) : fragments = numéro du fragment terminé.
 
    @param {string} idConteneur
-   @param {object} options   : langue ; dossierAudio ('audio/fr/') ; voixLangue ('fr-CA') ;
+   @param {object} options   : langue ; dossierAudio ('audio/fr/') ; voix ('bek') ; versionVoix ('01') ; voixLangue ('fr-CA') ;
                                imageLecteur ; sources { pose: url }
    @param {object} callbacks : onTermine({ mots, fragments }) ; onQuitter() ; onPosition({ fragment, segment })
    Principe du projet : le module ne navigue jamais lui-même.
@@ -176,28 +176,28 @@
   const GENRE = { sandwich: 'genre_m', poutine: 'genre_f', film: 'genre_m', pizza: 'genre_f', tele: 'genre_f' };
 
   const PHRASES = {
-    mange:    { mots: ['je', 'mange'],                  texte: 'Je mange.',               audio: 'm1-je-mange',             tr: 'tr_mange' },
-    sandwich: { mots: ['je', 'mange', 'un', 'sandwich'], texte: 'Je mange un sandwich.',   audio: 'm1-je-mange-un-sandwich', tr: 'tr_sandwich' },
-    poutine:  { mots: ['je', 'mange', 'une', 'poutine'], texte: 'Je mange une poutine.',   audio: 'm1-je-mange-une-poutine', tr: 'tr_poutine' },
-    parle:    { mots: ['je', 'parle', 'francais'],      texte: 'Je parle français.',      audio: 'm1-je-parle-francais',    tr: 'tr_parle' },
+    mange:    { mots: ['je', 'mange'],                  texte: 'Je mange.',               audio: 'je-mange',             tr: 'tr_mange' },
+    sandwich: { mots: ['je', 'mange', 'un', 'sandwich'], texte: 'Je mange un sandwich.',   audio: 'je-mange-un-sandwich', tr: 'tr_sandwich' },
+    poutine:  { mots: ['je', 'mange', 'une', 'poutine'], texte: 'Je mange une poutine.',   audio: 'je-mange-une-poutine', tr: 'tr_poutine' },
+    parle:    { mots: ['je', 'parle', 'francais'],      texte: 'Je parle français.',      audio: 'je-parle-francais',    tr: 'tr_parle' },
     // fragment 2
-    regarde:     { mots: ['je', 'regarde'],                  texte: 'Je regarde.',               audio: 'm1-je-regarde',             tr: 'tr_regarde' },
-    film:        { mots: ['je', 'regarde', 'un', 'film'],    texte: 'Je regarde un film.',       audio: 'm1-je-regarde-un-film',     tr: 'tr_film' },
-    regpoutine:  { mots: ['je', 'regarde', 'une', 'poutine'], texte: 'Je regarde une poutine.',  audio: 'm1-je-regarde-une-poutine', tr: 'tr_regpoutine' },
-    regsandwich: { mots: ['je', 'regarde', 'un', 'sandwich'], texte: 'Je regarde un sandwich.',  audio: 'm1-je-regarde-un-sandwich', tr: 'tr_regsandwich' },
+    regarde:     { mots: ['je', 'regarde'],                  texte: 'Je regarde.',               audio: 'je-regarde',             tr: 'tr_regarde' },
+    film:        { mots: ['je', 'regarde', 'un', 'film'],    texte: 'Je regarde un film.',       audio: 'je-regarde-un-film',     tr: 'tr_film' },
+    regpoutine:  { mots: ['je', 'regarde', 'une', 'poutine'], texte: 'Je regarde une poutine.',  audio: 'je-regarde-une-poutine', tr: 'tr_regpoutine' },
+    regsandwich: { mots: ['je', 'regarde', 'un', 'sandwich'], texte: 'Je regarde un sandwich.',  audio: 'je-regarde-un-sandwich', tr: 'tr_regsandwich' },
     // fragment 2 : un/une, le/la
-    sandwichle: { mots: ['je', 'mange', 'le', 'sandwich'], texte: 'Je mange le sandwich.', audio: 'm1-je-mange-le-sandwich', tr: 'tr_sandwichle' },
-    poutinela:  { mots: ['je', 'mange', 'la', 'poutine'],  texte: 'Je mange la poutine.',   audio: 'm1-je-mange-la-poutine',   tr: 'tr_poutinela' },
-    pizzaune:   { mots: ['je', 'mange', 'une', 'pizza'],   texte: 'Je mange une pizza.',    audio: 'm1-je-mange-une-pizza',    tr: 'tr_pizzaune' },
-    pizzala:    { mots: ['je', 'mange', 'la', 'pizza'],    texte: 'Je mange la pizza.',     audio: 'm1-je-mange-la-pizza',     tr: 'tr_pizzala' },
+    sandwichle: { mots: ['je', 'mange', 'le', 'sandwich'], texte: 'Je mange le sandwich.', audio: 'je-mange-le-sandwich', tr: 'tr_sandwichle' },
+    poutinela:  { mots: ['je', 'mange', 'la', 'poutine'],  texte: 'Je mange la poutine.',   audio: 'je-mange-la-poutine',   tr: 'tr_poutinela' },
+    pizzaune:   { mots: ['je', 'mange', 'une', 'pizza'],   texte: 'Je mange une pizza.',    audio: 'je-mange-une-pizza',    tr: 'tr_pizzaune' },
+    pizzala:    { mots: ['je', 'mange', 'la', 'pizza'],    texte: 'Je mange la pizza.',     audio: 'je-mange-la-pizza',     tr: 'tr_pizzala' },
     // fragment 4 : j'aime
-    aimepoutine: { mots: ['j', 'aime', 'la', 'poutine'],              texte: 'J’aime la poutine.',             audio: 'm1-jaime-la-poutine',            tr: 'tr_aimepoutine' },
-    aimemanger:  { mots: ['j', 'aime', 'manger'],                     texte: 'J’aime manger.',                 audio: 'm1-jaime-manger',                tr: 'tr_aimemanger' },
-    aimetele:    { mots: ['j', 'aime', 'regarder', 'la', 'tele'],     texte: 'J’aime regarder la télé.',       audio: 'm1-jaime-regarder-la-tele',      tr: 'tr_aimetele' },
-    aimejouer:   { mots: ['j', 'aime', 'jouer'],                      texte: 'J’aime jouer.',                  audio: 'm1-jaime-jouer',                 tr: 'tr_aimejouer' },
-    aimeregpoutine:    { mots: ['j', 'aime', 'regarder', 'la', 'poutine'], texte: 'J’aime regarder la poutine.', audio: 'm1-jaime-regarder-la-poutine', tr: 'tr_aimeregpoutine' },
-    aimepizza:   { mots: ['j', 'aime', 'la', 'pizza'],                texte: 'J’aime la pizza.',             audio: 'm1-jaime-la-pizza',            tr: 'tr_aimepizza' },
-    aimemangerpoutine: { mots: ['j', 'aime', 'manger', 'la', 'poutine'],   texte: 'J’aime manger la poutine.',   audio: 'm1-jaime-manger-la-poutine',   tr: 'tr_aimemangerpoutine' }
+    aimepoutine: { mots: ['j', 'aime', 'la', 'poutine'],              texte: 'J’aime la poutine.',             audio: 'jaime-la-poutine',            tr: 'tr_aimepoutine' },
+    aimemanger:  { mots: ['j', 'aime', 'manger'],                     texte: 'J’aime manger.',                 audio: 'jaime-manger',                tr: 'tr_aimemanger' },
+    aimetele:    { mots: ['j', 'aime', 'regarder', 'la', 'tele'],     texte: 'J’aime regarder la télé.',       audio: 'jaime-regarder-la-tele',      tr: 'tr_aimetele' },
+    aimejouer:   { mots: ['j', 'aime', 'jouer'],                      texte: 'J’aime jouer.',                  audio: 'jaime-jouer',                 tr: 'tr_aimejouer' },
+    aimeregpoutine:    { mots: ['j', 'aime', 'regarder', 'la', 'poutine'], texte: 'J’aime regarder la poutine.', audio: 'jaime-regarder-la-poutine', tr: 'tr_aimeregpoutine' },
+    aimepizza:   { mots: ['j', 'aime', 'la', 'pizza'],                texte: 'J’aime la pizza.',             audio: 'jaime-la-pizza',            tr: 'tr_aimepizza' },
+    aimemangerpoutine: { mots: ['j', 'aime', 'manger', 'la', 'poutine'],   texte: 'J’aime manger la poutine.',   audio: 'jaime-manger-la-poutine',   tr: 'tr_aimemangerpoutine' }
   };
   const BANQUE_LIBRE = ['je', 'mange', 'parle', 'un', 'une', 'sandwich', 'poutine', 'francais'];
   const BANQUE_2 = ['je', 'mange', 'un', 'une', 'le', 'la', 'sandwich', 'poutine', 'pizza'];   // fragment 2 : un/une, le/la
@@ -1436,7 +1436,7 @@
     const segs = scene.querySelectorAll('.m1-segment');
     const boutonSon = q('.m1-son');
 
-    // ---------- Voix : audio/fr/<id>.mp3, sinon la synthèse du navigateur ----------
+    // ---------- Voix : audio/fr/<id>.mp3 ou .wav, sinon la synthèse du navigateur ----------
     const son = { actif: lireSon() };
     const dispoAudio = {};
     function reglerBoutonSon() { boutonSon.setAttribute('aria-pressed', son.actif ? 'true' : 'false'); boutonSon.classList.toggle('m1-son-coupe', !son.actif); }
@@ -1463,20 +1463,34 @@
         ss.speak(u);
       } catch (e) {}
     }
-    function dire(id, texte) {
+    // 🆕 (05-11-2026) audio/fr/<id>.mp3, sinon audio/fr/<id>.wav (la console Google télécharge du .wav), sinon la synthèse du navigateur
+    // NOMMAGE : <voix>_<id>_<version> (ex. bek_je_01.mp3, bek_jaime-la-poutine_01.mp3). Un seul dossier à plat pour tout le site.
+    // options.voix ('bek' par défaut) et options.versionVoix ('01') règlent la voix ; une phrase peut en imposer une autre (champs voix / version dans PHRASES).
+    function nomAudio(id, v) {
+      v = v || {};
+      return (v.voix || options.voix || 'bek') + '_' + id + '_' + (v.version || options.versionVoix || '01');
+    }
+    function dire(id, texte, v) {
       if (!son.actif) return;
-      if (dispoAudio[id] === false) { synthese(texte); return; }
-      let repli = false;
-      function secours() { if (repli) return; repli = true; dispoAudio[id] = false; synthese(texte); }
-      try {
-        const a = new Audio((options.dossierAudio || 'audio/fr/') + id + '.mp3');
-        a.addEventListener('error', secours, { once: true });
-        const p = a.play();
-        if (p && p.then) p.then(function () { dispoAudio[id] = true; }).catch(function () { if (dispoAudio[id] !== true) secours(); });
-      } catch (e) { secours(); }
+      const fichier = nomAudio(id, v);
+      if (dispoAudio[fichier] === false) { synthese(texte); return; }
+      const dossier = options.dossierAudio || 'audio/fr/';
+      const formats = dispoAudio[fichier] ? [dispoAudio[fichier]] : ['mp3', 'wav'];
+      function essayer(i) {
+        if (i >= formats.length) { dispoAudio[fichier] = false; synthese(texte); return; }
+        let passe = false;
+        function suivant() { if (passe) return; passe = true; essayer(i + 1); }
+        try {
+          const a = new Audio(dossier + fichier + '.' + formats[i]);
+          a.addEventListener('error', suivant, { once: true });
+          const lecture = a.play();
+          if (lecture && lecture.then) lecture.then(function () { dispoAudio[fichier] = formats[i]; }).catch(function () { if (!dispoAudio[fichier]) suivant(); });
+        } catch (e) { suivant(); }
+      }
+      essayer(0);
     }
     const direMot = function (id) { dire(id, AFFICHE[id]); };
-    const direPhrase = function (ph) { dire(ph.audio, ph.texte); };
+    const direPhrase = function (ph) { dire(ph.audio, ph.texte, { voix: ph.voix, version: ph.version }); };
 
     // ---------- Bek : poses, avec repli tant qu'une image manque ----------
     const poses = {}, manquantes = {};

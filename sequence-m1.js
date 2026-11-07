@@ -102,6 +102,10 @@
         l'introduction est remplacée par « On reprend là où on s'était arrêtés »). callbacks.onPosition({ fragment, segment }) est appelé au début
         de chaque segment (jamais à 0 ni à la fin) : la page hôte y garde la position (voir memoire-1.html). Le bouton « ‹ » ouvre une
         confirmation « Quitter et continuer plus tard ? » (Quitter / Rester) ; onQuitter n'est appelé que si l'élève confirme.
+     🆕 (07-11-2026) FLÈCHE DE RETOUR (fragments 1 à 4) : un bouton rond « ← » à gauche de la barre de progression. Premier appui : on rejoue l'étape
+        en cours depuis son début (si l'élève a déjà passé son premier écran) ; sinon, on revient à l'étape précédente. Grisée sur le tout premier écran.
+        Pas d'introduction au retour (option interne _retour). demarrer() reconstruit la scène à l'étape voulue (reprendreA) : la poignée rendue
+        à la page hôte reste valable. Textes : retour_etape. Style : RETOUR_CSS (injecté). Pas de flèche au fragment 5 (réparation).
      Un « ' » ou un « ’ » tapé sont équivalents ; « jaime » ou « j aime » donnent « Presque ! N'oublie pas l'apostrophe. »
    onTermine({ mots, fragments }) : fragments = numéro du fragment terminé.
 
@@ -243,6 +247,18 @@
     '.m1-quitter-info{margin:0 0 1rem;opacity:.85}',
     '.m1-quitter-boutons{display:flex;gap:.6rem;justify-content:center;flex-wrap:wrap}'
   ].join('\n');
+  const RETOUR_CSS = [
+    '.m1-entete-carte{display:flex;align-items:center;gap:.6rem;margin-bottom:var(--m1-retour-marge,.7rem)}',
+    '.m1-entete-carte .m1-progres{flex:1 1 auto;min-width:0;margin:0}',
+    '.m1-retour{flex:0 0 auto;display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box;width:2.3rem;height:2.3rem;margin:-.55rem 0;padding:0;border:2px solid var(--brun-fonce,#4A3B33);border-radius:50%;background:#FFFFFF;color:var(--brun-fonce,#4A3B33);cursor:pointer;box-shadow:0 2px 0 var(--brun-fonce,#4A3B33);transition:background .15s,transform .1s,opacity .2s}',
+    '.m1-retour svg{width:1.15rem;height:1.15rem;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}',
+    '.m1-retour:hover{background:var(--peche-pale,rgba(240,169,139,.16))}',
+    '.m1-retour:active{transform:translateY(1px);box-shadow:0 1px 0 var(--brun-fonce,#4A3B33)}',
+    '.m1-retour:focus-visible{outline:3px solid var(--brun-fonce,#4A3B33);outline-offset:2px}',
+    '.m1-retour:disabled{opacity:.3;cursor:default;box-shadow:none}',
+    '.m1-retour:disabled:hover{background:#FFFFFF}',
+    '@media (prefers-reduced-motion:reduce){.m1-retour{transition:none}}'
+  ].join('\n');
   const BANQUE_4 = ['j', 'je', 'aime', 'manger', 'mange', 'regarder', 'regarde', 'jouer', 'la', 'poutine', 'tele'];   // fragment 4 : j'aime (je, mange, regarde = pièges) (pas « parle », pas « français »)
 
   const DICO = {
@@ -304,6 +320,7 @@
       // ---- 🆕 quitter / reprendre ----
       reprise: 'On reprend là où on s’était arrêtés. Moi, je n’ai rien oublié.',
       quitter_titre: 'Quitter et continuer plus tard\u00a0?', quitter_info: 'Ta progression est gardée.', quitter_oui: 'Quitter', quitter_non: 'Rester',
+      retour_etape: 'Revenir en arrière',
       // ---- 🆕 fragment 5 : la réparation ----
       intro5: 'Les quatre morceaux sont là. Il reste à les assembler, seul. Je ne dirai rien. Enfin, presque rien.',
       fin5: 'Souvenir réparé. Quatre morceaux, six phrases, un peu de poutine. Ça aurait pu être pire.',
@@ -403,6 +420,7 @@
       // ---- 🆕 leave / resume ----
       reprise: 'Picking up where we left off. I haven’t forgotten anything, you’ll notice.',
       quitter_titre: 'Leave and continue later?', quitter_info: 'Your progress is saved.', quitter_oui: 'Leave', quitter_non: 'Stay',
+      retour_etape: 'Go back',
       // ---- 🆕 fragment 5: the repair ----
       intro5: 'All four pieces are here. Now to put them together, on your own. I won’t say anything. Well, almost nothing.',
       fin5: 'Memory repaired. Four pieces, six sentences, a little poutine. It could have been worse.',
@@ -446,6 +464,7 @@
     },  // ---- 🆕 (03-11-2026) autres langues : mêmes 20 langues que le menu ----
     es: {
       titre: 'Primer recuerdo',
+      retour_etape: 'Volver atrás',
       quitter: 'Salir del recuerdo',
       son: 'Sonido',
       suite: 'Siguiente',
@@ -496,6 +515,7 @@
     },
     it: {
       titre: 'Primo ricordo',
+      retour_etape: 'Torna indietro',
       quitter: 'Esci dal ricordo',
       son: 'Audio',
       suite: 'Avanti',
@@ -546,6 +566,7 @@
     },
     pt: {
       titre: 'Primeira lembrança',
+      retour_etape: 'Voltar',
       quitter: 'Sair da lembrança',
       son: 'Som',
       suite: 'Próximo',
@@ -596,6 +617,7 @@
     },
     ca: {
       titre: 'Primer record',
+      retour_etape: 'Torna enrere',
       quitter: 'Surt del record',
       son: 'So',
       suite: 'Següent',
@@ -646,6 +668,7 @@
     },
     eo: {
       titre: 'Unua memoraĵo',
+      retour_etape: 'Reen',
       quitter: 'Forlasi la memoraĵon',
       son: 'Sono',
       suite: 'Sekva',
@@ -696,6 +719,7 @@
     },
     zh: {
       titre: '第一段记忆',
+      retour_etape: '返回上一步',
       quitter: '离开这段记忆',
       son: '声音',
       suite: '下一步',
@@ -746,22 +770,23 @@
     },
     ja: {
       titre: '最初の記憶',
-      quitter: '記憶をとじる',
+      retour_etape: '前に戻る',
+      quitter: '記憶を閉じる',
       son: 'サウンド',
       suite: '次へ',
-      continuer: 'つづける',
+      continuer: '続ける',
       valider: '確認',
       intro: 'さて。この記憶は少し傷んでいますが、いくつか言葉を取り出せるはずです。',
-      c_mange: '言葉にさわって、音を聞いてみましょう。',
-      c_lire: '言葉にさわって、音と意味を確かめましょう。',
-      c_ordre: '記憶が消えかけています……言葉を正しい順番にならべましょう。',
-      c_ecrire_part: 'ぬけている言葉を書きましょう。',
+      c_mange: '言葉に触って、音を聞いてみましょう。',
+      c_lire: '言葉に触って、音と意味を確かめましょう。',
+      c_ordre: '記憶が消えかけています……言葉を正しい順番に並べましょう。',
+      c_ecrire_part: '抜けている言葉を書きましょう。',
       c_ecrire: 'この文をフランス語で書きましょう。',
-      c_image: 'あなたはBekです。いま、なにをしていますか？',
-      c_audio: '聞いてから、正しい言葉をえらびましょう。',
+      c_image: 'あなたはBekです。今、何をしていますか？',
+      c_audio: '聞いてから、正しい言葉を選びましょう。',
       reecouter: 'もう一度聞く',
       sans_son: '音が聞こえません',
-      construire_vide: '言葉にさわって、文を組み立てましょう。',
+      construire_vide: '言葉に触って、文を組み立てましょう。',
       role_s: '主語',
       role_v: '動詞',
       role_o: '目的語',
@@ -769,33 +794,34 @@
       genre_f: '女性',
       noteE_titre: 'ポイント',
       noteE: '主語が「je」のとき、-er動詞の語尾は -e になります。この -e は発音しません。',
-      tr_mange: 'わたしは食べます。',
-      tr_sandwich: 'わたしはサンドイッチを食べます。',
-      tr_poutine: 'わたしはプーティンを食べます。',
-      tr_parle: 'わたしはフランス語を話します。',
-      sens_je: 'わたし',
+      tr_mange: '私は食べます。',
+      tr_sandwich: '私はサンドイッチを食べます。',
+      tr_poutine: '私はプーティンを食べます。',
+      tr_parle: '私はフランス語を話します。',
+      sens_je: '私',
       sens_mange: '食べる',
       sens_parle: '話す',
-      sens_un: 'ひとつの（男性名詞）',
-      sens_une: 'ひとつの（女性名詞）',
+      sens_un: '一つの（男性名詞）',
+      sens_une: '一つの（女性名詞）',
       sens_sandwich: 'サンドイッチ',
       sens_poutine: 'プーティン（フライドポテトに、かむと「キュッ」と鳴るチーズの粒と、茶色いソースをかけた料理）',
       sens_francais: 'フランス語',
-      quipErreur: ['おしい。フランス語でも、どの言葉でも、「おしい」は「ちがう」という意味です。', 'ゆっくりどうぞ。わたしには時間がたっぷりあります。', 'おもしろい答えです。でも、ちがいます。'],
+      quipErreur: ['惜しい。フランス語でも、どの言葉でも、「惜しい」は「違う」という意味です。', 'ゆっくりどうぞ。私には時間がたっぷりあります。', '面白い答えです。でも、違います。'],
       quipOk: ['はい、それです。', 'そのとおり。', 'なかなかいいですね。', '進んでいますね。'],
       quipUne: 'プーティンは「un」ではなく「une」です。決めるのは文法で、あなたではありません。',
-      quipPoutine: 'あの熱意を見てください。わたしは何も言っていませんが。',
+      quipPoutine: 'あの熱意を見てください。私は何も言っていませんが。',
       quipSandwich: 'サンドイッチ、とても気に入っているみたいですね。覚えておいてください。',
-      quipReponse: '答えはこちらです。だれにも言わないでください。',
-      quipAccent: 'おしい！アクセント記号を見てください。',
+      quipReponse: '答えはこちらです。誰にも言わないでください。',
+      quipAccent: '惜しい！アクセント記号を見てください。',
       quipSansSon: '音が出ませんか？では、文字をどうぞ。何も言いません。',
       cult_titre: '豆知識',
-      cult_sandwich: '言い伝えによると、「sandwich」という言葉は、トランプのゲームをやめずに肉をパンにはさんで食べたイギリスの伯爵に由来します。',
-      cult_poutine: 'プーティンは、フライドポテト、かむと「キュッ」と鳴るチーズの粒、そして茶色いソースでできています。1950年代の終わりごろケベックで生まれ、いくつもの町が発祥の地を名乗っています。',
-      fin: '記憶がよみがえりました。これで、食べているものを言えるようになりましたね。食べないものは……それはまたこんど。'
+      cult_sandwich: '言い伝えによると、「sandwich」という言葉は、トランプのゲームをやめずに肉をパンに挟んで食べたイギリスの伯爵に由来します。',
+      cult_poutine: 'プーティンは、フライドポテト、かむと「キュッ」と鳴るチーズの粒、そして茶色いソースでできています。1950年代の終わり頃ケベックで生まれ、いくつもの町が発祥の地を名乗っています。',
+      fin: '記憶がよみがえりました。これで、食べているものを言えるようになりましたね。食べないものは……それはまた今度。'
     },
     ko: {
       titre: '첫 번째 기억',
+      retour_etape: '이전으로',
       quitter: '기억에서 나가기',
       son: '소리',
       suite: '다음',
@@ -846,6 +872,7 @@
     },
     vi: {
       titre: 'Ký ức đầu tiên',
+      retour_etape: 'Quay lại',
       quitter: 'Rời khỏi ký ức',
       son: 'Âm thanh',
       suite: 'Tiếp',
@@ -896,6 +923,7 @@
     },
     ht: {
       titre: 'Premye souvni',
+      retour_etape: 'Retounen',
       quitter: 'Soti nan souvni a',
       son: 'Son',
       suite: 'Swivan',
@@ -946,6 +974,7 @@
     },
     tl: {
       titre: 'Unang alaala',
+      retour_etape: 'Bumalik',
       quitter: 'Lumabas sa alaala',
       son: 'Tunog',
       suite: 'Susunod',
@@ -996,6 +1025,7 @@
     },
     id: {
       titre: 'Kenangan pertama',
+      retour_etape: 'Kembali',
       quitter: 'Keluar dari kenangan',
       son: 'Suara',
       suite: 'Lanjut',
@@ -1046,6 +1076,7 @@
     },
     nl: {
       titre: 'Eerste herinnering',
+      retour_etape: 'Terug',
       quitter: 'De herinnering verlaten',
       son: 'Geluid',
       suite: 'Volgende',
@@ -1096,6 +1127,7 @@
     },
     de: {
       titre: 'Erste Erinnerung',
+      retour_etape: 'Zurück',
       quitter: 'Erinnerung verlassen',
       son: 'Ton',
       suite: 'Weiter',
@@ -1146,6 +1178,7 @@
     },
     fa: {
       titre: 'اولین خاطره',
+      retour_etape: 'بازگشت',
       quitter: 'خروج از خاطره',
       son: 'صدا',
       suite: 'بعدی',
@@ -1196,6 +1229,7 @@
     },
     sv: {
       titre: 'Första minnet',
+      retour_etape: 'Tillbaka',
       quitter: 'Lämna minnet',
       son: 'Ljud',
       suite: 'Nästa',
@@ -1246,6 +1280,7 @@
     },
     no: {
       titre: 'Første minne',
+      retour_etape: 'Tilbake',
       quitter: 'Forlat minnet',
       son: 'Lyd',
       suite: 'Neste',
@@ -1296,6 +1331,7 @@
     },
     ru: {
       titre: 'Первое воспоминание',
+      retour_etape: 'Назад',
       quitter: 'Выйти из воспоминания',
       son: 'Звук',
       suite: 'Далее',
@@ -1393,7 +1429,7 @@
     return Promise.race([toutes, delaiMax]).then(function () { return etat; });
   }
 
-  function demarrer(idConteneur, options, callbacks) {
+  function demarrerScene(idConteneur, options, callbacks) {
     options = options || {};
     callbacks = callbacks || {};
     const conteneur = document.getElementById(idConteneur);
@@ -1424,6 +1460,10 @@
     scene.className = 'rbek-scene m1-scene';
     let segments = '';
     for (let i = 0; i < ETAPES_TOTAL; i++) segments += '<span class="m1-segment"></span>';
+    // 🆕 flèche de retour : fragments 1 à 4, quand la page (demarrer) sait reconstruire la scène à une autre étape
+    const avecRetour = fragment !== 5 && typeof options._reculer === 'function';
+    const barre = '<div class="m1-progres" aria-hidden="true">' + segments + '</div>';
+    if (avecRetour) injecterStyle('m1-retour-style', RETOUR_CSS);
     scene.innerHTML =
       '<button type="button" class="m1-quitter" aria-label="' + echapper(T('quitter')) + '">&#8249;</button>' +
       '<button type="button" class="m1-son" aria-label="' + echapper(T('son')) + '" aria-pressed="true">' +
@@ -1431,7 +1471,10 @@
       '<div class="m1-disposition">' +
         '<div class="m1-col-gauche">' +
           '<div class="m1-carte">' +
-            '<div class="m1-progres" aria-hidden="true">' + segments + '</div>' +
+            (avecRetour
+              ? '<div class="m1-entete-carte"><button type="button" class="m1-retour" disabled aria-label="' + echapper(T('retour_etape')) + '" title="' + echapper(T('retour_etape')) + '">' +
+                  '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5"/><path d="M11 6l-6 6 6 6"/></svg></button>' + barre + '</div>'
+              : barre) +
             '<p class="m1-consigne" role="status"></p>' +
             '<div class="m1-zone"></div>' +
             '<div class="m1-actions"></div>' +
@@ -1459,6 +1502,7 @@
     const calque = q('.m1-calque'), vignette = q('.m1-vignette');
     const segs = scene.querySelectorAll('.m1-segment');
     const boutonSon = q('.m1-son');
+    const boutonRetour = q('.m1-retour');
 
     // ---------- Voix : audio/fr/<id>.mp3 ou .wav, sinon la synthèse du navigateur ----------
     const son = { actif: lireSon() };
@@ -1692,8 +1736,22 @@
 
     // ---------- Aides d'affichage ----------
     function consigne(txt) { elConsigne.textContent = txt; }
-    function vider() { zone.innerHTML = ''; actions.innerHTML = ''; zone.removeAttribute('data-mode'); zone.removeAttribute('data-phrase'); }
+    // 🆕 retour en arrière : segCourant = étape en cours, ecrans = nombre d'écrans déjà affichés dans cette étape (un vider() par écran)
+    let segCourant = 0, ecrans = 0, finie = false;
+    function majRetour() {
+      if (!boutonRetour) return;
+      boutonRetour.disabled = finie || (segCourant === 0 && ecrans <= 1);
+    }
+    function reculer() {
+      if (arrete || finie || !boutonRetour || boutonRetour.disabled) return;
+      if (scene.querySelector('.m1-quitter-voile')) return;
+      // déjà plus loin que le premier écran de l'étape : on la rejoue ; sinon on revient à la précédente
+      const cible = (ecrans > 1 || segCourant === 0) ? segCourant : segCourant - 1;
+      if (typeof options._reculer === 'function') options._reculer(cible);
+    }
+    function vider() { ecrans++; majRetour(); zone.innerHTML = ''; actions.innerHTML = ''; zone.removeAttribute('data-mode'); zone.removeAttribute('data-phrase'); }
     function etape(n) {
+      if (arrete) return;   // 🆕 une ancienne scène (après un retour en arrière) ne doit plus rien signaler
       Array.prototype.forEach.call(segs, function (s, i) { s.classList.toggle('m1-segment-fait', i < n); });
       // 🆕 n segments sont faits : c'est un point de reprise (jamais 0, jamais la fin)
       if (n > 0 && n < ETAPES_TOTAL && typeof callbacks.onPosition === 'function') {
@@ -2467,6 +2525,8 @@
     }
 
     async function fin() {
+      if (arrete) return;
+      finie = true; majRetour();
       etape(ETAPES_TOTAL);
       montrer('bek-heureuse-ferme');
       try {
@@ -2544,14 +2604,18 @@
 
     async function deroule() {
       const depart = Math.max(0, Math.min(ETAPES_TOTAL - 1, Math.floor(Number(options.reprendreA) || 0)));
-      await attendre(500);
+      await attendre(options._retour ? 0 : 500);
       montrer('bek-observe');
-      lecteurAfficher(T(depart > 0 ? 'reprise' : (fragment === 1 ? 'intro' : 'intro' + fragment)), true);
-      if (depart > 0) etape(depart);
-      await new Promise(function (resolve) { lectSuite.onclick = function () { lectSuite.onclick = null; lecteurMasquer(); resolve(); }; });
+      if (options._retour) {                 // 🆕 retour en arrière : pas d'introduction, on rejoue directement l'étape
+        if (depart > 0) etape(depart);
+      } else {
+        lecteurAfficher(T(depart > 0 ? 'reprise' : (fragment === 1 ? 'intro' : 'intro' + fragment)), true);
+        if (depart > 0) etape(depart);
+        await new Promise(function (resolve) { lectSuite.onclick = function () { lectSuite.onclick = null; lecteurMasquer(); resolve(); }; });
+      }
       if (fragment === 5) { await reparation(depart); return; }
       const segmentsF = segmentsDuFragment();
-      for (let i = depart; i < segmentsF.length; i++) await segmentsF[i]();
+      for (let i = depart; i < segmentsF.length; i++) { segCourant = i; ecrans = 0; majRetour(); await segmentsF[i](); }
       await fin();
     }
 
@@ -2583,6 +2647,7 @@
     }
 
     q('.m1-quitter').addEventListener('click', demanderQuitter);
+    if (boutonRetour) boutonRetour.addEventListener('click', reculer);
 
     // ---------- Lancement ----------
     precharger(POSES, function (nom) { return sources[nom]; }).then(function (etat) {
@@ -2601,6 +2666,21 @@
         if (scene.parentNode) scene.parentNode.removeChild(scene);
       }
     };
+  }
+
+  // 🆕 Retour en arrière : on referme la scène et on la reconstruit à l'étape voulue (reprendreA), sans introduction.
+  // La poignée rendue à la page hôte reste valable : son arreter() ferme toujours la scène en cours.
+  function demarrer(idConteneur, options, callbacks) {
+    options = options || {};
+    let courante = null, ferme = false;
+    function lancer(opts) { courante = demarrerScene(idConteneur, opts, callbacks); }
+    function reculerVers(n) {
+      if (ferme) return;
+      if (courante) courante.arreter();
+      lancer(Object.assign({}, options, { reprendreA: n, _retour: true, _reculer: reculerVers }));
+    }
+    lancer(Object.assign({}, options, { _reculer: reculerVers }));
+    return { arreter: function () { ferme = true; if (courante) courante.arreter(); } };
   }
 
   window.KebBekM1 = { demarrer: demarrer, MOTS_APPRIS: MOTS_APPRIS, MOTS_APPRIS_2: MOTS_APPRIS_2, MOTS_APPRIS_3: MOTS_APPRIS_3, MOTS_APPRIS_4: MOTS_APPRIS_4, MOTS_APPRIS_5: MOTS_APPRIS_5, REPARATION: REPARATION };

@@ -506,44 +506,44 @@
       aideFermer: '\u5173\u95ed'
     },
     ja: {
-      sens_je: '\u79c1', sens_parle: '\uff08\u79c1\u304c\uff09\u8a71\u3059', sens_francais: '\u30d5\u30e9\u30f3\u30b9\u8a9e', sens_parles: '\uff08\u304d\u307f\u304c\uff09\u8a71\u3059',
+      sens_je: 'わたし', sens_parle: '（わたしが）話す', sens_francais: '\u30d5\u30e9\u30f3\u30b9\u8a9e', sens_parles: '（あなたが）話す',
       bekFin: '\u2026\u2026\u3067\u3082\u3001\u899a\u3048\u3066\u3044\u308b\u306e\u306f\u3053\u308c\u3060\u3051\u3002',
-      lecteurFin: '\u304d\u3063\u3068\u307b\u304b\u306b\u3082\u3042\u308b\u306f\u305a\u2026\u2026\u898b\u3064\u3051\u308b\u304a\u624b\u4f1d\u3044\u3092\u3059\u308b\u3088\u3002',
+      lecteurFin: 'ほかにもあるはずです……見つけるお手伝いができます。',
       // 🆕 Rencontre avec le Lecteur — rendu vivant par langue (pas de traduction littérale)
       rencBekQuoi: '\u3042\u308c\u3001\u306a\u306b\uff1f',
       rencPensee: 'AI\u304b\u306a\uff1f',
-      rencLect1: '\u3053\u3093\u306b\u3061\u306f\u3001Bek\u3002\u81ea\u5df1\u7d39\u4ecb\u3059\u308b\u306d\u3002\u308f\u305f\u3057\u306f\u300c\u30ea\u30fc\u30c0\u30fc\u300d\u3060\u3088\u3002',
-      rencLect2: '\u304d\u307f\u306e\u8a18\u61b6\u3092\u898b\u3064\u3051\u3066\u3001\u7d44\u307f\u7acb\u3066\u76f4\u3059\u304a\u624b\u4f1d\u3044\u304c\u3067\u304d\u308b\u3088\u3002',
-      rencLect3: '\u3053\u306e\u3046\u3061\u306e\u3044\u304f\u3064\u304b\u306f\u3001\u4eba\u9593\u306e\u624b\u304c\u306a\u3044\u3068\u3067\u304d\u306a\u3044\u3093\u3060\u3002',
-      rencLect4: '\u4eba\u9593\u3055\u3093\u3001\u624b\u4f1d\u3063\u3066\u304f\u308c\u308b\uff1f',
-      rencReponse: '\u9078\u629e\u80a2\u3001\u306a\u3055\u305d\u3046\u3060\u306d\u2026',
-      rencRecapGarcon: '{nom}\u304f\u3093\u3063\u3066\u3044\u3046\u306e\u3002\u7537\u306e\u5b50\u3060\u3088\u3002',
-      rencRecapFille: '{nom}\u3061\u3083\u3093\u3063\u3066\u3044\u3046\u306e\u3002\u5973\u306e\u5b50\u3060\u3088\u3002',
-      rencRecapHomme: '{nom}\u3055\u3093\u3063\u3066\u3044\u3046\u306e\u3002\u7537\u306e\u4eba\u3060\u3088\u3002',
-      rencRecapFemme: '{nom}\u3055\u3093\u3063\u3066\u3044\u3046\u306e\u3002\u5973\u306e\u4eba\u3060\u3088\u3002',
-      rencLect5: '\u672c\u5f53\uff1f \u78ba\u8a8d\u3057\u3066\u304f\u308c\u308b\uff1f',
+      rencLect1: 'はじめまして、Bek。わたしは「リーダー」です。',
+      rencLect2: 'あなたの記憶を見つけて、組み立て直すお手伝いができます。',
+      rencLect3: 'その作業のいくつかは、人間の手がないとできません。',
+      rencLect4: '人間さん、お手伝いいただけますか？',
+      rencReponse: '断る選択肢はなさそうですね…',
+      rencRecapGarcon: '{nom}くんという名前の男の子です。',
+      rencRecapFille: '{nom}ちゃんという名前の女の子です。',
+      rencRecapHomme: '{nom}さんという名前の男性です。',
+      rencRecapFemme: '{nom}さんという名前の女性です。',
+      rencLect5: '本当ですか？ 確認してもらえますか？',
       fenTitre: '\u60c5\u5831\u306e\u78ba\u8a8d',
       fenPrenom: '\u540d\u524d',
       fenConfirmer: '\u78ba\u8a8d\u3059\u308b',
       fenErreur: '1\u301c20\u6587\u5b57\u3067\u5165\u529b\u3057\u3066\u304f\u3060\u3055\u3044\u3002',
       fenGarcon: '\u7537\u306e\u5b50',
       fenFille: '\u5973\u306e\u5b50',
-      fenHomme: '\u7537\u306e\u4eba',
-      fenFemme: '\u5973\u306e\u4eba',
-      compteLect: '\u9032\u307f\u5177\u5408\u3092\u306a\u304f\u3057\u305f\u304f\u306a\u304b\u3063\u305f\u3089\u3001\u30a2\u30ab\u30a6\u30f3\u30c8\u3092\u4f5c\u3063\u305f\u307b\u3046\u304c\u3044\u3044\u3088\u3002',
+      fenHomme: '男性',
+      fenFemme: '女性',
+      compteLect: '進み具合をなくしたくなければ、アカウントを作ることをおすすめします。',
       compteTitre: '\u9032\u307f\u5177\u5408\u3092\u4fdd\u5b58\u3059\u308b',
       compteTexte: '\u30e1\u30fc\u30eb\u30a2\u30c9\u30ec\u30b9\u3060\u3051\u3067\u5927\u4e08\u592b\u3067\u3059\u3002\u30b3\u30fc\u30c9\u3092\u304a\u9001\u308a\u3057\u307e\u3059\u306e\u3067\u3001\u30d1\u30b9\u30ef\u30fc\u30c9\u306f\u4e0d\u8981\u3067\u3059\u3002',
       compteCreer: '\u30a2\u30ab\u30a6\u30f3\u30c8\u3092\u4f5c\u308b',
       comptePlusTard: '\u3042\u3068\u3067',
       suite: '\u6b21\u3078',
-      sonBouton: '\u30b5\u30a6\u30f3\u30c9',
-      astuceClavier: '\u30d2\u30f3\u30c8\uff1a\u30ad\u30fc\u30dc\u30fc\u30c9\u3067\u8a00\u8449\u3092\u5165\u529b\u3059\u308b\u3053\u3068\u3082\u3067\u304d\u308b\u3088\u3002',
-      aideBouton: '\u30ea\u30fc\u30c0\u30fc\uff1a\u30d8\u30eb\u30d7',
-      aideInviteTactile: '\u308f\u304b\u3089\u306a\u3044\u3053\u3068\u304c\u3042\u3063\u305f\u3089\u3001\u3055\u308f\u3063\u3066\u306d\uff01',
-      aideInviteSouris: '\u308f\u304b\u3089\u306a\u3044\u3053\u3068\u304c\u3042\u3063\u305f\u3089\u3001\u30af\u30ea\u30c3\u30af\u3057\u3066\u306d\uff01',
-      aideTitre: '\u30ea\u30fc\u30c0\u30fc\u304c\u8aac\u660e\u3059\u308b\u3088',
+      sonBouton: '音',
+      astuceClavier: 'ヒント：キーボードで言葉を入力することもできますよ。',
+      aideBouton: 'リーダーに聞く',
+      aideInviteTactile: 'わからないことがあれば、わたしにさわってくださいね！',
+      aideInviteSouris: 'わからないことがあれば、わたしを押してくださいね！',
+      aideTitre: 'リーダーが説明します',
       aideMots: '\u3053\u306e\u8a18\u61b6\u306e\u8a00\u8449',
-      aideEquiv: '\u3042\u306a\u305f\u306e\u8a00\u8449\u3067',
+      aideEquiv: '日本語では',
       aideFermer: '\u9589\u3058\u308b'
     },
     ko: {
@@ -1177,7 +1177,7 @@
     ja: {
       je: {
         nature: '\u4eba\u79f0\u4ee3\u540d\u8a5e \u00b7 1\u4eba\u79f0\u5358\u6570',
-        equiv: '\u79c1',
+        equiv: 'わたし',
         texte: ['\u8a71\u3057\u3066\u3044\u308b\u4eba\u3092\u6307\u3057\u307e\u3059\u3002', '\u65e5\u672c\u8a9e\u3067\u306f\u300c\u79c1\u300d\u3092\u3088\u304f\u7701\u7565\u3057\u307e\u3059\u304c\u3001\u30d5\u30e9\u30f3\u30b9\u8a9e\u3067\u306f\u4e3b\u8a9e\u304c\u5fc5\u8981\u3067\u3059\uff1aje parle\u3002\u6bcd\u97f3\u306e\u524d\u3067\u306f j\u2019 \u306b\u306a\u308a\u307e\u3059\uff1aj\u2019aime\u3002']
       },
       parle: {
@@ -1192,7 +1192,7 @@
       },
       parles: {
         nature: '\u52d5\u8a5e \u00b7 \u73fe\u5728\u5f62',
-        texte: ['\u52d5\u8a5e parler \u3092\u300ctu\u300d\uff08\u304d\u307f\uff09\u306b\u5408\u308f\u305b\u305f\u5f62\uff1atu parles\u3002', '\u300cje\u300d\u306e\u3068\u304d\u306f je parle \u3067\u3001-s \u306f\u3064\u304d\u307e\u305b\u3093\u3002']
+        texte: ['動詞 parler を「tu」（あなた）に合わせた形：tu parles。', '「je」のときは je parle で、-s はつきません。']
       }
     },
     ko: {

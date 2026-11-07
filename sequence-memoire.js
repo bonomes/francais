@@ -42,7 +42,7 @@
        l'atterrissage de la tuile (paires fermée/ouverte par posture).
      - SONS : une note qui monte à chaque mot posé (gamme pentatonique,
        synthétisée, aucun fichier), un accord à la phrase complète, un « bonk »
-       doux sur une erreur ; la VOIX dit le mot (fichier audio/fr/<mot>.mp3 s'il
+       doux sur une erreur ; la VOIX dit le mot (fichier audio/fr/bek_<mot>_01.mp3 s'il
        existe, sinon la synthèse vocale du navigateur). Bouton haut-parleur
        (mémorisé) pour couper le son — SON_PAR_DEFAUT règle l'état initial.
      Toutes les poses nouvelles sont facultatives : absentes, on retombe sur
@@ -1773,16 +1773,25 @@
         ss.speak(u);
       } catch (e) {}
     }
-    function direMot(id, texte) {
+    // NOMMAGE : <voix>_<id>_<version>.mp3 (ex. bek_je_01.mp3, bek_je-parle-francais_01.mp3). Un seul dossier à plat pour tout le site.
+    // options.voix ('bek' par défaut) et options.versionVoix ('01') règlent la voix ; une scène peut en changer en passant { voix, version } à direMot.
+    // « parles » se dit comme « parle » : même fichier.
+    const ALIAS_AUDIO = { parles: 'parle' };
+    function nomAudio(id, v) {
+      v = v || {};
+      return (v.voix || options.voix || 'bek') + '_' + (ALIAS_AUDIO[id] || id) + '_' + (v.version || options.versionVoix || '01');
+    }
+    function direMot(id, texte, v) {
       if (!son.actif) return;
-      if (dispoAudio[id] === false) { synthese(texte); return; }
+      const fichier = nomAudio(id, v);
+      if (dispoAudio[fichier] === false) { synthese(texte); return; }
       let repli = false;
-      function secours() { if (repli) return; repli = true; dispoAudio[id] = false; synthese(texte); }
+      function secours() { if (repli) return; repli = true; dispoAudio[fichier] = false; synthese(texte); }
       try {
-        const a = new Audio((options.dossierAudio || 'audio/fr/') + id + '.mp3');
+        const a = new Audio((options.dossierAudio || 'audio/fr/') + fichier + '.mp3');
         a.addEventListener('error', secours, { once: true });
         const p = a.play();
-        if (p && p.then) p.then(function () { dispoAudio[id] = true; }).catch(function () { if (dispoAudio[id] !== true) secours(); });
+        if (p && p.then) p.then(function () { dispoAudio[fichier] = true; }).catch(function () { if (dispoAudio[fichier] !== true) secours(); });
       } catch (e) { secours(); }
     }
     function reglerBoutonSon() {
@@ -2121,7 +2130,7 @@
       bulle.classList.add('mem-reussi');
       lecteurReagit('mem-lecteur-saut', 650);
       sonPhrase();
-      direMot('m1-je-parle-francais', 'Je parle fran\u00e7ais');
+      direMot('je-parle-francais', 'Je parle fran\u00e7ais');
       bouchePhrase(expTour(), 4, 1400);          // « Je-par-le-fran-çais » (4 syllabes sonores)
       await attendre(1750);
       bulle.classList.remove('mem-reussi');
@@ -2653,7 +2662,7 @@
       exprimer('effort', 600);
       await attendre(1300);
 
-      direMot('m1-je-parle-francais-joyeuse', 'Je parle fran\u00e7ais');
+      direMot('je-parle-francais-joyeuse', 'Je parle fran\u00e7ais');
       await dire('Je parle fran\u00e7ais\u00a0!', 'heureuse');
       await dire(T('bekFin'), 'triste');
       bulle.classList.add('rbek-bulle-cachee');

@@ -142,7 +142,7 @@
       plonger: '\u6f5c\u5165'
     },
     ja: {
-      commentaire: '\u3053\u308c\u3001\u306a\u306b\uff1f\u30d5\u30a1\u30a4\u30eb\uff1f',
+      commentaire: '\u3053\u308c\u3001\u4f55\uff1f\u30d5\u30a1\u30a4\u30eb\uff1f',
       erreurTitre: '\u8aad\u307f\u8fbc\u3081\u306a\u3044\u30d5\u30a1\u30a4\u30eb',
       erreurTexte: 'このファイルはこの端末では開けません。読み取りと修復ができる拡張機能をダウンロードしますか？',
       oui: '\u306f\u3044', non: '\u3044\u3044\u3048',
@@ -150,7 +150,7 @@
       installation: '\u300c\u30ea\u30fc\u30c0\u30fc\u300d\u3092\u30c0\u30a6\u30f3\u30ed\u30fc\u30c9\u4e2d\u2026',
       termine: '\u30c0\u30a6\u30f3\u30ed\u30fc\u30c9\u5b8c\u4e86',
       ouvrir: '\u958b\u304f',
-      lecteur1: 'はじめまして！わたしは「リーダー」です。この記憶を開いて、理解するお手伝いもできますよ。',
+      lecteur1: 'はじめまして！私は「リーダー」です。この記憶を開いて、理解するお手伝いもできますよ。',
       plonger: '\u98db\u3073\u8fbc\u3080'
     },
     ko: {

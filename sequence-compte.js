@@ -238,7 +238,7 @@
       email: '\u30e1\u30fc\u30eb\u30a2\u30c9\u30ec\u30b9',
       envoyer: '\u30b3\u30fc\u30c9\u3092\u9001\u308b',
       code: '\u30b3\u30fc\u30c9',
-      verifier: '\u78ba\u5b9a',
+      verifier: '確認する',
       codeEnvoye: '\u30b3\u30fc\u30c9\u3092\u9001\u308a\u307e\u3057\u305f\u3002\u30e1\u30fc\u30eb\u3092\u78ba\u8a8d\u3057\u3066\u304f\u3060\u3055\u3044\u3002',
       courrielVide: '\u30e1\u30fc\u30eb\u30a2\u30c9\u30ec\u30b9\u3092\u5165\u529b\u3057\u3066\u304f\u3060\u3055\u3044\u3002',
       codeVide: '\u30b3\u30fc\u30c9\u3092\u5165\u529b\u3057\u3066\u304f\u3060\u3055\u3044\u3002',
@@ -248,8 +248,16 @@
       lienInvite: '\u30a2\u30ab\u30a6\u30f3\u30c8\u3092\u4f5c\u3089\u305a\u306b\u7d9a\u3051\u308b',
       avertInvite: '\u30d6\u30e9\u30a6\u30b6\u306e\u30c7\u30fc\u30bf\u3092\u6d88\u3059\u3068\u3001\u9032\u307f\u5177\u5408\u304c\u5931\u308f\u308c\u308b\u3053\u3068\u304c\u3042\u308a\u307e\u3059\u3002',
       codeInvalide: '\u30b3\u30fc\u30c9\u304c\u9055\u3046\u304b\u3001\u671f\u9650\u304c\u5207\u308c\u3066\u3044\u307e\u3059\u3002',
-      profilTitre: '\u3042\u306a\u305f\u306f\u3060\u308c\u3067\u3059\u304b\uff1f',
-      profilAjouter: '\uff0b \u30d7\u30ed\u30d5\u30a3\u30fc\u30eb\u3092\u8ffd\u52a0'
+      profilTitre: 'だれが使いますか？',
+      profilAjouter: '\uff0b \u30d7\u30ed\u30d5\u30a3\u30fc\u30eb\u3092\u8ffd\u52a0',
+      conflitTitre: 'このアカウントにはすでに進み具合があります',
+      conflitTexte: 'ログインせずに進めた分もあります。どちらの進み具合を残しますか？',
+      conflitGarder: 'アカウントのほうを残す',
+      conflitNouveau: '新しいほうを、新しいプロフィールに残す',
+      effacerTitre: '進み具合を消しますか？',
+      effacerTexte: 'ログインせずに進めた分は、完全に消えてしまいます。',
+      effacer: '消す',
+      retour: '戻る'
     },
     ko: {
       titre: '\uacc4\uc815 \ub9cc\ub4e4\uae30',

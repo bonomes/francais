@@ -2121,7 +2121,7 @@
       bulle.classList.add('mem-reussi');
       lecteurReagit('mem-lecteur-saut', 650);
       sonPhrase();
-      direMot('phrase', 'Je parle fran\u00e7ais');
+      direMot('m1-je-parle-francais', 'Je parle fran\u00e7ais');
       bouchePhrase(expTour(), 4, 1400);          // « Je-par-le-fran-çais » (4 syllabes sonores)
       await attendre(1750);
       bulle.classList.remove('mem-reussi');
@@ -2653,7 +2653,7 @@
       exprimer('effort', 600);
       await attendre(1300);
 
-      direMot('phrase', 'Je parle fran\u00e7ais');
+      direMot('m1-je-parle-francais-joyeuse', 'Je parle fran\u00e7ais');
       await dire('Je parle fran\u00e7ais\u00a0!', 'heureuse');
       await dire(T('bekFin'), 'triste');
       bulle.classList.add('rbek-bulle-cachee');

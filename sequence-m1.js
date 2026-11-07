@@ -1509,12 +1509,20 @@
     const dispoAudio = {};
     function reglerBoutonSon() { boutonSon.setAttribute('aria-pressed', son.actif ? 'true' : 'false'); boutonSon.classList.toggle('m1-son-coupe', !son.actif); }
     reglerBoutonSon();
+    // 🆕 (07-11-2026) Un exercice d'écoute n'a aucun sens sans le son : le réglage « son coupé » (clé partagée par tout le site) ne doit pas
+    // rendre « Réécouter » muet. On rallume le son pour l'exercice (sans toucher au réglage mémorisé : l'élève le retrouve tel quel ailleurs).
+    function reactiverSon() {
+      if (son.actif) return;
+      son.actif = true;
+      reglerBoutonSon();
+    }
     boutonSon.addEventListener('click', function () {
       son.actif = !son.actif;
       try { localStorage.setItem(CLE_SON, son.actif ? '1' : '0'); } catch (e) {}
       if (!son.actif) { couperVoix(); }
       reglerBoutonSon();
     });
+    let synthEnCours = null;
     function synthese(texte) {
       try {
         const ss = window.speechSynthesis;
@@ -1527,8 +1535,14 @@
         const fr = voix.filter(function (v) { return v.lang && v.lang.toLowerCase().indexOf('fr') === 0; });
         const choisie = fr.filter(function (v) { return v.lang.toLowerCase().replace('_', '-') === 'fr-ca'; })[0] || fr[0];
         if (choisie) u.voice = choisie;
+        const mon = jetonVoix;
+        synthEnCours = u;                      // 🆕 garde une référence : sinon le navigateur peut ramasser l'énoncé et couper la voix
         ss.cancel();
-        ss.speak(u);
+        // 🆕 un speak() dans le même tick que cancel() est parfois ignoré (Chrome, Android) : on laisse respirer ~70 ms, ce qui rend « Réécouter » fiable
+        setTimeout(function () {
+          if (arrete || mon !== jetonVoix || synthEnCours !== u) return;
+          try { ss.speak(u); } catch (e) {}
+        }, 70);
       } catch (e) {}
     }
     // 🆕 (05-11-2026) audio/fr/<id>.mp3, sinon audio/fr/<id>.wav (la console Google télécharge du .wav), sinon la synthèse du navigateur
@@ -1821,6 +1835,18 @@
     }
 
     // ---------- 1. Lecture : on touche les mots (voix + sens) ----------
+    // 🆕 (07-11-2026) Bouton « Réécouter » (la phrase entière) sur tous les écrans d'exercice : lecture, ordre, écriture, construction.
+    // Même bouton que dans l'exercice audio (.m1-ecoute / .m1-haut-parleur) ; un clic rallume le son s'il avait été coupé.
+    function creerEcoute(phrase) {
+      const bloc = document.createElement('div');
+      bloc.className = 'm1-ecoute';
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = 'm1-haut-parleur'; b.setAttribute('aria-label', T('reecouter'));
+      b.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9.5h3.5L12 6v12l-4.5-3.5H4Z"/><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11"/></svg><span>' + echapper(T('reecouter')) + '</span>';
+      b.addEventListener('click', function () { reactiverSon(); direPhrase(phrase, true); });
+      bloc.appendChild(b);
+      return bloc;
+    }
     async function lecture(phrase, cle) {
       vider();
       zone.setAttribute('data-mode', 'lecture'); zone.setAttribute('data-phrase', cle);
@@ -1856,6 +1882,7 @@
         if (actions.firstChild) return;
         boutonAction(T('continuer')).then(fini);
       }
+      zone.insertBefore(creerEcoute(phrase), zone.firstChild);
       await attendre(300);
       direPhrase(phrase);
       await promesse;
@@ -1931,6 +1958,7 @@
         });
         plateau.appendChild(t);
       });
+      zone.insertBefore(creerEcoute(phrase), zone.firstChild);
       await promesse;
     }
 
@@ -2025,6 +2053,7 @@
       }
       bValider.addEventListener('click', verifier);
       zone.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); verifier(); } });
+      zone.insertBefore(creerEcoute(phrase), zone.firstChild);
       const premier = cloze ? champs[0] : champPhrase;
       planifier(function () { try { premier.focus(); } catch (e) {} }, 200);
       await promesse;
@@ -2126,6 +2155,7 @@
         }
       });
       rafraichir();
+      if (!options2.sansEcoute) zone.insertBefore(creerEcoute(phrase), zone.firstChild);   // l'exercice audio a déjà son propre bouton
       await promesse;
     }
 
@@ -2196,7 +2226,7 @@
       const bEcoute = document.createElement('button');
       bEcoute.type = 'button'; bEcoute.className = 'm1-haut-parleur'; bEcoute.setAttribute('aria-label', T('reecouter'));
       bEcoute.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9.5h3.5L12 6v12l-4.5-3.5H4Z"/><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11"/></svg><span>' + echapper(T('reecouter')) + '</span>';
-      bEcoute.addEventListener('click', function () { direPhrase(phrase, true); });
+      bEcoute.addEventListener('click', function () { reactiverSon(); direPhrase(phrase, true); });
       const lienTexte = document.createElement('button');
       lienTexte.type = 'button'; lienTexte.className = 'm1-lien'; lienTexte.textContent = T('sans_son');
       const texteRevele = document.createElement('p');
@@ -2204,8 +2234,9 @@
       texteRevele.textContent = phrase.texte;
       lienTexte.addEventListener('click', function () { texteRevele.classList.remove('m1-off'); lecteurIndice(T('quipSansSon'), 3500); });
       entete.appendChild(bEcoute); entete.appendChild(lienTexte); entete.appendChild(texteRevele);
-      const attente = construireSimple(phrase, cle, { direAuClic: false });
+      const attente = construireSimple(phrase, cle, { direAuClic: false, sansEcoute: true });
       zone.insertBefore(entete, zone.firstChild);     // construire() vient de remplir la zone (synchrone jusqu'au premier await)
+      reactiverSon();                       // 🆕 l'écoute est le but de l'exercice : le son est rallumé si l'élève l'avait coupé ailleurs
       planifier(function () { direPhrase(phrase); }, 400);
       await attente;
     }
@@ -2383,7 +2414,7 @@
       const bSon = document.createElement('button');
       bSon.type = 'button'; bSon.className = 'm1-haut-parleur'; bSon.setAttribute('aria-label', T('reecouter'));
       bSon.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9.5h3.5L12 6v12l-4.5-3.5H4Z"/><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11"/></svg><span>' + echapper(T('reecouter')) + '</span>';
-      bSon.addEventListener('click', function () { if (lignePhrase) direPhrase(lignePhrase, true); });
+      bSon.addEventListener('click', function () { reactiverSon(); if (lignePhrase) direPhrase(lignePhrase, true); });
       actions.appendChild(bSon);
 
       // le souvenir : toutes les phrases, abîmées tant qu'elles ne sont pas réparées

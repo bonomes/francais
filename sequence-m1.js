@@ -35,6 +35,10 @@
    sequence-lecteur.css/.js (bulle et icône du Lecteur), sequence-m1.css.
    Facultatif : window.KebBekMots (mots.js) — les mots appris y sont ajoutés.
 
+   🆕 (07-11-2026) EXERCICES D'ÉCOUTE : Bek prend la pose « écoute-moi » (elle nous regarde, la main à plat sur la poitrine) au lieu d'une pose liée
+   à la phrase, qui donnait la réponse. Sa bouche s'ouvre et se ferme pendant que la voix parle (ou que la synthèse lit), puis reste fermée.
+   Images : images/m1/bek_ecoute-moi_01-01.webp et bek_ecoute-moi_bouche-ouverte_01-01.webp (repli : pose « observe », sans animation).
+
    🆕 (03-11-2026) FRAGMENT 3 (anciennement 2) — options.fragment = 3 : « REGARDER ».
    La mémoire est faite de fragments ; celui-ci enseigne le verbe « regarde » (en -er, comme « mange »).
    Mots introduits : regarde, film (masculin : un film). « mange » revient en rappel.
@@ -152,6 +156,9 @@
     'bek-mange-pizza':      'images/m1/bek_mange-pizza_01-01.webp',
     // 🎨 fragment 4 (à produire) : Bek qui joue (à quoi ? on ne le dit pas), l'air content
     'bek-aime-jouer':       'images/m1/bek_aime-jouer_01-01.webp',
+    // 🆕 (07-11-2026) exercices d'écoute : Bek nous regarde, la main à plat sur la poitrine (« moi ») ; la bouche s'ouvre et se ferme pendant la voix
+    'bek-ecoute':           'images/m1/bek_ecoute-moi_01-01.webp',
+    'bek-ecoute-ouverte':   'images/m1/bek_ecoute-moi_bouche-ouverte_01-01.webp',
     // 🎨 facultatives : variante « bouche ouverte » (elle dit la phrase) et images de l'animation « elle mange »
     'bek-sandwich-ouverte':   'images/m1/bek_mange-sandwich_bouche-ouverte_01-01.webp',
     'bek-sandwich-bouchee':   'images/m1/bek_mange-sandwich_bouchee_01-01.webp',
@@ -173,7 +180,7 @@
   const POSE_DE_REPLI = { 'bek-mange-sandwich': 'bek-heureuse-ferme', 'bek-mange-poutine': 'bek-observe',
                           'bek-regarde-film': 'bek-concentree', 'bek-regarde-sandwich': 'bek-observe', 'bek-regarde-poutine': 'bek-observe',
                           'bek-mange-pizza': 'bek-observe',
-                          'bek-aime-jouer': 'bek-observe' };
+                          'bek-aime-jouer': 'bek-observe', 'bek-ecoute': 'bek-observe' };
   const VIGNETTE_DE = { 'bek-mange-sandwich': 'sandwich', 'bek-mange-poutine': 'poutine',
                         'bek-regarde-film': 'film', 'bek-regarde-sandwich': 'sandwich', 'bek-regarde-poutine': 'poutine',
                         'bek-mange-pizza': 'pizza',
@@ -1624,7 +1631,7 @@
         poses[nom] = img;
       });
     }
-    function montrer(nom) {
+    function montrer(nom, instantane) {      // instantane : pas de fondu (alternance de la bouche)
       const reelle = poses[nom] ? nom : (POSE_DE_REPLI[nom] || 'bek-observe');
       const cible = poses[reelle] || poses['bek-observe'];
       // vignette dessinée : seulement tant que la vraie image de Bek qui mange est absente
@@ -1635,7 +1642,7 @@
       } else vignette.classList.add('m1-off');
       if (!cible || cible === courante) return;
       const ancienne = courante;
-      const ms = (reduit || !ancienne) ? 0 : 180;
+      const ms = (reduit || !ancienne || instantane) ? 0 : 180;
       cible.style.transitionDuration = ms + 'ms';
       cible.style.zIndex = String(++niveau);
       cible.classList.add('rbek-pose-visible');
@@ -1678,6 +1685,25 @@
       const m = MANGER[cle];
       if (!m || !poses[m.ouverte]) return;
       montrer(m.ouverte); await attendre(ms || 1500); montrer(m.base);
+    }
+
+    // 🆕 Exercice d'écoute : Bek nous regarde, la main sur la poitrine ; la bouche alterne ouverte/fermée tant qu'une voix est active
+    // (fichier audio ou synthèse), puis reste fermée. Sans l'image « bouche ouverte » ou en mouvement réduit : la pose fixe.
+    let jetonBouche = 0;
+    function arreterBouche() { jetonBouche++; }
+    async function animerBouche() {
+      if (!poses['bek-ecoute']) return;
+      const jeton = ++jetonBouche;
+      let ouverte = false, premiere = true;
+      while (jeton === jetonBouche && !arrete) {
+        const veut = !!(poses['bek-ecoute-ouverte'] && !mouvementReduit() && voixActive()) && !ouverte;
+        if (premiere || veut !== ouverte) {
+          ouverte = veut;
+          montrer(ouverte ? 'bek-ecoute-ouverte' : 'bek-ecoute', !premiere);
+          premiere = false;
+        }
+        await pause(170);
+      }
     }
 
     // ---------- Le Lecteur : indices, piques ----------
@@ -2237,8 +2263,10 @@
       const attente = construireSimple(phrase, cle, { direAuClic: false, sansEcoute: true });
       zone.insertBefore(entete, zone.firstChild);     // construire() vient de remplir la zone (synchrone jusqu'au premier await)
       reactiverSon();                       // 🆕 l'écoute est le but de l'exercice : le son est rallumé si l'élève l'avait coupé ailleurs
+      animerBouche();                       // 🆕 pose neutre « écoute-moi » (elle ne montre plus la réponse) ; la bouche bouge pendant la voix
       planifier(function () { direPhrase(phrase); }, 400);
       await attente;
+      arreterBouche();
     }
 
     // ---------- 🆕 Fragment 2 : un/une, le/la ----------

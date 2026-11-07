@@ -1719,10 +1719,38 @@
       if (son.ctx.state === 'suspended' && son.ctx.resume) son.ctx.resume().catch(function () {});
       return son.ctx;
     }
+    // UNE SEULE VOIX À LA FOIS : une nouvelle voix coupe la précédente (fondu de ~40 ms) ;
+    // les notes synthétisées sont baissées (×0,3) quand une voix parle, pour ne jamais la couvrir.
+    let voixAudio = null, jetonVoix = 0;
+    function voixActive() {
+      if (voixAudio && !voixAudio.ended) return true;
+      try { return !!(window.speechSynthesis && window.speechSynthesis.speaking); } catch (e) { return false; }
+    }
+    function couperVoix() {
+      jetonVoix++;
+      const a = voixAudio; voixAudio = null;
+      try { window.speechSynthesis && window.speechSynthesis.cancel(); } catch (e) {}
+      if (!a) return;
+      let vol = a.volume;
+      (function fondre() {
+        vol -= 0.34;
+        if (vol <= 0.02) { try { a.pause(); } catch (e) {} return; }
+        try { a.volume = vol; } catch (e) {}
+        setTimeout(fondre, 12);
+      })();
+    }
+    // Attend la fin de la voix en cours (au plus `max` ms) : la phrase ne démarre jamais par-dessus un mot.
+    function apresVoix(max) {
+      return new Promise(function (resolve) {
+        const t0 = Date.now();
+        (function boucle() { if (arrete || !voixActive() || Date.now() - t0 > max) resolve(); else setTimeout(boucle, 40); })();
+      });
+    }
     function note(freq, debut, duree, type, gain) {
       if (!son.actif) return;
       const c = ctxAudio();
       if (!c) return;
+      gain = (gain || 0.12) * (voixActive() ? 0.3 : 1);
       try {
         const t0 = c.currentTime + (debut || 0);
         const o = c.createOscillator();
@@ -1782,13 +1810,17 @@
       return (v.voix || options.voix || 'bek') + '_' + (ALIAS_AUDIO[id] || id) + '_' + (v.version || options.versionVoix || '01');
     }
     function direMot(id, texte, v) {
-      if (!son.actif) return;
+      if (!son.actif || arrete) return;
+      couperVoix();
+      const mon = jetonVoix;
       const fichier = nomAudio(id, v);
       if (dispoAudio[fichier] === false) { synthese(texte); return; }
       let repli = false;
-      function secours() { if (repli) return; repli = true; dispoAudio[fichier] = false; synthese(texte); }
+      function secours() { if (repli || mon !== jetonVoix) return; repli = true; dispoAudio[fichier] = false; synthese(texte); }
       try {
         const a = new Audio((options.dossierAudio || 'audio/fr/') + fichier + '.mp3');
+        voixAudio = a;
+        a.addEventListener('ended', function () { if (voixAudio === a) voixAudio = null; }, { once: true });
         a.addEventListener('error', secours, { once: true });
         const p = a.play();
         if (p && p.then) p.then(function () { dispoAudio[fichier] = true; }).catch(function () { if (dispoAudio[fichier] !== true) secours(); });
@@ -1802,7 +1834,7 @@
     boutonSon.addEventListener('click', function () {
       son.actif = !son.actif;
       try { localStorage.setItem(CLE_SON, son.actif ? '1' : '0'); } catch (e) {}
-      if (!son.actif) { try { window.speechSynthesis && window.speechSynthesis.cancel(); } catch (e) {} }
+      if (!son.actif) { couperVoix(); }
       else { note(GAMME[2], 0, 0.3, 'sine', 0.1); }
       reglerBoutonSon();
     });
@@ -2130,6 +2162,7 @@
       bulle.classList.add('mem-reussi');
       lecteurReagit('mem-lecteur-saut', 650);
       sonPhrase();
+      await apresVoix(1500);                     // le dernier mot finit de se dire : la phrase ne démarre pas par-dessus
       direMot('je-parle-francais', 'Je parle fran\u00e7ais');
       bouchePhrase(expTour(), 4, 1400);          // « Je-par-le-fran-çais » (4 syllabes sonores)
       await attendre(1750);
@@ -2771,7 +2804,7 @@
         minuteurs.forEach(clearTimeout);
         document.removeEventListener('keydown', surToucheAide);
         document.removeEventListener('keydown', surFrappe);
-        try { window.speechSynthesis && window.speechSynthesis.cancel(); } catch (e) {}
+        couperVoix();
       }
     };
   }

@@ -39,6 +39,9 @@
   const CLE_POSITION_LOCALE = 'kebbek_m1_position';  // 🆕 { fragment, segment } : où l'élève s'est arrêté (quitter et continuer plus tard)
   const prog = window.KebBekProgression || null;
   const params = new URLSearchParams(window.location.search);
+  // 🆕 (07-11-2026) ?f=n&seul=1 : on RÉPÈTE un seul fragment (bouton « Répéter » de memoires.html). À la fin ou en quittant : retour à memoires.html.
+  // Rien n'est modifié : ni les fragments récupérés, ni la mémoire terminée, ni la position gardée (« Continuer » reprend où l'élève en était).
+  const seul = params.get('seul') === '1' && /^[1-5]$/.test(params.get('f') || '');   // sans ?f= valide, « seul » est ignoré : la progression reste normale
   let instance = null;
 
   function marquer(cle) { try { localStorage.setItem(cle, '1'); } catch (e) {} }
@@ -85,8 +88,9 @@
   function lancerFragment(n, reprendreA) {
     if (instance) { try { instance.arreter(); } catch (e) {} }
     instance = window.KebBekM1.demarrer('memoire', { fragment: n, suite: n < DERNIER, reprendreA: reprendreA || 0 }, {
-      onPosition: function (p) { ecrirePosition(p); },
+      onPosition: function (p) { if (!seul) ecrirePosition(p); },
       onTermine: async function () {
+        if (seul) { versMemoires(); return; }       // 🆕 répétition d'un seul fragment : on ne chaîne pas, on ne touche à rien
         effacerPosition();                        // le fragment est fini : le suivant recommence à son introduction
         if (n < DERNIER) {
           marquer(CLES_LOCALES[n]);

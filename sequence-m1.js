@@ -1444,7 +1444,7 @@
     boutonSon.addEventListener('click', function () {
       son.actif = !son.actif;
       try { localStorage.setItem(CLE_SON, son.actif ? '1' : '0'); } catch (e) {}
-      if (!son.actif) { try { window.speechSynthesis && window.speechSynthesis.cancel(); } catch (e) {} }
+      if (!son.actif) { couperVoix(); }
       reglerBoutonSon();
     });
     function synthese(texte) {
@@ -1470,18 +1470,53 @@
       v = v || {};
       return (v.voix || options.voix || 'bek') + '_' + id + '_' + (v.version || options.versionVoix || '01');
     }
-    function dire(id, texte, v) {
-      if (!son.actif) return;
+    // UNE SEULE VOIX À LA FOIS : une nouvelle voix coupe la précédente (fondu ~40 ms). Une PHRASE dite automatiquement
+    // attend d'abord la fin du mot en cours (au plus 1,5 s) ; un clic explicite sur « écouter » coupe et relance tout de suite.
+    let voixAudio = null, jetonVoix = 0;
+    function voixActive() {
+      if (voixAudio && !voixAudio.ended) return true;
+      try { return !!(window.speechSynthesis && window.speechSynthesis.speaking); } catch (e) { return false; }
+    }
+    function couperVoix() {
+      jetonVoix++;
+      const a = voixAudio; voixAudio = null;
+      try { window.speechSynthesis && window.speechSynthesis.cancel(); } catch (e) {}
+      if (!a) return;
+      let vol = a.volume;
+      (function fondre() {
+        vol -= 0.34;
+        if (vol <= 0.02) { try { a.pause(); } catch (e) {} return; }
+        try { a.volume = vol; } catch (e) {}
+        setTimeout(fondre, 12);
+      })();
+    }
+    function dire(id, texte, v, apres) {
+      if (!son.actif || arrete) return;
+      if (apres && voixActive()) {
+        // on prend la place dans la file : un appel plus récent annule celui-ci
+        const mon = ++jetonVoix, t0 = Date.now();
+        (function boucle() {
+          if (arrete || mon !== jetonVoix) return;
+          if (voixActive() && Date.now() - t0 < 1500) { setTimeout(boucle, 40); return; }
+          dire(id, texte, v, false);
+        })();
+        return;
+      }
+      couperVoix();
+      const mon = jetonVoix;
       const fichier = nomAudio(id, v);
       if (dispoAudio[fichier] === false) { synthese(texte); return; }
       const dossier = options.dossierAudio || 'audio/fr/';
       const formats = dispoAudio[fichier] ? [dispoAudio[fichier]] : ['mp3', 'wav'];
       function essayer(i) {
+        if (mon !== jetonVoix || arrete) return;
         if (i >= formats.length) { dispoAudio[fichier] = false; synthese(texte); return; }
         let passe = false;
         function suivant() { if (passe) return; passe = true; essayer(i + 1); }
         try {
           const a = new Audio(dossier + fichier + '.' + formats[i]);
+          voixAudio = a;
+          a.addEventListener('ended', function () { if (voixAudio === a) voixAudio = null; }, { once: true });
           a.addEventListener('error', suivant, { once: true });
           const lecture = a.play();
           if (lecture && lecture.then) lecture.then(function () { dispoAudio[fichier] = formats[i]; }).catch(function () { if (!dispoAudio[fichier]) suivant(); });
@@ -1490,7 +1525,7 @@
       essayer(0);
     }
     const direMot = function (id) { dire(id, AFFICHE[id]); };
-    const direPhrase = function (ph) { dire(ph.audio, ph.texte, { voix: ph.voix, version: ph.version }); };
+    const direPhrase = function (ph, tout_de_suite) { dire(ph.audio, ph.texte, { voix: ph.voix, version: ph.version }, !tout_de_suite); };
 
     // ---------- Bek : poses, avec repli tant qu'une image manque ----------
     const poses = {}, manquantes = {};
@@ -2033,7 +2068,7 @@
       const bEcoute = document.createElement('button');
       bEcoute.type = 'button'; bEcoute.className = 'm1-haut-parleur'; bEcoute.setAttribute('aria-label', T('reecouter'));
       bEcoute.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9.5h3.5L12 6v12l-4.5-3.5H4Z"/><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11"/></svg><span>' + echapper(T('reecouter')) + '</span>';
-      bEcoute.addEventListener('click', function () { direPhrase(phrase); });
+      bEcoute.addEventListener('click', function () { direPhrase(phrase, true); });
       const lienTexte = document.createElement('button');
       lienTexte.type = 'button'; lienTexte.className = 'm1-lien'; lienTexte.textContent = T('sans_son');
       const texteRevele = document.createElement('p');
@@ -2209,7 +2244,7 @@
       const bSon = document.createElement('button');
       bSon.type = 'button'; bSon.className = 'm1-haut-parleur'; bSon.setAttribute('aria-label', T('reecouter'));
       bSon.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9.5h3.5L12 6v12l-4.5-3.5H4Z"/><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11"/></svg><span>' + echapper(T('reecouter')) + '</span>';
-      bSon.addEventListener('click', function () { if (lignePhrase) direPhrase(lignePhrase); });
+      bSon.addEventListener('click', function () { if (lignePhrase) direPhrase(lignePhrase, true); });
       actions.appendChild(bSon);
 
       // le souvenir : toutes les phrases, abîmées tant qu'elles ne sont pas réparées
@@ -2474,7 +2509,7 @@
         jetonManger++;
         minuteurs.forEach(clearTimeout);
         nettoyages.forEach(function (f) { try { f(); } catch (e) {} });
-        try { window.speechSynthesis && window.speechSynthesis.cancel(); } catch (e) {}
+        couperVoix();
         if (scene.parentNode) scene.parentNode.removeChild(scene);
       }
     };

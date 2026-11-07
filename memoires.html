@@ -12,7 +12,8 @@
    Remplace parcours.html : mêmes couleurs et même ton que le menu simple
    et la séquence du Lecteur (boutons en relief, beige / brun / pêche).
    ⚠️ Tout le contenu (titres, résumés, personnages, images) est PROVISOIRE :
-   voir MEMOIRES plus bas. Les textes ne sont qu'en français pour l'instant.
+   voir MEMOIRES plus bas. 🆕 (07-11-2026) Textes : français ici (repli), 19 autres langues dans memoires-textes.js
+   (première mémoire et libellés de la page ; les mémoires à venir restent en français).
    ================================================================== */
 :root {
   --beige: #FFF5E8; --brun-fonce: #4A3B33; --brun-clair: #8A7364;
@@ -52,7 +53,7 @@ h1 { margin: 0; font-size: clamp(1.9rem, 6vw, 2.6rem); font-weight: 800; }
 .rang:nth-child(even) { justify-content: flex-end; }
 
 .case {
-  position: relative; width: min(74%, 330px); padding: 0; text-align: left; cursor: pointer;
+  position: relative; width: min(74%, 330px); padding: 0; text-align: start; cursor: pointer;
   font-family: inherit; color: inherit; background: #FFFFFF; overflow: visible;
   border: 2.5px solid var(--brun-fonce); border-radius: 26px;
   box-shadow: 0 6px 0 0 var(--brun-fonce), 4px 10px 20px var(--ombre);
@@ -264,11 +265,20 @@ header, .chemin { position: relative; z-index: 1; }
 .mots-rappel { margin-top: 6px; font-size: .78rem; font-weight: 700; color: var(--brun-clair); }
 .mots-rappel .mot { font-size: .8rem; padding: 1px 8px; opacity: .8; }
 .legende-genre { margin: 2px 0 0; font-size: .76rem; font-weight: 600; color: var(--brun-clair); }
+/* 🆕 (07-11-2026) bouton « Répéter » d'un fragment récupéré ; listes à puces aussi en écriture de droite à gauche (persan) */
+.frag-notions { padding-left: 0; padding-inline-start: 20px; }
+.frag-repeter {
+  flex-shrink: 0; margin-inline-start: 2px; padding: 3px 12px; font: inherit; font-weight: 800; font-size: .8rem; line-height: 1.3;
+  color: var(--peche-fonce); background: #fff; border: 2px solid var(--peche); border-radius: 999px; cursor: pointer;
+}
+.frag-repeter:hover { background: var(--peche-pale); }
+.frag-repeter:focus-visible { outline: 3px solid var(--peche-fonce); outline-offset: 2px; }
 @media (prefers-reduced-motion: reduce) { .programme > summary::after { transition: none; } }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script src="progression.js"></script>
 <script src="mots.js"></script>
+<script src="memoires-textes.js"></script>
 </head>
 <body>
 <div class="fond-anime" id="fondAnime" aria-hidden="true"></div>
@@ -308,8 +318,9 @@ header, .chemin { position: relative; z-index: 1; }
     kloe: { nom: 'Kloé', couleur: '#E8B04A', img: null }
   };
   const MEMOIRES = [
-    { id: 'm1', titre: 'Première mémoire *', teaser: 'Tout commence ici…', motif: 'etoile', teintes: ['#FFE3CF', '#F6C2A4'], page: 'memoire-1.html',
-      resume: 'Résumé provisoire : une première mémoire, à définir. Ici viendra une courte description de ce que tu vas vivre.',
+    { id: 'm1', titre: 'Première mémoire', teaser: 'Tout commence ici…', motif: 'etoile', teintes: ['#FFE3CF', '#F6C2A4'], page: 'memoire-1.html',
+      // 🆕 Version intérimaire (à finaliser quand toutes les leçons seront faites). Volontairement sans prénom : le personnage varie selon le choix de l'élève.
+      resume: 'Un souvenir est abîmé : il n’en reste que des morceaux. Fragment après fragment, tu retrouves tes premières phrases en français : dire ce que tu manges, ce que tu regardes, ce que tu aimes. À la fin, tu répares seul le souvenir.',
       // 🆕 Au programme (dérivé des fragments construits ; à mettre à jour à chaque nouveau fragment)
       notions: ['L’ordre de la phrase', 'Masculin et féminin', 'Un/une et le/la', 'Les verbes en -er avec « je »', 'J’aime + infinitif'],
       fragments: [
@@ -356,11 +367,34 @@ header, .chemin { position: relative; z-index: 1; }
     play: '<path d="M8 5l11 7-11 7Z"/>',
     fichier: '<path d="M6 3h8l4 4v14H6Z"/><path d="M14 3v4h4"/>'
   };
-  const T = {
+  const T_FR = {
     sousTitre: 'Choisis une mémoire', commencer: 'Commencer', continuer: 'Continuer', fragmentSur: 'Fragment {k} sur {n}', revoir: 'Revoir', verrouille: 'Termine la mémoire précédente pour l’ouvrir.',
     preparation: 'Cette mémoire est encore en préparation ✏️', avec: 'Avec', mystere: 'Quelqu’un de mystérieux',
-    programme: 'Fragments et vocabulaire', rappel: 'Pour réviser\u00a0:', legende: 'm. = masculin · f. = féminin'
+    programme: 'Fragments et vocabulaire', rappel: 'Pour réviser\u00a0:', legende: 'm. = masculin · f. = féminin',
+    repeter: 'Répéter', recupere: 'récupéré', titrePage: 'Mémoires', retour: 'Retour', fermer: 'Fermer', etatVerrouille: 'verrouillée', etatTermine: 'terminée'
   };
+  // 🆕 (07-11-2026) Langue : localStorage « kebbek_langue » (comme sequence-m1.js). Textes : memoires-textes.js ; repli : anglais, puis français (ci-dessus).
+  const langue = (function () { try { return localStorage.getItem('kebbek_langue') || 'fr'; } catch (e) { return 'fr'; } })();
+  const TEXTES = window.KebBekMemoiresTextes || {};
+  function chercher(lang, chemin) {
+    let v = TEXTES[lang];
+    for (let i = 0; i < chemin.length; i++) { if (v === undefined || v === null) return undefined; v = v[chemin[i]]; }
+    return v;
+  }
+  function texte(chemin, defaut) {
+    let v = chercher(langue, chemin);
+    if (v === undefined && langue !== 'fr') v = chercher('en', chemin);
+    return (v !== undefined && v !== null) ? v : defaut;
+  }
+  const T = {};
+  Object.keys(T_FR).forEach(function (k) { T[k] = texte(['ui', k], T_FR[k]); });
+  function tm(m, champ) { return texte(['m', m.id, champ], m[champ]); }                              // titre, teaser, resume, notions d'une mémoire
+  function tf(m, f, champ) { return texte(['m', m.id, 'fragments', f.id, champ], f[champ]); }        // titre, notions d'un fragment
+  document.documentElement.lang = langue;
+  document.title = T.titrePage;
+  document.querySelector('header h1').textContent = T.titrePage;
+  document.querySelector('.retour').setAttribute('aria-label', T.retour);
+  document.getElementById('pFermer').setAttribute('aria-label', T.fermer);
 
   // ---------- Progression (même module que le reste du site) ----------
   const prog = window.KebBekProgression || null;
@@ -420,7 +454,7 @@ header, .chemin { position: relative; z-index: 1; }
       b.type = 'button';
       b.style.setProperty('--dl', (-i * 1.3) + 's');
       b.className = 'case ' + etat + (choisie === i ? ' choisie' : '');
-      b.setAttribute('aria-label', m.titre + (etat === 'verrouille' ? ' — verrouillée' : etat === 'complete' ? ' — terminée' : ''));
+      b.setAttribute('aria-label', tm(m, 'titre') + (etat === 'verrouille' ? ' — ' + T.etatVerrouille : etat === 'complete' ? ' — ' + T.etatTermine : ''));
       b.innerHTML =
         '<div class="vignette" style="--teinte1:' + m.teintes[0] + ';--teinte2:' + m.teintes[1] + '">' +
           (m.image ? '<img src="' + echapper(m.image) + '" alt="" loading="lazy">' : '<svg class="motif" viewBox="0 0 24 24" aria-hidden="true">' + MOTIFS[m.motif] + '</svg>') +
@@ -428,8 +462,8 @@ header, .chemin { position: relative; z-index: 1; }
           (m.fichiers && etat !== 'verrouille' ? '<span class="pile">' + svg(ICONES.fichier) + m.fichiers.length + '</span>' : '') +
           '<span class="etat">' + svg(etat === 'verrouille' ? ICONES.verrou : etat === 'complete' ? ICONES.coche : ICONES.play) + '</span>' +
         '</div>' +
-        '<div class="corps"><div class="titre">' + echapper(m.titre) + '</div>' +
-        '<p class="teaser">' + echapper(etat === 'verrouille' ? '???' : m.teaser) + '</p></div>';
+        '<div class="corps"><div class="titre" dir="auto">' + echapper(tm(m, 'titre')) + '</div>' +
+        '<p class="teaser" dir="auto">' + echapper(etat === 'verrouille' ? '???' : tm(m, 'teaser')) + '</p></div>';
       b.addEventListener('click', function () { choisir(i); });
       rang.appendChild(b);
       chemin.appendChild(rang);
@@ -480,7 +514,7 @@ header, .chemin { position: relative; z-index: 1; }
   function rendreProgramme(m, verrouillee) {
     const a = !verrouillee && m.notions && m.notions.length;
     el.notions.style.display = a ? '' : 'none';
-    el.notions.innerHTML = a ? m.notions.map(function (n) { return '<span class="notion">' + echapper(n) + '</span>'; }).join('') : '';
+    el.notions.innerHTML = a ? tm(m, 'notions').map(function (n) { return '<span class="notion" dir="auto">' + echapper(n) + '</span>'; }).join('') : '';
     const b = !verrouillee && m.fragments && m.fragments.length;
     el.programme.style.display = b ? '' : 'none';
     el.programme.open = false;
@@ -489,17 +523,28 @@ header, .chemin { position: relative; z-index: 1; }
     let aGenre = false;
     el.programmeListe.innerHTML = m.fragments.map(function (f, k) {
       (f.mots || []).concat(f.rappel || []).forEach(function (w) { if (w.genre) aGenre = true; });
-      return '<div class="frag' + (fragmentFait(m, f) ? ' fait' : '') + '">' +
-        '<div class="frag-tete"><span class="frag-num">' + (k + 1) + '</span><span class="frag-titre">' + echapper(f.titre) + '</span>' +
-          '<span class="frag-coche" role="img" aria-label="récupéré">' + svg(ICONES.coche) + '</span></div>' +
-        '<ul class="frag-notions">' + (f.notions || []).map(function (n) { return '<li>' + echapper(n) + '</li>'; }).join('') + '</ul>' +
+      const fait = fragmentFait(m, f);
+      return '<div class="frag' + (fait ? ' fait' : '') + '">' +
+        '<div class="frag-tete"><span class="frag-num">' + (k + 1) + '</span><span class="frag-titre" dir="auto">' + echapper(tf(m, f, 'titre')) + '</span>' +
+          '<span class="frag-coche" role="img" aria-label="' + echapper(T.recupere) + '">' + svg(ICONES.coche) + '</span>' +
+          // 🆕 un fragment récupéré peut être répété (la progression n'est pas touchée : voir memoire-1.html, ?seul=1)
+          (fait && m.page ? '<button type="button" class="frag-repeter" data-n="' + (k + 1) + '" aria-label="' + echapper(T.repeter + ' — ' + tf(m, f, 'titre')) + '">' + echapper(T.repeter) + '</button>' : '') +
+        '</div>' +
+        '<ul class="frag-notions" dir="auto">' + (tf(m, f, 'notions') || []).map(function (n) { return '<li>' + echapper(n) + '</li>'; }).join('') + '</ul>' +
         '<div class="mots">' + (f.mots || []).map(motHtml).join('') + '</div>' +
-        (f.rappel && f.rappel.length ? '<div class="mots mots-rappel">' + echapper(T.rappel) + ' ' + f.rappel.map(motHtml).join('') + '</div>' : '') +
+        (f.rappel && f.rappel.length ? '<div class="mots mots-rappel" dir="auto">' + echapper(T.rappel) + ' ' + f.rappel.map(motHtml).join('') + '</div>' : '') +
       '</div>';
-    }).join('') + (aGenre ? '<p class="legende-genre">' + echapper(T.legende) + '</p>' : '');
+    }).join('') + (aGenre ? '<p class="legende-genre" dir="auto">' + echapper(T.legende) + '</p>' : '');
   }
   function ajusterPersonnages() { scenePersos.style.bottom = (panneau.offsetHeight - 14) + 'px'; }   // ils se tiennent sur le bord du panneau
   el.programme.addEventListener('toggle', function () { setTimeout(ajusterPersonnages, 30); });
+  // 🆕 « Répéter » : relance ce seul fragment (?f=n&seul=1) ; à la fin, retour ici, sans toucher à la progression ni à la position gardée.
+  el.programmeListe.addEventListener('click', function (e) {
+    const b = e.target.closest ? e.target.closest('.frag-repeter') : null;
+    if (!b || choisie === null) return;
+    const m = MEMOIRES[choisie];
+    if (m && m.page) window.location.href = m.page + '?f=' + encodeURIComponent(b.getAttribute('data-n')) + '&seul=1';
+  });
 
   function choisir(i) {
     const m = MEMOIRES[i], etat = etatDe(i), verrouillee = etat === 'verrouille';
@@ -507,8 +552,9 @@ header, .chemin { position: relative; z-index: 1; }
     Array.prototype.forEach.call(chemin.querySelectorAll('.case'), function (c, k) { c.classList.toggle('choisie', k === i); });
     const noms = verrouillee ? [T.mystere] : (m.personnages || []).map(function (p) { return p.mystere ? T.mystere : PERSONNAGES[p.id].nom; });
     el.qui.textContent = noms.length ? T.avec + ' ' + noms.join(', ') : '';
-    el.titre.textContent = verrouillee ? '???' : m.titre;
-    el.resume.textContent = verrouillee ? '' : m.resume;
+    el.titre.textContent = verrouillee ? '???' : tm(m, 'titre');
+    el.resume.textContent = verrouillee ? '' : tm(m, 'resume');
+    [el.titre, el.resume, el.indice, el.qui].forEach(function (n) { n.setAttribute('dir', 'auto'); });
     el.resume.style.display = verrouillee ? 'none' : '';
     rendreProgramme(m, verrouillee);
     el.fichiers.innerHTML = verrouillee || !m.fichiers ? '' : m.fichiers.map(function (f) { return '<span class="fichier">' + svg(ICONES.fichier) + echapper(f) + '</span>'; }).join('');

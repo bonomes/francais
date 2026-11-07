@@ -1600,9 +1600,49 @@
 
     // ---------- Le Lecteur : indices, piques ----------
     let lectMinuteur = null;
+    // ---------- Mots français cliquables dans les textes du Lecteur ----------
+    // Un mot français placé entre guillemets (« je », “sandwich”, «\u00a0poutine\u00a0»…) devient cliquable/touchable
+    // (et accessible au clavier : Tab puis Entrée ou Espace) : la voix de Bek le prononce. Marche dans toutes les langues,
+    // puisque seul le mot entre guillemets doit être l'un des mots de AFFICHE.
+    const MOT_CLIC_CSS = '.m1-mot-clic{cursor:pointer;text-decoration:underline dotted;text-underline-offset:3px;border-radius:4px;padding:0 .08em}' +
+      '.m1-mot-clic:hover{background:rgba(240,169,139,.28)}.m1-mot-clic:focus-visible{outline:2px solid #E08867;outline-offset:1px}';
+    function idDuMot(txt) {
+      const cle = String(txt).trim().toLowerCase().replace(/\u2019/g, "'");
+      for (const id in AFFICHE) { if (AFFICHE[id].toLowerCase().replace(/\u2019/g, "'") === cle) return id; }
+      return null;
+    }
+    function rendreCliquable(el, id) {
+      injecterStyle('m1-motclic-style', MOT_CLIC_CSS);
+      el.classList.add('m1-mot-clic');
+      el.setAttribute('role', 'button');
+      el.setAttribute('tabindex', '0');
+      el.setAttribute('title', '\u266A');
+      el.addEventListener('click', function (e) { e.stopPropagation(); direMot(id); });
+      el.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); direMot(id); }
+      });
+    }
+    function remplirCliquable(el, texte) {
+      el.textContent = '';
+      const re = /([\u00ab\u201c\u201e\u300c\u300e"])(\s*)([^\u00ab\u00bb\u201c\u201d\u201e\u300c\u300d\u300e\u300f"\n]{1,24}?)(\s*)([\u00bb\u201d\u201c\u300d\u300f"])/g;
+      let dernier = 0, m;
+      while ((m = re.exec(texte)) !== null) {
+        const id = idDuMot(m[3]);
+        if (!id) continue;
+        el.appendChild(document.createTextNode(texte.slice(dernier, m.index) + m[1] + m[2]));
+        const mot = document.createElement('span');
+        mot.textContent = m[3];
+        rendreCliquable(mot, id);
+        el.appendChild(mot);
+        el.appendChild(document.createTextNode(m[4] + m[5]));
+        dernier = m.index + m[0].length;
+      }
+      el.appendChild(document.createTextNode(texte.slice(dernier)));
+    }
+
     function lecteurAfficher(texte, avecSuite) {
       if (lectMinuteur) { clearTimeout(lectMinuteur); lectMinuteur = null; }
-      lectTexte.textContent = texte;
+      remplirCliquable(lectTexte, texte);
       lectSuite.classList.toggle('m1-off', !avecSuite);
       q('.m1-lect-bulle').classList.toggle('m1-sans-suite', !avecSuite);
       lectZone.classList.remove('m1-off');
@@ -2011,7 +2051,7 @@
       c.className = 'm1-note';
       if (visuel) c.appendChild(visuel);
       const h = document.createElement('p'); h.className = 'm1-note-titre'; h.textContent = titre;
-      const p = document.createElement('p'); p.className = 'm1-note-texte'; p.textContent = texte;
+      const p = document.createElement('p'); p.className = 'm1-note-texte'; remplirCliquable(p, texte);
       c.appendChild(h); c.appendChild(p);
       zone.appendChild(c);
       await boutonAction(T('continuer'));
@@ -2023,6 +2063,8 @@
         const s = document.createElement('span');
         s.className = 'm1-radical';
         s.innerHTML = '<b>je</b> ' + echapper(p[0]) + '<i>' + echapper(p[1]) + '</i>';
+        const idVerbe = idDuMot(p[0] + p[1]);               // parl|e → « parle » : touche pour l'entendre
+        if (idVerbe) rendreCliquable(s, idVerbe);
         d.appendChild(s);
       });
       return d;

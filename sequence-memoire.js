@@ -506,13 +506,13 @@
       aideFermer: '\u5173\u95ed'
     },
     ja: {
-      sens_je: 'わたし', sens_parle: '（わたしが）話す', sens_francais: '\u30d5\u30e9\u30f3\u30b9\u8a9e', sens_parles: '（あなたが）話す',
+      sens_je: '私', sens_parle: '（私が）話す', sens_francais: '\u30d5\u30e9\u30f3\u30b9\u8a9e', sens_parles: '（あなたが）話す',
       bekFin: '\u2026\u2026\u3067\u3082\u3001\u899a\u3048\u3066\u3044\u308b\u306e\u306f\u3053\u308c\u3060\u3051\u3002',
       lecteurFin: 'ほかにもあるはずです……見つけるお手伝いができます。',
       // 🆕 Rencontre avec le Lecteur — rendu vivant par langue (pas de traduction littérale)
-      rencBekQuoi: '\u3042\u308c\u3001\u306a\u306b\uff1f',
+      rencBekQuoi: '\u3042\u308c\u3001\u4f55\uff1f',
       rencPensee: 'AI\u304b\u306a\uff1f',
-      rencLect1: 'はじめまして、Bek。わたしは「リーダー」です。',
+      rencLect1: 'はじめまして、Bek。私は「リーダー」です。',
       rencLect2: 'あなたの記憶を見つけて、組み立て直すお手伝いができます。',
       rencLect3: 'その作業のいくつかは、人間の手がないとできません。',
       rencLect4: '人間さん、お手伝いいただけますか？',
@@ -530,17 +530,17 @@
       fenFille: '\u5973\u306e\u5b50',
       fenHomme: '男性',
       fenFemme: '女性',
-      compteLect: '進み具合をなくしたくなければ、アカウントを作ることをおすすめします。',
+      compteLect: '進み具合を失いたくなければ、アカウントを作ることをお勧めします。',
       compteTitre: '\u9032\u307f\u5177\u5408\u3092\u4fdd\u5b58\u3059\u308b',
       compteTexte: '\u30e1\u30fc\u30eb\u30a2\u30c9\u30ec\u30b9\u3060\u3051\u3067\u5927\u4e08\u592b\u3067\u3059\u3002\u30b3\u30fc\u30c9\u3092\u304a\u9001\u308a\u3057\u307e\u3059\u306e\u3067\u3001\u30d1\u30b9\u30ef\u30fc\u30c9\u306f\u4e0d\u8981\u3067\u3059\u3002',
       compteCreer: '\u30a2\u30ab\u30a6\u30f3\u30c8\u3092\u4f5c\u308b',
-      comptePlusTard: '\u3042\u3068\u3067',
+      comptePlusTard: '\u5f8c\u3067',
       suite: '\u6b21\u3078',
       sonBouton: '音',
       astuceClavier: 'ヒント：キーボードで言葉を入力することもできますよ。',
       aideBouton: 'リーダーに聞く',
-      aideInviteTactile: 'わからないことがあれば、わたしにさわってくださいね！',
-      aideInviteSouris: 'わからないことがあれば、わたしを押してくださいね！',
+      aideInviteTactile: '分からないことがあれば、私に触ってくださいね！',
+      aideInviteSouris: '分からないことがあれば、私を押してくださいね！',
       aideTitre: 'リーダーが説明します',
       aideMots: '\u3053\u306e\u8a18\u61b6\u306e\u8a00\u8449',
       aideEquiv: '日本語では',
@@ -1177,7 +1177,7 @@
     ja: {
       je: {
         nature: '\u4eba\u79f0\u4ee3\u540d\u8a5e \u00b7 1\u4eba\u79f0\u5358\u6570',
-        equiv: 'わたし',
+        equiv: '私',
         texte: ['\u8a71\u3057\u3066\u3044\u308b\u4eba\u3092\u6307\u3057\u307e\u3059\u3002', '\u65e5\u672c\u8a9e\u3067\u306f\u300c\u79c1\u300d\u3092\u3088\u304f\u7701\u7565\u3057\u307e\u3059\u304c\u3001\u30d5\u30e9\u30f3\u30b9\u8a9e\u3067\u306f\u4e3b\u8a9e\u304c\u5fc5\u8981\u3067\u3059\uff1aje parle\u3002\u6bcd\u97f3\u306e\u524d\u3067\u306f j\u2019 \u306b\u306a\u308a\u307e\u3059\uff1aj\u2019aime\u3002']
       },
       parle: {
@@ -1188,11 +1188,11 @@
       francais: {
         nature: '\u540d\u8a5e \u00b7 \u7537\u6027',
         equiv: '\u30d5\u30e9\u30f3\u30b9\u8a9e',
-        texte: ['\u3053\u3053\u3067\u306f\u8a00\u8a9e\u306e\u540d\u524d\u3067\u3059\u3002', '\u30d5\u30e9\u30f3\u30b9\u8a9e\u306e\u540d\u8a5e\u306b\u306f\u7537\u6027\u30fb\u5973\u6027\u304c\u3042\u308a\u307e\u3059\u3002\u65e5\u672c\u8a9e\u306b\u306f\u306a\u3044\u533a\u5225\u3067\u3059\u3002\u8a00\u8a9e\u306e\u540d\u524d\u306f\u3059\u3079\u3066\u7537\u6027\uff1ale fran\u00e7ais\u3002', '\u307e\u305f\u3001\u30d5\u30e9\u30f3\u30b9\u8a9e\u3067\u306f\u8a00\u8a9e\u306e\u540d\u524d\u3092\u5c0f\u6587\u5b57\u3067\u66f8\u304d\u307e\u3059\u3002']
+        texte: ['\u3053\u3053\u3067\u306f\u8a00\u8a9e\u306e\u540d\u524d\u3067\u3059\u3002', '\u30d5\u30e9\u30f3\u30b9\u8a9e\u306e\u540d\u8a5e\u306b\u306f\u7537\u6027\u30fb\u5973\u6027\u304c\u3042\u308a\u307e\u3059\u3002\u65e5\u672c\u8a9e\u306b\u306f\u306a\u3044\u533a\u5225\u3067\u3059\u3002\u8a00\u8a9e\u306e\u540d\u524d\u306f\u5168\u3066\u7537\u6027\uff1ale fran\u00e7ais\u3002', '\u307e\u305f\u3001\u30d5\u30e9\u30f3\u30b9\u8a9e\u3067\u306f\u8a00\u8a9e\u306e\u540d\u524d\u3092\u5c0f\u6587\u5b57\u3067\u66f8\u304d\u307e\u3059\u3002']
       },
       parles: {
         nature: '\u52d5\u8a5e \u00b7 \u73fe\u5728\u5f62',
-        texte: ['動詞 parler を「tu」（あなた）に合わせた形：tu parles。', '「je」のときは je parle で、-s はつきません。']
+        texte: ['動詞 parler を「tu」（あなた）に合わせた形：tu parles。', '「je」のときは je parle で、-s は付きません。']
       }
     },
     ko: {

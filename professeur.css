@@ -230,6 +230,33 @@
   line-height: 1.4;
 }
 
+/* 🆕 (08-11-2026) Résultats d'épreuve dans les fiches élèves */
+.kbp-bouton-resultats {
+  font-family: inherit; font-weight: 700; font-size: 0.78rem;
+  margin-top: 8px; border: 1.5px solid var(--peche); border-radius: 999px;
+  padding: 6px 12px; background: var(--fond); color: var(--brun-fonce, var(--brun)); cursor: pointer;
+}
+.kbp-bouton-resultats:hover { background: #FFFFFF; }
+.kbp-resultats { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; }
+.kbp-epreuve { background: #FFFFFF; border-radius: 12px; padding: 10px 12px; display: flex; flex-direction: column; gap: 6px; }
+.kbp-epreuve-titre { margin: 0; font-weight: 700; font-size: 0.88rem; color: var(--brun-fonce, var(--brun)); }
+.kbp-epreuve-meta { margin: 0; font-size: 0.74rem; color: var(--brun-clair, #8A7364); }
+.kbp-puces { display: flex; flex-wrap: wrap; gap: 5px; }
+.kbp-puce { font-size: 0.72rem; font-weight: 700; border-radius: 999px; padding: 2px 9px; background: var(--peche-pale, rgba(240, 169, 139, 0.16)); color: var(--brun-fonce, var(--brun)); }
+.kbp-puce-ok { background: rgba(61, 92, 44, 0.14); color: #3d5c2c; }
+.kbp-puce-non { background: rgba(176, 64, 44, 0.12); color: #b0402c; }
+.kbp-question { border-left: 4px solid var(--peche); border-radius: 4px 10px 10px 4px; padding: 6px 10px; background: var(--fond); display: flex; flex-direction: column; gap: 2px; }
+.kbp-question-ok { border-left-color: #3d5c2c; }
+.kbp-question-non { border-left-color: #b0402c; }
+.kbp-q-entete { margin: 0; display: flex; justify-content: space-between; gap: 8px; font-size: 0.7rem; color: var(--brun-clair, #8A7364); font-weight: 700; }
+.kbp-q-texte { margin: 0; font-size: 0.78rem; color: var(--brun-clair, #8A7364); overflow-wrap: anywhere; }
+.kbp-q-reponse { margin: 0; font-size: 0.86rem; font-weight: 700; color: var(--brun-fonce, var(--brun)); white-space: pre-wrap; overflow-wrap: anywhere; }
+.kbp-q-attendu { margin: 0; font-size: 0.76rem; color: #3d5c2c; }
+.kbp-bouton-copier { align-self: flex-start; font-family: inherit; font-weight: 700; font-size: 0.72rem; border: 1.5px solid var(--peche); border-radius: 999px; padding: 3px 10px; background: #FFFFFF; color: var(--brun-fonce, var(--brun)); cursor: pointer; }
+.kbp-bouton-copier:hover { background: var(--peche-pale, rgba(240, 169, 139, 0.16)); }
+.kbp-copier-tout { margin-top: 2px; }
+.kbp-bouton-commenter { align-self: flex-start; }
+
 @media (max-width: 460px) {
   .kbp-carte { padding: 16px 14px 14px; border-radius: 22px; }
   .kbp-titre { font-size: 1rem; }

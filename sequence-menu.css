@@ -226,3 +226,51 @@
   .mns-etape-encours .mns-etape-puce { animation: none; border-color: var(--peche-fonce, #E08867); }
   .mns-etape, .mns-assemble-barre { transition: opacity 0.2s ease; }
 }
+
+/* ---------- 🆕 (08-11-2026) Choix de la langue (Paramètres → Langue) ---------- */
+.mns-carte-langue { width: min(92vw, 400px); }
+.mns-grille-langues {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  max-height: 46dvh;
+  overflow-y: auto;
+  margin-bottom: 16px;
+  padding-right: 2px;
+}
+.mns-langue {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 10px 4px 8px;
+  border: 1.5px solid transparent;
+  border-radius: 14px;
+  background: #F8F4F0;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+}
+.mns-langue:hover { background: var(--peche-pale, rgba(240, 169, 139, 0.22)); transform: translateY(-1px); }
+.mns-langue.mns-langue-active { background: var(--peche-pale-vif, rgba(240, 169, 139, 0.32)); border-color: var(--peche-fonce, #E08867); }
+.mns-langue-badge {
+  display: flex; align-items: center; justify-content: center;
+  width: 24px; height: 24px; border-radius: 50%;
+  background: var(--peche-pale-vif, rgba(240, 169, 139, 0.3));
+  color: var(--peche-fonce, #E08867);
+  font-weight: 700; font-size: 0.6rem;
+}
+.mns-langue-natif { font-weight: 700; font-size: 0.78rem; color: #2F2722; text-align: center; line-height: 1.15; }
+/* Le français : identique aux autres jusqu'au clic, puis message d'erreur en surimpression. */
+.mns-langue-erreur {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  padding: 4px; border-radius: inherit;
+  background: rgba(74, 59, 51, 0.94); color: #FFF5E8;
+  font-weight: 700; font-size: 0.6rem; line-height: 1.2; text-align: center;
+  opacity: 0; pointer-events: none; transition: opacity 0.2s ease;
+}
+.mns-langue.mns-langue-erreur-active .mns-langue-erreur { opacity: 1; }
+@media (max-width: 460px) { .mns-grille-langues { grid-template-columns: repeat(2, 1fr); } }

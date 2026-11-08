@@ -58,7 +58,7 @@
      · Connexion / Créer un compte (invité) → callbacks.onCreerCompte
        « Mon compte » (connecté) → fenêtre avec « Se déconnecter »
      · Mode professeur (seulement si callbacks.onModeProfesseur est fourni)
-     · Paramètres → fenêtre : Son (vrai), Langue (si callbacks.onChangerLangue),
+     · Paramètres → fenêtre : Son (vrai), Langue (vrai, toujours là ; le français est brisé),
        Autorisation du Lecteur (FAUX : le retrait échoue toujours)
 
    Dépend de sequence-reveil-bek.css (.rbek-scene, .rbek-pose), de
@@ -74,9 +74,9 @@
 
    @param {string} idConteneur
    @param {object} options : langue ; identite { prenom } ; visite (true/false/absent) ;
-                             dossierImages, extension, sources
+                             dossierImages, extension, sources ; langues (optionnel, [{code, natif}] sans le français)
    @param {object} callbacks : onMemoires(), onPrives(), onModeProfesseur() (optionnel),
-                               onCreerCompte(), onChangerLangue() (optionnel),
+                               onCreerCompte(), onChangerLangue(code) (optionnel : simple notification, la langue est déjà enregistrée),
                                onPermission(accordee: bool)
    @returns {{ arreter: function }}
    ================================================================== */
@@ -1257,6 +1257,29 @@
     }
   };
 
+  // 🆕 (08-11-2026) Sélecteur de langue des Paramètres. Mêmes 19 langues que la séquence de téléchargement
+  // (sequence-telechargement-langue.js) + le français, toujours « brisé » : cliquer dessus affiche un message d'erreur,
+  // jamais de changement. options.langues (même forme que LANGUES dans index.html : {code, natif}) remplace cette liste.
+  const LANGUES_PAR_DEFAUT = [
+    { code: 'en', natif: 'English' }, { code: 'es', natif: 'Español' }, { code: 'it', natif: 'Italiano' },
+    { code: 'pt', natif: 'Português' }, { code: 'ca', natif: 'Català' }, { code: 'eo', natif: 'Esperanto' },
+    { code: 'zh', natif: '中文' }, { code: 'ja', natif: '日本語' }, { code: 'ko', natif: '한국어' },
+    { code: 'vi', natif: 'Tiếng Việt' }, { code: 'ht', natif: 'Kreyòl ayisyen' }, { code: 'tl', natif: 'Tagalog' },
+    { code: 'id', natif: 'Bahasa Indonesia' }, { code: 'nl', natif: 'Nederlands' }, { code: 'de', natif: 'Deutsch' },
+    { code: 'fa', natif: 'فارسی' }, { code: 'sv', natif: 'Svenska' }, { code: 'no', natif: 'Norsk' },
+    { code: 'ru', natif: 'Русский' }
+  ];
+  // Même texte que erreurFrancais dans sequence-telechargement-langue.js (20 langues) — repli sur l'anglais.
+  const ERREUR_FICHIER_FRANCAIS = {
+    fr: 'Fichier fragmenté ou introuvable', en: 'File fragmented or not found', es: 'Archivo fragmentado o no encontrado',
+    it: 'File frammentato o non trovato', pt: 'Ficheiro fragmentado ou não encontrado', ca: 'Fitxer fragmentat o no trobat',
+    eo: 'Dosiero fragmentita aŭ ne trovita', zh: '文件已损坏或未找到', ja: 'ファイルが破損しているか見つかりません',
+    ko: '파일이 손상되었거나 찾을 수 없습니다', vi: 'Tệp bị phân mảnh hoặc không tìm thấy', ht: 'Fichye frajmante oswa pa jwenn',
+    tl: 'Nasira o hindi nahanap ang file', id: 'File rusak atau tidak ditemukan', nl: 'Bestand gefragmenteerd of niet gevonden',
+    de: 'Datei fragmentiert oder nicht gefunden', fa: 'فایل خرد شده یا یافت نشد', sv: 'Filen är fragmenterad eller hittades inte',
+    no: 'Filen er fragmentert eller ble ikke funnet', ru: 'Файл повреждён или не найден'
+  };
+
   const ICONES = {
     memoires: '<path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H12v18H6.5A2.5 2.5 0 0 1 4 18.5v-13Z"/><path d="M20 5.5A2.5 2.5 0 0 0 17.5 3H12v18h5.5a2.5 2.5 0 0 0 2.5-2.5v-13Z"/>',
     parametres: '<path d="M4 6h8M19 6h1"/><circle cx="15.5" cy="6" r="2.2"/><path d="M4 12h2M13 12h7"/><circle cx="9.5" cy="12" r="2.2"/><path d="M4 18h9M20 18h0"/><circle cx="16.5" cy="18" r="2.2"/>',
@@ -1312,7 +1335,7 @@
     try { localStorage.setItem(CLE_AUTORISATION, accordee ? 'oui' : 'non'); } catch (e) {}
   }
 
-  function demarrerMenuSimpleInterne(idConteneur, options, callbacks) {
+  function demarrerMenuSimpleInterne(idConteneur, options, callbacks, relancer) {
     options = options || {};
     callbacks = callbacks || {};
     const conteneur = document.getElementById(idConteneur);
@@ -1745,11 +1768,67 @@
       if (bouton.compte) bouton.compte.focus({ preventScroll: true });
     }
 
+    // ---------- 🆕 Changer de langue (depuis les Paramètres) ----------
+    const listeLangues = (Array.isArray(options.langues) && options.langues.length ? options.langues : LANGUES_PAR_DEFAUT)
+      .filter(function (l) { return l && l.code && l.code !== 'fr'; });
+    function nomNatifLangue(code) {
+      if (code === 'fr') return 'Français';
+      for (let i = 0; i < listeLangues.length; i++) if (listeLangues[i].code === code) return listeLangues[i].natif || code.toUpperCase();
+      return code.toUpperCase();
+    }
+    function ouvrirChoixLangue() {
+      const f = creerFenetre(
+        entete('<span class="mns-icone" aria-hidden="true">' + svg('parametres', 'mns-icone-svg') + '</span>', T('paramLangue'), 'mnsLangTitre') +
+        '<div class="mns-grille-langues">' +
+          listeLangues.map(function (l) {
+            return '<button type="button" class="mns-langue' + (l.code === langue ? ' mns-langue-active' : '') + '" data-code="' + echapper(l.code) + '">' +
+              '<span class="mns-langue-badge" aria-hidden="true">' + echapper(l.code.toUpperCase()) + '</span>' +
+              '<span class="mns-langue-natif">' + echapper(l.natif || l.code) + '</span></button>';
+          }).join('') +
+          // le français : même allure que les autres, mais « brisé »
+          '<button type="button" class="mns-langue" data-code="fr">' +
+            '<span class="mns-langue-badge" aria-hidden="true">FR</span><span class="mns-langue-natif">Français</span>' +
+            '<span class="mns-langue-erreur" aria-live="polite">' + echapper(ERREUR_FICHIER_FRANCAIS[langue] || ERREUR_FICHIER_FRANCAIS.en) + '</span>' +
+          '</button>' +
+        '</div>' +
+        '<div class="lect-boutons"><button type="button" class="lect-btn mns-langue-fermer">' + echapper(T('fermer')) + '</button></div>',
+        'mns-carte-langue');
+      f.carte.setAttribute('aria-labelledby', 'mnsLangTitre');
+      function fermerChoix() { document.removeEventListener('keydown', surTouche); f.fermer(); planifier(function () { if (bouton.parametres) bouton.parametres.focus({ preventScroll: true }); }, 300); }
+      function surTouche(e) { if (e.key === 'Escape') fermerChoix(); }
+      document.addEventListener('keydown', surTouche);
+      f.carte.querySelector('.mns-langue-fermer').addEventListener('click', fermerChoix);
+      f.voile.addEventListener('click', function (e) { if (e.target === f.voile) fermerChoix(); });
+      Array.prototype.forEach.call(f.carte.querySelectorAll('.mns-langue'), function (b) {
+        b.addEventListener('click', function () {
+          const code = b.getAttribute('data-code');
+          if (code === 'fr') {                      // toujours brisé : message bref, aucun changement
+            if (b.classList.contains('mns-langue-erreur-active')) return;
+            b.classList.add('mns-langue-erreur-active');
+            planifier(function () { b.classList.remove('mns-langue-erreur-active'); }, 2200);
+            return;
+          }
+          if (code === langue) { fermerChoix(); return; }
+          document.removeEventListener('keydown', surTouche);
+          f.fermer();
+          appliquerLangue(code);
+        });
+      });
+      planifier(function () { const a = f.carte.querySelector('.mns-langue-active') || f.carte.querySelector('.mns-langue'); if (a) a.focus({ preventScroll: true }); }, 350);
+    }
+    // Un seul réglage de langue pour tout le site (même clé que menu-principal.js, sac-a-dos.js, les mémoires).
+    function appliquerLangue(code) {
+      try { localStorage.setItem(CLE_LANGUE, code); } catch (e) {}
+      if (typeof callbacks.onChangerLangue === 'function') { try { callbacks.onChangerLangue(code); } catch (e) { console.warn('onChangerLangue a échoué.', e); } }
+      // Le menu se redessine dans la nouvelle langue, sans rejouer la visite.
+      planifier(function () { if (typeof relancer === 'function') relancer(code); }, 320);
+    }
+
     // ---------- Les paramètres (vrais et faux) ----------
     function ouvrirParametres() {
       const lignes = [];
       lignes.push({ id: 'son', nom: T('paramSon') });
-      if (typeof callbacks.onChangerLangue === 'function') lignes.push({ id: 'langue', nom: T('paramLangue') });
+      lignes.push({ id: 'langue', nom: T('paramLangue') });
       lignes.push({ id: 'autorisation', nom: T('paramAutorisation') });
 
       const f = creerFenetre(
@@ -1785,12 +1864,16 @@
       rafraichirSon();
       son.btn.addEventListener('click', function () { ecrireSon(!lireSon()); rafraichirSon(); });
 
-      // — Langue (vrai, seulement si la page hôte sait changer de langue) —
+      // — Langue (vrai : toujours disponible, le français est « brisé ») —
       const lg = ligne('langue');
       if (lg) {
-        lg.etat.textContent = langue.toUpperCase();
+        lg.etat.textContent = nomNatifLangue(langue);
         lg.btn.textContent = T('paramChanger');
-        lg.btn.addEventListener('click', function () { fermerParametres(); callbacks.onChangerLangue(); });
+        lg.btn.addEventListener('click', function () {
+          document.removeEventListener('keydown', surTouche);
+          f.fermer();
+          planifier(ouvrirChoixLangue, 300);
+        });
       }
 
       // — Autorisation du Lecteur (FAUX : le retrait échoue toujours) —
@@ -1880,7 +1963,13 @@
   function demarrerMenuSimple(idConteneur, options, callbacks) {
     options = options || {};
     let interne = null, arrete = false;
-    function lancer() { if (!arrete) interne = demarrerMenuSimpleInterne(idConteneur, options, callbacks); }
+    function relancer(code) {
+      if (arrete) return;
+      if (interne) interne.arreter();
+      options = Object.assign({}, options, { langue: code, visite: false });
+      lancer();
+    }
+    function lancer() { if (!arrete) interne = demarrerMenuSimpleInterne(idConteneur, options, callbacks, relancer); }
     if (typeof options.visite !== 'boolean' && !visiteUrlForcee() && lireEtape() === '') verifierVisiteFaite().then(lancer, lancer);
     else lancer();
     return { arreter: function () { arrete = true; if (interne) interne.arreter(); } };

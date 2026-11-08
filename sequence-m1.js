@@ -47,6 +47,13 @@
    (en parlant). Dans l'exercice d'écoute d'une phrase avec « film » ou « télé » (« Je regarde un film. », « J'aime regarder la télé. »), Bek garde
    sa télécommande, face à l'écran, et sa bouche alterne repos / parle pendant la voix. Sans la version bouche ouverte : pose « écoute-moi ».
    Les deux images ont le même cadre ; la lueur de l'écran (à gauche) fait partie de l'image.
+   🆕 Sandwich regardé : deux images — bek_regarde-sandwich_01-01 (la pose des leçons, et le repos : bouche fermée) et
+   bek_regarde-sandwich_bouche-ouverte_01-01 (en parlant). Dans l'exercice d'écoute d'une phrase avec « regarde » + « sandwich »
+   (« Je regarde le sandwich. »), Bek garde son sandwich, sans le manger, et sa bouche alterne repos / parle pendant la voix.
+   Sans la version bouche ouverte : pose « écoute-moi ».
+   🆕 Poutine regardée : deux images — bek_regarde-poutine_01-01 (la pose des leçons, et le repos : bouche fermée) et
+   bek_regarde-poutine_bouche-ouverte_01-01 (en parlant). Dans l'exercice d'écoute d'une phrase avec « regarder » + « poutine »
+   (« J'aime regarder la poutine. »), Bek garde sa poutine, sans la manger, et sa bouche alterne repos / parle pendant la voix.
 
    🆕 (03-11-2026) FRAGMENT 3 (anciennement 2) — options.fragment = 3 : « REGARDER ».
    La mémoire est faite de fragments ; celui-ci enseigne le verbe « regarde » (en -er, comme « mange »).
@@ -160,8 +167,10 @@
     // elle a faim mais patiente ; poutine (à produire) : enthousiasme très bas, poli mais éteint.
     'bek-regarde-film':     'images/m1/bek_regarde-film_01-01.webp',                    // 🆕 la pose des leçons, et le repos : bouche fermée
     'bek-film-ouverte':     'images/m1/bek_regarde-film_bouche-ouverte_01-01.webp',     // 🆕 en parlant : bouche ouverte (exercices d'écoute)
-    'bek-regarde-sandwich': 'images/m1/bek_regarde-sandwich_01-01.webp',
-    'bek-regarde-poutine':  'images/m1/bek_regarde-poutine_01-01.webp',
+    'bek-regarde-sandwich': 'images/m1/bek_regarde-sandwich_01-01.webp',                          // 🆕 la pose des leçons, et le repos : bouche fermée
+    'bek-sandwich-regarde-ouverte': 'images/m1/bek_regarde-sandwich_bouche-ouverte_01-01.webp',   // 🆕 en parlant : bouche ouverte (exercices d'écoute)
+    'bek-regarde-poutine':  'images/m1/bek_regarde-poutine_01-01.webp',                           // 🆕 la pose des leçons, et le repos : bouche fermée
+    'bek-poutine-regarde-ouverte': 'images/m1/bek_regarde-poutine_bouche-ouverte_01-01.webp',     // 🆕 en parlant : bouche ouverte (exercices d'écoute)
     // 🎨 fragment 2 (livrées, trois poses) : Bek qui mange une pizza (même enthousiasme que pour le sandwich, un peu plus gourmande)
     'bek-mange-pizza':      'images/m1/bek_mange-pizza_01-01.webp',                    // 🆕 la pose principale : grand sourire
     'bek-pizza-repos':      'images/m1/bek_mange-pizza_bouche-fermee_01-01.webp',      // 🆕 au repos : sourire bouche fermée
@@ -277,6 +286,46 @@
     '.m1-retour:disabled{opacity:.3;cursor:default;box-shadow:none}',
     '.m1-retour:disabled:hover{background:#FFFFFF}',
     '@media (prefers-reduced-motion:reduce){.m1-retour{transition:none}}'
+  ].join('\n');
+  // 🆕 (07-11-2026) INDICE « NOUVEAU / CONNU » (fragment 2) : un code couleur unique, repris sur les tuiles, la remarque et l'étal.
+  //   ⚠️ Les mots sont déjà colorés par RÔLE dans sequence-m1.css (sujet pêche, verbe bleu, objet vert) : l'indice prend deux teintes
+  //   qui n'y sont pas. ambre = un / une (une chose nouvelle, parmi d'autres) ; violet doux = le / la (celle dont on parle, déjà connue).
+  const COULEUR_NOUVEAU = '#D9A21B', COULEUR_CONNU = '#8E7CC3';
+  const RVB_NOUVEAU = '217,162,27', RVB_CONNU = '142,124,195';
+  const FOND_CONNU = '#E4DDF3';
+  const ART_CSS = [
+    '.m1-tuile.m1-art-i,.m1-tuile.m1-art-d,.m1-case.m1-art-i,.m1-case.m1-art-d{position:relative}',
+    '.m1-tuile.m1-art-i::after,.m1-tuile.m1-art-d::after,.m1-case.m1-art-i::after,.m1-case.m1-art-d::after{content:"";position:absolute;left:20%;right:20%;bottom:.28rem;height:.2rem;border-radius:.2rem;pointer-events:none}',
+    '.m1-art-i::after{background:' + COULEUR_NOUVEAU + '}',
+    '.m1-art-d::after{background:' + COULEUR_CONNU + '}',
+    // la carte « Remarque » : un → le, une → la (une paire par ligne : elles ne tiennent pas côte à côte)
+    '.m1-paire.m1-paire-art{flex-direction:column;align-items:center;gap:6px}',
+    '.m1-paire-art .m1-radical b{color:' + COULEUR_NOUVEAU + '}',
+    '.m1-paire-art .m1-radical i{background:' + FOND_CONNU + ';color:var(--brun-fonce,#4A3B33);box-shadow:inset 0 -3px 0 ' + COULEUR_CONNU + '}'
+  ].join('\n');
+  // L'étal : trois objets identiques (« un parmi plusieurs »), puis un seul mis en valeur (« celui-là »). Décoratif (aria-hidden).
+  const ETAL_ART = { sandwich: ['un', 'le'], poutine: ['une', 'la'], pizza: ['une', 'la'] };
+  const ETAL_CSS = [
+    // posé sur la colonne de Bek (comme la vignette) : il ne prend aucune place dans la carte de leçon
+    '.m1-etal{position:absolute;left:50%;bottom:1.5%;transform:translateX(-50%);z-index:3;display:flex;align-items:center;justify-content:center;gap:.7rem;',
+    'width:max-content;max-width:98%;box-sizing:border-box;padding:.45rem .8rem;background:rgba(255,255,255,.94);border:2px solid var(--brun-fonce,#4A3B33);border-radius:20px;',
+    'box-shadow:0 3px 0 0 var(--brun-fonce,#4A3B33),3px 6px 14px var(--ombre,rgba(102,80,69,.18))}',
+    '.m1-etal-objets{display:flex;align-items:center;gap:.55rem}',
+    '.m1-etal-objet{display:block;width:3.1rem;height:3.1rem;padding:.15rem;box-sizing:border-box;border-radius:1rem;box-shadow:0 0 0 3px transparent;',
+    'transition:opacity .6s ease,transform .6s ease,box-shadow .6s ease,background-color .6s ease;animation:m1-etal-pop .45s ease backwards}',
+    '.m1-etal-objet:nth-child(2){animation-delay:.12s}.m1-etal-objet:nth-child(3){animation-delay:.24s}',
+    '.m1-etal-objet svg{display:block;width:100%;height:100%}',
+    '.m1-etal-nouveau .m1-etal-objet{box-shadow:0 0 0 3px rgba(' + RVB_NOUVEAU + ',.4);background:rgba(' + RVB_NOUVEAU + ',.12)}',
+    '.m1-etal-connu .m1-etal-objet{opacity:.2;transform:scale(.8)}',
+    '.m1-etal-connu .m1-etal-objet:first-child{opacity:1;transform:scale(1.15);box-shadow:0 0 0 3px ' + COULEUR_CONNU + ';background:rgba(' + RVB_CONNU + ',.16)}',
+    '.m1-etal-pastille{min-width:2.6rem;text-align:center;padding:.1rem .8rem;border-radius:999px;color:#fff;font-weight:800;font-size:1.1rem;box-shadow:0 3px 0 0 var(--brun-fonce,#4A3B33);transition:background-color .5s ease}',
+    '.m1-etal-nouveau .m1-etal-pastille{background:' + COULEUR_NOUVEAU + '}',
+    '.m1-etal-connu .m1-etal-pastille{background:' + COULEUR_CONNU + '}',
+    '@keyframes m1-etal-pop{from{opacity:0;transform:translateY(.5rem) scale(.85)}to{opacity:1;transform:none}}',
+    // téléphone : Bek est sous la leçon, hors écran ; l'étal passe dans la carte, au-dessus de la zone d'exercice
+    '.m1-etal.m1-etal-carte{position:static;transform:none;margin:0 auto .6rem;box-shadow:none;background:transparent;border-color:rgba(74,59,51,.25);padding:.3rem .6rem;gap:.5rem}',
+    '.m1-etal-carte .m1-etal-objet{width:2.4rem;height:2.4rem}.m1-etal-carte .m1-etal-pastille{font-size:1rem}',
+    '@media (prefers-reduced-motion:reduce){.m1-etal-objet,.m1-etal-pastille{transition:none;animation:none}}'
   ].join('\n');
   const BANQUE_4 = ['j', 'je', 'aime', 'manger', 'mange', 'regarder', 'regarde', 'jouer', 'la', 'poutine', 'tele'];   // fragment 4 : j'aime (je, mange, regarde = pièges) (pas « parle », pas « français »)
 
@@ -1573,6 +1622,7 @@
     const avecRetour = fragment !== 5 && typeof options._reculer === 'function';
     const barre = '<div class="m1-progres" aria-hidden="true">' + segments + '</div>';
     if (avecRetour) injecterStyle('m1-retour-style', RETOUR_CSS);
+    injecterStyle('m1-art-style', ART_CSS);
     scene.innerHTML =
       '<button type="button" class="m1-quitter" aria-label="' + echapper(T('quitter')) + '">&#8249;</button>' +
       '<button type="button" class="m1-son" aria-label="' + echapper(T('son')) + '" aria-pressed="true">' +
@@ -1811,6 +1861,16 @@
       const mots = (ph && ph.mots) || [];
       return mots.indexOf('film') !== -1 || mots.indexOf('tele') !== -1;
     }
+    // 🆕 « Je regarde le sandwich. » : Bek tient son sandwich sans le manger (repos / parle, comme le film)
+    function estRegardeSandwich(ph) {
+      const mots = (ph && ph.mots) || [];
+      return mots.indexOf('regarde') !== -1 && mots.indexOf('sandwich') !== -1;
+    }
+    // 🆕 « J'aime regarder la poutine. » : Bek tient sa poutine sans la manger (repos / parle, comme le sandwich regardé)
+    function estRegardePoutine(ph) {
+      const mots = (ph && ph.mots) || [];
+      return (mots.indexOf('regarde') !== -1 || mots.indexOf('regarder') !== -1) && mots.indexOf('poutine') !== -1;
+    }
     // une bouchée puis la mastication ; s'arrête si une voix repart (Réécouter) ; renvoie true si elle est allée au bout
     async function mangerUneFois(m, jeton) {
       montrer(m.bouchee, true); await pause(m.msBouchee);
@@ -1828,8 +1888,10 @@
       const mange = !!(m && bouclePrete(cle) && poses[m.base] && poses[m.ouverte] && !mouvementReduit());
       const pizza = cle === 'pizza' && !!(poses['bek-pizza-repos'] && poses['bek-pizza-ouverte']);     // 🆕 elle tient sa pizza et la dit
       const film = !mange && !pizza && estFilm(phrase) && !!(poses['bek-regarde-film'] && poses['bek-film-ouverte']);   // 🆕 elle regarde l'écran et dit la phrase
-      const base = mange ? m.base : (pizza ? 'bek-pizza-repos' : (film ? 'bek-regarde-film' : 'bek-ecoute'));
-      const ouv = mange ? m.ouverte : (pizza ? 'bek-pizza-ouverte' : (film ? 'bek-film-ouverte' : 'bek-ecoute-ouverte'));
+      const regSand = !mange && !pizza && !film && estRegardeSandwich(phrase) && !!(poses['bek-regarde-sandwich'] && poses['bek-sandwich-regarde-ouverte']);   // 🆕 elle regarde son sandwich et dit la phrase
+      const regPout = !mange && !pizza && !film && !regSand && estRegardePoutine(phrase) && !!(poses['bek-regarde-poutine'] && poses['bek-poutine-regarde-ouverte']);   // 🆕 elle regarde sa poutine et dit la phrase
+      const base = mange ? m.base : (pizza ? 'bek-pizza-repos' : (film ? 'bek-regarde-film' : (regSand ? 'bek-regarde-sandwich' : (regPout ? 'bek-regarde-poutine' : 'bek-ecoute'))));
+      const ouv = mange ? m.ouverte : (pizza ? 'bek-pizza-ouverte' : (film ? 'bek-film-ouverte' : (regSand ? 'bek-sandwich-regarde-ouverte' : (regPout ? 'bek-poutine-regarde-ouverte' : 'bek-ecoute-ouverte'))));
       if (!poses[base]) return;
       const jeton = ++jetonBouche;
       let ouverte = false, premiere = true, aParle = false;
@@ -1966,7 +2028,7 @@
     function tuile(id, classe) {
       const b = document.createElement('button');
       b.type = 'button';
-      b.className = 'm1-tuile m1-role-' + ROLE[id] + (classe ? ' ' + classe : '');
+      b.className = 'm1-tuile m1-role-' + ROLE[id] + (ART[id] ? ' m1-art-' + ART[id] : '') + (classe ? ' ' + classe : '');
       b.setAttribute('data-id', id);
       b.textContent = AFFICHE[id];
       return b;
@@ -2108,7 +2170,7 @@
             t.classList.add('m1-tuile-partie');
             Array.prototype.forEach.call(plateau.querySelectorAll('.m1-indice'), function (x) { x.classList.remove('m1-indice'); });
             const c = cases[suivant];
-            c.className = 'm1-case m1-case-pleine m1-role-' + ROLE[id];
+            c.className = 'm1-case m1-case-pleine m1-role-' + ROLE[id] + (ART[id] ? ' m1-art-' + ART[id] : '');
             c.textContent = AFFICHE[id];
             direMot(id);
             suivant++;
@@ -2415,10 +2477,40 @@
       arreterBouche();
     }
 
+    // ---------- 🆕 L'étal : « un parmi plusieurs » (nouveau) → « celui-là » (connu) ----------
+    // mode 'nouveau' : trois objets pareils, pastille pêche « un/une » ; mode 'connu' : un seul reste en valeur (halo bleu), pastille « le/la ».
+    // Sans argument : on retire l'étal. Le même objet garde son élément d'un mode à l'autre : le passage s'anime.
+    let etalEl = null;
+    function etal(objet, mode) {
+      if (!objet || !mode || !DESSINS[objet] || !ETAL_ART[objet]) {
+        if (etalEl && etalEl.parentNode) etalEl.parentNode.removeChild(etalEl);
+        etalEl = null;
+        return;
+      }
+      injecterStyle('m1-etal-style', ETAL_CSS);
+      if (!etalEl || etalEl.getAttribute('data-objet') !== objet) {
+        if (etalEl && etalEl.parentNode) etalEl.parentNode.removeChild(etalEl);
+        const el = document.createElement('div');
+        el.className = 'm1-etal';
+        el.setAttribute('aria-hidden', 'true');
+        el.setAttribute('data-objet', objet);
+        let h = '<div class="m1-etal-objets">';
+        for (let i = 0; i < 3; i++) h += '<span class="m1-etal-objet"><svg viewBox="0 0 80 80">' + DESSINS[objet] + '</svg></span>';
+        el.innerHTML = h + '</div><span class="m1-etal-pastille"></span>';
+        const telephone = !!(window.matchMedia && window.matchMedia('(max-width: 719px)').matches);
+        if (telephone) { el.classList.add('m1-etal-carte'); zone.parentNode.insertBefore(el, zone); }
+        else q('.m1-col-bek').appendChild(el);
+        etalEl = el;
+      }
+      etalEl.classList.toggle('m1-etal-nouveau', mode === 'nouveau');
+      etalEl.classList.toggle('m1-etal-connu', mode === 'connu');
+      etalEl.querySelector('.m1-etal-pastille').textContent = ETAL_ART[objet][mode === 'connu' ? 1 : 0];
+    }
+
     // ---------- 🆕 Fragment 2 : un/une, le/la ----------
     function pairesArticles(liste) {     // un sandwich → le sandwich : l'article est surligné
       const d = document.createElement('div');
-      d.className = 'm1-paire';
+      d.className = 'm1-paire m1-paire-art';
       liste.forEach(function (p) {
         const sp = document.createElement('span');
         sp.className = 'm1-radical';
@@ -2429,13 +2521,17 @@
     }
     async function etapeArticles() {
       etape(0); montrer('bek-mange-sandwich');
+      etal('sandwich', 'connu');
       consigne(T('c_lire'));
       planifier(function () { lecteurIndice(T('quipLeSandwich'), 5500); }, 1500);
       await lecture(PHRASES.sandwichle, 'sandwichle');
+      etal('sandwich', 'nouveau');                                   // la remarque : un parmi plusieurs…
+      planifier(function () { etal('sandwich', 'connu'); }, 1800);   // …puis celui-là
       await carte(T('noteL_titre'), T('noteL'), pairesArticles([['un', 'sandwich', 'le'], ['une', 'poutine', 'la']]));
     }
     async function etapePoutineLa() {
       etape(1); montrer('bek-mange-poutine');
+      etal('poutine', 'connu');
       animerManger('poutine', 1);
       consigne(T('c_lire'));
       planifier(function () { lecteurIndice(T('quipLaPoutine'), 5500); }, 1500);
@@ -2447,11 +2543,13 @@
     }
     async function etapePizza() {
       etape(2); montrer('bek-mange-pizza');
+      etal('pizza', 'nouveau');
       consigne(T('c_lire'));
       planifier(function () { lecteurIndice(T('quipPizza'), 5500); }, 1500);
       await lecture(PHRASES.pizzaune, 'pizzaune');
       consigne(T('c_ordre'));
       await ordre(PHRASES.pizzaune, 'pizzaune', ['un']);
+      etal('pizza', 'connu');                                        // même pizza, maintenant connue
       await ordre(PHRASES.pizzala, 'pizzala', ['le', 'une']);     // même pizza, maintenant connue
       consigne(T('c_ecrire'));
       await ecrire(PHRASES.pizzala, 'pizzala', null);
@@ -2461,9 +2559,11 @@
     async function etapeNouveauConnu(n, objet) {
       const nouveau = PHRASES[objet], connu = PHRASES[objet === 'sandwich' ? 'sandwichle' : 'poutinela'];
       etape(n); montrer(objet === 'sandwich' ? 'bek-mange-sandwich' : 'bek-mange-poutine');
+      etal(objet, 'nouveau');
       consigne(T('c_nouveau'));
       planifier(function () { lecteurIndice(T('quipNouveau'), 5000); }, 800);
       await construire(nouveau, 'nouveau-' + objet, { banque: BANQUE_2 });
+      etal(objet, 'connu');
       consigne(T('c_connu'));
       planifier(function () { lecteurIndice(T('quipConnu'), 5000); }, 800);
       const arreter = animerManger(objet);
@@ -2731,7 +2831,7 @@
 
     async function fin() {
       if (arrete) return;
-      finie = true; majRetour();
+      finie = true; majRetour(); etal(null);
       etape(ETAPES_TOTAL);
       montrer('bek-heureuse-ferme');
       try {
@@ -2753,7 +2853,7 @@
     // Un segment « exercice audio » (le dernier de chaque fragment)
     function segAudio(cles) {
       return async function () {
-        etape(5); montrer('bek-observe'); consigne(T('c_audio'));
+        etape(5); etal(null); montrer('bek-observe'); consigne(T('c_audio'));
         for (const cle of cles) await construireAudio(PHRASES[cle], 'audio-' + cle);
       };
     }

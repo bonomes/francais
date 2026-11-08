@@ -128,9 +128,10 @@
         Pas d'introduction au retour (option interne _retour). demarrer() reconstruit la scène à l'étape voulue (reprendreA) : la poignée rendue
         à la page hôte reste valable. Textes : retour_etape. Style : RETOUR_CSS (injecté). Pas de flèche au fragment 5 (réparation).
    🆕 (08-11-2026) ÉTAL REVU (fragment 2) : il quitte les pieds de Bek et s'affiche dans la carte de leçon, juste au-dessus de la zone d'exercice,
-      avec de plus gros dessins (ETAL_DANS_LA_CARTE = false le remet dans la colonne de Bek sur ordinateur). « un / une » : les trois objets ;
-      pause (ETAL_PAUSE) ; les deux autres s'estompent, le restant grossit avec un halo violet : « le / la ». Un clic rejoue l'animation (et
-      revient à l'état d'origine) ; la pastille pulse quand l'élève pose un article dans la phrase.
+      avec de plus gros dessins. Il n'existe plus de mode « sous les pieds de Bek ». « un / une » : les trois objets ; pause (ETAL_PAUSE) ; les deux
+      autres s'estompent, le restant grossit avec un halo violet : « le / la ». Sur la carte « Remarque » l'animation tourne en boucle ; ailleurs elle
+      joue au changement d'état. Un clic rejoue (↻) ; la pastille pulse quand son mot change ou quand l'élève pose un article dans la phrase.
+      Sandwich redessiné (pain de mie et garniture en couches : plus de ressemblance avec un hamburger). Version : 25 (voir console). L'étal est aussi dans le fragment 3 (un film ; une → la poutine ; un → le sandwich).
    🆕 (08-11-2026) SAISIE AU CLAVIER dans « ordre » et « construire » (reprise de sequence-memoire) : taper la lettre d'un mot le pose dès qu'il est
       seul à commencer ainsi ; si deux mots restent possibles (un/une, mange/manger, le/la), on continue de taper ; Entrée ou Espace pose le mot
       tapé en entier (« mange » → mange) ; « ’ » pose « j’ » ; Retour arrière / Échap effacent ; la fin d'un mot posé est avalée (« poutine » tapé
@@ -327,7 +328,7 @@
     '.m1-paire-art .m1-radical i{background:' + FOND_CONNU + ';color:var(--brun-fonce,#4A3B33);box-shadow:inset 0 -3px 0 ' + COULEUR_CONNU + '}'
   ].join('\n');
   // L'étal : trois objets identiques (« un parmi plusieurs »), puis un seul mis en valeur (« celui-là »). Décoratif (aria-hidden).
-  const ETAL_ART = { sandwich: ['un', 'le'], poutine: ['une', 'la'], pizza: ['une', 'la'] };
+  const ETAL_ART = { sandwich: ['un', 'le'], poutine: ['une', 'la'], pizza: ['une', 'la'], film: ['un', 'le'] };
   // 🆕 (08-11-2026) SAISIE AU CLAVIER (reprise de sequence-memoire) : lettres tapées dans la prochaine case, début des mots surligné, mots écartés atténués.
   const SAISIE_CSS = [
     '.m1-case{position:relative}',
@@ -343,29 +344,28 @@
     '@media (prefers-reduced-motion:reduce){.m1-frappe::after{animation:none}}'
   ].join('\n');
   // 🆕 (08-11-2026) L'étal quitte les pieds de Bek : il est dans la carte de leçon, juste au-dessus de la phrase (là où l'œil de l'élève travaille),
-  //   avec de gros dessins. ETAL_DANS_LA_CARTE = false le remet dans la colonne de Bek (ordinateur) si la carte manque de hauteur.
-  const ETAL_DANS_LA_CARTE = true;
-  const ETAL_PAUSE = 2600;      // durée de l'état « un / une » avant le passage à « le / la » (ms)
+  //   avec de gros dessins.
+  const ETAL_PAUSE = 3400;      // durée de l'état « un / une » avant le passage à « le / la » (ms)
   const ETAL_CSS = [
-    '.m1-etal{position:relative;display:flex;align-items:center;justify-content:center;gap:1rem;width:max-content;max-width:100%;box-sizing:border-box;margin:0 auto .7rem;padding:.55rem 1.1rem;',
+    '.m1-etal{position:relative;display:flex;align-items:center;justify-content:center;gap:1rem;width:max-content;max-width:100%;box-sizing:border-box;margin:0 auto .9rem;padding:.9rem 1.5rem;',
     'background:rgba(255,255,255,.95);border:2px solid var(--brun-fonce,#4A3B33);border-radius:22px;box-shadow:0 3px 0 0 var(--brun-fonce,#4A3B33);cursor:pointer;-webkit-tap-highlight-color:transparent}',
-    '.m1-etal.m1-etal-bek{position:absolute;left:50%;bottom:1.5%;transform:translateX(-50%);z-index:3;margin:0;max-width:98%}',
     '.m1-etal-objets{display:flex;align-items:center;gap:.8rem}',
-    '.m1-etal-objet{display:block;width:4rem;height:4rem;padding:.2rem;box-sizing:border-box;border-radius:1.2rem;box-shadow:0 0 0 3px transparent;',
-    'transition:opacity .9s ease,transform .9s ease,box-shadow .9s ease,background-color .9s ease;animation:m1-etal-pop .5s ease backwards}',
+    '.m1-etal-objet{display:block;width:4.4rem;height:4.4rem;padding:.25rem;box-sizing:border-box;border-radius:1.2rem;box-shadow:0 0 0 3px transparent;',
+    'transition:opacity 1.1s ease,transform 1.3s cubic-bezier(.3,.7,.3,1),box-shadow 1.1s ease,background-color 1.1s ease;animation:m1-etal-pop .6s ease backwards}',
     '.m1-etal-objet:nth-child(2){animation-delay:.14s}.m1-etal-objet:nth-child(3){animation-delay:.28s}',
     '.m1-etal-objet svg{display:block;width:100%;height:100%}',
     '.m1-etal-nouveau .m1-etal-objet{box-shadow:0 0 0 3px rgba(' + RVB_NOUVEAU + ',.45);background:rgba(' + RVB_NOUVEAU + ',.14)}',
     '.m1-etal-connu .m1-etal-objet{opacity:.18;transform:scale(.78)}',
-    '.m1-etal-connu .m1-etal-objet:first-child{opacity:1;transform:scale(1.18);box-shadow:0 0 0 4px ' + COULEUR_CONNU + ',0 0 18px rgba(' + RVB_CONNU + ',.55);background:rgba(' + RVB_CONNU + ',.18)}',
-    '.m1-etal-pastille{min-width:3.2rem;text-align:center;padding:.15rem .95rem;border-radius:999px;color:#fff;font-weight:800;font-size:1.4rem;box-shadow:0 3px 0 0 var(--brun-fonce,#4A3B33);transition:background-color .6s ease}',
+    '.m1-etal-connu .m1-etal-objet:first-child{transition-delay:.45s;opacity:1;transform:scale(1.18);box-shadow:0 0 0 4px ' + COULEUR_CONNU + ',0 0 18px rgba(' + RVB_CONNU + ',.55);background:rgba(' + RVB_CONNU + ',.18)}',
+    '.m1-etal-pastille{min-width:3.4rem;text-align:center;padding:.15rem 1rem;border-radius:999px;color:#fff;font-weight:800;font-size:1.5rem;box-shadow:0 3px 0 0 var(--brun-fonce,#4A3B33);transition:background-color .6s ease}',
     '.m1-etal-nouveau .m1-etal-pastille{background:' + COULEUR_NOUVEAU + '}',
     '.m1-etal-connu .m1-etal-pastille{background:' + COULEUR_CONNU + '}',
     // l'élève vient de placer un article dans la phrase : la pastille répond
     '.m1-etal-pulse .m1-etal-pastille{animation:m1-etal-pulse .6s ease}',
+    '.m1-etal::after{content:"\\21BB";position:absolute;right:.45rem;top:.15rem;font-size:.8rem;line-height:1;color:var(--brun-fonce,#4A3B33);opacity:.35}',
     '@keyframes m1-etal-pop{from{opacity:0;transform:translateY(.5rem) scale(.85)}to{opacity:1;transform:none}}',
-    '@keyframes m1-etal-pulse{40%{transform:scale(1.3)}}',
-    '@media (max-width:719px){.m1-etal{gap:.7rem;padding:.4rem .8rem}.m1-etal-objets{gap:.55rem}.m1-etal-objet{width:3.1rem;height:3.1rem}.m1-etal-pastille{font-size:1.15rem;min-width:2.7rem;padding:.1rem .8rem}}',
+    '@keyframes m1-etal-pulse{40%{transform:scale(1.35)}}',
+    '@media (max-width:719px){.m1-etal{gap:.7rem;padding:.7rem 1rem}.m1-etal-objets{gap:.55rem}.m1-etal-objet{width:3.3rem;height:3.3rem}.m1-etal-pastille{font-size:1.15rem;min-width:2.7rem;padding:.1rem .8rem}}',
     '@media (prefers-reduced-motion:reduce){.m1-etal-objet,.m1-etal-pastille{transition:none;animation:none}.m1-etal-pulse .m1-etal-pastille{animation:none}}'
   ].join('\n');
   const BANQUE_4 = ['j', 'je', 'aime', 'manger', 'mange', 'regarder', 'regarde', 'jouer', 'la', 'poutine', 'tele'];   // fragment 4 : j'aime (je, mange, regarde = pièges) (pas « parle », pas « français »)
@@ -1602,7 +1602,7 @@
   };
 
   const DESSINS = {   // vignettes provisoires (traits à la main, sans emoji)
-    sandwich: '<path d="M10 38c0-12 12-20 30-20s30 8 30 20c0 3-2 4-4 4H14c-2 0-4-1-4-4Z" fill="#F2C98B"/><path d="M12 46c10 3 14-3 22 0s12-3 22 0 10-2 12 0v4H12Z" fill="#8DBF6A"/><path d="M12 53c8 3 16 0 26 2s18 0 28-2v6c0 3-2 5-5 5H17c-3 0-5-2-5-5Z" fill="#F2C98B"/><path d="M10 38c0-12 12-20 30-20s30 8 30 20M12 46c10 3 14-3 22 0s12-3 22 0 10-2 12 0M12 53v6c0 3 2 5 5 5h46c3 0 5-2 5-5v-6" fill="none" stroke="#4A3B33" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>',
+    sandwich: '<rect x="10" y="53" width="60" height="13" rx="5" fill="#F7DDA8" stroke="#4A3B33" stroke-width="2.4"/><rect x="14" y="56" width="52" height="7" rx="3" fill="none" stroke="#E8BE78" stroke-width="1.6"/><path d="M8 48c4 3 8-3 12 0s8-3 12 0 8-3 12 0 8-3 12 0 8-3 12 0v6H8Z" fill="#F6D56A" stroke="#4A3B33" stroke-width="2.2" stroke-linejoin="round"/><path d="M10 42h60v6H10Z" fill="#F2A9A0" stroke="#4A3B33" stroke-width="2.2" stroke-linejoin="round"/><path d="M12 36h56v6H12Z" fill="#E0674F" stroke="#4A3B33" stroke-width="2.2" stroke-linejoin="round"/><path d="M7 31c4 4 8-3 12 0s8-3 12 0 8-3 12 0 8-3 12 0 8-3 12 0v7H7Z" fill="#8DBF6A" stroke="#4A3B33" stroke-width="2.2" stroke-linejoin="round"/><rect x="10" y="15" width="60" height="17" rx="5" fill="#F7DDA8" stroke="#4A3B33" stroke-width="2.4"/><rect x="14" y="18" width="52" height="11" rx="3" fill="none" stroke="#E8BE78" stroke-width="1.6"/>',
     poutine: '<path d="M8 40h64c0 14-12 26-32 26S8 54 8 40Z" fill="#F7F1E8"/><path d="M14 42l6-18 5 17 7-20 5 19 7-17 4 17 6-14 3 16Z" fill="#F0C75E"/><path d="M12 42c6 4 10-2 16 1s10-3 16 0 10-2 16 0 8-1 10 0c-2 6-8 8-20 8s-30 0-38-9Z" fill="#8A5A3C"/><circle cx="26" cy="38" r="4" fill="#FFF6D8"/><circle cx="42" cy="36" r="4.5" fill="#FFF6D8"/><circle cx="56" cy="39" r="3.5" fill="#FFF6D8"/><path d="M8 40h64c0 14-12 26-32 26S8 54 8 40Z" fill="none" stroke="#4A3B33" stroke-width="3" stroke-linejoin="round"/>',
     jeu: '<rect x="14" y="14" width="52" height="52" rx="10" fill="#F7F1E8" stroke="#4A3B33" stroke-width="3"/><circle cx="28" cy="28" r="4.5" fill="#4A3B33"/><circle cx="52" cy="28" r="4.5" fill="#4A3B33"/><circle cx="40" cy="40" r="4.5" fill="#4A3B33"/><circle cx="28" cy="52" r="4.5" fill="#4A3B33"/><circle cx="52" cy="52" r="4.5" fill="#4A3B33"/>',
     pizza: '<circle cx="40" cy="42" r="30" fill="#E8B96A"/><circle cx="40" cy="42" r="25" fill="#E0674F"/><path d="M40 42V17a25 25 0 0 1 22 13Z" fill="#F7E3A1"/><circle cx="30" cy="38" r="4" fill="#B5382B"/><circle cx="48" cy="52" r="4" fill="#B5382B"/><circle cx="34" cy="55" r="3" fill="#B5382B"/>',
@@ -2633,10 +2633,28 @@
     // ---------- 🆕 L'étal : « un parmi plusieurs » (nouveau) → « celui-là » (connu) ----------
     // mode 'nouveau' : trois objets pareils, pastille pêche « un/une » ; mode 'connu' : un seul reste en valeur (halo bleu), pastille « le/la ».
     // Sans argument : on retire l'étal. Le même objet garde son élément d'un mode à l'autre : le passage s'anime.
-    let etalEl = null, minuteurEtal = null;
-    function etal(objet, mode) {
+    let etalEl = null, minuteurEtal = null, etalEnBoucle = false;
+    function etal(objet, mode) {          // appel venu d'une étape : il arrête toute boucle en cours
+      clearTimeout(minuteurEtal); etalEnBoucle = false;
+      etalPoser(objet, mode);
+    }
+    // 🆕 En boucle (carte « Remarque ») : « un » (pause) → « le » (pause) → « un »… jusqu'à ce que l'étape change. Sans animation : un seul passage.
+    function etalBoucle(objet) {
+      clearTimeout(minuteurEtal); etalEnBoucle = true;
+      etalPoser(objet, 'nouveau');
+      if (reduit) return;
+      const el = etalEl;
+      (function tour() {
+        minuteurEtal = planifier(function () {
+          if (etalEl !== el || !etalEnBoucle) return;
+          etalPoser(objet, el.classList.contains('m1-etal-connu') ? 'nouveau' : 'connu');
+          tour();
+        }, ETAL_PAUSE);
+      })();
+    }
+    function etalPoser(objet, mode) {
       if (!objet || !mode || !DESSINS[objet] || !ETAL_ART[objet]) {
-        clearTimeout(minuteurEtal);
+        clearTimeout(minuteurEtal); etalEnBoucle = false;
         if (etalEl && etalEl.parentNode) etalEl.parentNode.removeChild(etalEl);
         etalEl = null;
         return;
@@ -2651,26 +2669,27 @@
         let h = '<div class="m1-etal-objets">';
         for (let i = 0; i < 3; i++) h += '<span class="m1-etal-objet"><svg viewBox="0 0 80 80">' + DESSINS[objet] + '</svg></span>';
         el.innerHTML = h + '</div><span class="m1-etal-pastille"></span>';
-        const telephone = !!(window.matchMedia && window.matchMedia('(max-width: 719px)').matches);
-        if (ETAL_DANS_LA_CARTE || telephone) zone.parentNode.insertBefore(el, zone);
-        else { el.classList.add('m1-etal-bek'); q('.m1-col-bek').appendChild(el); }
-        // un clic rejoue, et l'étal revient à l'état où il était (il doit toujours dire la même chose que la phrase) :
-        //   « le / la » → « un parmi plusieurs », une pause, puis « celui-là » ; « un / une » → les trois objets réapparaissent
+        zone.parentNode.insertBefore(el, zone);        // toujours dans la carte, au-dessus de la phrase (jamais sous les pieds de Bek)
+        // un clic rejoue, puis l'étal revient à l'état où il était (il doit toujours dire la même chose que la phrase) :
+        //   « le / la » → « un parmi plusieurs », une pause, puis « celui-là » ; « un / une » → les trois objets réapparaissent ; en boucle → on repart
         el.addEventListener('click', function () {
           if (etalEl !== el) return;
+          if (etalEnBoucle) { etalBoucle(objet); return; }
           clearTimeout(minuteurEtal);
           if (el.classList.contains('m1-etal-connu')) {
-            etal(objet, 'nouveau');
-            minuteurEtal = planifier(function () { if (etalEl === el) etal(objet, 'connu'); }, ETAL_PAUSE);
+            etalPoser(objet, 'nouveau');
+            minuteurEtal = planifier(function () { if (etalEl === el) etalPoser(objet, 'connu'); }, ETAL_PAUSE);
           } else {
             Array.prototype.forEach.call(el.querySelectorAll('.m1-etal-objet'), function (o) { o.style.animation = 'none'; void o.offsetWidth; o.style.animation = ''; });
           }
         });
         etalEl = el;
       }
+      const avant = etalEl.classList.contains('m1-etal-connu') ? 'connu' : (etalEl.classList.contains('m1-etal-nouveau') ? 'nouveau' : '');
       etalEl.classList.toggle('m1-etal-nouveau', mode === 'nouveau');
       etalEl.classList.toggle('m1-etal-connu', mode === 'connu');
       etalEl.querySelector('.m1-etal-pastille').textContent = ETAL_ART[objet][mode === 'connu' ? 1 : 0];
+      if (avant && avant !== mode) etalSignal();        // le mot de la pastille change : elle pulse pour qu'on le remarque
     }
     function etalSignal() {              // un article vient d'être posé dans la phrase : la pastille pulse
       if (!etalEl || reduit) return;
@@ -2695,8 +2714,7 @@
       consigne(T('c_lire'));
       planifier(function () { lecteurIndice(T('quipLeSandwich'), 5500); }, 1500);
       await lecture(PHRASES.sandwichle, 'sandwichle');
-      etal('sandwich', 'nouveau');                                   // la remarque : un parmi plusieurs…
-      minuteurEtal = planifier(function () { etal('sandwich', 'connu'); }, ETAL_PAUSE);   // …une vraie pause, puis celui-là
+      etalBoucle('sandwich');                                        // la remarque : un parmi plusieurs… une vraie pause… celui-là… et on recommence
       await carte(T('noteL_titre'), T('noteL'), pairesArticles([['un', 'sandwich', 'le'], ['une', 'poutine', 'la']]));
     }
     async function etapePoutineLa() {
@@ -2723,6 +2741,7 @@
       await ordre(PHRASES.pizzala, 'pizzala', ['le', 'une']);     // même pizza, maintenant connue
       consigne(T('c_ecrire'));
       await ecrire(PHRASES.pizzala, 'pizzala', null);
+      etal(null);                                                    // la carte culture n'a pas besoin de l'étal
       await carte(T('cult_titre'), T('cult_pizza'));
     }
     // Une chose NOUVELLE (un/une), puis la MÊME chose, maintenant connue (le/la).
@@ -2753,6 +2772,7 @@
       etape(n);
       const ph = PHRASES[cle];
       montrer(cle === 'film' ? 'bek-regarde-film' : 'bek-regarde-poutine');
+      etal(cle === 'film' ? 'film' : 'poutine', 'nouveau');            // 🆕 un film / une poutine : une chose nouvelle, parmi d'autres
       consigne(T('c_lire'));
       planifier(function () { lecteurIndice(cle === 'film' ? T('quipFilm') : T('quipRegPoutine'), 6000); }, 1500);
       await lecture(ph, cle);
@@ -2760,8 +2780,9 @@
       await ordre(ph, cle, cle === 'film' ? ['une', 'mange'] : ['un']);
       consigne(cle === 'film' ? T('c_ecrire_part') : T('c_ecrire'));
       await ecrire(ph, cle, cle === 'film' ? [1, 3] : null);
-      if (cle === 'film') await carte(T('cult_titre'), T('cult_film'));
+      if (cle === 'film') { etal(null); await carte(T('cult_titre'), T('cult_film')); }
       if (cle === 'regpoutine') {       // 🆕 la même poutine, maintenant connue : « la »
+        etal('poutine', 'connu');       // 🆕 l'étal : « une parmi plusieurs » → « celle-là »
         planifier(function () { lecteurIndice(T('quipRegPoutineLa'), 5500); }, 600);
         consigne(T('c_ordre'));
         await ordre(PHRASES.regpoutinela, 'regpoutinela', ['le', 'une']);
@@ -2773,10 +2794,12 @@
     async function etapeContraste3() {
       etape(3);
       montrer('bek-regarde-sandwich');
+      etal('sandwich', 'nouveau');                                      // 🆕 un sandwich : nouveau
       consigne(T('c_image'));
       planifier(function () { lecteurIndice(T('quipRegSandwich'), 5500); }, 1200);
       await construire(PHRASES.regsandwich, 'image-regsandwich', { banque: BANQUE_3 });
       // 🆕 le MÊME sandwich, maintenant connu : « le »
+      etal('sandwich', 'connu');                                        // 🆕 « un parmi plusieurs » → « celui-là »
       consigne(T('c_connu'));
       planifier(function () { lecteurIndice(T('quipRegSandwichLe'), 5500); }, 800);
       await construire(PHRASES.regsandwichle, 'image-regsandwichle', { banque: BANQUE_3 });
@@ -2784,6 +2807,7 @@
     async function etapeContraste4() {
       etape(4);
       montrer('bek-mange-sandwich');
+      etal('sandwich', 'connu');                                        // 🆕 le sandwich qu'elle regardait : connu
       consigne(T('c_image'));
       const arreter = animerManger('sandwich');
       await construire(PHRASES.sandwichle, 'image-sandwich-2', { banque: BANQUE_3 });   // 🆕 le sandwich qu'elle regardait
@@ -3297,5 +3321,6 @@
     return { arreter: function () { ferme = true; if (courante) courante.arreter(); } };
   }
 
+  try { console.info('sequence-m1 : v25 — étal dans la carte (fragments 2 et 3), en boucle sur la remarque'); } catch (e) {}
   window.KebBekM1 = { demarrer: demarrer, MOTS_APPRIS: MOTS_APPRIS, MOTS_APPRIS_2: MOTS_APPRIS_2, MOTS_APPRIS_3: MOTS_APPRIS_3, MOTS_APPRIS_4: MOTS_APPRIS_4, MOTS_APPRIS_5: MOTS_APPRIS_5, REPARATION: REPARATION };
 })();

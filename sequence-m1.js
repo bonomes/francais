@@ -127,6 +127,15 @@
         en cours depuis son début (si l'élève a déjà passé son premier écran) ; sinon, on revient à l'étape précédente. Grisée sur le tout premier écran.
         Pas d'introduction au retour (option interne _retour). demarrer() reconstruit la scène à l'étape voulue (reprendreA) : la poignée rendue
         à la page hôte reste valable. Textes : retour_etape. Style : RETOUR_CSS (injecté). Pas de flèche au fragment 5 (réparation).
+   🆕 (08-11-2026) ÉTAL REVU (fragment 2) : il quitte les pieds de Bek et s'affiche dans la carte de leçon, juste au-dessus de la zone d'exercice,
+      avec de plus gros dessins (ETAL_DANS_LA_CARTE = false le remet dans la colonne de Bek sur ordinateur). « un / une » : les trois objets ;
+      pause (ETAL_PAUSE) ; les deux autres s'estompent, le restant grossit avec un halo violet : « le / la ». Un clic rejoue l'animation (et
+      revient à l'état d'origine) ; la pastille pulse quand l'élève pose un article dans la phrase.
+   🆕 (08-11-2026) SAISIE AU CLAVIER dans « ordre » et « construire » (reprise de sequence-memoire) : taper la lettre d'un mot le pose dès qu'il est
+      seul à commencer ainsi ; si deux mots restent possibles (un/une, mange/manger, le/la), on continue de taper ; Entrée ou Espace pose le mot
+      tapé en entier (« mange » → mange) ; « ’ » pose « j’ » ; Retour arrière / Échap effacent ; la fin d'un mot posé est avalée (« poutine » tapé
+      d'une traite). Construction : Entrée (rien de tapé) valide la phrase, Retour arrière retire le dernier mot. Astuce affichée une seule fois
+      (clé kebbek_astuce_clavier, partagée avec sequence-memoire ; jamais sur un écran tactile). La réparation (fragment 5) garde sa saisie.
      Un « ' » ou un « ’ » tapé sont équivalents ; « jaime » ou « j aime » donnent « Presque ! N'oublie pas l'apostrophe. »
    onTermine({ mots, fragments }) : fragments = numéro du fragment terminé.
 
@@ -319,27 +328,45 @@
   ].join('\n');
   // L'étal : trois objets identiques (« un parmi plusieurs »), puis un seul mis en valeur (« celui-là »). Décoratif (aria-hidden).
   const ETAL_ART = { sandwich: ['un', 'le'], poutine: ['une', 'la'], pizza: ['une', 'la'] };
+  // 🆕 (08-11-2026) SAISIE AU CLAVIER (reprise de sequence-memoire) : lettres tapées dans la prochaine case, début des mots surligné, mots écartés atténués.
+  const SAISIE_CSS = [
+    '.m1-case{position:relative}',
+    '.m1-case .m1-frappe{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--peche-fonce,#E08867);font-weight:700;letter-spacing:.04em;pointer-events:none}',
+    '.m1-construction .m1-frappe{display:inline-flex;align-items:center;color:var(--peche-fonce,#E08867);font-weight:700;font-size:1.05rem;letter-spacing:.04em;padding:0 .3rem}',
+    '.m1-frappe::after{content:"";width:2px;height:1.05em;margin-left:3px;background:currentColor;border-radius:1px;animation:m1-curseur 1s steps(1) infinite}',
+    '@keyframes m1-curseur{50%{opacity:0}}',
+    '.m1-frappe.m1-frappe-non{color:var(--rouge,#B8503A)}.m1-frappe.m1-frappe-non::after{display:none}',
+    '.m1-construction.m1-saisie .m1-construction-vide{display:none}',
+    '.m1-tuile.m1-tuile-prefixe{border-color:var(--peche-fonce,#E08867)!important;transform:translateY(-3px);box-shadow:0 4px 0 0 var(--peche-fonce,#E08867),2px 6px 12px rgba(102,80,69,.18)}',
+    '.m1-tuile .m1-tuile-frappe{color:var(--peche-fonce,#E08867)}',
+    '.m1-tuile.m1-tuile-attenuee{opacity:.38}',
+    '@media (prefers-reduced-motion:reduce){.m1-frappe::after{animation:none}}'
+  ].join('\n');
+  // 🆕 (08-11-2026) L'étal quitte les pieds de Bek : il est dans la carte de leçon, juste au-dessus de la phrase (là où l'œil de l'élève travaille),
+  //   avec de gros dessins. ETAL_DANS_LA_CARTE = false le remet dans la colonne de Bek (ordinateur) si la carte manque de hauteur.
+  const ETAL_DANS_LA_CARTE = true;
+  const ETAL_PAUSE = 2600;      // durée de l'état « un / une » avant le passage à « le / la » (ms)
   const ETAL_CSS = [
-    // posé sur la colonne de Bek (comme la vignette) : il ne prend aucune place dans la carte de leçon
-    '.m1-etal{position:absolute;left:50%;bottom:1.5%;transform:translateX(-50%);z-index:3;display:flex;align-items:center;justify-content:center;gap:.7rem;',
-    'width:max-content;max-width:98%;box-sizing:border-box;padding:.45rem .8rem;background:rgba(255,255,255,.94);border:2px solid var(--brun-fonce,#4A3B33);border-radius:20px;',
-    'box-shadow:0 3px 0 0 var(--brun-fonce,#4A3B33),3px 6px 14px var(--ombre,rgba(102,80,69,.18))}',
-    '.m1-etal-objets{display:flex;align-items:center;gap:.55rem}',
-    '.m1-etal-objet{display:block;width:3.1rem;height:3.1rem;padding:.15rem;box-sizing:border-box;border-radius:1rem;box-shadow:0 0 0 3px transparent;',
-    'transition:opacity .6s ease,transform .6s ease,box-shadow .6s ease,background-color .6s ease;animation:m1-etal-pop .45s ease backwards}',
-    '.m1-etal-objet:nth-child(2){animation-delay:.12s}.m1-etal-objet:nth-child(3){animation-delay:.24s}',
+    '.m1-etal{position:relative;display:flex;align-items:center;justify-content:center;gap:1rem;width:max-content;max-width:100%;box-sizing:border-box;margin:0 auto .7rem;padding:.55rem 1.1rem;',
+    'background:rgba(255,255,255,.95);border:2px solid var(--brun-fonce,#4A3B33);border-radius:22px;box-shadow:0 3px 0 0 var(--brun-fonce,#4A3B33);cursor:pointer;-webkit-tap-highlight-color:transparent}',
+    '.m1-etal.m1-etal-bek{position:absolute;left:50%;bottom:1.5%;transform:translateX(-50%);z-index:3;margin:0;max-width:98%}',
+    '.m1-etal-objets{display:flex;align-items:center;gap:.8rem}',
+    '.m1-etal-objet{display:block;width:4rem;height:4rem;padding:.2rem;box-sizing:border-box;border-radius:1.2rem;box-shadow:0 0 0 3px transparent;',
+    'transition:opacity .9s ease,transform .9s ease,box-shadow .9s ease,background-color .9s ease;animation:m1-etal-pop .5s ease backwards}',
+    '.m1-etal-objet:nth-child(2){animation-delay:.14s}.m1-etal-objet:nth-child(3){animation-delay:.28s}',
     '.m1-etal-objet svg{display:block;width:100%;height:100%}',
-    '.m1-etal-nouveau .m1-etal-objet{box-shadow:0 0 0 3px rgba(' + RVB_NOUVEAU + ',.4);background:rgba(' + RVB_NOUVEAU + ',.12)}',
-    '.m1-etal-connu .m1-etal-objet{opacity:.2;transform:scale(.8)}',
-    '.m1-etal-connu .m1-etal-objet:first-child{opacity:1;transform:scale(1.15);box-shadow:0 0 0 3px ' + COULEUR_CONNU + ';background:rgba(' + RVB_CONNU + ',.16)}',
-    '.m1-etal-pastille{min-width:2.6rem;text-align:center;padding:.1rem .8rem;border-radius:999px;color:#fff;font-weight:800;font-size:1.1rem;box-shadow:0 3px 0 0 var(--brun-fonce,#4A3B33);transition:background-color .5s ease}',
+    '.m1-etal-nouveau .m1-etal-objet{box-shadow:0 0 0 3px rgba(' + RVB_NOUVEAU + ',.45);background:rgba(' + RVB_NOUVEAU + ',.14)}',
+    '.m1-etal-connu .m1-etal-objet{opacity:.18;transform:scale(.78)}',
+    '.m1-etal-connu .m1-etal-objet:first-child{opacity:1;transform:scale(1.18);box-shadow:0 0 0 4px ' + COULEUR_CONNU + ',0 0 18px rgba(' + RVB_CONNU + ',.55);background:rgba(' + RVB_CONNU + ',.18)}',
+    '.m1-etal-pastille{min-width:3.2rem;text-align:center;padding:.15rem .95rem;border-radius:999px;color:#fff;font-weight:800;font-size:1.4rem;box-shadow:0 3px 0 0 var(--brun-fonce,#4A3B33);transition:background-color .6s ease}',
     '.m1-etal-nouveau .m1-etal-pastille{background:' + COULEUR_NOUVEAU + '}',
     '.m1-etal-connu .m1-etal-pastille{background:' + COULEUR_CONNU + '}',
+    // l'élève vient de placer un article dans la phrase : la pastille répond
+    '.m1-etal-pulse .m1-etal-pastille{animation:m1-etal-pulse .6s ease}',
     '@keyframes m1-etal-pop{from{opacity:0;transform:translateY(.5rem) scale(.85)}to{opacity:1;transform:none}}',
-    // téléphone : Bek est sous la leçon, hors écran ; l'étal passe dans la carte, au-dessus de la zone d'exercice
-    '.m1-etal.m1-etal-carte{position:static;transform:none;margin:0 auto .6rem;box-shadow:none;background:transparent;border-color:rgba(74,59,51,.25);padding:.3rem .6rem;gap:.5rem}',
-    '.m1-etal-carte .m1-etal-objet{width:2.4rem;height:2.4rem}.m1-etal-carte .m1-etal-pastille{font-size:1rem}',
-    '@media (prefers-reduced-motion:reduce){.m1-etal-objet,.m1-etal-pastille{transition:none;animation:none}}'
+    '@keyframes m1-etal-pulse{40%{transform:scale(1.3)}}',
+    '@media (max-width:719px){.m1-etal{gap:.7rem;padding:.4rem .8rem}.m1-etal-objets{gap:.55rem}.m1-etal-objet{width:3.1rem;height:3.1rem}.m1-etal-pastille{font-size:1.15rem;min-width:2.7rem;padding:.1rem .8rem}}',
+    '@media (prefers-reduced-motion:reduce){.m1-etal-objet,.m1-etal-pastille{transition:none;animation:none}.m1-etal-pulse .m1-etal-pastille{animation:none}}'
   ].join('\n');
   const BANQUE_4 = ['j', 'je', 'aime', 'manger', 'mange', 'regarder', 'regarde', 'jouer', 'la', 'poutine', 'tele'];   // fragment 4 : j'aime (je, mange, regarde = pièges) (pas « parle », pas « français »)
 
@@ -361,6 +388,7 @@
       sens_je: 'moi', sens_mange: 'manger (moi)', sens_parle: 'parler (moi)', sens_un: 'un (mot masculin)', sens_une: 'une (mot féminin)',
       sens_sandwich: 'sandwich', sens_poutine: 'poutine', sens_francais: 'la langue française',
       quipErreur: ['Presque. Ce qui, en français comme ailleurs, veut dire «\u00a0non\u00a0».', 'Prends ton temps. J’ai tout le mien.', 'Intéressant. Mais non.'],
+      astuceClavier: 'Astuce\u00a0: tu peux aussi taper les mots au clavier.',
       quipOk: ['Voilà.', 'Exact.', 'Pas mal du tout.', 'On progresse.'],
       quipUne: 'Une poutine, pas «\u00a0un\u00a0». La grammaire décide, pas toi.',
       quipPoutine: 'Remarque son enthousiasme. Je dis ça, je dis rien.',
@@ -461,6 +489,7 @@
       sens_je: 'I', sens_mange: 'eat', sens_parle: 'speak', sens_un: 'a (masculine word)', sens_une: 'a (feminine word)',
       sens_sandwich: 'sandwich', sens_poutine: 'poutine (fries, cheese curds and gravy)', sens_francais: 'French (the language)',
       quipErreur: ['Almost. Which, in French as elsewhere, means “no”.', 'Take your time. I have all of mine.', 'Interesting. But no.'],
+      astuceClavier: 'Tip: you can also type the words on your keyboard.',
       quipOk: ['There.', 'Exactly.', 'Not bad at all.', 'We’re getting somewhere.'],
       quipUne: 'A poutine, not “un”. Grammar decides, not you.',
       quipPoutine: 'Notice her enthusiasm. I’m just saying.',
@@ -583,6 +612,7 @@
       sens_poutine: 'poutine (patatas fritas, queso en grano y salsa)',
       sens_francais: 'el idioma francés',
       quipErreur: ['Casi. Que, en francés como en cualquier idioma, significa «no».', 'Tómate tu tiempo. Yo tengo todo el mío.', 'Interesante. Pero no.'],
+      astuceClavier: 'Truco: tambi\u00e9n puedes escribir las palabras con el teclado.',
       quipOk: ['Eso es.', 'Exacto.', 'Nada mal.', 'Vamos avanzando.'],
       quipUne: 'Una poutine, no «un». La gramática decide, no tú.',
       quipPoutine: 'Fíjate en su entusiasmo. Lo digo y no lo digo.',
@@ -634,6 +664,7 @@
       sens_poutine: 'poutine (patatine, formaggio in grani e salsa)',
       sens_francais: 'la lingua francese',
       quipErreur: ['Quasi. Che, in francese come altrove, vuol dire «no».', 'Prenditi il tuo tempo. Io ho tutto il mio.', 'Interessante. Ma no.'],
+      astuceClavier: 'Suggerimento: puoi anche digitare le parole con la tastiera.',
       quipOk: ['Ecco.', 'Esatto.', 'Niente male.', 'Stiamo facendo progressi.'],
       quipUne: 'Una poutine, non «un». Decide la grammatica, non tu.',
       quipPoutine: 'Nota il suo entusiasmo. Io lo dico, ma non dico niente.',
@@ -685,6 +716,7 @@
       sens_poutine: 'poutine (batata frita, queijo em grãos e molho)',
       sens_francais: 'a língua francesa',
       quipErreur: ['Quase. O que, em francês como em qualquer língua, quer dizer “não”.', 'Fique à vontade. Eu tenho todo o meu tempo.', 'Interessante. Mas não.'],
+      astuceClavier: 'Dica: voc\u00ea tamb\u00e9m pode digitar as palavras no teclado.',
       quipOk: ['Isso.', 'Exato.', 'Nada mal.', 'Estamos progredindo.'],
       quipUne: 'Uma poutine, não “un”. Quem decide é a gramática, não você.',
       quipPoutine: 'Repare no entusiasmo dela. Eu só comentei.',
@@ -736,6 +768,7 @@
       sens_poutine: 'poutine (patates fregides, formatge en grans i salsa)',
       sens_francais: 'la llengua francesa',
       quipErreur: ['Gairebé. Que, en francès com a tot arreu, vol dir «no».', 'Pren-te el teu temps. Jo tinc tot el meu.', 'Interessant. Però no.'],
+      astuceClavier: 'Truc: tamb\u00e9 pots escriure les paraules amb el teclat.',
       quipOk: ['Això.', 'Exacte.', 'Gens malament.', 'Anem avançant.'],
       quipUne: 'Una poutine, no «un». Decideix la gramàtica, no tu.',
       quipPoutine: 'Fixa’t en el seu entusiasme. Ho dic i no ho dic.',
@@ -787,6 +820,7 @@
       sens_poutine: 'poutino (fritoj, fromaĝeroj kaj saŭco)',
       sens_francais: 'la franca lingvo',
       quipErreur: ['Preskaŭ. Kio, france kiel aliloke, signifas «ne».', 'Prenu vian tempon. Mi havas la tutan mian.', 'Interese. Sed ne.'],
+      astuceClavier: 'Konsileto: vi anka\u016d povas tajpi la vortojn per la klavaro.',
       quipOk: ['Jen.', 'Ĝuste.', 'Tute ne malbone.', 'Ni progresas.'],
       quipUne: '«une» poutino, ne «un». La gramatiko decidas, ne vi.',
       quipPoutine: 'Rimarku ŝian entuziasmon. Mi nur diras.',
@@ -838,6 +872,7 @@
       sens_poutine: '肉汁奶酪薯条（薯条、奶酪粒和肉汁）',
       sens_francais: '法语',
       quipErreur: ['差一点。而“差一点”，在法语里和别处一样，意思是“不对”。', '慢慢来。我的时间多得很。', '有意思。但不对。'],
+      astuceClavier: '\u5c0f\u63d0\u793a\uff1a\u4f60\u4e5f\u53ef\u4ee5\u7528\u952e\u76d8\u8f93\u5165\u8fd9\u4e9b\u8bcd\u3002',
       quipOk: ['对了。', '没错。', '相当不错。', '有进步。'],
       quipUne: '是 “une” poutine，不是 “un”。由语法决定，不由你决定。',
       quipPoutine: '注意看她的热情。我可什么都没说。',
@@ -889,6 +924,7 @@
       sens_poutine: 'プーティン（フライドポテトに、かむと「キュッ」と鳴るチーズの粒と、茶色いソースをかけた料理）',
       sens_francais: 'フランス語',
       quipErreur: ['惜しい。フランス語でも、どの言葉でも、「惜しい」は「違う」という意味です。', 'ゆっくりどうぞ。私には時間がたっぷりあります。', '面白い答えです。でも、違います。'],
+      astuceClavier: 'ヒント：キーボードで言葉を入力することもできますよ。',
       quipOk: ['はい、それです。', 'そのとおり。', 'なかなかいいですね。', '進んでいますね。'],
       quipUne: 'プーティンは「un」ではなく「une」です。決めるのは文法で、あなたではありません。',
       quipPoutine: 'あの熱意を見てください。私は何も言っていませんが。',
@@ -1030,6 +1066,7 @@
       sens_poutine: 'poutine (감자튀김에 치즈 커드와 그레이비 소스)',
       sens_francais: '프랑스어',
       quipErreur: ['아깝네요. 프랑스어에서도, 다른 말에서도 “아깝다”는 “틀렸다”는 뜻이에요.', '천천히 하세요. 저는 시간이 아주 많아요.', '흥미로운 답이에요. 그래도 아니에요.'],
+      astuceClavier: '\ud301: \ud0a4\ubcf4\ub4dc\ub85c \ub2e8\uc5b4\ub97c \uc9c1\uc811 \uc785\ub825\ud560 \uc218\ub3c4 \uc788\uc5b4\uc694.',
       quipOk: ['그거예요.', '맞아요.', '꽤 괜찮은데요.', '점점 나아지고 있어요.'],
       quipUne: 'poutine은 “un”이 아니라 “une”예요. 정하는 건 문법이지, 네가 아니에요.',
       quipPoutine: '그녀의 열정을 잘 보세요. 저는 아무 말도 안 했어요.',
@@ -1081,6 +1118,7 @@
       sens_poutine: 'poutine (khoai tây chiên, phô mai vụn và nước sốt)',
       sens_francais: 'tiếng Pháp',
       quipErreur: ['Gần đúng rồi. Mà trong tiếng Pháp cũng như ở đâu, “gần đúng” nghĩa là “sai”.', 'Cứ từ từ. Mình có cả đống thời gian.', 'Thú vị đấy. Nhưng không phải.'],
+      astuceClavier: 'M\u1eb9o: b\u1ea1n c\u0169ng c\u00f3 th\u1ec3 g\u00f5 c\u00e1c t\u1eeb b\u1eb1ng b\u00e0n ph\u00edm.',
       quipOk: ['Đúng rồi.', 'Chính xác.', 'Không tệ chút nào.', 'Đang tiến bộ đấy.'],
       quipUne: 'Là “une” poutine, không phải “un”. Ngữ pháp quyết định, không phải bạn.',
       quipPoutine: 'Để ý độ hào hứng của cô ấy nhé. Mình chỉ nói vậy thôi.',
@@ -1132,6 +1170,7 @@
       sens_poutine: 'poutine (fri, fwomaj an grenn ak sòs)',
       sens_francais: 'lang fransè a',
       quipErreur: ['Prèske. Sa ki, an fransè kou nenpòt ki kote, vle di « non ».', 'Pran tan w. Mwen gen tout pa m.', 'Enteresan. Men non.'],
+      astuceClavier: 'Kons\u00e8y: ou ka tape mo yo ak klavye a tou.',
       quipOk: ['Men li.', 'Egzakteman.', 'Pa mal ditou.', 'N ap avanse.'],
       quipUne: 'Yon poutine, se pa « un ». Se gramè ki deside, se pa ou.',
       quipPoutine: 'Gade ak ki antouzyasm li ye. Mwen sèlman di sa.',
@@ -1183,6 +1222,7 @@
       sens_poutine: 'poutine (french fries, cheese curds at gravy)',
       sens_francais: 'ang wikang Pranses',
       quipErreur: ['Malapit na. Na, sa Pranses at saanman, ay nangangahulugang “hindi”.', 'Dahan-dahan lang. Marami akong oras.', 'Kawili-wili. Pero hindi.'],
+      astuceClavier: 'Tip: puwede mo ring i-type ang mga salita gamit ang keyboard.',
       quipOk: ['Ayan.', 'Eksakto.', 'Hindi masama.', 'Umuusad na tayo.'],
       quipUne: 'Isang “une” poutine, hindi “un”. Ang gramatika ang nagpapasya, hindi ikaw.',
       quipPoutine: 'Tingnan mo ang sigla niya. Sinasabi ko lang.',
@@ -1234,6 +1274,7 @@
       sens_poutine: 'poutine (kentang goreng, keju butiran, dan saus)',
       sens_francais: 'bahasa Prancis',
       quipErreur: ['Hampir. Yang, dalam bahasa Prancis maupun bahasa lain, artinya “bukan”.', 'Santai saja. Aku punya banyak waktu.', 'Menarik. Tapi bukan.'],
+      astuceClavier: 'Tips: kamu juga bisa mengetik kata-katanya dengan keyboard.',
       quipOk: ['Nah itu dia.', 'Tepat.', 'Lumayan juga.', 'Kita maju.'],
       quipUne: 'Sebuah “une” poutine, bukan “un”. Tata bahasa yang menentukan, bukan kamu.',
       quipPoutine: 'Perhatikan semangatnya. Aku cuma bilang.',
@@ -1285,6 +1326,7 @@
       sens_poutine: 'poutine (friet, kaaskruim en jus)',
       sens_francais: 'de Franse taal',
       quipErreur: ['Bijna. Wat in het Frans, net als overal, “nee” betekent.', 'Neem je tijd. Ik heb al de mijne.', 'Interessant. Maar nee.'],
+      astuceClavier: 'Tip: je kunt de woorden ook met het toetsenbord typen.',
       quipOk: ['Zo.', 'Precies.', 'Niet slecht.', 'We schieten op.'],
       quipUne: 'Een “une” poutine, geen “un”. De grammatica beslist, niet jij.',
       quipPoutine: 'Let op haar enthousiasme. Ik zeg het maar.',
@@ -1336,6 +1378,7 @@
       sens_poutine: 'Poutine (Pommes, Käsebruch und Bratensoße)',
       sens_francais: 'die französische Sprache',
       quipErreur: ['Fast. Was auf Französisch wie überall „nein“ bedeutet.', 'Lass dir Zeit. Ich habe meine ganze.', 'Interessant. Aber nein.'],
+      astuceClavier: 'Tipp: Du kannst die W\u00f6rter auch mit der Tastatur eingeben.',
       quipOk: ['So.', 'Genau.', 'Gar nicht schlecht.', 'Wir kommen voran.'],
       quipUne: 'Eine „une“ Poutine, nicht „un“. Die Grammatik entscheidet, nicht du.',
       quipPoutine: 'Achte auf ihre Begeisterung. Ich sage ja nur.',
@@ -1387,6 +1430,7 @@
       sens_poutine: 'poutine (سیب‌زمینی سرخ‌کرده، پنیر دانه‌ای و سس)',
       sens_francais: 'زبان فرانسوی',
       quipErreur: ['نزدیک بود. که در فرانسوی هم مثل هر جای دیگر یعنی «نه».', 'عجله نکن. من همهٔ وقت دنیا را دارم.', 'جالب بود. ولی نه.'],
+      astuceClavier: '\u0646\u06a9\u062a\u0647: \u0645\u06cc\u200c\u062a\u0648\u0627\u0646\u06cc \u06a9\u0644\u0645\u0647\u200c\u0647\u0627 \u0631\u0627 \u0628\u0627 \u0635\u0641\u062d\u0647\u200c\u06a9\u0644\u06cc\u062f \u0647\u0645 \u062a\u0627\u06cc\u067e \u06a9\u0646\u06cc.',
       quipOk: ['همین.', 'دقیقاً.', 'بد نبود.', 'داریم پیش می‌رویم.'],
       quipUne: 'یک poutine «une» است، نه «un». دستور زبان تصمیم می‌گیرد، نه تو.',
       quipPoutine: 'به شور و شوقش دقت کن. من فقط می‌گویم.',
@@ -1438,6 +1482,7 @@
       sens_poutine: 'poutine (pommes frites, ostbitar och sås)',
       sens_francais: 'det franska språket',
       quipErreur: ['Nästan. Vilket på franska, precis som överallt, betyder ”nej”.', 'Ta den tid du behöver. Jag har all min.', 'Intressant. Men nej.'],
+      astuceClavier: 'Tips: du kan ocks\u00e5 skriva orden med tangentbordet.',
       quipOk: ['Så där.', 'Precis.', 'Inte illa alls.', 'Vi kommer framåt.'],
       quipUne: 'En ”une” poutine, inte ”un”. Grammatiken bestämmer, inte du.',
       quipPoutine: 'Lägg märke till hennes entusiasm. Jag säger bara det.',
@@ -1489,6 +1534,7 @@
       sens_poutine: 'poutine (pommes frites, osteklumper og saus)',
       sens_francais: 'det franske språket',
       quipErreur: ['Nesten. Som på fransk, som overalt ellers, betyr «nei».', 'Ta deg tid. Jeg har all min.', 'Interessant. Men nei.'],
+      astuceClavier: 'Tips: du kan ogs\u00e5 skrive ordene med tastaturet.',
       quipOk: ['Sånn.', 'Nettopp.', 'Ikke verst.', 'Vi kommer fremover.'],
       quipUne: 'En «une» poutine, ikke «un». Grammatikken bestemmer, ikke du.',
       quipPoutine: 'Legg merke til entusiasmen hennes. Jeg sier bare det.',
@@ -1540,6 +1586,7 @@
       sens_poutine: 'poutine (картофель фри, сырные гранулы и соус)',
       sens_francais: 'французский язык',
       quipErreur: ['Почти. Что по-французски, как и везде, означает «нет».', 'Не торопись. У меня времени сколько угодно.', 'Интересно. Но нет.'],
+      astuceClavier: '\u041f\u043e\u0434\u0441\u043a\u0430\u0437\u043a\u0430: \u0441\u043b\u043e\u0432\u0430 \u043c\u043e\u0436\u043d\u043e \u0432\u0432\u043e\u0434\u0438\u0442\u044c \u0438 \u0441 \u043a\u043b\u0430\u0432\u0438\u0430\u0442\u0443\u0440\u044b.',
       quipOk: ['Вот так.', 'Именно.', 'Совсем неплохо.', 'Мы продвигаемся.'],
       quipUne: 'Poutine — «une», а не «un». Решает грамматика, а не ты.',
       quipPoutine: 'Обрати внимание на её энтузиазм. Я просто говорю.',
@@ -2076,7 +2123,7 @@
       const cible = (ecrans > 1 || segCourant === 0) ? segCourant : segCourant - 1;
       if (typeof options._reculer === 'function') options._reculer(cible);
     }
-    function vider() { ecrans++; majRetour(); zone.innerHTML = ''; actions.innerHTML = ''; zone.removeAttribute('data-mode'); zone.removeAttribute('data-phrase'); }
+    function vider() { ecrans++; majRetour(); saisieFermer(); zone.innerHTML = ''; actions.innerHTML = ''; zone.removeAttribute('data-mode'); zone.removeAttribute('data-phrase'); }
     function etape(n) {
       if (arrete) return;   // 🆕 une ancienne scène (après un retour en arrière) ne doit plus rien signaler
       Array.prototype.forEach.call(segs, function (s, i) { s.classList.toggle('m1-segment-fait', i < n); });
@@ -2252,6 +2299,7 @@
             c.className = 'm1-case m1-case-pleine m1-role-' + ROLE[id] + (ART[id] ? ' m1-art-' + ART[id] : '');
             c.textContent = AFFICHE[id];
             direMot(id);
+            if (ART[id]) etalSignal();
             suivant++;
             erreurs = 0;
             if (suivant === phrase.mots.length) {
@@ -2272,7 +2320,13 @@
         plateau.appendChild(t);
       });
       zone.insertBefore(creerEcoute(phrase), zone.firstChild);
+      saisieOuvrir({
+        tuiles: function () { return Array.prototype.slice.call(plateau.querySelectorAll('.m1-tuile:not(.m1-tuile-partie)')); },
+        cible: function () { return cases[suivant]; },
+        actif: function () { return !verrou; }
+      });
       await promesse;
+      saisieFermer();
     }
 
     // ---------- 3. Écriture : quelques mots (cloze) ou la phrase entière ----------
@@ -2422,6 +2476,7 @@
           t.classList.remove('m1-indice');
           choisis.push(id);
           if (options2.direAuClic !== false) direMot(id);
+          if (ART[id]) etalSignal();
           rafraichir();
         });
         banque.appendChild(t);
@@ -2473,7 +2528,22 @@
       });
       rafraichir();
       if (!options2.sansEcoute) zone.insertBefore(creerEcoute(phrase), zone.firstChild);   // l'exercice audio a déjà son propre bouton
+      saisieOuvrir({
+        tuiles: function () { return Array.prototype.slice.call(banque.querySelectorAll('.m1-tuile:not(.m1-tuile-partie)')); },
+        cible: function () { return plateauPhrase; },
+        cadre: plateauPhrase,
+        actif: function () { return !termine; },
+        entree: function () { if (!bValider.disabled) bValider.click(); },
+        retour: function () {
+          if (termine || !choisis.length) return;
+          const id = choisis.pop();
+          const orig = banque.querySelector('.m1-tuile[data-id="' + id + '"].m1-tuile-partie');
+          if (orig) orig.classList.remove('m1-tuile-partie');
+          rafraichir();
+        }
+      });
       await promesse;
+      saisieFermer();
     }
 
     // ---------- Carte « Savais-tu ? » / remarque ----------
@@ -2563,15 +2633,16 @@
     // ---------- 🆕 L'étal : « un parmi plusieurs » (nouveau) → « celui-là » (connu) ----------
     // mode 'nouveau' : trois objets pareils, pastille pêche « un/une » ; mode 'connu' : un seul reste en valeur (halo bleu), pastille « le/la ».
     // Sans argument : on retire l'étal. Le même objet garde son élément d'un mode à l'autre : le passage s'anime.
-    let etalEl = null;
+    let etalEl = null, minuteurEtal = null;
     function etal(objet, mode) {
       if (!objet || !mode || !DESSINS[objet] || !ETAL_ART[objet]) {
+        clearTimeout(minuteurEtal);
         if (etalEl && etalEl.parentNode) etalEl.parentNode.removeChild(etalEl);
         etalEl = null;
         return;
       }
       injecterStyle('m1-etal-style', ETAL_CSS);
-      if (!etalEl || etalEl.getAttribute('data-objet') !== objet) {
+      if (!etalEl || etalEl.getAttribute('data-objet') !== objet || !etalEl.parentNode) {
         if (etalEl && etalEl.parentNode) etalEl.parentNode.removeChild(etalEl);
         const el = document.createElement('div');
         el.className = 'm1-etal';
@@ -2581,13 +2652,29 @@
         for (let i = 0; i < 3; i++) h += '<span class="m1-etal-objet"><svg viewBox="0 0 80 80">' + DESSINS[objet] + '</svg></span>';
         el.innerHTML = h + '</div><span class="m1-etal-pastille"></span>';
         const telephone = !!(window.matchMedia && window.matchMedia('(max-width: 719px)').matches);
-        if (telephone) { el.classList.add('m1-etal-carte'); zone.parentNode.insertBefore(el, zone); }
-        else q('.m1-col-bek').appendChild(el);
+        if (ETAL_DANS_LA_CARTE || telephone) zone.parentNode.insertBefore(el, zone);
+        else { el.classList.add('m1-etal-bek'); q('.m1-col-bek').appendChild(el); }
+        // un clic rejoue, et l'étal revient à l'état où il était (il doit toujours dire la même chose que la phrase) :
+        //   « le / la » → « un parmi plusieurs », une pause, puis « celui-là » ; « un / une » → les trois objets réapparaissent
+        el.addEventListener('click', function () {
+          if (etalEl !== el) return;
+          clearTimeout(minuteurEtal);
+          if (el.classList.contains('m1-etal-connu')) {
+            etal(objet, 'nouveau');
+            minuteurEtal = planifier(function () { if (etalEl === el) etal(objet, 'connu'); }, ETAL_PAUSE);
+          } else {
+            Array.prototype.forEach.call(el.querySelectorAll('.m1-etal-objet'), function (o) { o.style.animation = 'none'; void o.offsetWidth; o.style.animation = ''; });
+          }
+        });
         etalEl = el;
       }
       etalEl.classList.toggle('m1-etal-nouveau', mode === 'nouveau');
       etalEl.classList.toggle('m1-etal-connu', mode === 'connu');
       etalEl.querySelector('.m1-etal-pastille').textContent = ETAL_ART[objet][mode === 'connu' ? 1 : 0];
+    }
+    function etalSignal() {              // un article vient d'être posé dans la phrase : la pastille pulse
+      if (!etalEl || reduit) return;
+      etalEl.classList.remove('m1-etal-pulse'); void etalEl.offsetWidth; etalEl.classList.add('m1-etal-pulse');
     }
 
     // ---------- 🆕 Fragment 2 : un/une, le/la ----------
@@ -2609,7 +2696,7 @@
       planifier(function () { lecteurIndice(T('quipLeSandwich'), 5500); }, 1500);
       await lecture(PHRASES.sandwichle, 'sandwichle');
       etal('sandwich', 'nouveau');                                   // la remarque : un parmi plusieurs…
-      planifier(function () { etal('sandwich', 'connu'); }, 1800);   // …puis celui-là
+      minuteurEtal = planifier(function () { etal('sandwich', 'connu'); }, ETAL_PAUSE);   // …une vraie pause, puis celui-là
       await carte(T('noteL_titre'), T('noteL'), pairesArticles([['un', 'sandwich', 'le'], ['une', 'poutine', 'la']]));
     }
     async function etapePoutineLa() {
@@ -2752,6 +2839,145 @@
     }
     function injecterStyleReparation() { injecterStyle('m1-reparation-style', REPARATION_CSS); }
     const cleSaisie = function (t) { return sansAccents(String(t).toLowerCase()).replace(/['’‘`´\s]/g, ''); };
+
+    // ---------- 🆕 (08-11-2026) Saisie au clavier : « f » suffit pour « français » ----------
+    // Reprise du mécanisme de sequence-memoire, pour « ordre » et « construire » (la réparation garde sa propre saisie).
+    //   • une lettre tapée surligne le début des mots possibles et s'affiche dans la prochaine case ;
+    //   • dès qu'UN SEUL mot du plateau commence par ces lettres, il se pose (comme un clic) ;
+    //   • si deux mots restent possibles (un / une, mange / manger), on continue ; Entrée ou Espace pose le mot tapé en entier (« mange » → mange) ;
+    //   • « ’ » pose « j’ » ; Retour arrière et Échap effacent les lettres ; accents et majuscules sont ignorés ;
+    //   • un mot introuvable : les lettres rougissent et on repart de zéro, sans pénalité ; un mauvais mot posé = comme un clic.
+    //   • construction : Entrée (rien de tapé) valide la phrase ; Retour arrière (rien de tapé) retire le dernier mot.
+    let saisie = null;                 // exercice en cours : { tuiles(), cible(), actif(), cadre, entree(), retour() }
+    let tampon = '', minuteurSaisie = null, saisieEcoute = false, saisieUtilisee = false, astuceSaisieVue = false;
+    let suiteMot = '', suiteMotTemps = 0;      // la fin du mot qu'on vient de poser (« po » a posé « poutine » : « utine » est avalé)
+    function idTuile(t) { return t.getAttribute('data-id'); }
+    function saisieTuiles() { return saisie ? saisie.tuiles() : []; }
+    function saisieCandidates() {
+      return saisieTuiles().filter(function (t) { return cleSaisie(AFFICHE[idTuile(t)]).indexOf(tampon) === 0; });
+    }
+    function saisieRetirerFantomes() {
+      Array.prototype.forEach.call(zone.querySelectorAll('.m1-frappe'), function (g) { if (g.parentNode) g.parentNode.removeChild(g); });
+    }
+    function saisieEffacer() {
+      tampon = '';
+      clearTimeout(minuteurSaisie);
+      if (!saisie) return;
+      saisieTuiles().forEach(function (t) {
+        t.classList.remove('m1-tuile-attenuee', 'm1-tuile-prefixe');
+        if (t.querySelector('.m1-tuile-frappe')) t.textContent = AFFICHE[idTuile(t)];
+      });
+      saisieRetirerFantomes();
+      if (saisie.cadre) saisie.cadre.classList.remove('m1-saisie');
+    }
+    function saisieMaj() {
+      const cand = saisieCandidates();
+      saisieTuiles().forEach(function (t) {
+        const ok = cand.indexOf(t) !== -1, mot = AFFICHE[idTuile(t)];
+        t.classList.toggle('m1-tuile-attenuee', !ok);
+        t.classList.toggle('m1-tuile-prefixe', ok);
+        if (ok) t.innerHTML = '<span class="m1-tuile-frappe">' + echapper(mot.slice(0, tampon.length)) + '</span>' + echapper(mot.slice(tampon.length));
+        else t.textContent = mot;
+      });
+      saisieRetirerFantomes();
+      const c = saisie.cible();
+      if (c && cand.length) {
+        const g = document.createElement('span');
+        g.className = 'm1-frappe';
+        g.textContent = AFFICHE[idTuile(cand[0])].slice(0, tampon.length);
+        c.appendChild(g);
+        if (saisie.cadre) saisie.cadre.classList.add('m1-saisie');
+      }
+      clearTimeout(minuteurSaisie);
+      minuteurSaisie = setTimeout(saisieEffacer, 3200);      // saisie abandonnée : on repart de zéro
+    }
+    function saisieNon() {
+      const c = saisie && saisie.cible(), lettres = tampon;
+      saisieEffacer();
+      if (!c) return;
+      const g = document.createElement('span');
+      g.className = 'm1-frappe m1-frappe-non';
+      g.textContent = lettres;
+      c.appendChild(g);
+      if (saisie.cadre) saisie.cadre.classList.add('m1-saisie');
+      secouer(g);
+      planifier(function () {
+        if (g.parentNode) g.parentNode.removeChild(g);
+        if (saisie && saisie.cadre && !tampon) saisie.cadre.classList.remove('m1-saisie');
+      }, 520);
+    }
+    function saisiePoser(t) { saisieEffacer(); t.click(); }        // exactement comme un clic : bonne tuile, erreur, voix, indice…
+    function surSaisie(e) {
+      if (!saisie || arrete || e.defaultPrevented || !saisie.actif()) return;
+      if (e.ctrlKey || e.metaKey || e.altKey || e.isComposing) return;
+      if (e.target && /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) return;
+      if (scene.querySelector('.m1-quitter-voile')) return;
+      const k = e.key;
+      const actif = document.activeElement;
+      const libre = !actif || actif === document.body || (actif.classList && actif.classList.contains('m1-tuile-partie'));
+      if (k === 'Escape') { suiteMot = ''; if (tampon) { e.preventDefault(); saisieEffacer(); } return; }
+      if (k === 'Backspace') {
+        suiteMot = '';
+        if (tampon) { e.preventDefault(); tampon = tampon.slice(0, -1); if (tampon) saisieMaj(); else saisieEffacer(); }
+        else if (saisie.retour && libre) { e.preventDefault(); saisie.retour(); }
+        return;
+      }
+      if (k === 'Enter' || k === ' ') {
+        suiteMot = '';
+        if (!tampon) { if (k === 'Enter' && saisie.entree && libre) { e.preventDefault(); saisie.entree(); } return; }
+        e.preventDefault();
+        const exact = saisieTuiles().filter(function (t) { return cleSaisie(AFFICHE[idTuile(t)]) === tampon; })[0];
+        if (exact) saisiePoser(exact); else saisieNon();
+        return;
+      }
+      if (k === '\'' || k === '’') {                            // l'apostrophe pose « j’ »
+        if (!tampon) return;
+        e.preventDefault();
+        const ap = saisieTuiles().filter(function (t) { return cleSaisie(AFFICHE[idTuile(t)]) === tampon && /['’]/.test(AFFICHE[idTuile(t)]); })[0];
+        if (ap) saisiePoser(ap);
+        return;
+      }
+      if (!k || k.length !== 1 || !/\p{L}/u.test(k)) return;
+      e.preventDefault();
+      if (actif && actif !== document.body && actif.blur) actif.blur();      // pas de clic fantôme sur une tuile restée « active »
+      saisieUtilisee = true;
+      const lettre = cleSaisie(k);
+      if (!tampon && suiteMot && Date.now() - suiteMotTemps < 2000 && suiteMot.charAt(0) === lettre) {   // on tape le mot en entier : la suite du mot posé est avalée
+        suiteMot = suiteMot.slice(1); suiteMotTemps = Date.now(); return;
+      }
+      suiteMot = '';
+      tampon += lettre;
+      const cand = saisieCandidates();
+      if (!cand.length) { saisieNon(); return; }
+      if (cand.length === 1) {                                   // un seul mot possible : il se pose tout de suite
+        const reste = cleSaisie(AFFICHE[idTuile(cand[0])]).slice(tampon.length);
+        saisiePoser(cand[0]);
+        suiteMot = reste; suiteMotTemps = Date.now();
+        return;
+      }
+      saisieMaj();
+    }
+    function saisieAstuce() {            // une seule fois, seulement s'il y a un clavier (pas sur un téléphone)
+      if (astuceSaisieVue) return;
+      astuceSaisieVue = true;
+      const tactile = !!(window.matchMedia && window.matchMedia('(pointer: coarse)').matches);
+      let dejaVue = false;
+      try { dejaVue = localStorage.getItem('kebbek_astuce_clavier') === '1'; } catch (e) {}
+      if (tactile || dejaVue) return;
+      try { localStorage.setItem('kebbek_astuce_clavier', '1'); } catch (e) {}
+      planifier(function () { if (saisie && !saisieUtilisee && saisie.actif()) lecteurIndice(T('astuceClavier'), 6500); }, 2400);
+    }
+    function saisieOuvrir(config) {
+      injecterStyle('m1-saisie-style', SAISIE_CSS);
+      saisie = config; tampon = '';
+      if (!saisieEcoute) {
+        saisieEcoute = true;
+        document.addEventListener('keydown', surSaisie);
+        nettoyages.push(function () { clearTimeout(minuteurSaisie); document.removeEventListener('keydown', surSaisie); });
+      }
+      saisieAstuce();
+    }
+    function saisieFermer() { saisieEffacer(); saisie = null; suiteMot = ''; }
 
     async function reparation(depart) {
       depart = depart || 0;

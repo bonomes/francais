@@ -151,9 +151,9 @@
      • CŒUR : quand la voix dit « aime » (phrase ou mot), un cœur SVG monte au-dessus de la tête de Bek (partout : leçons du fragment 4, réparation, fragment 6).
      • PREMIER ÉCRAN DU FRAGMENT 1 : Bek tient son sandwich et le mange en boucle (pose fixe si les images de la boucle manquent).
      • FRAGMENT 6 (options.fragment = 6) : L'ÉPREUVE, 11 segments (ETAPES_6) : 4 dictées (écrites à la main, aucune case, liste de mots NON touchable, « Réécouter »),
-       3 questions sur image (« Que fais-tu ? », « Qu'est-ce que tu aimes faire ? » avec cœur), 1 compréhension (les trois aliments de Bek avec un/une, une seule
-       tentative, aucune correction affichée), 1 question libre (jamais notée ; boutons Copier / Tout copier), 2 défis (« étudier » : « j'étudie », puis « j'aime étudier »).
-       Le Lecteur explique la situation (intro6, lec_certif, lec_libre, lec_defi). Deux essais pour dictée / image / défi ; après le dernier raté, la réponse n'est PAS montrée.
+       3 questions sur image (« Que fais-tu ? », « Qu'est-ce que tu aimes faire ? » avec cœur), 1 compréhension (les trois aliments de Bek avec un/une, vérifiée : 2 essais,
+       champs verts/rouges, réponse montrée après le dernier raté), 1 question libre (jamais notée ; boutons Copier / Tout copier), 2 défis (« étudier » : « j'étudie », puis « j'aime étudier »).
+       Le Lecteur explique la situation (intro6, lec_certif, lec_libre, lec_defi). Deux essais pour dictée / image / défi ; après le dernier raté, la réponse n'est PAS montrée (sauf la compréhension, qui est vérifiable : champs verts/rouges, 2 essais, réponse montrée à la fin).
        ACCENTS_TOLERES (en haut) : accent ou apostrophe seuls = « presque » (accepté). Le module ne stocke rien :
        callbacks.onResultat({ cle, type, question, reponse, statut, attendu, essais }) à chaque réponse ; onTermine({ mots, fragments: 6, resultats, bilan }).
        statut : ok | presque | partiel | non | libre | passe. Les résultats survivent à la flèche de retour (le module les garde le temps de la session) ;
@@ -487,13 +487,13 @@
     fr: {
       titre: 'Première mémoire', quitter: 'Quitter la mémoire', son: 'Son', suite: 'Suite', continuer: 'Continuer', valider: 'Valider',
       intro: 'Voilà. Ce souvenir est un peu abîmé, mais on devrait pouvoir en tirer quelques mots.',
-      c_mange: 'Touche les mots pour les entendre.',
-      c_lire: 'Touche les mots pour les entendre et voir leur sens.',
-      c_ordre: 'Le souvenir s’efface… Remets les mots dans l’ordre.',
-      c_ecrire_part: 'Complète les mots qui manquent.',
-      c_ecrire: 'Écris la phrase en français.',
-      c_image: 'Tu es Bek. Que fais-tu maintenant\u00a0?',
-      c_audio: 'Écoute, puis choisis les bons mots.',
+      c_mange: '*Touche* les mots pour les *entendre*.',
+      c_lire: '*Touche* les mots pour les *entendre* et voir leur *sens*.',
+      c_ordre: 'Le souvenir s’efface… Remets les mots *dans l’ordre*.',
+      c_ecrire_part: 'Complète les mots qui *manquent*.',
+      c_ecrire: 'Écris la phrase *en français*.',
+      c_image: 'Tu es Bek. Que *fais-tu* maintenant ?',
+      c_audio: '*Écoute*, puis *choisis* les bons mots.',
       reecouter: 'Réécouter', sans_son: 'Je n’entends rien', construire_vide: 'Touche les mots pour construire ta phrase.',
       role_s: 'sujet', role_v: 'verbe', role_o: 'objet', genre_m: 'masculin', genre_f: 'féminin',
       noteE_titre: 'Remarque', noteE: 'Avec « je », les verbes en -er se terminent par -e. On n’entend pas ce -e.',
@@ -520,8 +520,8 @@
       tr_sandwichle: '', tr_poutinela: '', tr_pizzaune: '', tr_pizzala: '',
       noteL_titre: 'Remarque',
       noteL: '«\u00a0un\u00a0» et «\u00a0une\u00a0»\u00a0: une chose nouvelle, parmi d’autres. «\u00a0le\u00a0» et «\u00a0la\u00a0»\u00a0: la chose dont on parle, celle qu’on connaît déjà. Masculin\u00a0: un → le. Féminin\u00a0: une → la.',
-      c_nouveau: 'Quelque chose de nouveau apparaît. Construis la phrase.',
-      c_connu: 'C’est la même chose, mais tu la connais déjà. Construis la phrase.',
+      c_nouveau: 'Quelque chose de *nouveau* apparaît. Construis la phrase.',
+      c_connu: 'C’est la même chose, mais tu la *connais déjà*. Construis la phrase.',
       quipNouveau: 'Une chose nouvelle apparaît\u00a0: on dit «\u00a0un\u00a0» ou «\u00a0une\u00a0».',
       quipConnu: 'La même chose, maintenant connue\u00a0: on dit «\u00a0le\u00a0» ou «\u00a0la\u00a0».',
       quipLe: 'Masculin, donc «\u00a0le\u00a0». Pas «\u00a0la\u00a0».',
@@ -550,23 +550,29 @@
       // ---- 🆕 (08-11-2026) fragment 6 : l'épreuve (textes fr + en + ja ; les autres langues retombent sur l'anglais) ----
       intro6: 'Dernier morceau du souvenir. Cette fois, personne ne te tient la main. Il y a des choses que seul un humain peut faire\u00a0: écouter, écrire, se rappeler. Il faut s’y habituer. Ce n’est pas ici que ça compte… mais ce que tu écris sera noté.',
       fin6: 'Dernier morceau récupéré. Le souvenir est entier. Ce que tu as écrit est gardé. Pour la suite… on verra.',
-      c_dictee: 'Écoute, puis écris ce que tu entends. La liste de mots est une aide\u00a0: tu ne peux pas la toucher.',
+      c_dictee: '*Écoute*, puis *écris ce que tu entends*. La liste de mots est une aide : tu ne peux pas la *toucher*.',
       liste_mots: 'Mots à ta disposition',
-      c_aimeq: 'Tu es Bek. Qu’est-ce que tu aimes faire\u00a0? Écris une phrase complète.',
-      lec_certif: 'Maintenant, des questions sur Bek. Pour y répondre, il faut te rappeler ce que tu as appris d’elle. Rien à choisir\u00a0: on a besoin de toi pour le certifier. Tu peux te tromper. Mais ça pourrait avoir des conséquences plus tard.',
-      c_certif1: 'Dans les souvenirs que tu as réparés, quelles choses Bek mange-t-elle\u00a0? Écris-les avec «\u00a0un\u00a0» ou «\u00a0une\u00a0».',
-      quipNote: 'Noté. Je ne te dis pas si c’est juste. Un humain doit s’habituer à ça.',
-      lec_libre: 'Celle-ci n’a ni bonne ni mauvaise réponse. Un professeur pourrait la lire. Tu peux copier ta réponse.',
-      c_libre: 'Maintenant, toi\u00a0: qu’aimes-tu faire\u00a0? Réponds avec deux phrases complètes.',
+      c_aimeq: 'Tu es Bek. Qu’est-ce que tu *aimes* faire ? Écris une phrase *complète*.',
+      lec_certif: 'Maintenant, des questions sur Bek. Pour y répondre, il faut te rappeler ce que tu as appris d’elle. Rien à choisir\u00a0: écris-le toi-même. Je vérifie ta réponse, et elle est gardée. Tu peux te tromper. Mais ça pourrait avoir des conséquences plus tard.',
+      c_certif1: 'Dans les souvenirs que tu as réparés, quelles choses Bek *mange*-t-elle ? Écris-les avec « *un* » ou « *une* ».',
+      quipCompOk: 'Les trois, avec le bon article. Exact. Elle ne dira rien, mais elle apprécie.',
+      quipCompEssai: 'Pas encore. Les cases vertes sont justes. Corrige les autres. Un dernier essai.',
+      quipCompFin: 'Pas cette fois. Elle mange un sandwich, une poutine et une pizza. C’est noté.',
+      comp_reponse: 'Réponse\u00a0: un sandwich, une poutine, une pizza.',
+      lec_libre: 'Celle-ci n’a ni bonne ni mauvaise réponse. Un professeur pourrait la lire. Une liste de verbes t’aide, mais ton propre dictionnaire est encore mieux : sers-t’en.',
+      c_libre: 'Maintenant, toi : qu’*aimes*-tu faire ? Écris *une phrase de trois mots* : « *je* » + « *aimer* » + un *verbe*.',
+      libre_trois: 'Ça ne fait pas trois mots : je + aime + un verbe. Corrige, ou valide encore pour garder ta réponse.',
+      gloss_titre: 'Verbes courants', gloss_dico: 'Il en manque ? Cherche-les dans ton propre dictionnaire : c’est une très bonne habitude.',
+      gloss_liste: ['manger', 'boire', 'regarder', 'jouer', 'étudier', 'lire', 'écouter', 'chanter', 'danser', 'dormir', 'marcher', 'dessiner', 'cuisiner', 'nager', 'voyager'],
       passer: 'Passer', quipLibre: 'Merci. C’est gardé.',
       copier: 'Copier', copie: 'Copié\u00a0!', toutCopier: 'Tout copier', recap_titre: 'Tes réponses',
       lec_defi: 'Un dernier défi. Aucun indice. Si tu réussis, ça comptera. Si tu échoues, ça comptera aussi.',
-      c_defi1: 'Défi (1/2). Voici un verbe. Conjugue-le avec «\u00a0je\u00a0», au présent.',
+      c_defi1: 'Défi (1/2). Voici un verbe. Conjugue-le avec « *je* », au *présent*.',
       sens_etudier: 'apprendre en travaillant',
-      c_defi2: 'Défi (2/2). Combine «\u00a0étudier\u00a0» avec «\u00a0aimer\u00a0», avec «\u00a0je\u00a0». Écris une phrase.',
+      c_defi2: 'Défi (2/2). Combine « *étudier* » avec « *aimer* », avec « *je* ». Écris une phrase.',
       presqueAccent: 'Accepté. Mais regarde les accents.', presqueApostrophe: 'Accepté. Mais n’oublie pas l’apostrophe.',
       quipEchec: 'Pas cette fois. C’est noté. On continue.',
-      c_rep: 'Le souvenir est abîmé. Répare-le\u00a0: place chaque mot dans sa case, de gauche à droite.',
+      c_rep: 'Le souvenir est abîmé. Répare-le : place chaque mot dans sa case, *de gauche à droite*.',
       tr_aimepizza: '',
       repApres1: 'Un film. Elle a donc des goûts, au moins.',
       repApres3: 'J’aime la pizza. Un avis tranché, enfin.',
@@ -607,13 +613,13 @@
     en: {
       titre: 'First memory', quitter: 'Leave the memory', son: 'Sound', suite: 'Next', continuer: 'Continue', valider: 'Check',
       intro: 'There. This memory is a bit damaged, but we should be able to pull a few words out of it.',
-      c_mange: 'Tap the words to hear them.',
-      c_lire: 'Tap the words to hear them and see what they mean.',
-      c_ordre: 'The memory is fading… Put the words back in order.',
-      c_ecrire_part: 'Fill in the missing words.',
-      c_ecrire: 'Write the sentence in French.',
-      c_image: 'You are Bek. What are you doing now?',
-      c_audio: 'Listen, then pick the right words.',
+      c_mange: '*Tap* the words to *hear* them.',
+      c_lire: '*Tap* the words to *hear* them and see what they *mean*.',
+      c_ordre: 'The memory is fading… Put the words back *in order*.',
+      c_ecrire_part: 'Fill in the *missing* words.',
+      c_ecrire: 'Write the sentence *in French*.',
+      c_image: 'You are Bek. What are you *doing* now?',
+      c_audio: '*Listen*, then *pick* the right words.',
       reecouter: 'Listen again', sans_son: 'I can’t hear anything', construire_vide: 'Tap the words to build your sentence.',
       role_s: 'subject', role_v: 'verb', role_o: 'object', genre_m: 'masculine', genre_f: 'feminine',
       noteE_titre: 'Note', noteE: 'After “je”, verbs ending in -er end in -e. You don’t hear that -e.',
@@ -640,8 +646,8 @@
       tr_sandwichle: 'I eat the sandwich.', tr_poutinela: 'I eat the poutine.', tr_pizzaune: 'I eat a pizza.', tr_pizzala: 'I eat the pizza.',
       noteL_titre: 'Note',
       noteL: '“un” and “une”: something new, one among others. “le” and “la”: the thing we’re talking about, the one we already know. Masculine: un → le. Feminine: une → la.',
-      c_nouveau: 'Something new appears. Build the sentence.',
-      c_connu: 'It’s the same thing, but now you know it. Build the sentence.',
+      c_nouveau: 'Something *new* appears. Build the sentence.',
+      c_connu: 'It’s the same thing, but now you *know* it. Build the sentence.',
       quipNouveau: 'A new thing appears: we say “un” or “une”.',
       quipConnu: 'The same thing, now known: we say “le” or “la”.',
       quipLe: 'Masculine, so “le”. Not “la”.',
@@ -670,23 +676,29 @@
       // ---- 🆕 (08-11-2026) fragment 6: the test ----
       intro6: 'Last piece of the memory. This time, nobody is holding your hand. Some things only a human can do: listen, write, remember. You need to get used to that. It doesn’t count here… but what you write will be recorded.',
       fin6: 'Last piece recovered. The memory is whole. What you wrote is kept. As for what comes next… we’ll see.',
-      c_dictee: 'Listen, then write what you hear. The word list is a help: you can’t tap it.',
+      c_dictee: '*Listen*, then *write what you hear*. The word list is a help: you can’t *tap* it.',
       liste_mots: 'Words you can use',
-      c_aimeq: 'You are Bek. What do you like doing? Write a full sentence.',
-      lec_certif: 'Now, questions about Bek. To answer them, you have to remember what you learned about her. Nothing to pick from: we need you to certify it. You may get it wrong. But it could have consequences later.',
-      c_certif1: 'In the memories you repaired, what things does Bek eat? Write them with “un” or “une”.',
-      quipNote: 'Noted. I won’t tell you if it’s right. A human has to get used to that.',
-      lec_libre: 'This one has no right or wrong answer. A teacher might read it. You can copy your answer.',
-      c_libre: 'Now, you: what do you like doing? Answer with two full sentences.',
+      c_aimeq: 'You are Bek. What do you *like* doing? Write a *full sentence*.',
+      lec_certif: 'Now, questions about Bek. To answer them, you have to remember what you learned about her. Nothing to pick from: write it yourself. I’ll check your answer, and it will be kept. You may get it wrong. But it could have consequences later.',
+      c_certif1: 'In the memories you repaired, what things does Bek *eat*? Write them with “*un*” or “*une*”.',
+      quipCompOk: 'All three, with the right article. Exactly. She won’t say so, but she’s pleased.',
+      quipCompEssai: 'Not yet. The green boxes are right. Fix the others. One last try.',
+      quipCompFin: 'Not this time. She eats a sandwich, a poutine and a pizza. It’s noted.',
+      comp_reponse: 'Answer: un sandwich, une poutine, une pizza.',
+      lec_libre: 'This one has no right or wrong answer. A teacher might read it. A list of verbs can help, but your own dictionary is even better: use it.',
+      c_libre: 'Now, you: what do you *like* doing? Write *one three-word sentence*: “*je*” + “*aimer*” + a *verb*.',
+      libre_trois: 'That’s not three words: je + aime + a verb. Fix it, or confirm again to keep your answer.',
+      gloss_titre: 'Common verbs', gloss_dico: 'Missing one? Look it up in your own dictionary: it’s a great habit.',
+      gloss_liste: ['manger — eat', 'boire — drink', 'regarder — watch', 'jouer — play', 'étudier — study', 'lire — read', 'écouter — listen', 'chanter — sing', 'danser — dance', 'dormir — sleep', 'marcher — walk', 'dessiner — draw', 'cuisiner — cook', 'nager — swim', 'voyager — travel'],
       passer: 'Skip', quipLibre: 'Thank you. It’s kept.',
       copier: 'Copy', copie: 'Copied!', toutCopier: 'Copy all', recap_titre: 'Your answers',
       lec_defi: 'One last challenge. No hints. If you succeed, it counts. If you fail, that counts too.',
-      c_defi1: 'Challenge (1/2). Here is a verb. Conjugate it with “je”, in the present tense.',
+      c_defi1: 'Challenge (1/2). Here is a verb. Conjugate it with “*je*”, in the *present tense*.',
       sens_etudier: 'to study',
-      c_defi2: 'Challenge (2/2). Combine “étudier” with “aimer”, with “je”. Write a sentence.',
+      c_defi2: 'Challenge (2/2). Combine “*étudier*” with “*aimer*”, with “*je*”. Write a sentence.',
       presqueAccent: 'Accepted. But look at the accents.', presqueApostrophe: 'Accepted. But don’t forget the apostrophe.',
       quipEchec: 'Not this time. It’s noted. Moving on.',
-      c_rep: 'The memory is damaged. Repair it: place each word in its slot, from left to right.',
+      c_rep: 'The memory is damaged. Repair it: place each word in its slot, *from left to right*.',
       tr_aimepizza: 'I like pizza.',
       repApres1: 'A film. So she has tastes, at least.',
       repApres3: 'I like pizza. A firm opinion, at last.',
@@ -1045,13 +1057,13 @@
       continuer: '続ける',
       valider: '確認',
       intro: 'さて。この記憶は少し傷んでいますが、いくつか言葉を取り出せるはずです。',
-      c_mange: '言葉に触って、音を聞いてみましょう。',
-      c_lire: '言葉に触って、音と意味を確かめましょう。',
-      c_ordre: '記憶が消えかけています……言葉を正しい順番に並べましょう。',
-      c_ecrire_part: '抜けている言葉を書きましょう。',
-      c_ecrire: 'この文をフランス語で書きましょう。',
-      c_image: 'あなたはBekです。今、何をしていますか？',
-      c_audio: '聞いてから、正しい言葉を選びましょう。',
+      c_mange: '言葉に*触って*、音を*聞いて*みましょう。',
+      c_lire: '言葉に*触って*、音と*意味*を確かめましょう。',
+      c_ordre: '記憶が消えかけています……言葉を*正しい順番*に並べましょう。',
+      c_ecrire_part: '*抜けている*言葉を書きましょう。',
+      c_ecrire: 'この文を*フランス語*で書きましょう。',
+      c_image: 'あなたはBekです。今、何を*していますか*？',
+      c_audio: '*聞いて*から、正しい言葉を*選び*ましょう。',
       reecouter: 'もう一度聞く',
       sans_son: '音が聞こえません',
       construire_vide: '言葉に触って、文を組み立てましょう。',
@@ -1100,8 +1112,8 @@
       tr_pizzala: '私はそのピザを食べます。',
       noteL_titre: 'ポイント',
       noteL: '「un」と「une」：たくさんある中の、新しいひとつ。「le」と「la」：話題になっている、もう知っているもの。男性：un → le。女性：une → la。',
-      c_nouveau: '新しいものが現れました。文を組み立てましょう。',
-      c_connu: '同じものですが、もう知っていますね。文を組み立てましょう。',
+      c_nouveau: '*新しい*ものが現れました。文を組み立てましょう。',
+      c_connu: '同じものですが、*もう知っている*ものですね。文を組み立てましょう。',
       quipNouveau: '新しいものが現れたときは、「un」か「une」を使います。',
       quipConnu: '同じものでも、もう知っているときは「le」か「la」を使います。',
       quipLe: '男性名詞なので「le」です。「la」ではありません。',
@@ -1128,7 +1140,7 @@
       quitter_non: '続ける',
       intro5: '四つのかけらがそろいました。あとは、ひとりで組み立てるだけです。私は何も言いません。……ほとんど、ですが。',
       fin5: '記憶が直りました。かけら四つ、文六つ、そして少しのプーティン。これでも、まだましなほうです。',
-      c_rep: '記憶が傷んでいます。直しましょう。言葉をひとつずつ、左から順に枠に入れてください。',
+      c_rep: '記憶が傷んでいます。直しましょう。言葉をひとつずつ、*左から順に*枠に入れてください。',
       tr_aimepizza: 'ピザが好きです。',
       repApres1: '映画ですか。少なくとも、好みはあるようです。',
       repApres3: 'ピザが好き。ようやく、はっきりした意見が聞けました。',
@@ -1180,14 +1192,21 @@
       // ---- 🆕 (08-11-2026) fragment 6 : l'épreuve (japonais) ----
       intro6: '記憶の最後のかけらです。今回は、だれも手を引いてくれません。人間にしかできないことがあります。聞くこと、書くこと、思い出すこと。それに慣れる必要があります。ここで成績が決まるわけではありません……が、あなたが書いたものは記録されます。',
       fin6: '最後のかけらを取り戻しました。記憶はひとつにそろいました。あなたが書いたものは保存されています。この先のことは……そのうち、わかるでしょう。',
-      c_dictee: '聞いて、聞こえたとおりに書きましょう。単語リストはヒントです。触ることはできません。',
+      c_dictee: '*聞いて*、聞こえたとおりに*書き*ましょう。単語リストはヒントです。*触る*ことはできません。',
       liste_mots: '使える単語',
-      c_aimeq: 'あなたはBekです。何をするのが好きですか？完全な文で書きましょう。',
-      lec_certif: 'ここからは、Bekについての質問です。答えるには、彼女について学んだことを思い出す必要があります。選ぶものはありません。それを確かめられるのは、あなただけです。間違えてもかまいません。でも、あとで影響が出るかもしれません。',
-      c_certif1: 'あなたが直した記憶の中で、Bekは何を食べていましたか？「un」か「une」をつけて書きましょう。',
-      quipNote: '記録しました。合っているかどうかは言いません。人間は、そういうことにも慣れなければなりません。',
-      lec_libre: 'この質問には、正解も不正解もありません。先生が読むかもしれません。答えはコピーできます。',
-      c_libre: 'では、あなた自身のことです。何をするのが好きですか？完全な文を二つ書きましょう。',
+      c_aimeq: 'あなたはBekです。何をするのが*好き*ですか？*完全な文*で書きましょう。',
+      lec_certif: 'ここからは、Bekについての質問です。答えるには、彼女について学んだことを思い出す必要があります。選ぶものはありません。自分で書いてください。答えは私が確認し、記録されます。間違えてもかまいません。でも、あとで影響が出るかもしれません。',
+      c_certif1: 'あなたが直した記憶の中で、Bekは何を*食べて*いましたか？「*un*」か「*une*」をつけて書きましょう。',
+      quipCompOk: '三つとも、正しい冠詞つきで正解です。彼女は何も言いませんが、きっと喜んでいます。',
+      quipCompEssai: 'まだです。緑の欄は合っています。ほかを直してください。あと一回です。',
+      quipCompFin: '今回は残念でした。彼女が食べるのは、un sandwich、une poutine、une pizza です。記録しました。',
+      comp_reponse: '答え：un sandwich, une poutine, une pizza。',
+      lec_libre: 'この質問には、正解も不正解もありません。先生が読むかもしれません。動詞の一覧が助けになりますが、自分の辞書を使うのがいちばんです。ぜひ使ってください。',
+      c_libre: 'では、あなた自身のことです。何をするのが*好き*ですか？*3語の文*を一つ書きましょう：「*je*」＋「*aimer*」＋*動詞*。',
+      libre_trois: '3語ではありません：je + aime + 動詞。直すか、もう一度「確認」を押してこのまま残してください。',
+      gloss_titre: 'よく使う動詞', gloss_dico: '足りない動詞は、自分の辞書で調べてみましょう。とてもよい習慣です。',
+      gloss_liste: ['manger — 食べる', 'boire — 飲む', 'regarder — 見る', 'jouer — 遊ぶ', 'étudier — 勉強する', 'lire — 読む', 'écouter — 聞く', 'chanter — 歌う', 'danser — 踊る', 'dormir — 寝る', 'marcher — 歩く', 'dessiner — 描く', 'cuisiner — 料理する', 'nager — 泳ぐ', 'voyager — 旅行する'],
+
       passer: 'スキップ',
       quipLibre: 'ありがとう。ちゃんと保存しました。',
       copier: 'コピー',
@@ -1195,9 +1214,9 @@
       toutCopier: 'すべてコピー',
       recap_titre: 'あなたの答え',
       lec_defi: '最後のチャレンジです。ヒントはありません。成功すれば記録されます。失敗しても、記録されます。',
-      c_defi1: 'チャレンジ（1/2）動詞が出ます。「je」を主語にして、現在形に活用しましょう。',
+      c_defi1: 'チャレンジ（1/2）動詞が出ます。「*je*」を主語にして、*現在形*に活用しましょう。',
       sens_etudier: '勉強する',
-      c_defi2: 'チャレンジ（2/2）「étudier」と「aimer」を、主語「je」で組み合わせましょう。文を書いてください。',
+      c_defi2: 'チャレンジ（2/2）「*étudier*」と「*aimer*」を、主語「*je*」で組み合わせましょう。文を書いてください。',
       presqueAccent: 'OKです。でも、アクセント記号をよく見てください。',
       presqueApostrophe: 'OKです。でも、アポストロフィを忘れずに。',
       quipEchec: '今回は残念でした。記録しました。先へ進みましょう。'
@@ -1896,6 +1915,7 @@
 
     const q = function (s) { return scene.querySelector(s); };
     const elConsigne = q('.m1-consigne'), zone = q('.m1-zone'), actions = q('.m1-actions');
+    injecterStyle('m1-cle-style', '.m1-consigne .m1-cle{font-weight:800;font-size:1.08em;color:#9C3F1E;padding:.02em .22em;margin:0 .02em;border-radius:.35em;background:linear-gradient(transparent 22%,rgba(240,169,139,.72) 22%);box-shadow:0 .08em 0 rgba(224,136,103,.9);-webkit-box-decoration-break:clone;box-decoration-break:clone}');
     const lectZone = q('.m1-lect'), lectTexte = q('.m1-lect-texte'), lectSuite = q('.m1-lect-suite');
     const calque = q('.m1-calque'), vignette = q('.m1-vignette'), colBek = q('.m1-col-bek');
     const segs = scene.querySelectorAll('.m1-segment');
@@ -2360,9 +2380,11 @@
         lectSuite.onclick = function () { lectSuite.onclick = null; lecteurMasquer(); resolve(); };
       });
     }
-    function dureeIndice(texte, ms, rappelable) {   // une astuce reste le temps de la lire (≈ 75 ms par caractère) ; plafond 14 s
+    // 🆕 (08-11-2026) Toute bulle du Lecteur reste le temps de la lire : au moins la durée demandée, et au moins 3,5 s + 90 ms par caractère
+    //   (même pour les petites remarques « Voilà. »). Plafond 16 s. Une bulle qui reste trop peu = bug : on ne la raccourcit plus jamais.
+    function dureeIndice(texte, ms, rappelable) {
       const base = ms || 4500;
-      return rappelable ? Math.min(14000, Math.max(base, 2800 + String(texte).length * 75)) : base;
+      return Math.min(16000, Math.max(base, 3500 + String(texte).length * 90));
     }
     function programmerRetrait(duree) {
       if (lectMinuteur) clearTimeout(lectMinuteur);
@@ -2378,7 +2400,7 @@
     }
     // la bulle reste tant qu'on la survole (souris) ; elle repart 2,5 s après qu'on la quitte
     q('.m1-lect-bulle').addEventListener('mouseenter', function () { if (indiceActif && lectMinuteur) { clearTimeout(lectMinuteur); lectMinuteur = null; } });
-    q('.m1-lect-bulle').addEventListener('mouseleave', function () { if (indiceActif && !lectMinuteur && lectZone.classList.contains('m1-lect-visible')) programmerRetrait(2500); });
+    q('.m1-lect-bulle').addEventListener('mouseleave', function () { if (indiceActif && !lectMinuteur && lectZone.classList.contains('m1-lect-visible')) programmerRetrait(3500); });
     // clic (ou Entrée / Espace) sur l'icône : on revoit l'astuce ; si la bulle est déjà là, on la range
     function rappelerAstuce() {
       if (!astuceRappel || arrete) return;
@@ -2392,7 +2414,15 @@
     function auHasard(liste) { return liste[Math.floor(Math.random() * liste.length)]; }
 
     // ---------- Aides d'affichage ----------
-    function consigne(txt) { elConsigne.textContent = txt; }
+    // 🆕 (08-11-2026) MOTS CLÉS : dans une consigne, *mot* est mis en évidence (surligneur) : le verbe ou la notion à remarquer (aimer, écrire, un/une…).
+    // Aucun HTML n'est accepté : on construit des nœuds texte et des <strong class="m1-cle">. Les * sont retirés avant de ranger la question dans les résultats (noter).
+    function consigne(txt) {
+      elConsigne.textContent = '';
+      String(txt == null ? '' : txt).split(/\*([^*]+)\*/).forEach(function (part, i) {
+        if (i % 2) { const k = document.createElement('strong'); k.className = 'm1-cle'; k.textContent = part; elConsigne.appendChild(k); }
+        else if (part) elConsigne.appendChild(document.createTextNode(part));
+      });
+    }
     // 🆕 retour en arrière : segCourant = étape en cours, ecrans = nombre d'écrans déjà affichés dans cette étape (un vider() par écran)
     let segCourant = 0, ecrans = 0, finie = false;
     function majRetour() {
@@ -3515,7 +3545,7 @@
     // statut : 'ok' | 'presque' (accent ou apostrophe seuls) | 'partiel' | 'non' | 'libre' (jamais notée) | 'passe'.
     const resultats = options._partage || {};      // partagé avec la scène reconstruite après un retour en arrière
     function noter(cle, type, question, reponse, statut, extra) {
-      const r = Object.assign({ cle: cle, type: type, question: question, reponse: reponse, statut: statut }, extra || {});
+      const r = Object.assign({ cle: cle, type: type, question: String(question == null ? '' : question).replace(/\*/g, ''), reponse: reponse, statut: statut }, extra || {});   // * = mot clé de la consigne : pas dans les résultats
       resultats[cle] = r;
       if (typeof callbacks.onResultat === 'function') {
         try { callbacks.onResultat(JSON.parse(JSON.stringify(r))); } catch (e) { console.warn('onResultat a échoué.', e); }
@@ -3553,6 +3583,16 @@
       const r = document.createElement('div'); r.className = 'm1-liste-rang';
       ids.forEach(function (id) { const m = document.createElement('span'); m.className = 'm1-mot-liste'; m.textContent = AFFICHE[id]; r.appendChild(m); });
       d.appendChild(t); d.appendChild(r);
+      return d;
+    }
+    function glossaire() {            // 🆕 aide NON touchable : verbes courants + rappel d'utiliser son propre dictionnaire
+      const d = document.createElement('div');
+      d.className = 'm1-liste-mots';
+      const t = document.createElement('p'); t.className = 'm1-liste-titre'; t.textContent = T('gloss_titre');
+      const r = document.createElement('div'); r.className = 'm1-liste-rang';
+      (T('gloss_liste') || []).forEach(function (v) { const m = document.createElement('span'); m.className = 'm1-mot-liste'; m.textContent = v; r.appendChild(m); });
+      const p = document.createElement('p'); p.className = 'm1-sens'; p.style.marginTop = '.5rem'; p.textContent = T('gloss_dico');
+      d.appendChild(t); d.appendChild(r); d.appendChild(p);
       return d;
     }
     function copierTexte(texte) {
@@ -3623,7 +3663,7 @@
           if (cfg.coeurFin) coeur();
           const presque = j.statut === 'presque';
           lecteurIndice(presque ? T(j.nature === 'accent' ? 'presqueAccent' : 'presqueApostrophe') : auHasard(T('quipOk')), presque ? 3600 : 2200);
-          finApresVoix(fini, presque ? 2600 : 1300);
+          finApresVoix(fini, presque ? 4200 : 2200);
           return;
         }
         champ.classList.add('m1-ko');
@@ -3644,7 +3684,9 @@
       await promesse;
     }
 
-    // Compréhension : trois champs, une seule tentative, aucune correction affichée (c'est noté, pas corrigé).
+    // Compréhension : trois champs, vérifiable (un sandwich, une poutine, une pizza, dans n'importe quel ordre).
+    // 🆕 (08-11-2026) Corrigée comme les autres : les champs justes passent au vert et se verrouillent, les autres au rouge ; 2 essais ;
+    //   après le dernier raté, la bonne réponse est affichée (c'est un rappel de la leçon, pas une dictée). Le résultat est noté.
     async function questionNourriture() {
       vider();
       zone.setAttribute('data-mode', 'epreuve'); zone.setAttribute('data-phrase', 'comp-nourriture');
@@ -3654,40 +3696,67 @@
       const champs = [nouveauChamp(), nouveauChamp(), nouveauChamp()];
       champs.forEach(function (c) { rang.appendChild(c); });
       zone.appendChild(rang);
-      let termine = false, fini;
+      const attendus = ['un sandwich', 'une poutine', 'une pizza'].map(normaliser);
+      const pris = [false, false, false], etatChamp = [null, null, null];   // 'ok' | 'presque' une fois validé
+      let termine = false, essais = 0, fini;
       const promesse = new Promise(function (resolve) { fini = resolve; });
       const bV = document.createElement('button');
       bV.type = 'button'; bV.className = 'lect-btn m1-btn'; bV.textContent = T('valider');
       actions.appendChild(bV);
-      function verifier() {
-        if (termine) return;
-        const donnes = champs.map(function (c) { return c.value.trim(); }).filter(function (v) { return normaliser(v); });
-        if (!donnes.length) { secouer(rang); return; }
+      function clore() {
         termine = true; bV.disabled = true;
         champs.forEach(function (c) { c.readOnly = true; });
-        const attendus = ['un sandwich', 'une poutine', 'une pizza'].map(normaliser);
-        const pris = [false, false, false], etat = donnes.map(function () { return null; });
-        donnes.forEach(function (d, i) {            // passe 1 : réponses exactes
-          const k = attendus.findIndex(function (a, j) { return !pris[j] && a === normaliser(d); });
-          if (k !== -1) { pris[k] = true; etat[i] = 'ok'; }
-        });
-        if (ACCENTS_TOLERES) donnes.forEach(function (d, i) {   // passe 2 : accents ou apostrophes seuls
-          if (etat[i]) return;
-          const k = attendus.findIndex(function (a, j) { return !pris[j] && proche(normaliser(d), a); });
-          if (k !== -1) { pris[k] = true; etat[i] = 'presque'; }
-        });
-        const bons = etat.filter(function (e) { return e; }).length, presques = etat.filter(function (e) { return e === 'presque'; }).length;
+        const bons = etatChamp.filter(function (e) { return e; }).length;
+        const presques = etatChamp.filter(function (e) { return e === 'presque'; }).length;
         const statut = bons === 3 ? (presques ? 'presque' : 'ok') : (bons > 0 ? 'partiel' : 'non');
-        noter('comp-nourriture', 'comprehension', T('c_certif1'), donnes.join(' / '), statut, { attendu: 'un sandwich / une poutine / une pizza', bons: bons, total: 3 });
-        lecteurIndice(T('quipNote'), 4500);
+        const donnes = champs.map(function (c) { return c.value.trim(); }).filter(function (v) { return normaliser(v); });
+        noter('comp-nourriture', 'comprehension', T('c_certif1'), donnes.join(' / '), statut, { attendu: 'un sandwich / une poutine / une pizza', bons: bons, total: 3, essais: essais });
+        if (bons < 3) {
+          const p = document.createElement('p');
+          p.className = 'm1-sens'; p.textContent = T('comp_reponse');
+          zone.appendChild(p);
+        }
+        lecteurIndice(T(bons === 3 ? 'quipCompOk' : 'quipCompFin'), 4500);
         boutonAction(T('continuer')).then(fini);
+      }
+      function verifier() {
+        if (termine) return;
+        const libres = champs.filter(function (c, i) { return !etatChamp[i] && normaliser(c.value.trim()); });
+        if (!libres.length) { secouer(rang); return; }          // rien de nouveau à vérifier : ne compte pas comme un essai
+        essais++;
+        champs.forEach(function (c, i) {                        // passe 1 : réponses exactes
+          const d = c.value.trim();
+          if (etatChamp[i] || !normaliser(d)) return;
+          const k = attendus.findIndex(function (a, j) { return !pris[j] && a === normaliser(d); });
+          if (k !== -1) { pris[k] = true; etatChamp[i] = 'ok'; }
+        });
+        if (ACCENTS_TOLERES) champs.forEach(function (c, i) {   // passe 2 : accents ou apostrophes seuls
+          const d = c.value.trim();
+          if (etatChamp[i] || !normaliser(d)) return;
+          const k = attendus.findIndex(function (a, j) { return !pris[j] && proche(normaliser(d), a); });
+          if (k !== -1) { pris[k] = true; etatChamp[i] = 'presque'; }
+        });
+        champs.forEach(function (c, i) {
+          c.classList.remove('m1-ok', 'm1-ko');
+          if (etatChamp[i]) { c.classList.add('m1-ok'); c.readOnly = true; }
+          else c.classList.add('m1-ko');
+        });
+        const bons = etatChamp.filter(function (e) { return e; }).length;
+        if (bons === 3 || essais >= 2) { clore(); return; }
+        const faux = champs.filter(function (c, i) { return !etatChamp[i]; });
+        secouer(rang);
+        lecteurIndice(T('quipCompEssai'), 4500);
+        faux.forEach(function (c) { c.classList.remove('m1-ko'); c.classList.add('m1-ko'); });
+        try { faux[0].focus(); faux[0].select(); } catch (e) {}
       }
       bV.addEventListener('click', verifier);
       champs.forEach(function (c, i) {
+        c.addEventListener('input', function () { c.classList.remove('m1-ko'); });
         c.addEventListener('keydown', function (e) {
           if (e.key !== 'Enter') return;
           e.preventDefault();
-          if (i < champs.length - 1) champs[i + 1].focus(); else verifier();
+          const suivant = champs.slice(i + 1).find(function (x, j) { return !etatChamp[i + 1 + j]; });
+          if (suivant) suivant.focus(); else verifier();
         });
       });
       planifier(function () { try { champs[0].focus(); } catch (e) {} }, 250);
@@ -3699,11 +3768,10 @@
       vider();
       zone.setAttribute('data-mode', 'epreuve'); zone.setAttribute('data-phrase', cle);
       injecterStyle('m1-epreuve-style', EPREUVE_CSS);
-      const ta = document.createElement('textarea');
-      ta.className = 'm1-champ-libre'; ta.rows = 3;
-      ta.setAttribute('autocomplete', 'off'); ta.setAttribute('autocapitalize', 'none'); ta.setAttribute('autocorrect', 'off'); ta.spellcheck = false;
+      const ta = nouveauChamp();            // une seule phrase, courte : un champ d'une ligne
       zone.appendChild(ta);
-      let termine = false, fini;
+      zone.appendChild(glossaire());
+      let termine = false, fini, prevenu = false;
       const promesse = new Promise(function (resolve) { fini = resolve; });
       const bV = document.createElement('button');
       bV.type = 'button'; bV.className = 'lect-btn m1-btn'; bV.textContent = T('valider');
@@ -3719,7 +3787,15 @@
         if (!passe) { lecteurIndice(T('quipLibre'), 3500); actions.appendChild(boutonCopier(T('copier'), function () { return question + '\n' + rep; })); }
         boutonAction(T('continuer')).then(fini);
       }
-      bV.addEventListener('click', function () { if (!ta.value.trim()) { secouer(ta); return; } clore(false); });
+      function valider() {
+        const v = ta.value.trim();
+        if (!v) { secouer(ta); return; }
+        const nb = v.replace(/[.!?…]+$/, '').split(/[\s'’]+/).filter(Boolean).length;   // « j'aime lire » = j' + aime + lire = 3
+        if (nb !== 3 && !prevenu) { prevenu = true; secouer(ta); lecteurIndice(T('libre_trois'), 5000); return; }   // un rappel, une seule fois : jamais bloquant, jamais noté
+        clore(false);
+      }
+      bV.addEventListener('click', valider);
+      ta.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); valider(); } });
       bPasser.addEventListener('click', function () { clore(true); });
       planifier(function () { try { ta.focus(); } catch (e) {} }, 250);
       await promesse;

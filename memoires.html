@@ -139,7 +139,7 @@ h1 { margin: 0; font-size: clamp(1.9rem, 6vw, 2.6rem); font-weight: 800; }
 .perso.dessin:not(.etire) .languette:hover { height: calc(var(--hf) + 10px); transition-duration: .25s; }
 .perso.dessin.etire .languette { height: var(--hp); }
 .perso.dessin .languette:focus-visible { outline: 3px solid var(--peche-fonce); outline-offset: 3px; }
-.perso.dessin img { inset: auto; top: 10px; left: 50%; width: var(--iw); height: var(--ih); transform: translateX(-50%); pointer-events: none; }
+.perso.dessin img { transition: opacity .2s ease; inset: auto; top: 8px; left: 50%; width: var(--iw); height: var(--ih); transform: translateX(-50%); pointer-events: none; }
 .perso.dessin .nom { position: absolute; left: 50%; bottom: 18px; margin: 0; transform: translateX(-50%); white-space: nowrap; transition: opacity .25s ease; }
 .perso.dessin.etire .nom { opacity: 0; }
 .perso.dessin.visible:not(.etire) .languette { animation: appel 1.2s ease 1s 2; }   /* « clique-moi » : la languette tressaute deux fois */
@@ -525,7 +525,17 @@ header, .chemin { position: relative; z-index: 1; }
         b.type = 'button'; b.className = 'languette';
         b.setAttribute('aria-expanded', 'false'); b.setAttribute('aria-label', def.nom);
         const im = document.createElement('img');
-        im.alt = ''; im.draggable = false; im.src = def.img;
+        im.alt = ''; im.draggable = false; im.style.opacity = '0';     // 🆕 révélée une fois rognée (sinon un instant de marge vide au-dessus de la tête)
+        let rogne = false;
+        im.addEventListener('load', function () {
+          if (rogne) { im.style.opacity = ''; return; }                 // 2e chargement : l'image rognée
+          rogne = true;
+          rognerImage(im, function (url, ratio) {
+            if (ratio) { d.setAttribute('data-ratio', ratio); dimensionner(); }
+            if (url) im.src = url; else im.style.opacity = '';
+          });
+        });
+        im.src = def.img;
         im.addEventListener('error', function () {      // image absente : retour à la pastille colorée
           d.className = 'perso avatar visible'; d.style.marginLeft = 'calc(clamp(120px, 24vw, 190px) / -2)'; d.setAttribute('aria-hidden', 'true');
           d.innerHTML = '<span class="rond"></span><span class="nom">' + echapper(def.nom) + '</span>';
@@ -550,6 +560,28 @@ header, .chemin { position: relative; z-index: 1; }
     });
     dimensionner();
   }
+  // 🆕 (08-11-2026) Les marges transparentes de l'image laissaient un grand vide au-dessus de la tête (et cachaient le visage derrière le nom) :
+  //   on mesure la zone réellement dessinée (canvas) et on rogne ; le ratio est recalculé d'après l'image rognée. Si le navigateur refuse la lecture
+  //   des pixels (ouverture en local, image d'un autre site), l'image est gardée telle quelle, avec le ratio de PERSONNAGES.
+  function rognerImage(im, fin) {
+    try {
+      const w = im.naturalWidth, h = im.naturalHeight;
+      if (!w || !h) { fin(null, 0); return; }
+      const c = document.createElement('canvas'); c.width = w; c.height = h;
+      const g = c.getContext('2d'); g.drawImage(im, 0, 0);
+      const px = g.getImageData(0, 0, w, h).data;
+      let t = h, b = -1, l = w, r = -1;
+      for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+        if (px[(y * w + x) * 4 + 3] > 60) { if (y < t) t = y; if (y > b) b = y; if (x < l) l = x; if (x > r) r = x; }
+      }
+      if (b < 0) { fin(null, w / h); return; }
+      const cw = r - l + 1, ch = b - t + 1;
+      if (cw >= w - 2 && ch >= h - 2) { fin(null, w / h); return; }      // déjà rognée
+      const o = document.createElement('canvas'); o.width = cw; o.height = ch;
+      o.getContext('2d').drawImage(im, l, t, cw, ch, 0, 0, cw, ch);
+      o.toBlob(function (bl) { if (bl) fin(URL.createObjectURL(bl), cw / ch); else fin(null, w / h); }, 'image/png');
+    } catch (e) { fin(null, 0); }
+  }
   function replierPersonnages() {
     Array.prototype.forEach.call(scenePersos.querySelectorAll('.perso.etire'), function (d) {
       d.classList.remove('etire');
@@ -570,7 +602,7 @@ header, .chemin { position: relative; z-index: 1; }
       d.style.setProperty('--ih', ih + 'px');
       d.style.setProperty('--iw', iw + 'px');
       d.style.setProperty('--pw', (iw + 28) + 'px');
-      d.style.setProperty('--hf', Math.round(0.4 * ih + 10 + 14 + 3) + 'px');     // la tête seulement (les 14 px du bas sont sous le panneau)
+      d.style.setProperty('--hf', Math.min(Math.round(0.4 * ih + 44 + 14 + 3), Math.round(ih * 0.8 + 10 + 14 + 3)) + 'px');   // la tête en entier + la place du nom sous le menton (les 14 px du bas sont sous le panneau)
       d.style.setProperty('--hp', (ih + 10 + 14 + 3) + 'px');                      // le personnage entier, pieds sur le bord du panneau
     });
   }

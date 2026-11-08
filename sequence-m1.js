@@ -38,6 +38,11 @@
    🆕 (07-11-2026) EXERCICES D'ÉCOUTE : Bek prend la pose « écoute-moi » (elle nous regarde, la main à plat sur la poitrine) au lieu d'une pose liée
    à la phrase, qui donnait la réponse. Sa bouche s'ouvre et se ferme pendant que la voix parle (ou que la synthèse lit), puis reste fermée.
    Images : images/m1/bek_ecoute-moi_01-01.webp et bek_ecoute-moi_bouche-ouverte_01-01.webp (repli : pose « observe », sans animation).
+   Exception : une phrase « Je mange… » (sandwich, poutine, ou « Je mange. » seul, en alternance) montre Bek avec l'aliment : elle dit la phrase,
+   puis mange une fois quand la voix s'arrête (images mange-sandwich / mange-poutine : toutes celles de la boucle sont requises).
+   🆕 Pizza : trois images — bek_mange-pizza_01-01 (grand sourire : la pose des leçons), bek_mange-pizza_bouche-fermee_01-01 (repos) et
+   bek_mange-pizza_bouche-ouverte_01-01 (en parlant). Dans l'exercice d'écoute d'une phrase avec « pizza », elle tient sa part et sa bouche
+   alterne repos / parle pendant la voix (pas de mastication). Sans les deux dernières : pose « écoute-moi ».
 
    🆕 (03-11-2026) FRAGMENT 3 (anciennement 2) — options.fragment = 3 : « REGARDER ».
    La mémoire est faite de fragments ; celui-ci enseigne le verbe « regarde » (en -er, comme « mange »).
@@ -67,7 +72,7 @@
           4. poutine : même contraste (« une » puis « la ») ;
           5. exercice audio : « Je mange le sandwich. », « Je mange la poutine. », « Je mange la pizza. »
         Voix (ids) : m1-je-mange-le-sandwich, m1-je-mange-la-poutine, m1-je-mange-une-pizza, m1-je-mange-la-pizza, le, la, pizza.
-        Image à produire (repli : pose « observe » + vignette dessinée) : images/m1/bek_mange-pizza_01-01.webp.
+        Images (livrées) : images/m1/bek_mange-pizza_01-01.webp (leçons), _bouche-fermee_ (repos) et _bouche-ouverte_ (en parlant). Repli : pose « observe » + vignette dessinée.
         Textes nouveaux : fr + en seulement (les 18 autres langues retombent sur l'anglais).
      3. « Je regarde » (options.fragment = 3) : l'ancien fragment 2, inchangé (textes : intro3, fin3).
      4. « J'aime » (options.fragment = 4) : NOUVEAU. Mots introduits : j', aime, manger, regarder, jouer, télé.
@@ -152,8 +157,10 @@
     'bek-regarde-film':     'images/m1/bek_regarde-film_01-01.webp',
     'bek-regarde-sandwich': 'images/m1/bek_regarde-sandwich_01-01.webp',
     'bek-regarde-poutine':  'images/m1/bek_regarde-poutine_01-01.webp',
-    // 🎨 fragment 2 (à produire) : Bek qui mange une pizza (même enthousiasme que pour le sandwich, un peu plus gourmande)
-    'bek-mange-pizza':      'images/m1/bek_mange-pizza_01-01.webp',
+    // 🎨 fragment 2 (livrées, trois poses) : Bek qui mange une pizza (même enthousiasme que pour le sandwich, un peu plus gourmande)
+    'bek-mange-pizza':      'images/m1/bek_mange-pizza_01-01.webp',                    // 🆕 la pose principale : grand sourire
+    'bek-pizza-repos':      'images/m1/bek_mange-pizza_bouche-fermee_01-01.webp',      // 🆕 au repos : sourire bouche fermée
+    'bek-pizza-ouverte':    'images/m1/bek_mange-pizza_bouche-ouverte_01-01.webp',     // 🆕 en parlant : bouche ouverte
     // 🎨 fragment 4 (à produire) : Bek qui joue (à quoi ? on ne le dit pas), l'air content
     'bek-aime-jouer':       'images/m1/bek_aime-jouer_01-01.webp',
     // 🆕 (07-11-2026) exercices d'écoute : Bek nous regarde, la main à plat sur la poitrine (« moi ») ; la bouche s'ouvre et se ferme pendant la voix
@@ -824,7 +831,97 @@
       cult_titre: '豆知識',
       cult_sandwich: '言い伝えによると、「sandwich」という言葉は、トランプのゲームをやめずに肉をパンに挟んで食べたイギリスの伯爵に由来します。',
       cult_poutine: 'プーティンは、フライドポテト、かむと「キュッ」と鳴るチーズの粒、そして茶色いソースでできています。1950年代の終わり頃ケベックで生まれ、いくつもの町が発祥の地を名乗っています。',
-      fin: '記憶がよみがえりました。これで、食べているものを言えるようになりましたね。食べないものは……それはまた今度。'
+      fin: '記憶がよみがえりました。これで、食べているものを言えるようになりましたね。食べないものは……それはまた今度。',
+      // ---- 🆕 (08-11-2026) fragments 2 à 5, répétition et sortie : japonais ----
+      // Vocabulaire : souvenir = 記憶 (comme intro/fin ci-dessus), morceau = かけら (comme memoires-textes.js), notes = ポイント.
+      intro2: 'もうひとつの記憶のかけらです。まだ食べていますね。でも、よく聞いてください。「sandwich」の前の小さな言葉が変わっています。',
+      fin2: '二つ目のかけらを取り戻しました。初めて出会うものと、もう知っている同じもの。その違いが分かるようになりましたね。かけらは、まだあります。',
+      sens_le: 'その（男性名詞：話題になっているもの）',
+      sens_la: 'その（女性名詞：話題になっているもの）',
+      sens_pizza: 'ピザ（日本語とほとんど同じです）',
+      tr_sandwichle: '私はそのサンドイッチを食べます。',
+      tr_poutinela: '私はそのプーティンを食べます。',
+      tr_pizzaune: '私はピザを食べます。',
+      tr_pizzala: '私はそのピザを食べます。',
+      noteL_titre: 'ポイント',
+      noteL: '「un」と「une」：たくさんある中の、新しいひとつ。「le」と「la」：話題になっている、もう知っているもの。男性：un → le。女性：une → la。',
+      c_nouveau: '新しいものが現れました。文を組み立てましょう。',
+      c_connu: '同じものですが、もう知っていますね。文を組み立てましょう。',
+      quipNouveau: '新しいものが現れたときは、「un」か「une」を使います。',
+      quipConnu: '同じものでも、もう知っているときは「le」か「la」を使います。',
+      quipLe: '男性名詞なので「le」です。「la」ではありません。',
+      quipLa: '女性名詞なので「la」です。「le」ではありません。',
+      quipDef: 'もう知っているものの話をしています。「le」か「la」で、「un」や「une」ではありません。',
+      quipIndef: '新しいものなので、「un」か「une」です。「le」や「la」ではありません。',
+      quipUne2: '女性名詞なので「une」です。「un」ではありません。さっきと同じ決まりです。',
+      quipUn2: '男性名詞なので「un」です。「une」ではありません。さっきと同じ決まりです。',
+      quipLeSandwich: 'そのサンドイッチ。今ではすっかりおなじみです。',
+      quipLaPoutine: 'そのプーティン。忘れられてはいませんでしたね。残念です。',
+      quipPizza: 'ピザ。これなら、誰も文句を言いません。',
+      cult_pizza: '「pizza」という言葉はイタリア語から来ています。フランス語では女性名詞で、une pizza、la pizza と言います。',
+      sens_joue: '遊ぶ',
+      tr_regpoutinela: '私はそのプーティンを見ます。',
+      tr_regsandwichle: '私はそのサンドイッチを見ます。',
+      tr_jejoue: '私は遊びます。',
+      quipRegPoutineLa: 'そのプーティン。見るだけで、食べません。彼女なりのこだわりです。',
+      quipRegSandwichLe: '同じサンドイッチです。もう知っているのに、やっぱり食べません。',
+      quipJeJoue: '「je」のときは、動詞の最後の -r がなくなります。jouer → joue。mange や regarde と同じです。',
+      reprise: '中断したところから続けましょう。私は何も忘れていませんよ。',
+      quitter_titre: 'やめて、あとで続けますか？',
+      quitter_info: '進み具合は保存されます。',
+      quitter_oui: 'やめる',
+      quitter_non: '続ける',
+      intro5: '四つのかけらがそろいました。あとは、ひとりで組み立てるだけです。私は何も言いません。……ほとんど、ですが。',
+      fin5: '記憶が直りました。かけら四つ、文六つ、そして少しのプーティン。これでも、まだましなほうです。',
+      c_rep: '記憶が傷んでいます。直しましょう。言葉をひとつずつ、左から順に枠に入れてください。',
+      tr_aimepizza: 'ピザが好きです。',
+      repApres1: '映画ですか。少なくとも、好みはあるようです。',
+      repApres3: 'ピザが好き。ようやく、はっきりした意見が聞けました。',
+      repApres5: 'あと一文です。どれか、もう分かりますね。',
+      intro4: 'もうひとつの記憶のかけらです。今回は、好きなものの話をしています。きっと、ちょっとじんときますよ。',
+      fin4: '四つ目のかけらを取り戻しました。食べるもの、見るもの、好きなものが言えますね。記憶が形になってきました。',
+      sens_j: '私（母音の前の「je」）',
+      sens_aime: '好き',
+      sens_manger: '食べる（基本の形）',
+      sens_regarder: '見る（基本の形）',
+      sens_jouer: '遊ぶ（基本の形）',
+      sens_tele: 'テレビ（télévision を短くした言い方）',
+      tr_aimepoutine: 'プーティンが好きです。',
+      tr_aimemanger: '食べるのが好きです。',
+      tr_aimetele: 'テレビを見るのが好きです。',
+      tr_aimejouer: '遊ぶのが好きです。',
+      tr_aimeregpoutine: 'プーティンを見るのが好きです。',
+      tr_aimemangerpoutine: 'プーティンを食べるのが好きです。',
+      noteJ_titre: 'ポイント',
+      noteJ: '「je」は母音の前で「j’」になります：je + aime → j’aime。子音の前では変わりません：je mange。「le」や「la」など、ほかの小さな言葉でも同じことが起こります。',
+      noteI_titre: 'ポイント',
+      noteI: '「aimer」のあとの動詞は、基本の形（原形）のままです。語尾は -er：mang-er、regard-er、jou-er。「je」がつかない形の動詞です。',
+      quipJe: '「aime」の前では、「je」は「j’」になります。母音は大事にしてあげましょう。',
+      quipInf: '「j’aime」のあとの動詞は、基本の形のままです。-e ではなく -er です。',
+      quipApostrophe: '惜しい！アポストロフィを忘れずに。',
+      quipAimePoutine: 'プーティンが好きなのですね。あの熱意を見れば分かります。……いえ、察しがつく程度ですが。',
+      quipAimeManger: '食べること。彼女のいつものことです。',
+      quipAimeJouer: '遊ぶこと。何をして？ 彼女は言いません。謎がまたひとつ増えました。',
+      quipAimeRegPoutine: 'プーティンを見ること。またこの話です。相変わらず、静かに眺めています。',
+      cult_tele: 'ケベックでもフランスでも、たいてい「la télé」と言います。「télévision」を短くした言葉で、女性名詞です。',
+      intro3: '同じ記憶のもうひとつのかけらです。今回は食べません。見ています。微妙な違いです。',
+      finSuite: '最初のかけらを取り戻しました。記憶はまだ完全ではありません。ほかにもあります。',
+      fin3: '三つ目のかけらを取り戻しました。これで、見るものと食べるものが言えますね。混同しないように。',
+      sens_regarde: '見る',
+      sens_film: '映画',
+      tr_regarde: '私は見ます。',
+      tr_film: '私は映画を見ます。',
+      tr_regpoutine: '私はプーティンを見ます。',
+      tr_regsandwich: '私はサンドイッチを見ます。',
+      noteR_titre: 'ポイント',
+      noteR: 'また -er 動詞です：je regard-e。そして、見るものは動詞のすぐあとに置きます。動詞と見るものの間に、小さな言葉は入りません。',
+      quipFilm: '映画。やっと、まともなものが出ました。',
+      quipRegPoutine: 'プーティンを見る。なんとも……静かな時間です。',
+      quipRegSandwich: 'サンドイッチを見ています。おなかはすいていますが、じっと待っています。感心です。',
+      quipVerbe: '食べていません。見ています。動詞は大事です。',
+      quipFilmMange: '映画を食べる。独創的ですね。でも、違います。',
+      quipUn: '「un film」であって、「une」ではありません。男性名詞です。',
+      cult_film: '「film」はもともと英語で、薄い膜のことでした。フランス語では男性名詞で、un film と言います。'
     },
     ko: {
       titre: '첫 번째 기억',
@@ -1687,19 +1784,57 @@
       montrer(m.ouverte); await attendre(ms || 1500); montrer(m.base);
     }
 
-    // 🆕 Exercice d'écoute : Bek nous regarde, la main sur la poitrine ; la bouche alterne ouverte/fermée tant qu'une voix est active
+    // 🆕 Exercice d'écoute. Par défaut : Bek nous regarde, la main sur la poitrine ; la bouche alterne ouverte/fermée tant qu'une voix est active
     // (fichier audio ou synthèse), puis reste fermée. Sans l'image « bouche ouverte » ou en mouvement réduit : la pose fixe.
-    let jetonBouche = 0;
+    // Phrase avec « mange » + sandwich ou poutine (ou « Je mange. » seul : on alterne) : Bek tient l'aliment, dit la phrase (bouche ouverte/fermée),
+    // puis MANGE une fois (bouchée, mastication) dès que la voix s'arrête. « Réécouter » recommence. Il faut toutes les images de la boucle (sinon : pose neutre).
+    let jetonBouche = 0, derniereNourriture = null;
     function arreterBouche() { jetonBouche++; }
-    async function animerBouche() {
-      if (!poses['bek-ecoute']) return;
+    function nourritureDe(ph) {
+      const mots = ph.mots || [];
+      if (mots.indexOf('mange') === -1) return null;
+      if (mots.indexOf('sandwich') !== -1) return 'sandwich';
+      if (mots.indexOf('poutine') !== -1) return 'poutine';
+      if (mots.indexOf('pizza') !== -1) return 'pizza';    // 🆕 pizza : pas de mastication, mais la bouche bouge (repos / parle)
+      if (mots.length > 2) return null;                    // un autre objet : pas d'animation, pose neutre
+      derniereNourriture = derniereNourriture === 'sandwich' ? 'poutine'
+        : (derniereNourriture === 'poutine' ? 'sandwich' : (Math.random() < 0.5 ? 'sandwich' : 'poutine'));
+      return derniereNourriture;                           // « Je mange. » : sandwich puis poutine, en alternance
+    }
+    // une bouchée puis la mastication ; s'arrête si une voix repart (Réécouter) ; renvoie true si elle est allée au bout
+    async function mangerUneFois(m, jeton) {
+      montrer(m.bouchee, true); await pause(m.msBouchee);
+      for (let t = 0; t < m.tours * 2; t++) {
+        if (jeton !== jetonBouche || arrete || voixActive()) return false;
+        montrer(m.mastique[t % 2], true); await pause(m.msMastique);
+      }
+      if (jeton !== jetonBouche || arrete) return false;
+      montrer(m.base, true);
+      return true;
+    }
+    async function animerBouche(phrase) {
+      const cle = phrase ? nourritureDe(phrase) : null;
+      const m = cle ? MANGER[cle] : null;
+      const mange = !!(m && bouclePrete(cle) && poses[m.base] && poses[m.ouverte] && !mouvementReduit());
+      const pizza = cle === 'pizza' && !!(poses['bek-pizza-repos'] && poses['bek-pizza-ouverte']);     // 🆕 elle tient sa pizza et la dit
+      const base = mange ? m.base : (pizza ? 'bek-pizza-repos' : 'bek-ecoute');
+      const ouv = mange ? m.ouverte : (pizza ? 'bek-pizza-ouverte' : 'bek-ecoute-ouverte');
+      if (!poses[base]) return;
       const jeton = ++jetonBouche;
-      let ouverte = false, premiere = true;
+      let ouverte = false, premiere = true, aParle = false;
       while (jeton === jetonBouche && !arrete) {
-        const veut = !!(poses['bek-ecoute-ouverte'] && !mouvementReduit() && voixActive()) && !ouverte;
+        const parle = voixActive();
+        if (parle) aParle = true;
+        if (mange && aParle && !parle) {                   // la voix vient de s'arrêter : elle mange
+          aParle = false; ouverte = false;
+          await pause(300); if (jeton !== jetonBouche) return;
+          await mangerUneFois(m, jeton);
+          continue;
+        }
+        const veut = !!(poses[ouv] && !mouvementReduit() && parle) && !ouverte;
         if (premiere || veut !== ouverte) {
           ouverte = veut;
-          montrer(ouverte ? 'bek-ecoute-ouverte' : 'bek-ecoute', !premiere);
+          montrer(ouverte ? ouv : base, !premiere);
           premiere = false;
         }
         await pause(170);
@@ -2263,7 +2398,7 @@
       const attente = construireSimple(phrase, cle, { direAuClic: false, sansEcoute: true });
       zone.insertBefore(entete, zone.firstChild);     // construire() vient de remplir la zone (synchrone jusqu'au premier await)
       reactiverSon();                       // 🆕 l'écoute est le but de l'exercice : le son est rallumé si l'élève l'avait coupé ailleurs
-      animerBouche();                       // 🆕 pose neutre « écoute-moi » (elle ne montre plus la réponse) ; la bouche bouge pendant la voix
+      animerBouche(phrase);                 // 🆕 pose neutre « écoute-moi » (bouche mobile pendant la voix) ; « Je mange… » : elle tient l'aliment, parle, puis mange
       planifier(function () { direPhrase(phrase); }, 400);
       await attente;
       arreterBouche();

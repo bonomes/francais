@@ -99,7 +99,8 @@
           5. exercice audio : « J'aime manger. », « J'aime regarder la télé. », « J'aime jouer. »
         Voix (ids) : j, aime, manger, regarder, jouer, tele, m1-jaime-la-poutine, m1-jaime-manger, m1-jaime-regarder-la-tele,
         m1-jaime-jouer, m1-jaime-regarder-la-poutine, m1-jaime-manger-la-poutine. (Le mot « j' » se dit « j » [ʒ] : à enregistrer.)
-        Image à produire (repli : pose « observe » + vignette) : images/m1/bek_aime-jouer_01-01.webp. Les autres segments réutilisent
+        Images (repli : pose « observe » + vignette) : images/m1/bek_aime-jouer_01-01.webp (repos), _bouche-ouverte_01-01 (en parlant),
+        puis _poupee-haut_01-01 à _01-05 (cinq mouvements avec la poupée, une fois la voix finie). Les autres segments réutilisent
         les images existantes (Bek à la poutine, au sandwich, devant le film).
      5. LA RÉPARATION (options.fragment = 5) : NOUVEAU — le CADRE (squelette) de la réparation, à ajuster. Format « séquence-mémoire » :
         l'élève fait seul ce qui était guidé avant. Le souvenir abîmé est un petit récit de 6 phrases qui réemploie TOUT (fragments 1 à 4) ;
@@ -175,8 +176,15 @@
     'bek-mange-pizza':      'images/m1/bek_mange-pizza_01-01.webp',                    // 🆕 la pose principale : grand sourire
     'bek-pizza-repos':      'images/m1/bek_mange-pizza_bouche-fermee_01-01.webp',      // 🆕 au repos : sourire bouche fermée
     'bek-pizza-ouverte':    'images/m1/bek_mange-pizza_bouche-ouverte_01-01.webp',     // 🆕 en parlant : bouche ouverte
-    // 🎨 fragment 4 (à produire) : Bek qui joue (à quoi ? on ne le dit pas), l'air content
-    'bek-aime-jouer':       'images/m1/bek_aime-jouer_01-01.webp',
+    // 🎨 fragment 4 (livrées) : Bek tient une poupée (une fille ailée, salopette : on n'en dit pas plus). Repos = bouche fermée ; bouche ouverte
+    // pendant la voix ; puis cinq mouvements avec la poupée (le nom dit « haut » pour tous : c'est seulement la suite, de 01-01 à 01-05).
+    'bek-aime-jouer':       'images/m1/bek_aime-jouer_01-01.webp',                              // 🆕 repos : bouche fermée
+    'bek-jouer-ouverte':    'images/m1/bek_aime-jouer_bouche-ouverte_01-01.webp',               // 🆕 en parlant : bouche ouverte
+    'bek-jouer-1':          'images/m1/bek_aime-jouer_poupee-haut_01-01.webp',                  // 🆕 mouvements avec la poupée, dans l'ordre
+    'bek-jouer-2':          'images/m1/bek_aime-jouer_poupee-haut_01-02.webp',
+    'bek-jouer-3':          'images/m1/bek_aime-jouer_poupee-haut_01-03.webp',
+    'bek-jouer-4':          'images/m1/bek_aime-jouer_poupee-haut_01-04.webp',
+    'bek-jouer-5':          'images/m1/bek_aime-jouer_poupee-haut_01-05.webp',
     // 🆕 (07-11-2026) exercices d'écoute : Bek nous regarde, la main à plat sur la poitrine (« moi ») ; la bouche s'ouvre et se ferme pendant la voix
     'bek-ecoute':           'images/m1/bek_ecoute-moi_01-01.webp',
     'bek-ecoute-ouverte':   'images/m1/bek_ecoute-moi_bouche-ouverte_01-01.webp',
@@ -198,6 +206,12 @@
     poutine:  { base: 'bek-mange-poutine',  ouverte: 'bek-poutine-ouverte',  bouchee: 'bek-poutine-bouchee',
                 mastique: ['bek-poutine-mastique-a', 'bek-poutine-mastique-b'],   msBouchee: 650, msMastique: 480, tours: 2, pause: 2400 }
   };
+  // 🆕 Pendant la voix d'une phrase (leçon, remplacement, écriture, « Réécouter »), Bek ouvre et ferme la bouche sur la pose qu'elle a déjà,
+  // si cette pose a sa version « bouche ouverte ». (La pizza n'y est pas : sa pose des leçons n'est pas celle de son repos.)
+  const POSE_OUVERTE = { 'bek-mange-sandwich': 'bek-sandwich-ouverte', 'bek-mange-poutine': 'bek-poutine-ouverte',
+                         'bek-regarde-film': 'bek-film-ouverte', 'bek-regarde-sandwich': 'bek-sandwich-regarde-ouverte',
+                         'bek-regarde-poutine': 'bek-poutine-regarde-ouverte',
+                         'bek-aime-jouer': 'bek-jouer-ouverte' };
   const POSE_DE_REPLI = { 'bek-mange-sandwich': 'bek-heureuse-ferme', 'bek-mange-poutine': 'bek-observe',
                           'bek-regarde-film': 'bek-concentree', 'bek-regarde-sandwich': 'bek-observe', 'bek-regarde-poutine': 'bek-observe',
                           'bek-mange-pizza': 'bek-observe',
@@ -1766,7 +1780,7 @@
       essayer(0);
     }
     const direMot = function (id) { dire(id, AFFICHE[id]); };
-    const direPhrase = function (ph, tout_de_suite) { dire(ph.audio, ph.texte, { voix: ph.voix, version: ph.version }, !tout_de_suite); };
+    const direPhrase = function (ph, tout_de_suite) { dire(ph.audio, ph.texte, { voix: ph.voix, version: ph.version }, !tout_de_suite); bekParle(); };
 
     // ---------- Bek : poses, avec repli tant qu'une image manque ----------
     const poses = {}, manquantes = {};
@@ -1833,9 +1847,20 @@
       })();
       return function () { if (jeton === jetonManger) jetonManger++; montrer(m.base); };
     }
+    // 🆕 Bonne réponse : la voix dit la phrase. Si Bek était en train de manger en boucle (bouchée, mastication), on arrête la boucle et on la ramène
+    // à la pose de repos, pour que sa bouche s'ouvre et se ferme avec la voix (bekParle) au lieu de continuer à mâcher.
+    function coupeManger() {
+      const n = nomPoseCourante();
+      for (const k in MANGER) {
+        const m = MANGER[k];
+        if (!m || !m.base || !m.mastique) continue;
+        if (n === m.base || n === m.bouchee || n === m.mastique[0] || n === m.mastique[1]) { jetonManger++; montrer(m.base, true); return; }
+      }
+    }
     async function bekDit(cle, ms) {      // bouche ouverte le temps de dire la phrase (si l'image existe)
       const m = MANGER[cle];
       if (!m || !poses[m.ouverte]) return;
+      if (son.actif) { await attendre(ms || 1500); return; }     // 🆕 la voix a déjà fait bouger sa bouche (bekParle) : on laisse seulement le temps
       montrer(m.ouverte); await attendre(ms || 1500); montrer(m.base);
     }
 
@@ -1844,7 +1869,8 @@
     // Phrase avec « mange » + sandwich ou poutine (ou « Je mange. » seul : on alterne) : Bek tient l'aliment, dit la phrase (bouche ouverte/fermée),
     // puis MANGE une fois (bouchée, mastication) dès que la voix s'arrête. « Réécouter » recommence. Il faut toutes les images de la boucle (sinon : pose neutre).
     let jetonBouche = 0, derniereNourriture = null;
-    function arreterBouche() { jetonBouche++; }
+    let boucheActive = false, jetonParle = 0;     // boucheActive : l'exercice d'écoute pilote déjà la bouche (animerBouche)
+    function arreterBouche() { jetonBouche++; boucheActive = false; }
     function nourritureDe(ph) {
       const mots = ph.mots || [];
       if (mots.indexOf('mange') === -1) return null;
@@ -1882,6 +1908,51 @@
       montrer(m.base, true);
       return true;
     }
+    function nomPoseCourante() { for (const n in poses) { if (poses[n] === courante) return n; } return null; }
+    // 🆕 « Elle joue » : quand la voix s'arrête, Bek fait bouger sa poupée (cinq images, dans l'ordre, changement net), puis revient à la pose de repos.
+    // Il faut les cinq images (sinon : rien, la bouche seule bouge). Elle s'arrête dès qu'une voix repart, qu'on change d'étape ou que l'exercice finit.
+    const JOUER = { base: 'bek-aime-jouer', ouverte: 'bek-jouer-ouverte', images: ['bek-jouer-1', 'bek-jouer-2', 'bek-jouer-3', 'bek-jouer-4', 'bek-jouer-5'],
+                    ms: 700, avant: 350 };
+    function jeuPret() { return JOUER.images.every(function (n) { return poses[n]; }); }
+    function dansJeu() { const n = nomPoseCourante(); return n === JOUER.base || n === JOUER.ouverte || JOUER.images.indexOf(n) !== -1; }
+    function estJouer(ph) {
+      const mots = (ph && ph.mots) || [];
+      return mots.indexOf('jouer') !== -1 || mots.indexOf('joue') !== -1;
+    }
+    async function jouerPoupee(ok) {      // ok() : renvoie false dès qu'il faut s'arrêter
+      if (mouvementReduit() || !jeuPret()) return;
+      await pause(JOUER.avant);
+      for (let i = 0; i < JOUER.images.length; i++) {
+        if (!ok() || !dansJeu()) return;
+        montrer(JOUER.images[i], true); await pause(JOUER.ms);
+      }
+      if (ok() && dansJeu()) montrer(JOUER.base, true);
+    }
+    // Pendant la voix : bouche ouverte / repos sur la pose en cours (si elle a une version ouverte), puis repos. Rien si une autre pose prend la main
+    // (elle mange, autre étape) ou si l'exercice d'écoute pilote déjà la bouche.
+    async function bekParle() {
+      if (mouvementReduit() || boucheActive || !son.actif) return;
+      if (JOUER.images.indexOf(nomPoseCourante()) !== -1) montrer(JOUER.base, true);     // 🆕 « Réécouter » en plein mouvement : retour au repos, puis la bouche
+      const base = nomPoseCourante(), ouv = base && POSE_OUVERTE[base];
+      if (!ouv || !poses[ouv]) return;
+      const jeton = ++jetonParle, t0 = Date.now();
+      let aParle = false, ouverte = false;
+      while (jeton === jetonParle && !arrete && !boucheActive) {
+        const actuelle = nomPoseCourante();
+        if (actuelle !== base && actuelle !== ouv) return;
+        const parle = voixActive();
+        if (parle) aParle = true;
+        if (aParle && !parle) {
+          if (ouverte) montrer(base, true);
+          if (base === JOUER.base) jouerPoupee(function () { return jeton === jetonParle && !arrete && !boucheActive && !voixActive(); });   // 🆕 puis elle joue avec sa poupée
+          return;
+        }
+        if (!aParle && Date.now() - t0 > 2500) return;           // la voix n'est jamais venue
+        const veut = parle && !ouverte;
+        if (veut !== ouverte) { ouverte = veut; montrer(ouverte ? ouv : base, true); }
+        await pause(170);
+      }
+    }
     async function animerBouche(phrase) {
       const cle = phrase ? nourritureDe(phrase) : null;
       const m = cle ? MANGER[cle] : null;
@@ -1890,10 +1961,12 @@
       const film = !mange && !pizza && estFilm(phrase) && !!(poses['bek-regarde-film'] && poses['bek-film-ouverte']);   // 🆕 elle regarde l'écran et dit la phrase
       const regSand = !mange && !pizza && !film && estRegardeSandwich(phrase) && !!(poses['bek-regarde-sandwich'] && poses['bek-sandwich-regarde-ouverte']);   // 🆕 elle regarde son sandwich et dit la phrase
       const regPout = !mange && !pizza && !film && !regSand && estRegardePoutine(phrase) && !!(poses['bek-regarde-poutine'] && poses['bek-poutine-regarde-ouverte']);   // 🆕 elle regarde sa poutine et dit la phrase
-      const base = mange ? m.base : (pizza ? 'bek-pizza-repos' : (film ? 'bek-regarde-film' : (regSand ? 'bek-regarde-sandwich' : (regPout ? 'bek-regarde-poutine' : 'bek-ecoute'))));
-      const ouv = mange ? m.ouverte : (pizza ? 'bek-pizza-ouverte' : (film ? 'bek-film-ouverte' : (regSand ? 'bek-sandwich-regarde-ouverte' : (regPout ? 'bek-poutine-regarde-ouverte' : 'bek-ecoute-ouverte'))));
+      const jou = !mange && !pizza && !film && !regSand && !regPout && estJouer(phrase) && !!(poses[JOUER.base] && poses[JOUER.ouverte]);   // 🆕 elle tient sa poupée, dit la phrase, puis joue
+      const base = mange ? m.base : (pizza ? 'bek-pizza-repos' : (film ? 'bek-regarde-film' : (regSand ? 'bek-regarde-sandwich' : (regPout ? 'bek-regarde-poutine' : (jou ? JOUER.base : 'bek-ecoute')))));
+      const ouv = mange ? m.ouverte : (pizza ? 'bek-pizza-ouverte' : (film ? 'bek-film-ouverte' : (regSand ? 'bek-sandwich-regarde-ouverte' : (regPout ? 'bek-poutine-regarde-ouverte' : (jou ? JOUER.ouverte : 'bek-ecoute-ouverte')))));
       if (!poses[base]) return;
       const jeton = ++jetonBouche;
+      boucheActive = true;
       let ouverte = false, premiere = true, aParle = false;
       while (jeton === jetonBouche && !arrete) {
         const parle = voixActive();
@@ -1902,6 +1975,12 @@
           aParle = false; ouverte = false;
           await pause(300); if (jeton !== jetonBouche) return;
           await mangerUneFois(m, jeton);
+          continue;
+        }
+        if (jou && aParle && !parle) {                     // 🆕 la voix vient de s'arrêter : elle joue avec sa poupée
+          aParle = false; ouverte = false;
+          montrer(base, true);
+          await jouerPoupee(function () { return jeton === jetonBouche && !arrete && !voixActive(); });
           continue;
         }
         const veut = !!(poses[ouv] && !mouvementReduit() && parle) && !ouverte;
@@ -2240,6 +2319,7 @@
       function termineBien() {
         termine = true;
         bValider.disabled = true;
+        coupeManger();
         direPhrase(phrase);
         lecteurIndice(auHasard(T('quipOk')), 2200);
         planifier(fini, 1300);
@@ -2281,6 +2361,7 @@
           if (cloze) champs.forEach(function (c) { c.value = AFFICHE[phrase.mots[Number(c.getAttribute('data-idx'))]]; c.classList.add('m1-ok'); c.classList.remove('m1-ko'); });
           else { champPhrase.value = phrase.texte; champPhrase.classList.add('m1-ok'); champPhrase.classList.remove('m1-ko'); }
           lecteurIndice(T('quipReponse'), 4200);
+          coupeManger();
           direPhrase(phrase);
           boutonAction(T('continuer')).then(fini);
         }
@@ -2351,6 +2432,7 @@
         if (bon) {
           termine = true; bValider.disabled = true;
           plateauPhrase.classList.add('m1-ok');
+          coupeManger();
           direPhrase(phrase);
           lecteurIndice(auHasard(T('quipOk')), 2200);
           planifier(fini, 1400);
@@ -2384,6 +2466,7 @@
           rafraichir();
           bValider.disabled = true;
           lecteurIndice(T('quipReponse'), 4200);
+          coupeManger();
           direPhrase(phrase);
           boutonAction(T('continuer')).then(fini);
         }

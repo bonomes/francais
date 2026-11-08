@@ -131,7 +131,7 @@
       avec de plus gros dessins. Il n'existe plus de mode « sous les pieds de Bek ». « un / une » : les trois objets ; pause (ETAL_PAUSE) ; les deux
       autres s'estompent, le restant grossit avec un halo violet : « le / la ». Sur la carte « Remarque » l'animation tourne en boucle ; ailleurs elle
       joue au changement d'état. Un clic rejoue (↻) ; la pastille pulse quand son mot change ou quand l'élève pose un article dans la phrase.
-      Sandwich redessiné (pain de mie et garniture en couches : plus de ressemblance avec un hamburger). Version : 25 (voir console). L'étal est aussi dans le fragment 3 (un film ; une → la poutine ; un → le sandwich).
+      Sandwich redessiné (pain de mie et garniture en couches : plus de ressemblance avec un hamburger). Version : 29 (voir console). Exercices d'écoute : « J'aime manger la poutine » reprend les images où elle mange la poutine, « J'aime manger » un aliment en alternance ; « joue » ajouté au choix de « Je joue. » (et la banque contient toujours tous les mots de la phrase). Astuces du Lecteur : plus longues (selon le texte), pause au survol, et l'icône reste cliquable pour les revoir. Voix : plus de fin de phrase coupée (attente 4,5 s + respiration). Lecture : seuls les mots nouveaux sont à toucher (✦), les mots touchés sont marqués (✓). Écriture « j’aime » : une seule case, deux étiquettes (sujet | verbe). L'étal est aussi dans le fragment 3 (un film ; une → la poutine ; un → le sandwich).
    🆕 (08-11-2026) SAISIE AU CLAVIER dans « ordre » et « construire » (reprise de sequence-memoire) : taper la lettre d'un mot le pose dès qu'il est
       seul à commencer ainsi ; si deux mots restent possibles (un/une, mange/manger, le/la), on continue de taper ; Entrée ou Espace pose le mot
       tapé en entier (« mange » → mange) ; « ’ » pose « j’ » ; Retour arrière / Échap effacent ; la fin d'un mot posé est avalée (« poutine » tapé
@@ -327,6 +327,43 @@
     '.m1-paire-art .m1-radical b{color:' + COULEUR_NOUVEAU + '}',
     '.m1-paire-art .m1-radical i{background:' + FOND_CONNU + ';color:var(--brun-fonce,#4A3B33);box-shadow:inset 0 -3px 0 ' + COULEUR_CONNU + '}'
   ].join('\n');
+  // 🆕 (08-11-2026) CASE FUSIONNÉE « j’aime » : l'élision s'écrit d'un seul tenant. Une seule case (écriture), deux étiquettes au-dessus (sujet | verbe) ;
+  //   la bordure reprend les deux couleurs (celles des cases « sujet » et « verbe », lues dans la feuille de style).
+  const FUSION_CSS = [
+    '.m1-groupe.m1-groupe-fusion{align-items:stretch}',
+    '.m1-groupe-fusion .m1-fusion-etiq{display:flex;width:100%}',
+    '.m1-groupe-fusion .m1-fusion-etiq .m1-role{box-sizing:border-box;text-align:center;white-space:nowrap}',
+    '.m1-groupe-fusion .m1-fusion-etiq .m1-role:first-child{flex:1 1 0}',
+    '.m1-groupe-fusion .m1-fusion-etiq .m1-role:last-child{flex:2 1 0;border-left:2px dotted rgba(74,59,51,.3)}',
+    '.m1-groupe-fusion .m1-rang{justify-content:center}',
+    '.m1-champ.m1-champ-fusion:not(.m1-ok):not(.m1-ko){border-color:transparent;background:linear-gradient(#fff,#fff) padding-box,linear-gradient(90deg,var(--m1-cs) 0 34%,var(--m1-cv) 34% 100%) border-box}'
+  ].join('\n');
+  // 🆕 (08-11-2026) LECTURE : seuls les mots NOUVEAUX du fragment sont à toucher pour continuer. Les autres restent touchables (révision) mais ne bloquent plus.
+  //   Pastille « ✦ » sur un mot nouveau pas encore touché ; « ✓ » sur tout mot déjà touché (aussi dans les phrases suivantes du même fragment).
+  const LECTURE_CSS = [
+    '.m1-tuile-lue{position:relative}',
+    '.m1-tuile-lue .m1-etat{position:absolute;top:-.55rem;right:-.4rem;min-width:1.25rem;height:1.25rem;padding:0 .15rem;box-sizing:border-box;display:none;align-items:center;justify-content:center;',
+    'border-radius:999px;border:2px solid var(--brun-fonce,#4A3B33);font-size:.72rem;line-height:1;font-weight:800;color:#fff;pointer-events:none;z-index:2}',
+    '.m1-tuile-lue.m1-tuile-nouveau:not(.m1-tuile-vue) .m1-etat{display:inline-flex;background:' + COULEUR_NOUVEAU + ';animation:m1-etat-pulse 1.6s ease-in-out infinite}',
+    '.m1-tuile-lue.m1-tuile-vue .m1-etat{display:inline-flex;background:#7FB069;animation:none}',
+    '.m1-tuile-lue.m1-tuile-vue:not(.m1-tuile-choisie){opacity:.82}',
+    '@keyframes m1-etat-pulse{50%{transform:scale(1.22)}}',
+    '@media (prefers-reduced-motion:reduce){.m1-tuile-lue .m1-etat{animation:none!important}}'
+  ].join('\n');
+  // 🆕 (08-11-2026) ASTUCES DU LECTEUR : elles restent plus longtemps (selon la longueur du texte) ; une fois la bulle partie, l'icône du Lecteur reste à sa place,
+  //   un peu plus discrète, avec une petite pastille « … » : un clic (ou Entrée) refait apparaître l'astuce. La bulle garde sa place (visibility) : rien ne bouge.
+  const LECTEUR_REPOS_CSS = [
+    '.m1-scene .m1-lect.m1-lect-repos{opacity:1!important;pointer-events:none!important;transform:none!important}',
+    '.m1-scene .m1-lect.m1-lect-repos .m1-lect-bulle{visibility:hidden}',
+    '.m1-scene .m1-lect.m1-lect-repos .m1-lect-icone{position:relative;pointer-events:auto!important;cursor:pointer;opacity:.82;transform:scale(.92);transform-origin:left bottom;',
+    'transition:opacity .25s ease,transform .25s ease;-webkit-tap-highlight-color:transparent}',
+    '.m1-scene .m1-lect.m1-lect-repos .m1-lect-icone:hover,.m1-scene .m1-lect.m1-lect-repos .m1-lect-icone:focus-visible{opacity:1;transform:scale(1)}',
+    '.m1-scene .m1-lect.m1-lect-repos .m1-lect-icone:focus-visible{outline:3px solid var(--peche-fonce,#E08867);outline-offset:3px;border-radius:50%}',
+    '.m1-scene .m1-lect.m1-lect-repos .m1-lect-icone::after{content:"\\2026";position:absolute;top:-.3rem;right:-.5rem;min-width:1.3rem;height:1.3rem;box-sizing:border-box;border-radius:999px;',
+    'background:#fff;border:2px solid var(--brun-fonce,#4A3B33);color:var(--brun-fonce,#4A3B33);font-size:.8rem;font-weight:800;line-height:.9rem;text-align:center;animation:m1-lect-appel 1.4s ease 2}',
+    '@keyframes m1-lect-appel{40%{transform:scale(1.28)}}',
+    '@media (prefers-reduced-motion:reduce){.m1-scene .m1-lect.m1-lect-repos .m1-lect-icone,.m1-scene .m1-lect.m1-lect-repos .m1-lect-icone::after{transition:none;animation:none}}'
+  ].join('\n');
   // L'étal : trois objets identiques (« un parmi plusieurs »), puis un seul mis en valeur (« celui-là »). Décoratif (aria-hidden).
   const ETAL_ART = { sandwich: ['un', 'le'], poutine: ['une', 'la'], pizza: ['une', 'la'], film: ['un', 'le'] };
   // 🆕 (08-11-2026) SAISIE AU CLAVIER (reprise de sequence-memoire) : lettres tapées dans la prochaine case, début des mots surligné, mots écartés atténués.
@@ -345,7 +382,9 @@
   ].join('\n');
   // 🆕 (08-11-2026) L'étal quitte les pieds de Bek : il est dans la carte de leçon, juste au-dessus de la phrase (là où l'œil de l'élève travaille),
   //   avec de gros dessins.
-  const ETAL_PAUSE = 3400;      // durée de l'état « un / une » avant le passage à « le / la » (ms)
+  const ETAL_PAUSE = 3400;
+  const ATTENTE_VOIX_MAX = 4500;    // 🆕 une phrase dite automatiquement attend la fin de la voix en cours, jusqu'à 4,5 s (avant : 1,5 s, ce qui coupait la fin des phrases longues)
+  const FIN_VOIX_MARGE = 260;       // 🆕 respiration (ms) laissée après la fin d'une voix, avant la suivante ou avant de changer d'écran      // durée de l'état « un / une » avant le passage à « le / la » (ms)
   const ETAL_CSS = [
     '.m1-etal{position:relative;display:flex;align-items:center;justify-content:center;gap:1rem;width:max-content;max-width:100%;box-sizing:border-box;margin:0 auto .9rem;padding:.9rem 1.5rem;',
     'background:rgba(255,255,255,.95);border:2px solid var(--brun-fonce,#4A3B33);border-radius:22px;box-shadow:0 3px 0 0 var(--brun-fonce,#4A3B33);cursor:pointer;-webkit-tap-highlight-color:transparent}',
@@ -368,7 +407,7 @@
     '@media (max-width:719px){.m1-etal{gap:.7rem;padding:.7rem 1rem}.m1-etal-objets{gap:.55rem}.m1-etal-objet{width:3.3rem;height:3.3rem}.m1-etal-pastille{font-size:1.15rem;min-width:2.7rem;padding:.1rem .8rem}}',
     '@media (prefers-reduced-motion:reduce){.m1-etal-objet,.m1-etal-pastille{transition:none;animation:none}.m1-etal-pulse .m1-etal-pastille{animation:none}}'
   ].join('\n');
-  const BANQUE_4 = ['j', 'je', 'aime', 'manger', 'mange', 'regarder', 'regarde', 'jouer', 'la', 'poutine', 'tele'];   // fragment 4 : j'aime (je, mange, regarde = pièges) (pas « parle », pas « français »)
+  const BANQUE_4 = ['j', 'je', 'aime', 'manger', 'mange', 'regarder', 'regarde', 'jouer', 'joue', 'la', 'poutine', 'tele'];   // fragment 4 : j'aime (je, mange, regarde = pièges) (pas « parle », pas « français »)
 
   const DICO = {
     fr: {
@@ -1669,6 +1708,7 @@
     const sources = Object.assign({}, SOURCES_PAR_DEFAUT, options.sources || {});
 
     let arrete = false;
+    const motsVus = {};               // 🆕 mots déjà touchés à la lecture, dans cette scène
     const minuteurs = [];
     const nettoyages = [];            // 🆕 écouteurs du document à retirer si on quitte en cours de route
     function planifier(fn, ms) { const id = setTimeout(function () { if (!arrete) fn(); }, ms); minuteurs.push(id); return id; }
@@ -1684,6 +1724,7 @@
     const barre = '<div class="m1-progres" aria-hidden="true">' + segments + '</div>';
     if (avecRetour) injecterStyle('m1-retour-style', RETOUR_CSS);
     injecterStyle('m1-art-style', ART_CSS);
+    injecterStyle('m1-lecteur-repos-style', LECTEUR_REPOS_CSS);
     scene.innerHTML =
       '<button type="button" class="m1-quitter" aria-label="' + echapper(T('quitter')) + '">&#8249;</button>' +
       '<button type="button" class="m1-son" aria-label="' + echapper(T('son')) + '" aria-pressed="true">' +
@@ -1792,6 +1833,15 @@
         setTimeout(fondre, 12);
       })();
     }
+    // 🆕 Fin d'étape : on attend au moins « base » ms, puis que la voix soit finie (au plus ATTENTE_VOIX_MAX), puis une respiration : l'écran suivant
+    //   n'arrive plus par-dessus la fin de la phrase.
+    function finApresVoix(fini, base) {
+      const t0 = Date.now();
+      planifier(function attendreVoix() {
+        if (voixActive() && Date.now() - t0 < ATTENTE_VOIX_MAX) { planifier(attendreVoix, 60); return; }
+        planifier(fini, FIN_VOIX_MARGE);
+      }, base);
+    }
     function dire(id, texte, v, apres) {
       if (!son.actif || arrete) return;
       if (apres && voixActive()) {
@@ -1799,8 +1849,9 @@
         const mon = ++jetonVoix, t0 = Date.now();
         (function boucle() {
           if (arrete || mon !== jetonVoix) return;
-          if (voixActive() && Date.now() - t0 < 1500) { setTimeout(boucle, 40); return; }
-          dire(id, texte, v, false);
+          if (voixActive() && Date.now() - t0 < ATTENTE_VOIX_MAX) { setTimeout(boucle, 40); return; }
+          // 🆕 une courte respiration après la fin de la voix précédente : sa dernière syllabe (« télé ») n'est plus écrasée par la suivante
+          setTimeout(function () { if (arrete || mon !== jetonVoix) return; dire(id, texte, v, false); }, FIN_VOIX_MARGE);
         })();
         return;
       }
@@ -1819,9 +1870,9 @@
           const a = new Audio(dossier + fichier + '.' + formats[i]);
           voixAudio = a;
           a.addEventListener('ended', function () { if (voixAudio === a) voixAudio = null; }, { once: true });
-          a.addEventListener('error', suivant, { once: true });
+          a.addEventListener('error', function () { if (voixAudio === a) voixAudio = null; suivant(); }, { once: true });   // 🆕 fichier absent : la voix n'est pas « en cours »
           const lecture = a.play();
-          if (lecture && lecture.then) lecture.then(function () { dispoAudio[fichier] = formats[i]; }).catch(function () { if (!dispoAudio[fichier]) suivant(); });
+          if (lecture && lecture.then) lecture.then(function () { dispoAudio[fichier] = formats[i]; }).catch(function () { if (voixAudio === a) voixAudio = null; if (!dispoAudio[fichier]) suivant(); });
         } catch (e) { suivant(); }
       }
       essayer(0);
@@ -1918,12 +1969,34 @@
     let jetonBouche = 0, derniereNourriture = null;
     let boucheActive = false, jetonParle = 0;     // boucheActive : l'exercice d'écoute pilote déjà la bouche (animerBouche)
     function arreterBouche() { jetonBouche++; boucheActive = false; }
+    // 🆕 La banque de mots contient toujours tous les mots de la phrase demandée (sinon l'exercice serait impossible : « joue » manquait pour « Je joue. »)
+    function banqueComplete(ph, liste) {
+      const l = liste.slice();
+      (ph.mots || []).forEach(function (id) { if (l.indexOf(id) === -1) l.push(id); });
+      return l;
+    }
+    // 🆕 Les images « elle mange » existent-elles pour cet aliment ? (sandwich, poutine : boucle complète ; pizza : repos + bouche ouverte)
+    function nourritureDispo(cle) {
+      if (cle === 'pizza') return !!(poses['bek-pizza-repos'] && poses['bek-pizza-ouverte']);
+      const m = MANGER[cle];
+      return !!(m && bouclePrete(cle) && poses[m.base] && poses[m.ouverte]);
+    }
+    let dernierAime = null;
     function nourritureDe(ph) {
       const mots = ph.mots || [];
-      if (mots.indexOf('mange') === -1) return null;
+      const mange = mots.indexOf('mange') !== -1, manger = mots.indexOf('manger') !== -1;      // 🆕 « manger » (infinitif, « J'aime manger la poutine. ») aussi
+      if (!mange && !manger) return null;
       if (mots.indexOf('sandwich') !== -1) return 'sandwich';
       if (mots.indexOf('poutine') !== -1) return 'poutine';
       if (mots.indexOf('pizza') !== -1) return 'pizza';    // 🆕 pizza : pas de mastication, mais la bouche bouge (repos / parle)
+      if (manger) {                                        // 🆕 « J'aime manger. » : un aliment pour l'image, en alternance (sandwich, poutine, pizza), selon les images disponibles
+        if (mots.length > 3) return null;
+        const dispo = ['sandwich', 'poutine', 'pizza'].filter(nourritureDispo);
+        if (!dispo.length) return null;
+        const i = dispo.indexOf(dernierAime);
+        dernierAime = i === -1 ? dispo[Math.floor(Math.random() * dispo.length)] : dispo[(i + 1) % dispo.length];
+        return dernierAime;
+      }
       if (mots.length > 2) return null;                    // un autre objet : pas d'animation, pose neutre
       derniereNourriture = derniereNourriture === 'sandwich' ? 'poutine'
         : (derniereNourriture === 'poutine' ? 'sandwich' : (Math.random() < 0.5 ? 'sandwich' : 'poutine'));
@@ -2082,29 +2155,74 @@
       el.appendChild(document.createTextNode(texte.slice(dernier)));
     }
 
+    // 🆕 Astuce rappelable : la dernière astuce de l'étape en cours (durée >= 5 s : les « piques » de réaction, plus courtes, ne le sont pas).
+    //   Une fois la bulle retirée, l'icône du Lecteur reste cliquable (« repos ») ; un nouvel écran d'étape (etape()) l'oublie.
+    let astuceRappel = null, indiceActif = false;
+    const lectIcone = q('.m1-lect-icone');
     function lecteurAfficher(texte, avecSuite) {
       if (lectMinuteur) { clearTimeout(lectMinuteur); lectMinuteur = null; }
       remplirCliquable(lectTexte, texte);
       lectSuite.classList.toggle('m1-off', !avecSuite);
       q('.m1-lect-bulle').classList.toggle('m1-sans-suite', !avecSuite);
+      lectZone.classList.remove('m1-lect-repos');
+      iconeRappel(false);
       lectZone.classList.remove('m1-off');
       planifier(function () { lectZone.classList.add('m1-lect-visible'); }, 30);
     }
+    function iconeRappel(oui) {          // l'icône du Lecteur devient un bouton (clavier compris) tant qu'une astuce peut être revue
+      if (!lectIcone) return;
+      if (oui && astuceRappel) { lectIcone.setAttribute('role', 'button'); lectIcone.setAttribute('tabindex', '0'); lectIcone.setAttribute('aria-label', astuceRappel.texte); }
+      else { lectIcone.removeAttribute('role'); lectIcone.removeAttribute('tabindex'); lectIcone.removeAttribute('aria-label'); }
+    }
     function lecteurMasquer() {
       lectZone.classList.remove('m1-lect-visible');
+      indiceActif = false;
+      if (astuceRappel) {                // la bulle part, l'icône reste : un clic revoit l'astuce
+        lectZone.classList.remove('m1-off'); lectZone.classList.add('m1-lect-repos'); iconeRappel(true);
+        return;
+      }
       lectMinuteur = setTimeout(function () { if (!arrete) lectZone.classList.add('m1-off'); }, 450);
       minuteurs.push(lectMinuteur);
     }
+    function oublierAstuce() {           // nouvelle étape : l'astuce de la précédente n'a plus lieu d'être rappelée
+      astuceRappel = null; iconeRappel(false);
+      if (lectZone.classList.contains('m1-lect-repos')) { lectZone.classList.remove('m1-lect-repos'); lectZone.classList.add('m1-off'); }
+    }
     function lecteurDit(texte) {          // avec « Suite » : l'élève lit à son rythme
       return new Promise(function (resolve) {
+        indiceActif = false;
         lecteurAfficher(texte, true);
         lectSuite.onclick = function () { lectSuite.onclick = null; lecteurMasquer(); resolve(); };
       });
     }
-    function lecteurIndice(texte, ms) {   // sans « Suite » : se retire tout seul
-      lecteurAfficher(texte, false);
-      lectMinuteur = setTimeout(function () { if (!arrete) lecteurMasquer(); }, ms || 4500);
+    function dureeIndice(texte, ms, rappelable) {   // une astuce reste le temps de la lire (≈ 75 ms par caractère) ; plafond 14 s
+      const base = ms || 4500;
+      return rappelable ? Math.min(14000, Math.max(base, 2800 + String(texte).length * 75)) : base;
+    }
+    function programmerRetrait(duree) {
+      if (lectMinuteur) clearTimeout(lectMinuteur);
+      lectMinuteur = setTimeout(function () { if (!arrete) lecteurMasquer(); }, duree);
       minuteurs.push(lectMinuteur);
+    }
+    function lecteurIndice(texte, ms, rappel) {   // sans « Suite » : se retire tout seul ; rappel (défaut : durée >= 5 s) : l'icône permet de la revoir
+      const rappelable = rappel !== undefined ? !!rappel : (ms || 0) >= 5000;
+      if (rappelable) astuceRappel = { texte: texte, ms: ms };
+      indiceActif = true;
+      lecteurAfficher(texte, false);
+      programmerRetrait(dureeIndice(texte, ms, rappelable));
+    }
+    // la bulle reste tant qu'on la survole (souris) ; elle repart 2,5 s après qu'on la quitte
+    q('.m1-lect-bulle').addEventListener('mouseenter', function () { if (indiceActif && lectMinuteur) { clearTimeout(lectMinuteur); lectMinuteur = null; } });
+    q('.m1-lect-bulle').addEventListener('mouseleave', function () { if (indiceActif && !lectMinuteur && lectZone.classList.contains('m1-lect-visible')) programmerRetrait(2500); });
+    // clic (ou Entrée / Espace) sur l'icône : on revoit l'astuce ; si la bulle est déjà là, on la range
+    function rappelerAstuce() {
+      if (!astuceRappel || arrete) return;
+      if (lectZone.classList.contains('m1-lect-visible') && indiceActif) { if (lectMinuteur) clearTimeout(lectMinuteur); lecteurMasquer(); return; }
+      lecteurIndice(astuceRappel.texte, astuceRappel.ms, true);
+    }
+    if (lectIcone) {
+      lectIcone.addEventListener('click', function () { if (lectZone.classList.contains('m1-lect-repos')) rappelerAstuce(); });
+      lectIcone.addEventListener('keydown', function (e) { if ((e.key === 'Enter' || e.key === ' ') && lectZone.classList.contains('m1-lect-repos')) { e.preventDefault(); rappelerAstuce(); } });
     }
     function auHasard(liste) { return liste[Math.floor(Math.random() * liste.length)]; }
 
@@ -2126,6 +2244,7 @@
     function vider() { ecrans++; majRetour(); saisieFermer(); zone.innerHTML = ''; actions.innerHTML = ''; zone.removeAttribute('data-mode'); zone.removeAttribute('data-phrase'); }
     function etape(n) {
       if (arrete) return;   // 🆕 une ancienne scène (après un retour en arrière) ne doit plus rien signaler
+      oublierAstuce();       // 🆕 l'astuce de l'étape précédente n'est plus rappelable
       Array.prototype.forEach.call(segs, function (s, i) { s.classList.toggle('m1-segment-fait', i < n); });
       // 🆕 n segments sont faits : c'est un point de reprise (jamais 0, jamais la fin)
       if (n > 0 && n < ETAPES_TOTAL && typeof callbacks.onPosition === 'function') {
@@ -2210,18 +2329,28 @@
     async function lecture(phrase, cle) {
       vider();
       zone.setAttribute('data-mode', 'lecture'); zone.setAttribute('data-phrase', cle);
-      const touches = {};
+      injecterStyle('m1-lecture-style', LECTURE_CSS);
+      // 🆕 À toucher pour continuer : les mots nouveaux de ce fragment, pas encore touchés. Les autres : facultatif (révision).
+      const aToucher = phrase.mots.filter(function (m) { return MOTS_DU_FRAGMENT.indexOf(m) !== -1 && !motsVus[m]; });
       const sens = document.createElement('p');
       sens.className = 'm1-sens';
       sens.innerHTML = '&nbsp;';
       const ligne = ligneGroupes(phrase, function (id) {
-        const b = tuile(id, 'm1-tuile-lue');
+        const b = tuile(id, 'm1-tuile-lue' + (MOTS_DU_FRAGMENT.indexOf(id) !== -1 ? ' m1-tuile-nouveau' : '') + (motsVus[id] ? ' m1-tuile-vue' : ''));
+        const etat = document.createElement('span');
+        etat.className = 'm1-etat'; etat.setAttribute('aria-hidden', 'true');
+        etat.textContent = motsVus[id] ? '\u2713' : '\u2726';
+        b.appendChild(etat);
         b.addEventListener('click', function () {
           direMot(id);
-          touches[id] = true;
-          Array.prototype.forEach.call(ligne.querySelectorAll('.m1-tuile'), function (t) { t.classList.toggle('m1-tuile-choisie', t === b); });
+          motsVus[id] = true;
+          // toutes les tuiles de ce mot (une phrase peut le répéter) passent à « touché »
+          Array.prototype.forEach.call(ligne.querySelectorAll('.m1-tuile'), function (t) {
+            t.classList.toggle('m1-tuile-choisie', t === b);
+            if (t.getAttribute('data-id') === id) { t.classList.add('m1-tuile-vue'); const e = t.querySelector('.m1-etat'); if (e) e.textContent = '\u2713'; }
+          });
           sens.textContent = AFFICHE[id] + ' = ' + T('sens_' + id);
-          if (phrase.mots.every(function (m) { return touches[m]; })) ouvrirSuite();
+          if (aToucher.every(function (m) { return motsVus[m]; })) ouvrirSuite();
         });
         return b;
       });
@@ -2245,6 +2374,7 @@
       zone.insertBefore(creerEcoute(phrase), zone.firstChild);
       await attendre(300);
       direPhrase(phrase);
+      if (!aToucher.length) ouvrirSuite();            // aucun mot nouveau dans cette phrase : on peut continuer tout de suite (les mots restent touchables)
       await promesse;
     }
 
@@ -2305,7 +2435,7 @@
             if (suivant === phrase.mots.length) {
               verrou = true;
               planifier(function () { direPhrase(phrase); lecteurIndice(auHasard(T('quipOk')), 2200); }, 400);
-              planifier(fini, 1300);
+              finApresVoix(fini, 1300);
             }
           } else {
             erreurs++;
@@ -2337,20 +2467,48 @@
       const champs = [];
       let champPhrase = null;
       if (!sansTraduction) { const tr = ligneTraduction(phrase); if (tr) zone.appendChild(tr); }
+      // 🆕 « j’ » + verbe, tous deux à écrire : UNE seule case (« j’aime »), avec les deux étiquettes sujet | verbe
+      const kF = cloze ? phrase.mots.findIndex(function (id, i) { return id === 'j' && manquants.indexOf(i) !== -1 && manquants.indexOf(i + 1) !== -1; }) : -1;
+      function texteAttendu(c) {
+        const i = Number(c.getAttribute('data-idx')), f = c.getAttribute('data-fin');
+        return AFFICHE[phrase.mots[i]] + (f ? AFFICHE[phrase.mots[Number(f)]] : '');
+      }
+      function couleurRole(r) {
+        try {
+          const t = document.createElement('input'); t.className = 'm1-champ m1-role-' + r; t.style.cssText = 'position:absolute;visibility:hidden';
+          zone.appendChild(t); const c = getComputedStyle(t).borderTopColor; zone.removeChild(t); return c;
+        } catch (e) { return '#4A3B33'; }
+      }
       if (cloze) {
         let rang = 0;
         const ligne = ligneGroupes(phrase, function (id) {
           const idx = rang++;
           if (manquants.indexOf(idx) === -1) { const s = tuile(id, 'm1-tuile-donnee'); s.disabled = true; return s; }
+          if (kF !== -1 && idx === kF + 1) { const vide = document.createElement('span'); vide.className = 'm1-fusion-vide'; return vide; }   // sa case est celle de « j’ »
           const inp = document.createElement('input');
           inp.type = 'text';
-          inp.className = 'm1-champ m1-role-' + ROLE[id];
+          inp.className = 'm1-champ m1-role-' + ROLE[id] + (idx === kF ? ' m1-champ-fusion' : '');
+          if (idx === kF) {
+            inp.setAttribute('data-fin', String(kF + 1));
+            inp.style.setProperty('--m1-cs', couleurRole('s')); inp.style.setProperty('--m1-cv', couleurRole('v'));
+          }
           inp.setAttribute('autocomplete', 'off'); inp.setAttribute('autocapitalize', 'none'); inp.setAttribute('autocorrect', 'off'); inp.spellcheck = false;
           inp.setAttribute('data-idx', String(idx));
-          inp.size = Math.max(AFFICHE[id].length, 4);
+          inp.size = idx === kF ? Math.max(AFFICHE[id].length + AFFICHE[phrase.mots[kF + 1]].length + 2, 8) : Math.max(AFFICHE[id].length, 4);
           champs.push(inp);
           return inp;
         });
+        if (kF !== -1) {                      // les deux groupes (sujet, verbe) deviennent un seul bloc : étiquettes côte à côte, une case dessous
+          injecterStyle('m1-fusion-style', FUSION_CSS);
+          const cF = champs.filter(function (c) { return c.getAttribute('data-fin'); })[0];
+          const bloc0 = cF && cF.closest('.m1-groupe'), bloc1 = bloc0 && bloc0.nextElementSibling;
+          if (bloc0 && bloc1 && bloc1.querySelector('.m1-fusion-vide')) {
+            const etiq = document.createElement('div'); etiq.className = 'm1-fusion-etiq';
+            etiq.appendChild(bloc0.querySelector('.m1-role')); etiq.appendChild(bloc1.querySelector('.m1-role'));
+            bloc0.classList.add('m1-groupe-fusion'); bloc0.insertBefore(etiq, bloc0.firstChild);
+            bloc1.parentNode.removeChild(bloc1);
+          }
+        }
         zone.appendChild(ligne);
       } else {
         champPhrase = document.createElement('input');
@@ -2376,16 +2534,15 @@
         coupeManger();
         direPhrase(phrase);
         lecteurIndice(auHasard(T('quipOk')), 2200);
-        planifier(fini, 1300);
+        finApresVoix(fini, 1300);
       }
       function verifier() {
         if (termine) return;
         let toutBon = true, pires = 'accent';
         if (cloze) {
           champs.forEach(function (c) {
-            const attendu = phrase.mots[Number(c.getAttribute('data-idx'))];
             const donne = normaliser(c.value);
-            const attenduN = normaliser(AFFICHE[attendu]);
+            const attenduN = normaliser(texteAttendu(c));
             const bon = donne === attenduN;
             c.classList.toggle('m1-ok', bon); c.classList.toggle('m1-ko', !bon);
             if (!bon) {
@@ -2412,7 +2569,7 @@
         if (erreurs >= 3) {              // la réponse apparaît ; on ne bloque pas l'élève
           termine = true;
           bValider.disabled = true;
-          if (cloze) champs.forEach(function (c) { c.value = AFFICHE[phrase.mots[Number(c.getAttribute('data-idx'))]]; c.classList.add('m1-ok'); c.classList.remove('m1-ko'); });
+          if (cloze) champs.forEach(function (c) { c.value = texteAttendu(c); c.classList.add('m1-ok'); c.classList.remove('m1-ko'); });
           else { champPhrase.value = phrase.texte; champPhrase.classList.add('m1-ok'); champPhrase.classList.remove('m1-ko'); }
           lecteurIndice(T('quipReponse'), 4200);
           coupeManger();
@@ -2468,7 +2625,7 @@
         });
         bValider.disabled = termine || !choisis.length;
       }
-      melanger(options2.banque || banqueDefaut).forEach(function (id) {
+      melanger(banqueComplete(phrase, options2.banque || banqueDefaut)).forEach(function (id) {
         const t = tuile(id);
         t.addEventListener('click', function () {
           if (termine || t.classList.contains('m1-tuile-partie')) return;
@@ -2490,7 +2647,7 @@
           coupeManger();
           direPhrase(phrase);
           lecteurIndice(auHasard(T('quipOk')), 2200);
-          planifier(fini, 1400);
+          finApresVoix(fini, 1400);
           return;
         }
         erreurs++;
@@ -2989,7 +3146,7 @@
       try { dejaVue = localStorage.getItem('kebbek_astuce_clavier') === '1'; } catch (e) {}
       if (tactile || dejaVue) return;
       try { localStorage.setItem('kebbek_astuce_clavier', '1'); } catch (e) {}
-      planifier(function () { if (saisie && !saisieUtilisee && saisie.actif()) lecteurIndice(T('astuceClavier'), 6500); }, 2400);
+      planifier(function () { if (saisie && !saisieUtilisee && saisie.actif()) lecteurIndice(T('astuceClavier'), 6500, false); }, 2400);
     }
     function saisieOuvrir(config) {
       injecterStyle('m1-saisie-style', SAISIE_CSS);
@@ -3321,6 +3478,6 @@
     return { arreter: function () { ferme = true; if (courante) courante.arreter(); } };
   }
 
-  try { console.info('sequence-m1 : v25 — étal dans la carte (fragments 2 et 3), en boucle sur la remarque'); } catch (e) {}
+  try { console.info('sequence-m1 : v29 — étal dans la carte (fragments 2 et 3), en boucle sur la remarque'); } catch (e) {}
   window.KebBekM1 = { demarrer: demarrer, MOTS_APPRIS: MOTS_APPRIS, MOTS_APPRIS_2: MOTS_APPRIS_2, MOTS_APPRIS_3: MOTS_APPRIS_3, MOTS_APPRIS_4: MOTS_APPRIS_4, MOTS_APPRIS_5: MOTS_APPRIS_5, REPARATION: REPARATION };
 })();

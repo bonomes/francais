@@ -43,6 +43,10 @@
    🆕 Pizza : trois images — bek_mange-pizza_01-01 (grand sourire : la pose des leçons), bek_mange-pizza_bouche-fermee_01-01 (repos) et
    bek_mange-pizza_bouche-ouverte_01-01 (en parlant). Dans l'exercice d'écoute d'une phrase avec « pizza », elle tient sa part et sa bouche
    alterne repos / parle pendant la voix (pas de mastication). Sans les deux dernières : pose « écoute-moi ».
+   🆕 Film : deux images — bek_regarde-film_01-01 (la pose des leçons, et le repos : bouche fermée) et bek_regarde-film_bouche-ouverte_01-01
+   (en parlant). Dans l'exercice d'écoute d'une phrase avec « film » ou « télé » (« Je regarde un film. », « J'aime regarder la télé. »), Bek garde
+   sa télécommande, face à l'écran, et sa bouche alterne repos / parle pendant la voix. Sans la version bouche ouverte : pose « écoute-moi ».
+   Les deux images ont le même cadre ; la lueur de l'écran (à gauche) fait partie de l'image.
 
    🆕 (03-11-2026) FRAGMENT 3 (anciennement 2) — options.fragment = 3 : « REGARDER ».
    La mémoire est faite de fragments ; celui-ci enseigne le verbe « regarde » (en -er, comme « mange »).
@@ -152,9 +156,10 @@
     // (enthousiasme très bas : poli, un peu éteint — pas une grimace)
     'bek-mange-sandwich': 'images/m1/bek_mange-sandwich_01-01.webp',
     'bek-mange-poutine':  'images/m1/bek_mange-poutine_01-01.webp',
-    // 🎨 fragment 2 (à produire) : Bek qui REGARDE. Film : concentrée, yeux sur l'écran ; sandwich : elle a faim mais patiente ;
-    // poutine : enthousiasme très bas, poli mais éteint.
-    'bek-regarde-film':     'images/m1/bek_regarde-film_01-01.webp',
+    // 🎨 fragment 3 : Bek qui REGARDE. Film (livrée, deux poses) : concentrée, yeux sur l'écran, télécommande en main ; sandwich (à produire) :
+    // elle a faim mais patiente ; poutine (à produire) : enthousiasme très bas, poli mais éteint.
+    'bek-regarde-film':     'images/m1/bek_regarde-film_01-01.webp',                    // 🆕 la pose des leçons, et le repos : bouche fermée
+    'bek-film-ouverte':     'images/m1/bek_regarde-film_bouche-ouverte_01-01.webp',     // 🆕 en parlant : bouche ouverte (exercices d'écoute)
     'bek-regarde-sandwich': 'images/m1/bek_regarde-sandwich_01-01.webp',
     'bek-regarde-poutine':  'images/m1/bek_regarde-poutine_01-01.webp',
     // 🎨 fragment 2 (livrées, trois poses) : Bek qui mange une pizza (même enthousiasme que pour le sandwich, un peu plus gourmande)
@@ -1801,6 +1806,11 @@
         : (derniereNourriture === 'poutine' ? 'sandwich' : (Math.random() < 0.5 ? 'sandwich' : 'poutine'));
       return derniereNourriture;                           // « Je mange. » : sandwich puis poutine, en alternance
     }
+    // 🆕 « Je regarde un film. », « J'aime regarder la télé. » : Bek regarde l'écran, télécommande en main (repos / parle, comme la pizza)
+    function estFilm(ph) {
+      const mots = (ph && ph.mots) || [];
+      return mots.indexOf('film') !== -1 || mots.indexOf('tele') !== -1;
+    }
     // une bouchée puis la mastication ; s'arrête si une voix repart (Réécouter) ; renvoie true si elle est allée au bout
     async function mangerUneFois(m, jeton) {
       montrer(m.bouchee, true); await pause(m.msBouchee);
@@ -1817,8 +1827,9 @@
       const m = cle ? MANGER[cle] : null;
       const mange = !!(m && bouclePrete(cle) && poses[m.base] && poses[m.ouverte] && !mouvementReduit());
       const pizza = cle === 'pizza' && !!(poses['bek-pizza-repos'] && poses['bek-pizza-ouverte']);     // 🆕 elle tient sa pizza et la dit
-      const base = mange ? m.base : (pizza ? 'bek-pizza-repos' : 'bek-ecoute');
-      const ouv = mange ? m.ouverte : (pizza ? 'bek-pizza-ouverte' : 'bek-ecoute-ouverte');
+      const film = !mange && !pizza && estFilm(phrase) && !!(poses['bek-regarde-film'] && poses['bek-film-ouverte']);   // 🆕 elle regarde l'écran et dit la phrase
+      const base = mange ? m.base : (pizza ? 'bek-pizza-repos' : (film ? 'bek-regarde-film' : 'bek-ecoute'));
+      const ouv = mange ? m.ouverte : (pizza ? 'bek-pizza-ouverte' : (film ? 'bek-film-ouverte' : 'bek-ecoute-ouverte'));
       if (!poses[base]) return;
       const jeton = ++jetonBouche;
       let ouverte = false, premiere = true, aParle = false;
@@ -2398,7 +2409,7 @@
       const attente = construireSimple(phrase, cle, { direAuClic: false, sansEcoute: true });
       zone.insertBefore(entete, zone.firstChild);     // construire() vient de remplir la zone (synchrone jusqu'au premier await)
       reactiverSon();                       // 🆕 l'écoute est le but de l'exercice : le son est rallumé si l'élève l'avait coupé ailleurs
-      animerBouche(phrase);                 // 🆕 pose neutre « écoute-moi » (bouche mobile pendant la voix) ; « Je mange… » : elle tient l'aliment, parle, puis mange
+      animerBouche(phrase);                 // 🆕 pose neutre « écoute-moi » (bouche mobile pendant la voix) ; « Je mange… » : elle tient l'aliment, parle, puis mange ; pizza, film, télé : elle garde sa pose et parle
       planifier(function () { direPhrase(phrase); }, 400);
       await attente;
       arreterBouche();

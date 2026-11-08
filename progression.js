@@ -672,12 +672,67 @@
     }
   }
 
+  // ---------- Résultats d'épreuve (08-11-2026) ----------
+  //
+  // Une ÉPREUVE (ex. 'm1_epreuve' = fragment 6 de la Première mémoire) envoie ses réponses à la page hôte, qui les passe ici.
+  // Compte : RPC enregistrer_epreuve (table resultats_epreuves : dernière passation par élève et par épreuve ; l'enseignant lié les lit
+  // avec lire_epreuves_enseignant, voir professeur.js). Invité : localStorage, migré au compte avec le reste (migrerEpreuvesInviteVersCompte).
+  // Best-effort comme le reste : renvoie false en cas d'échec, ne lève jamais.
+
+  const CLE_EPREUVES_INVITE = 'kebbek_epreuves_invite'; // { [epreuve_id]: { resultats, bilan, date } }
+
+  function epreuvesInviteLocales() {
+    try { return JSON.parse(localStorage.getItem(CLE_EPREUVES_INVITE) || '{}'); }
+    catch (e) { return {}; }
+  }
+
+  async function enregistrerEpreuve(epreuveId, resultats, bilan) {
+    const liste = Array.isArray(resultats) ? resultats : Object.keys(resultats || {}).map(function (k) { return resultats[k]; });   // accepte aussi { cle: résultat }
+    if (sessionActuelle && profilActifId && clientSupabase) {
+      try {
+        const { error } = await clientSupabase.rpc('enregistrer_epreuve', {
+          p_eleve_id: profilActifId,
+          p_epreuve_id: epreuveId,
+          p_resultats: liste,
+          p_bilan: bilan || null
+        });
+        if (error) { console.warn('progression.js : enregistrerEpreuve (compte) a échoué.', error); return false; }
+        return true;
+      } catch (e) {
+        console.warn('progression.js : enregistrerEpreuve a échoué.', e);
+        return false;
+      }
+    }
+    const e = epreuvesInviteLocales();
+    e[epreuveId] = { resultats: liste, bilan: bilan || null, date: new Date().toISOString() };
+    try { localStorage.setItem(CLE_EPREUVES_INVITE, JSON.stringify(e)); return true; }
+    catch (err) { console.warn('progression.js : enregistrerEpreuve (invité) a échoué.', err); return false; }
+  }
+
+  // À appeler juste après un creerProfil() réussi (déjà chaîné depuis migrerPositionsLeconInviteVersCompte, donc rien à changer dans les pages).
+  async function migrerEpreuvesInviteVersCompte(eleveId) {
+    const locales = epreuvesInviteLocales();
+    const ids = Object.keys(locales);
+    if (ids.length === 0 || !clientSupabase) return;
+    let tout = true;
+    for (const id of ids) {
+      try {
+        const { error } = await clientSupabase.rpc('enregistrer_epreuve', {
+          p_eleve_id: eleveId, p_epreuve_id: id, p_resultats: locales[id].resultats || [], p_bilan: locales[id].bilan || null
+        });
+        if (error) { tout = false; console.warn('progression.js : migration de l\'épreuve', id, error); }
+      } catch (e) { tout = false; console.warn('progression.js : migration de l\'épreuve', id, e); }
+    }
+    if (tout) localStorage.removeItem(CLE_EPREUVES_INVITE);   // en cas d'échec on garde la copie locale
+  }
+
   // Symétrique des autres migrations invité → compte ci-dessous — à
   // appeler dans la même séquence (juste après migrerPersonnageInviteVersCompte(),
   // par exemple), UNE SEULE FOIS après un creerProfil() réussi. Migre
   // TOUTES les positions de leçon en attente (potentiellement plusieurs
   // chapitres), pas seulement celle du chapitre courant.
   async function migrerPositionsLeconInviteVersCompte(eleveId) {
+    try { await migrerEpreuvesInviteVersCompte(eleveId); } catch (e) { console.warn('progression.js : migration des épreuves.', e); }
     const locales = positionsLeconInviteLocales();
     const ids = Object.keys(locales);
     if (ids.length === 0 || !clientSupabase) return;
@@ -880,6 +935,8 @@
     lirePositionLecon,
     effacerPositionLecon,
     migrerPositionsLeconInviteVersCompte,
+    enregistrerEpreuve,
+    migrerEpreuvesInviteVersCompte,
     attribuerRecompensePremiereFois,
     migrerProgressionInviteVersCompte,
     lireIdentite,

@@ -125,6 +125,30 @@ h1 { margin: 0; font-size: clamp(1.9rem, 6vw, 2.6rem); font-weight: 800; }
   background: var(--c, #E08867); border: 3px solid var(--brun-fonce); box-shadow: 0 5px 0 0 var(--brun-fonce);
 }
 
+/* 🆕 (08-11-2026) Personnage dessiné : une languette dépasse du panneau (on voit la tête) ; un clic l'étire vers le haut et le personnage
+   apparaît en entier, debout sur le bord du panneau. Les tailles (--pw largeur, --hf hauteur fermée, --hp hauteur étirée, --iw/--ih image)
+   sont posées par dimensionner() selon la place disponible. */
+.perso.dessin { display: block; aspect-ratio: auto; width: var(--pw); height: var(--hf); }
+.perso.dessin .languette {
+  position: absolute; left: 0; right: 0; bottom: 0; height: var(--hf); overflow: hidden; padding: 0;
+  font: inherit; color: inherit; cursor: pointer; pointer-events: auto; -webkit-tap-highlight-color: transparent;
+  background: var(--pale, #FBDCCB); border: 3px solid var(--brun-fonce); border-bottom: 0; border-radius: 56px 56px 0 0;
+  box-shadow: 0 -4px 14px var(--ombre);
+  transition: height .75s cubic-bezier(.2,.9,.3,1.18);
+}
+.perso.dessin:not(.etire) .languette:hover { height: calc(var(--hf) + 10px); transition-duration: .25s; }
+.perso.dessin.etire .languette { height: var(--hp); }
+.perso.dessin .languette:focus-visible { outline: 3px solid var(--peche-fonce); outline-offset: 3px; }
+.perso.dessin img { inset: auto; top: 10px; left: 50%; width: var(--iw); height: var(--ih); transform: translateX(-50%); pointer-events: none; }
+.perso.dessin .nom { position: absolute; left: 50%; bottom: 18px; margin: 0; transform: translateX(-50%); white-space: nowrap; transition: opacity .25s ease; }
+.perso.dessin.etire .nom { opacity: 0; }
+.perso.dessin.visible:not(.etire) .languette { animation: appel 1.2s ease 1s 2; }   /* « clique-moi » : la languette tressaute deux fois */
+@keyframes appel { 0%, 100% { height: var(--hf); } 40% { height: calc(var(--hf) + 16px); } }
+@media (prefers-reduced-motion: reduce) {
+  .perso.dessin .languette { transition: none; }
+  .perso.dessin.visible:not(.etire) .languette { animation: none; }
+}
+
 /* ---------- Le panneau de résumé ---------- */
 .panneau {
   position: fixed; left: 50%; bottom: 0; z-index: 20; width: min(100%, 520px);
@@ -288,7 +312,7 @@ header, .chemin { position: relative; z-index: 1; }
   <p class="sous-titre" id="sousTitre"></p>
 </header>
 <main class="chemin" id="chemin"></main>
-<div class="scene-persos" id="scenePersos" aria-hidden="true"></div>
+<div class="scene-persos" id="scenePersos"></div>
 <aside class="panneau" id="panneau" role="dialog" aria-labelledby="pTitre">
   <button type="button" class="fermer" id="pFermer" aria-label="Fermer">&times;</button>
   <div class="qui" id="pQui"></div>
@@ -313,9 +337,9 @@ header, .chemin { position: relative; z-index: 1; }
   //   personnages : { id, mystere:true } = silhouette + « ? »
   // ================================================================
   const PERSONNAGES = {          // 🎨 'img' : le vrai dessin viendra ici
-    keb:  { nom: 'Keb',  couleur: '#7FB7E6', img: null },
-    bek:  { nom: 'Bek',  couleur: '#E08867', img: null },
-    kloe: { nom: 'Kloé', couleur: '#E8B04A', img: null }
+    keb:  { nom: 'Keb',  couleur: '#7FB7E6', img: null, pale: '#DDEBFA' },
+    bek:  { nom: 'Bek',  couleur: '#E08867', img: 'images/memoires/bek_memoires_01-01.webp', ratio: 0.4725, pale: '#FBDCCB' },   // 🆕 ratio = largeur / hauteur de l'image rognée
+    kloe: { nom: 'Kloé', couleur: '#E8B04A', img: null, pale: '#F8E6BF' }
   };
   const MEMOIRES = [
     { id: 'm1', titre: 'Première mémoire', teaser: 'Tout commence ici…', motif: 'etoile', teintes: ['#FFE3CF', '#F6C2A4'], page: 'memoire-1.html',
@@ -491,13 +515,66 @@ header, .chemin { position: relative; z-index: 1; }
       d.style.left = ((k + 1) / (n + 1) * 100) + '%';
       d.style.marginLeft = 'calc(clamp(120px, 24vw, 190px) / -2)';
       d.style.setProperty('--c', def ? def.couleur : '#6B5D54');
-      d.innerHTML = mystere ? silhouetteSvg()
-        : (def.img ? '<img src="' + echapper(def.img) + '" alt="">' : '<span class="rond"></span>') +
-          '<span class="nom">' + echapper(def.nom) + '</span>';
+      if (def && def.img) {
+        // 🆕 personnage dessiné : languette cliquable (tête visible) qui s'étire pour montrer le personnage en entier
+        d.className = 'perso dessin';
+        d.setAttribute('data-ratio', def.ratio || .47);
+        d.style.setProperty('--pale', def.pale || '#FBDCCB');
+        d.style.marginLeft = 'calc(var(--pw) / -2)';
+        const b = document.createElement('button');
+        b.type = 'button'; b.className = 'languette';
+        b.setAttribute('aria-expanded', 'false'); b.setAttribute('aria-label', def.nom);
+        const im = document.createElement('img');
+        im.alt = ''; im.draggable = false; im.src = def.img;
+        im.addEventListener('error', function () {      // image absente : retour à la pastille colorée
+          d.className = 'perso avatar visible'; d.style.marginLeft = 'calc(clamp(120px, 24vw, 190px) / -2)'; d.setAttribute('aria-hidden', 'true');
+          d.innerHTML = '<span class="rond"></span><span class="nom">' + echapper(def.nom) + '</span>';
+        });
+        const nom = document.createElement('span');
+        nom.className = 'nom'; nom.textContent = def.nom;
+        b.appendChild(im); b.appendChild(nom);
+        b.addEventListener('click', function (e) {
+          e.stopPropagation();
+          const ouvert = !d.classList.contains('etire');
+          d.classList.toggle('etire', ouvert);
+          b.setAttribute('aria-expanded', ouvert ? 'true' : 'false');
+        });
+        d.appendChild(b);
+      } else {
+        d.setAttribute('aria-hidden', 'true');
+        d.innerHTML = mystere ? silhouetteSvg()
+          : '<span class="rond"></span><span class="nom">' + echapper(def.nom) + '</span>';
+      }
       scenePersos.appendChild(d);
       setTimeout(function () { d.classList.add('visible'); }, 120 + k * 140);
     });
+    dimensionner();
   }
+  function replierPersonnages() {
+    Array.prototype.forEach.call(scenePersos.querySelectorAll('.perso.etire'), function (d) {
+      d.classList.remove('etire');
+      const b = d.querySelector('.languette'); if (b) b.setAttribute('aria-expanded', 'false');
+    });
+  }
+  // 🆕 Tailles des personnages dessinés : la figure entière doit tenir entre le bord du panneau et le haut de l'écran (et chacun dans sa colonne).
+  function dimensionner() {
+    const els = scenePersos.querySelectorAll('.perso.dessin');
+    if (!els.length) return;
+    const n = scenePersos.children.length;
+    const dispo = window.innerHeight - panneau.offsetHeight + 14 - 22;
+    Array.prototype.forEach.call(els, function (d) {
+      const ratio = parseFloat(d.getAttribute('data-ratio')) || .47;
+      const pwMax = Math.max(96, window.innerWidth / (n + 1) - 8);
+      const ih = Math.round(Math.max(110, Math.min(dispo - 13, 430, (pwMax - 28) / ratio)));
+      const iw = Math.round(ih * ratio);
+      d.style.setProperty('--ih', ih + 'px');
+      d.style.setProperty('--iw', iw + 'px');
+      d.style.setProperty('--pw', (iw + 28) + 'px');
+      d.style.setProperty('--hf', Math.round(0.4 * ih + 10 + 14 + 3) + 'px');     // la tête seulement (les 14 px du bas sont sous le panneau)
+      d.style.setProperty('--hp', (ih + 10 + 14 + 3) + 'px');                      // le personnage entier, pieds sur le bord du panneau
+    });
+  }
+  window.addEventListener('resize', dimensionner);
 
   // ---------- 🆕 Au programme : notions + fragments (menu dépliant) ----------
   function fragmentFait(m, f) {
@@ -536,7 +613,7 @@ header, .chemin { position: relative; z-index: 1; }
       '</div>';
     }).join('') + (aGenre ? '<p class="legende-genre" dir="auto">' + echapper(T.legende) + '</p>' : '');
   }
-  function ajusterPersonnages() { scenePersos.style.bottom = (panneau.offsetHeight - 14) + 'px'; }   // ils se tiennent sur le bord du panneau
+  function ajusterPersonnages() { scenePersos.style.bottom = (panneau.offsetHeight - 14) + 'px'; dimensionner(); }   // ils se tiennent sur le bord du panneau
   el.programme.addEventListener('toggle', function () { setTimeout(ajusterPersonnages, 30); });
   // 🆕 « Répéter » : relance ce seul fragment (?f=n&seul=1) ; à la fin, retour ici, sans toucher à la progression ni à la position gardée.
   el.programmeListe.addEventListener('click', function (e) {
@@ -578,10 +655,12 @@ header, .chemin { position: relative; z-index: 1; }
   function fermer() {
     choisie = null;
     panneau.classList.remove('ouvert');
+    replierPersonnages();
     Array.prototype.forEach.call(scenePersos.children, function (d) { d.classList.remove('visible'); });
     Array.prototype.forEach.call(chemin.querySelectorAll('.case'), function (c) { c.classList.remove('choisie'); });
   }
   document.getElementById('pFermer').addEventListener('click', fermer);
+  document.addEventListener('click', replierPersonnages);     // 🆕 un clic ailleurs range la languette étirée (le clic sur la languette s'arrête avant)
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape') fermer(); });
 
   // fond animé : lettres et accents qui dérivent, étoiles qui scintillent, étoile filante (un souhait)

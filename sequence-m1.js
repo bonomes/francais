@@ -68,7 +68,7 @@
    Images à produire (repli : pose existante + vignette dessinée) :
      images/m1/bek_regarde-film_01-01.webp, bek_regarde-sandwich_01-01.webp, bek_regarde-poutine_01-01.webp.
    options.suite = true (fragments 1 et 2, et 3 tant que le 4 n'existe pas) : le Lecteur dit que le souvenir n'est pas encore entier (au lieu de « reconstitué »).
-   Textes nouveaux : fr + en seulement ; les 18 autres langues retombent sur l'anglais (à traduire).
+   Textes nouveaux : fr + en + ja (japonais traduit le 08-11-2026) ; les 17 autres langues retombent sur l'anglais (à traduire).
    onTermine({ mots, fragments }) : fragments = numéro du fragment terminé.
 
    🆕 (03-11-2026) RENUMÉROTATION — la mémoire compte maintenant 3 fragments (un 4e, « j'aime », est prévu) :
@@ -84,7 +84,7 @@
           5. exercice audio : « Je mange le sandwich. », « Je mange la poutine. », « Je mange la pizza. »
         Voix (ids) : m1-je-mange-le-sandwich, m1-je-mange-la-poutine, m1-je-mange-une-pizza, m1-je-mange-la-pizza, le, la, pizza.
         Images (livrées) : images/m1/bek_mange-pizza_01-01.webp (leçons), _bouche-fermee_ (repos) et _bouche-ouverte_ (en parlant). Repli : pose « observe » + vignette dessinée.
-        Textes nouveaux : fr + en seulement (les 18 autres langues retombent sur l'anglais).
+        Textes nouveaux : fr + en + ja (les 17 autres langues retombent sur l'anglais).
      3. « Je regarde » (options.fragment = 3) : l'ancien fragment 2, inchangé (textes : intro3, fin3).
      4. « J'aime » (options.fragment = 4) : NOUVEAU. Mots introduits : j', aime, manger, regarder, jouer, télé.
         Notions : « je » devant une voyelle devient « j' » (élision ; vaut aussi pour le, la…) ; après « aimer », le verbe reste à
@@ -158,7 +158,7 @@
        callbacks.onResultat({ cle, type, question, reponse, statut, attendu, essais }) à chaque réponse ; onTermine({ mots, fragments: 6, resultats, bilan }).
        statut : ok | presque | partiel | non | libre | passe. Les résultats survivent à la flèche de retour (le module les garde le temps de la session) ;
        pour un « quitter et continuer plus tard », c'est la page hôte qui garde ceux reçus par onResultat.
-       Textes : fr + en seulement. Le fragment 5 garde son onTermine : c'est la page hôte qui enchaîne sur le 6.
+       Textes : fr + en + ja. Le fragment 5 garde son onTermine : c'est la page hôte qui enchaîne sur le 6.
 
    @param {string} idConteneur
    @param {object} options   : langue ; dossierAudio ('audio/fr/') ; voix ('bek') ; versionVoix ('01') ; voixLangue ('fr-CA') ;
@@ -547,7 +547,7 @@
       // ---- 🆕 fragment 5 : la réparation ----
       intro5: 'Les quatre morceaux sont là. Il reste à les assembler, seul. Je ne dirai rien. Enfin, presque rien.',
       fin5: 'Souvenir réparé. Quatre morceaux, six phrases, un peu de poutine. Ça aurait pu être pire.',
-      // ---- 🆕 (08-11-2026) fragment 6 : l'épreuve (textes fr + en ; les autres langues retombent sur l'anglais) ----
+      // ---- 🆕 (08-11-2026) fragment 6 : l'épreuve (textes fr + en + ja ; les autres langues retombent sur l'anglais) ----
       intro6: 'Dernier morceau du souvenir. Cette fois, personne ne te tient la main. Il y a des choses que seul un humain peut faire\u00a0: écouter, écrire, se rappeler. Il faut s’y habituer. Ce n’est pas ici que ça compte… mais ce que tu écris sera noté.',
       fin6: 'Dernier morceau récupéré. Le souvenir est entier. Ce que tu as écrit est gardé. Pour la suite… on verra.',
       c_dictee: 'Écoute, puis écris ce que tu entends. La liste de mots est une aide\u00a0: tu ne peux pas la toucher.',
@@ -1176,7 +1176,31 @@
       quipVerbe: '食べていません。見ています。動詞は大事です。',
       quipFilmMange: '映画を食べる。独創的ですね。でも、違います。',
       quipUn: '「un film」であって、「une」ではありません。男性名詞です。',
-      cult_film: '「film」はもともと英語で、薄い膜のことでした。フランス語では男性名詞で、un film と言います。'
+      cult_film: '「film」はもともと英語で、薄い膜のことでした。フランス語では男性名詞で、un film と言います。',
+      // ---- 🆕 (08-11-2026) fragment 6 : l'épreuve (japonais) ----
+      intro6: '記憶の最後のかけらです。今回は、だれも手を引いてくれません。人間にしかできないことがあります。聞くこと、書くこと、思い出すこと。それに慣れる必要があります。ここで成績が決まるわけではありません……が、あなたが書いたものは記録されます。',
+      fin6: '最後のかけらを取り戻しました。記憶はひとつにそろいました。あなたが書いたものは保存されています。この先のことは……そのうち、わかるでしょう。',
+      c_dictee: '聞いて、聞こえたとおりに書きましょう。単語リストはヒントです。触ることはできません。',
+      liste_mots: '使える単語',
+      c_aimeq: 'あなたはBekです。何をするのが好きですか？完全な文で書きましょう。',
+      lec_certif: 'ここからは、Bekについての質問です。答えるには、彼女について学んだことを思い出す必要があります。選ぶものはありません。それを確かめられるのは、あなただけです。間違えてもかまいません。でも、あとで影響が出るかもしれません。',
+      c_certif1: 'あなたが直した記憶の中で、Bekは何を食べていましたか？「un」か「une」をつけて書きましょう。',
+      quipNote: '記録しました。合っているかどうかは言いません。人間は、そういうことにも慣れなければなりません。',
+      lec_libre: 'この質問には、正解も不正解もありません。先生が読むかもしれません。答えはコピーできます。',
+      c_libre: 'では、あなた自身のことです。何をするのが好きですか？完全な文を二つ書きましょう。',
+      passer: 'スキップ',
+      quipLibre: 'ありがとう。ちゃんと保存しました。',
+      copier: 'コピー',
+      copie: 'コピーしました！',
+      toutCopier: 'すべてコピー',
+      recap_titre: 'あなたの答え',
+      lec_defi: '最後のチャレンジです。ヒントはありません。成功すれば記録されます。失敗しても、記録されます。',
+      c_defi1: 'チャレンジ（1/2）動詞が出ます。「je」を主語にして、現在形に活用しましょう。',
+      sens_etudier: '勉強する',
+      c_defi2: 'チャレンジ（2/2）「étudier」と「aimer」を、主語「je」で組み合わせましょう。文を書いてください。',
+      presqueAccent: 'OKです。でも、アクセント記号をよく見てください。',
+      presqueApostrophe: 'OKです。でも、アポストロフィを忘れずに。',
+      quipEchec: '今回は残念でした。記録しました。先へ進みましょう。'
     },
     ko: {
       titre: '첫 번째 기억',
@@ -3794,8 +3818,8 @@
     function segmentsDuFragment() {
       if (fragment === 6) return [
         segDictee(0, 'pizzaune'), segDictee(1, 'regsandwichle'), segDictee(2, 'aimetele'), segDictee(3, 'aimemangerpoutine'),
-        segImage(4, 'poutine', 'bek-mange-poutine', PHRASES.poutine, ['Je mange une poutine.', 'Je mange la poutine.'], 'c_image', { manger: 'poutine' }),
-        segImage(5, 'tele', 'bek-regarde-film', PHRASES.aimetele, ['J’aime regarder la télé.'], 'c_aimeq', { coeur: true }),
+        segImage(4, 'poutine', 'bek-mange-poutine', PHRASES.poutine, ['Je mange une poutine.', 'Je mange la poutine.', 'Je mange de la poutine.'], 'c_image', { manger: 'poutine' }),
+        segImage(5, 'tele', 'bek-regarde-film', PHRASES.aimetele, ['J’aime regarder la télé.', 'J’aime regarder un film.', 'J’aime regarder le film.'], 'c_aimeq', { coeur: true }),
         segImage(6, 'jouer', 'bek-aime-jouer', PHRASES.aimejouer, ['J’aime jouer.'], 'c_aimeq', { coeur: true }),
         segComprehension(7), segLibre(8), segDefi(9, 1), segDefi(10, 2)
       ];

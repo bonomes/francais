@@ -137,8 +137,28 @@
       tapé en entier (« mange » → mange) ; « ’ » pose « j’ » ; Retour arrière / Échap effacent ; la fin d'un mot posé est avalée (« poutine » tapé
       d'une traite). Construction : Entrée (rien de tapé) valide la phrase, Retour arrière retire le dernier mot. Astuce affichée une seule fois
       (clé kebbek_astuce_clavier, partagée avec sequence-memoire ; jamais sur un écran tactile). La réparation (fragment 5) garde sa saisie.
+   🆕 (08-11-2026) SCÈNE D'ABORD, ENCADRÉ ENSUITE : au début de chaque fragment (1 à 6) et à un point de repos au milieu (fragments 1, 2, 3, 4 et 6 ;
+      table SCENES), Bek apparaît grande et centrée avec son animation (elle mange, le cœur monte pour « aime », sinon elle respire doucement) pendant
+      que l'encadré est caché ; il se dévoile ensuite en fondu et Bek glisse à sa place. La position de Bek est mesurée à l'exécution (aucune dépendance
+      à sequence-m1.css). Un clic, Entrée ou Espace passent la scène ; durées SCENE_DUREE / SCENE_DUREE_MANGER ; mouvement réduit : fondu seulement ;
+      aucune scène au retour en arrière (flèche) ni à la reprise au milieu d'un fragment.
      Un « ' » ou un « ’ » tapé sont équivalents ; « jaime » ou « j aime » donnent « Presque ! N'oublie pas l'apostrophe. »
    onTermine({ mots, fragments }) : fragments = numéro du fragment terminé.
+
+   🆕 (08-11-2026) v30 :
+     • VOIX : plus d'écho de l'écran précédent. voixActive() compte aussi la phrase mise en file et la synthèse qui démarre (≈ 70 ms) ;
+       vider() coupe la voix à chaque nouvel écran.
+     • CŒUR : quand la voix dit « aime » (phrase ou mot), un cœur SVG monte au-dessus de la tête de Bek (partout : leçons du fragment 4, réparation, fragment 6).
+     • PREMIER ÉCRAN DU FRAGMENT 1 : Bek tient son sandwich et le mange en boucle (pose fixe si les images de la boucle manquent).
+     • FRAGMENT 6 (options.fragment = 6) : L'ÉPREUVE, 11 segments (ETAPES_6) : 4 dictées (écrites à la main, aucune case, liste de mots NON touchable, « Réécouter »),
+       3 questions sur image (« Que fais-tu ? », « Qu'est-ce que tu aimes faire ? » avec cœur), 1 compréhension (les trois aliments de Bek avec un/une, une seule
+       tentative, aucune correction affichée), 1 question libre (jamais notée ; boutons Copier / Tout copier), 2 défis (« étudier » : « j'étudie », puis « j'aime étudier »).
+       Le Lecteur explique la situation (intro6, lec_certif, lec_libre, lec_defi). Deux essais pour dictée / image / défi ; après le dernier raté, la réponse n'est PAS montrée.
+       ACCENTS_TOLERES (en haut) : accent ou apostrophe seuls = « presque » (accepté). Le module ne stocke rien :
+       callbacks.onResultat({ cle, type, question, reponse, statut, attendu, essais }) à chaque réponse ; onTermine({ mots, fragments: 6, resultats, bilan }).
+       statut : ok | presque | partiel | non | libre | passe. Les résultats survivent à la flèche de retour (le module les garde le temps de la session) ;
+       pour un « quitter et continuer plus tard », c'est la page hôte qui garde ceux reçus par onResultat.
+       Textes : fr + en seulement. Le fragment 5 garde son onTermine : c'est la page hôte qui enchaîne sur le 6.
 
    @param {string} idConteneur
    @param {object} options   : langue ; dossierAudio ('audio/fr/') ; voix ('bek') ; versionVoix ('01') ; voixLangue ('fr-CA') ;
@@ -161,7 +181,14 @@
   const MOTS_APPRIS_3 = ['regarde', 'film'];       // fragment 3 : regarder (ancien fragment 2)
   const MOTS_APPRIS_4 = ['j', 'aime', 'manger', 'regarder', 'jouer', 'joue', 'tele'];   // fragment 4 : j'aime + infinitif
   const MOTS_APPRIS_5 = [];                       // fragment 5 : la réparation n'apprend aucun mot nouveau
+  const MOTS_APPRIS_6 = [];                       // fragment 6 : l'épreuve n'apprend aucun mot nouveau
   const ETAPES_TOTAL = 6;
+  // 🆕 (08-11-2026) Fragment 6 (l'épreuve) : longueur VARIABLE. 11 segments = 4 dictées + 3 images + 1 compréhension + 1 question libre + 2 défis.
+  //   Les autres fragments gardent 6 segments. Pour ajouter/retirer une question : modifier segmentsDuFragment() ET ce nombre.
+  const ETAPES_6 = 11;
+  // 🆕 Fragment 6, sans indice : une faute d'accent ou d'apostrophe seule est-elle acceptée (notée « presque ») ou comptée comme une erreur ?
+  //   ⚠️ CHOIX À CONFIRMER : true = acceptée et notée « presque » ; false = erreur. (Dans les leçons, rien ne change : l'indice reste donné.)
+  const ACCENTS_TOLERES = true;
 
   // Poses : toutes bouche fermée (Bek réagit, elle ne parle pas).
   const SOURCES_PAR_DEFAUT = {
@@ -382,6 +409,53 @@
   ].join('\n');
   // 🆕 (08-11-2026) L'étal quitte les pieds de Bek : il est dans la carte de leçon, juste au-dessus de la phrase (là où l'œil de l'élève travaille),
   //   avec de gros dessins.
+  // 🆕 (08-11-2026) LE CŒUR : quand la voix dit « aime », un petit cœur (SVG, aucune image à produire) monte au-dessus de la tête de Bek, avec une lueur douce.
+  // 🆕 (08-11-2026) SCÈNE D'ABORD, ENCADRÉ ENSUITE : au début de chaque fragment, et à un point de repos au milieu, Bek apparaît grande et centrée
+  // avec son animation ; l'encadré (la carte et le Lecteur) est caché. Puis il se dévoile en fondu pendant que Bek glisse à sa place.
+  // La place de Bek est MESURÉE à l'exécution (aucune dépendance à la disposition de sequence-m1.css). Un clic, Entrée ou Espace passent la scène.
+  // Mouvement réduit : pas de glissement, seulement un fondu. Retour en arrière (flèche) et reprise en cours de fragment : pas de scène.
+  const SCENE_CSS = [
+    '.m1-col-gauche.m1-cache{opacity:0;visibility:hidden;transform:translateX(-18px);pointer-events:none}',
+    '.m1-col-gauche.m1-glisse{transition:opacity .9s ease .25s,transform .9s cubic-bezier(.2,.8,.3,1) .25s}',
+    '.m1-bek.m1-bek-souffle{animation:m1-souffle 2.4s ease-in-out infinite alternate}',
+    '@keyframes m1-souffle{from{transform:translateY(0) scale(1)}to{transform:translateY(-6px) scale(1.012)}}',
+    '@media (max-width:719px){.m1-col-gauche.m1-cache{transform:translateY(-12px)}}',
+    '@media (prefers-reduced-motion:reduce){.m1-col-gauche.m1-cache{transform:none}.m1-col-gauche.m1-glisse{transition:opacity .3s ease}.m1-bek.m1-bek-souffle{animation:none}}'
+  ].join('\n');
+  const SCENE_DUREE = 3000, SCENE_DUREE_MANGER = 4300;     // ms : de quoi voir une bouchée et quelques mastications
+  const SCENES = {                                         // intro : au début du fragment ; repos : avant le segment « index » (milieu du fragment)
+    1: { intro: { pose: 'bek-mange-sandwich', manger: 'sandwich' }, repos: { index: 3, pose: 'bek-mange-sandwich', manger: 'sandwich' } },
+    2: { intro: { pose: 'bek-mange-poutine', manger: 'poutine' },  repos: { index: 3, pose: 'bek-mange-sandwich', manger: 'sandwich' } },
+    3: { intro: { pose: 'bek-regarde-film' },                     repos: { index: 3, pose: 'bek-regarde-poutine' } },
+    4: { intro: { pose: 'bek-mange-poutine', manger: 'poutine', coeur: true }, repos: { index: 3, pose: 'bek-aime-jouer', coeur: true } },
+    5: { intro: { pose: 'bek-observe' } },
+    6: { intro: { pose: 'bek-observe' },                          repos: { index: 4, pose: 'bek-mange-poutine', manger: 'poutine' } }
+  };
+  //   Le style est injecté ici ; à déplacer dans sequence-m1.css si tu préfères. Mouvement réduit : le cœur apparaît sans monter, puis s'efface.
+  const COEUR_CSS = [
+    '.m1-coeur{position:absolute;left:50%;top:1%;width:3.4rem;height:3.4rem;margin-left:-1.7rem;pointer-events:none;z-index:5;opacity:0;',
+    'filter:drop-shadow(0 0 .55rem rgba(232,92,120,.65));animation:m1-coeur-monte 2.6s ease-out forwards}',
+    '.m1-coeur svg{display:block;width:100%;height:100%}',
+    '.m1-coeur path{fill:#E85C78;stroke:#4A3B33;stroke-width:2.4;stroke-linejoin:round}',
+    '@keyframes m1-coeur-monte{0%{opacity:0;transform:translateY(1.4rem) scale(.4)}18%{opacity:1;transform:translateY(0) scale(1.18)}32%{transform:translateY(-.2rem) scale(1)}',
+    '75%{opacity:1;transform:translateY(-.9rem) scale(1.05)}100%{opacity:0;transform:translateY(-1.8rem) scale(1)}}',
+    '@media (prefers-reduced-motion:reduce){.m1-coeur{animation:m1-coeur-fondu 2.2s ease-out forwards}@keyframes m1-coeur-fondu{0%{opacity:0}15%{opacity:1}70%{opacity:1}100%{opacity:0}}}'
+  ].join('\n');
+  // 🆕 (08-11-2026) FRAGMENT 6 : style de l'épreuve (liste de mots non touchable, zone libre, verbe du défi, récapitulatif). À déplacer dans sequence-m1.css si tu préfères.
+  const EPREUVE_CSS = [
+    '.m1-liste-mots{margin-top:.9rem;padding:.55rem .7rem;border:2px dashed rgba(74,59,51,.3);border-radius:.9rem;text-align:center}',
+    '.m1-liste-titre{margin:0 0 .35rem;font-size:.8rem;font-weight:700;opacity:.65}',
+    '.m1-liste-rang{display:flex;flex-wrap:wrap;gap:.35rem;justify-content:center}',
+    '.m1-mot-liste{padding:.15rem .55rem;border-radius:.6rem;background:rgba(74,59,51,.07);font-weight:700;color:var(--brun-fonce,#4A3B33);pointer-events:none;user-select:none;cursor:default}',
+    '.m1-champ-libre{display:block;width:100%;box-sizing:border-box;min-height:5.5rem;resize:vertical;font:inherit;padding:.6rem .8rem;border:2px solid var(--brun-fonce,#4A3B33);border-radius:.9rem;background:#fff;color:var(--brun-fonce,#4A3B33)}',
+    '.m1-triple{display:flex;flex-wrap:wrap;gap:.5rem;justify-content:center}',
+    '.m1-triple .m1-champ{flex:1 1 9rem;min-width:8rem;width:auto}',
+    '.m1-defi-verbe{display:flex;flex-direction:column;align-items:center;margin:.2rem 0 .7rem}',
+    '.m1-defi-verbe strong{font-size:1.9rem;color:var(--brun-fonce,#4A3B33)}',
+    '.m1-defi-verbe span{opacity:.7;font-style:italic}',
+    '.m1-recap{display:flex;flex-direction:column;gap:.5rem;max-height:16rem;overflow:auto;margin:.2rem 0 .6rem;text-align:left}',
+    '.m1-recap-q{margin:0;font-size:.82rem;opacity:.7}.m1-recap-r{margin:0 0 .3rem;font-weight:700}'
+  ].join('\n');
   const ETAL_PAUSE = 3400;
   const ATTENTE_VOIX_MAX = 4500;    // 🆕 une phrase dite automatiquement attend la fin de la voix en cours, jusqu'à 4,5 s (avant : 1,5 s, ce qui coupait la fin des phrases longues)
   const FIN_VOIX_MARGE = 260;       // 🆕 respiration (ms) laissée après la fin d'une voix, avant la suivante ou avant de changer d'écran      // durée de l'état « un / une » avant le passage à « le / la » (ms)
@@ -473,6 +547,25 @@
       // ---- 🆕 fragment 5 : la réparation ----
       intro5: 'Les quatre morceaux sont là. Il reste à les assembler, seul. Je ne dirai rien. Enfin, presque rien.',
       fin5: 'Souvenir réparé. Quatre morceaux, six phrases, un peu de poutine. Ça aurait pu être pire.',
+      // ---- 🆕 (08-11-2026) fragment 6 : l'épreuve (textes fr + en ; les autres langues retombent sur l'anglais) ----
+      intro6: 'Dernier morceau du souvenir. Cette fois, personne ne te tient la main. Il y a des choses que seul un humain peut faire\u00a0: écouter, écrire, se rappeler. Il faut s’y habituer. Ce n’est pas ici que ça compte… mais ce que tu écris sera noté.',
+      fin6: 'Dernier morceau récupéré. Le souvenir est entier. Ce que tu as écrit est gardé. Pour la suite… on verra.',
+      c_dictee: 'Écoute, puis écris ce que tu entends. La liste de mots est une aide\u00a0: tu ne peux pas la toucher.',
+      liste_mots: 'Mots à ta disposition',
+      c_aimeq: 'Tu es Bek. Qu’est-ce que tu aimes faire\u00a0? Écris une phrase complète.',
+      lec_certif: 'Maintenant, des questions sur Bek. Pour y répondre, il faut te rappeler ce que tu as appris d’elle. Rien à choisir\u00a0: on a besoin de toi pour le certifier. Tu peux te tromper. Mais ça pourrait avoir des conséquences plus tard.',
+      c_certif1: 'Dans les souvenirs que tu as réparés, quelles choses Bek mange-t-elle\u00a0? Écris-les avec «\u00a0un\u00a0» ou «\u00a0une\u00a0».',
+      quipNote: 'Noté. Je ne te dis pas si c’est juste. Un humain doit s’habituer à ça.',
+      lec_libre: 'Celle-ci n’a ni bonne ni mauvaise réponse. Un professeur pourrait la lire. Tu peux copier ta réponse.',
+      c_libre: 'Maintenant, toi\u00a0: qu’aimes-tu faire\u00a0? Réponds avec deux phrases complètes.',
+      passer: 'Passer', quipLibre: 'Merci. C’est gardé.',
+      copier: 'Copier', copie: 'Copié\u00a0!', toutCopier: 'Tout copier', recap_titre: 'Tes réponses',
+      lec_defi: 'Un dernier défi. Aucun indice. Si tu réussis, ça comptera. Si tu échoues, ça comptera aussi.',
+      c_defi1: 'Défi (1/2). Voici un verbe. Conjugue-le avec «\u00a0je\u00a0», au présent.',
+      sens_etudier: 'apprendre en travaillant',
+      c_defi2: 'Défi (2/2). Combine «\u00a0étudier\u00a0» avec «\u00a0aimer\u00a0», avec «\u00a0je\u00a0». Écris une phrase.',
+      presqueAccent: 'Accepté. Mais regarde les accents.', presqueApostrophe: 'Accepté. Mais n’oublie pas l’apostrophe.',
+      quipEchec: 'Pas cette fois. C’est noté. On continue.',
       c_rep: 'Le souvenir est abîmé. Répare-le\u00a0: place chaque mot dans sa case, de gauche à droite.',
       tr_aimepizza: '',
       repApres1: 'Un film. Elle a donc des goûts, au moins.',
@@ -574,6 +667,25 @@
       // ---- 🆕 fragment 5: the repair ----
       intro5: 'All four pieces are here. Now to put them together, on your own. I won’t say anything. Well, almost nothing.',
       fin5: 'Memory repaired. Four pieces, six sentences, a little poutine. It could have been worse.',
+      // ---- 🆕 (08-11-2026) fragment 6: the test ----
+      intro6: 'Last piece of the memory. This time, nobody is holding your hand. Some things only a human can do: listen, write, remember. You need to get used to that. It doesn’t count here… but what you write will be recorded.',
+      fin6: 'Last piece recovered. The memory is whole. What you wrote is kept. As for what comes next… we’ll see.',
+      c_dictee: 'Listen, then write what you hear. The word list is a help: you can’t tap it.',
+      liste_mots: 'Words you can use',
+      c_aimeq: 'You are Bek. What do you like doing? Write a full sentence.',
+      lec_certif: 'Now, questions about Bek. To answer them, you have to remember what you learned about her. Nothing to pick from: we need you to certify it. You may get it wrong. But it could have consequences later.',
+      c_certif1: 'In the memories you repaired, what things does Bek eat? Write them with “un” or “une”.',
+      quipNote: 'Noted. I won’t tell you if it’s right. A human has to get used to that.',
+      lec_libre: 'This one has no right or wrong answer. A teacher might read it. You can copy your answer.',
+      c_libre: 'Now, you: what do you like doing? Answer with two full sentences.',
+      passer: 'Skip', quipLibre: 'Thank you. It’s kept.',
+      copier: 'Copy', copie: 'Copied!', toutCopier: 'Copy all', recap_titre: 'Your answers',
+      lec_defi: 'One last challenge. No hints. If you succeed, it counts. If you fail, that counts too.',
+      c_defi1: 'Challenge (1/2). Here is a verb. Conjugate it with “je”, in the present tense.',
+      sens_etudier: 'to study',
+      c_defi2: 'Challenge (2/2). Combine “étudier” with “aimer”, with “je”. Write a sentence.',
+      presqueAccent: 'Accepted. But look at the accents.', presqueApostrophe: 'Accepted. But don’t forget the apostrophe.',
+      quipEchec: 'Not this time. It’s noted. Moving on.',
       c_rep: 'The memory is damaged. Repair it: place each word in its slot, from left to right.',
       tr_aimepizza: 'I like pizza.',
       repApres1: 'A film. So she has tastes, at least.',
@@ -1693,9 +1805,10 @@
     const conteneur = document.getElementById(idConteneur);
     if (!conteneur) { console.warn('sequence-m1 : conteneur introuvable (' + idConteneur + ').'); return { arreter: function () {} }; }
 
-    const fragment = options.fragment >= 2 && options.fragment <= 5 ? options.fragment : 1;   // 🆕 1 = « manger » (défaut), 2 = « un/une, le/la », 3 = « regarder »
-    const banqueDefaut = [null, BANQUE_LIBRE, BANQUE_2, BANQUE_3, BANQUE_4, BANQUE_4][fragment];
-    const MOTS_DU_FRAGMENT = [null, MOTS_APPRIS, MOTS_APPRIS_2, MOTS_APPRIS_3, MOTS_APPRIS_4, MOTS_APPRIS_5][fragment];
+    const fragment = options.fragment >= 2 && options.fragment <= 6 ? options.fragment : 1;   // 🆕 1 = « manger » (défaut), 2 = « un/une, le/la », 3 = « regarder »
+    const banqueDefaut = [null, BANQUE_LIBRE, BANQUE_2, BANQUE_3, BANQUE_4, BANQUE_4, BANQUE_4][fragment];
+    const nbEtapes = fragment === 6 ? ETAPES_6 : ETAPES_TOTAL;     // 🆕 longueur de la barre de progression
+    const MOTS_DU_FRAGMENT = [null, MOTS_APPRIS, MOTS_APPRIS_2, MOTS_APPRIS_3, MOTS_APPRIS_4, MOTS_APPRIS_5, MOTS_APPRIS_6][fragment];
     const langue = langueActuelle(options);
     function T(cle) {
       const v = (DICO[langue] && DICO[langue][cle]);
@@ -1718,7 +1831,7 @@
     const scene = document.createElement('div');
     scene.className = 'rbek-scene m1-scene';
     let segments = '';
-    for (let i = 0; i < ETAPES_TOTAL; i++) segments += '<span class="m1-segment"></span>';
+    for (let i = 0; i < nbEtapes; i++) segments += '<span class="m1-segment"></span>';
     // 🆕 flèche de retour : fragments 1 à 4, quand la page (demarrer) sait reconstruire la scène à une autre étape
     const avecRetour = fragment !== 5 && typeof options._reculer === 'function';
     const barre = '<div class="m1-progres" aria-hidden="true">' + segments + '</div>';
@@ -1760,10 +1873,13 @@
     const q = function (s) { return scene.querySelector(s); };
     const elConsigne = q('.m1-consigne'), zone = q('.m1-zone'), actions = q('.m1-actions');
     const lectZone = q('.m1-lect'), lectTexte = q('.m1-lect-texte'), lectSuite = q('.m1-lect-suite');
-    const calque = q('.m1-calque'), vignette = q('.m1-vignette');
+    const calque = q('.m1-calque'), vignette = q('.m1-vignette'), colBek = q('.m1-col-bek');
     const segs = scene.querySelectorAll('.m1-segment');
     const boutonSon = q('.m1-son');
     const boutonRetour = q('.m1-retour');
+    const colGauche = q('.m1-col-gauche'), calqueBek = q('.m1-bek');
+    const sceneAuDepart = !options._retour && !(Number(options.reprendreA) > 0);     // 🆕 scène d'abord : pas au retour en arrière ni à la reprise
+    if (sceneAuDepart) { injecterStyle('m1-scene-seule-style', SCENE_CSS); colGauche.classList.add('m1-cache'); }
 
     // ---------- Voix : audio/fr/<id>.mp3 ou .wav, sinon la synthèse du navigateur ----------
     const son = { actif: lireSon() };
@@ -1799,8 +1915,10 @@
         const mon = jetonVoix;
         synthEnCours = u;                      // 🆕 garde une référence : sinon le navigateur peut ramasser l'énoncé et couper la voix
         ss.cancel();
+        synthProgrammee = true;                // 🆕 pendant ces ~70 ms, rien ne parle encore mais une voix va partir
         // 🆕 un speak() dans le même tick que cancel() est parfois ignoré (Chrome, Android) : on laisse respirer ~70 ms, ce qui rend « Réécouter » fiable
         setTimeout(function () {
+          if (mon === jetonVoix) synthProgrammee = false;
           if (arrete || mon !== jetonVoix || synthEnCours !== u) return;
           try { ss.speak(u); } catch (e) {}
         }, 70);
@@ -1816,12 +1934,18 @@
     // UNE SEULE VOIX À LA FOIS : une nouvelle voix coupe la précédente (fondu ~40 ms). Une PHRASE dite automatiquement
     // attend d'abord la fin du mot en cours (au plus 1,5 s) ; un clic explicite sur « écouter » coupe et relance tout de suite.
     let voixAudio = null, jetonVoix = 0;
-    function voixActive() {
+    // 🆕 (08-11-2026) Deux trous faisaient croire à « silence » alors qu'une voix allait partir : une phrase mise en file (elle attend la fin de la voix
+    //   en cours) et la synthèse, qui démarre ~70 ms après l'appel. La fin d'étape changeait alors d'écran, et la voix tombait sur le suivant.
+    //   voixReelle() = ce qu'on entend ; voixActive() = ce qu'on entend OU ce qui va partir.
+    let fileJeton = 0, synthProgrammee = false;
+    function voixReelle() {
       if (voixAudio && !voixAudio.ended) return true;
       try { return !!(window.speechSynthesis && window.speechSynthesis.speaking); } catch (e) { return false; }
     }
+    function voixActive() { return voixReelle() || fileJeton !== 0 || synthProgrammee; }
     function couperVoix() {
       jetonVoix++;
+      fileJeton = 0; synthProgrammee = false;
       const a = voixAudio; voixAudio = null;
       try { window.speechSynthesis && window.speechSynthesis.cancel(); } catch (e) {}
       if (!a) return;
@@ -1847,15 +1971,17 @@
       if (apres && voixActive()) {
         // on prend la place dans la file : un appel plus récent annule celui-ci
         const mon = ++jetonVoix, t0 = Date.now();
+        fileJeton = mon;                     // 🆕 la phrase en attente compte comme « voix active » pour la fin d'étape
         (function boucle() {
           if (arrete || mon !== jetonVoix) return;
-          if (voixActive() && Date.now() - t0 < ATTENTE_VOIX_MAX) { setTimeout(boucle, 40); return; }
+          if (voixReelle() && Date.now() - t0 < ATTENTE_VOIX_MAX) { setTimeout(boucle, 40); return; }
           // 🆕 une courte respiration après la fin de la voix précédente : sa dernière syllabe (« télé ») n'est plus écrasée par la suivante
           setTimeout(function () { if (arrete || mon !== jetonVoix) return; dire(id, texte, v, false); }, FIN_VOIX_MARGE);
         })();
         return;
       }
       couperVoix();
+      if (v && v.coeur) coeur();             // 🆕 la voix démarre vraiment ici (pas pendant l'attente en file)
       const mon = jetonVoix;
       const fichier = nomAudio(id, v);
       if (dispoAudio[fichier] === false) { synthese(texte); return; }
@@ -1877,8 +2003,23 @@
       }
       essayer(0);
     }
-    const direMot = function (id) { dire(id, AFFICHE[id]); };
-    const direPhrase = function (ph, tout_de_suite) { dire(ph.audio, ph.texte, { voix: ph.voix, version: ph.version }, !tout_de_suite); bekParle(); };
+    // 🆕 Le cœur : un petit cœur monte au-dessus de la tête de Bek, au moment où la voix commence une phrase (ou un mot) qui contient « aime ».
+    function coeur() {
+      if (arrete || !colBek) return;
+      injecterStyle('m1-coeur-style', COEUR_CSS);
+      try { if (getComputedStyle(colBek).position === 'static') colBek.style.position = 'relative'; } catch (e) {}
+      const c = document.createElement('span');
+      c.className = 'm1-coeur';
+      c.setAttribute('aria-hidden', 'true');
+      c.innerHTML = '<svg viewBox="0 0 32 30"><path d="M16 27C6 20 3 14.5 3 10.2 3 6.2 6 3.5 9.6 3.5c2.5 0 4.7 1.3 6.4 3.9 1.7-2.6 3.9-3.9 6.4-3.9C26 3.5 29 6.2 29 10.2 29 14.5 26 20 16 27Z"/></svg>';
+      colBek.appendChild(c);
+      planifier(function () { if (c.parentNode) c.parentNode.removeChild(c); }, 2800);
+    }
+    const direMot = function (id) { dire(id, AFFICHE[id], id === 'aime' ? { coeur: true } : undefined); };
+    const direPhrase = function (ph, tout_de_suite) {
+      dire(ph.audio, ph.texte, { voix: ph.voix, version: ph.version, coeur: (ph.mots || []).indexOf('aime') !== -1 }, !tout_de_suite);
+      bekParle();
+    };
 
     // ---------- Bek : poses, avec repli tant qu'une image manque ----------
     const poses = {}, manquantes = {};
@@ -2241,13 +2382,13 @@
       const cible = (ecrans > 1 || segCourant === 0) ? segCourant : segCourant - 1;
       if (typeof options._reculer === 'function') options._reculer(cible);
     }
-    function vider() { ecrans++; majRetour(); saisieFermer(); zone.innerHTML = ''; actions.innerHTML = ''; zone.removeAttribute('data-mode'); zone.removeAttribute('data-phrase'); }
+    function vider() { ecrans++; majRetour(); couperVoix(); saisieFermer(); zone.innerHTML = ''; actions.innerHTML = ''; zone.removeAttribute('data-mode'); zone.removeAttribute('data-phrase'); }
     function etape(n) {
       if (arrete) return;   // 🆕 une ancienne scène (après un retour en arrière) ne doit plus rien signaler
       oublierAstuce();       // 🆕 l'astuce de l'étape précédente n'est plus rappelable
       Array.prototype.forEach.call(segs, function (s, i) { s.classList.toggle('m1-segment-fait', i < n); });
       // 🆕 n segments sont faits : c'est un point de reprise (jamais 0, jamais la fin)
-      if (n > 0 && n < ETAPES_TOTAL && typeof callbacks.onPosition === 'function') {
+      if (n > 0 && n < nbEtapes && typeof callbacks.onPosition === 'function') {
         try { callbacks.onPosition({ fragment: fragment, segment: n }); } catch (e) { console.warn('onPosition a échoué.', e); }
       }
     }
@@ -2732,7 +2873,8 @@
 
     // ---------- Les étapes ----------
     async function etapeMange() {
-      etape(0); montrer('bek-observe');
+      etape(0); montrer('bek-mange-sandwich');     // 🆕 premier écran : Bek tient son sandwich et le mange (en boucle) au lieu de rester immobile
+      animerManger('sandwich');                     // (sans les images de la boucle : pose fixe, comme avant ; l'étape suivante coupe la boucle)
       consigne(T('c_mange'));
       await lecture(PHRASES.mange, 'mange');
       await carte(T('noteE_titre'), T('noteE'), pairesE());
@@ -3322,7 +3464,7 @@
     async function fin() {
       if (arrete) return;
       finie = true; majRetour(); etal(null);
-      etape(ETAPES_TOTAL);
+      etape(nbEtapes);
       montrer('bek-heureuse-ferme');
       try {
         const banque = window.KebBekMots;
@@ -3333,11 +3475,312 @@
       } catch (e) { console.warn('sequence-m1 : mots non enregistrés.', e); }
       vider();
       consigne('');
+      if (fragment === 6) recapEpreuve();       // 🆕 les réponses écrites, avec « Tout copier »
       await lecteurDit(T(fragment === 1 ? (options.suite ? 'finSuite' : 'fin') : 'fin' + fragment));
       await attendre(300);
       if (typeof callbacks.onTermine === 'function') {
-        try { callbacks.onTermine({ mots: MOTS_DU_FRAGMENT.slice(), fragments: fragment }); } catch (e) { console.warn('onTermine a échoué.', e); }
+        const info = { mots: MOTS_DU_FRAGMENT.slice(), fragments: fragment };
+        if (fragment === 6) { info.resultats = JSON.parse(JSON.stringify(resultats)); info.bilan = bilan(); }     // 🆕
+        try { callbacks.onTermine(info); } catch (e) { console.warn('onTermine a échoué.', e); }
       }
+    }
+
+    // ---------- 🆕 (08-11-2026) FRAGMENT 6 : L'ÉPREUVE (dictée, images, compréhension, question libre, défi) ----------
+    // Tout s'écrit à la main : pas de tuile, pas de case préremplie, pas d'indice. Chaque réponse notée passe par noter() ;
+    // le module ne stocke rien : la page hôte reçoit callbacks.onResultat(r) à chaque réponse, puis onTermine({ …, resultats, bilan }).
+    // statut : 'ok' | 'presque' (accent ou apostrophe seuls) | 'partiel' | 'non' | 'libre' (jamais notée) | 'passe'.
+    const resultats = options._partage || {};      // partagé avec la scène reconstruite après un retour en arrière
+    function noter(cle, type, question, reponse, statut, extra) {
+      const r = Object.assign({ cle: cle, type: type, question: question, reponse: reponse, statut: statut }, extra || {});
+      resultats[cle] = r;
+      if (typeof callbacks.onResultat === 'function') {
+        try { callbacks.onResultat(JSON.parse(JSON.stringify(r))); } catch (e) { console.warn('onResultat a échoué.', e); }
+      }
+    }
+    function bilan() {
+      const b = { ok: 0, presque: 0, partiel: 0, non: 0, libre: 0, passe: 0 };
+      Object.keys(resultats).forEach(function (k) { const st = resultats[k].statut; if (b[st] !== undefined) b[st]++; });
+      return b;
+    }
+    // compare une réponse à une liste de formes acceptées
+    function jugerReponse(donne, attendus) {
+      const d = normaliser(donne);
+      let nature = null;
+      for (let i = 0; i < attendus.length; i++) {
+        const a = normaliser(attendus[i]);
+        if (d === a) return { statut: 'ok', nature: null };
+        const pr = proche(d, a);
+        if (pr && (nature === null || pr === 'accent')) nature = pr;
+      }
+      if (nature && ACCENTS_TOLERES) return { statut: 'presque', nature: nature };
+      return { statut: 'non', nature: null };
+    }
+    function nouveauChamp() {
+      const inp = document.createElement('input');
+      inp.type = 'text';
+      inp.className = 'm1-champ m1-champ-phrase';
+      inp.setAttribute('autocomplete', 'off'); inp.setAttribute('autocapitalize', 'none'); inp.setAttribute('autocorrect', 'off'); inp.spellcheck = false;
+      return inp;
+    }
+    function listeMots(ids) {          // aide visuelle : on ne peut PAS toucher ces mots (pas des boutons)
+      const d = document.createElement('div');
+      d.className = 'm1-liste-mots';
+      const t = document.createElement('p'); t.className = 'm1-liste-titre'; t.textContent = T('liste_mots');
+      const r = document.createElement('div'); r.className = 'm1-liste-rang';
+      ids.forEach(function (id) { const m = document.createElement('span'); m.className = 'm1-mot-liste'; m.textContent = AFFICHE[id]; r.appendChild(m); });
+      d.appendChild(t); d.appendChild(r);
+      return d;
+    }
+    function copierTexte(texte) {
+      return new Promise(function (resolve) {
+        function repli() {
+          try {
+            const ta = document.createElement('textarea');
+            ta.value = texte; ta.style.cssText = 'position:fixed;opacity:0;left:-9999px';
+            document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
+            resolve(true);
+          } catch (e) { resolve(false); }
+        }
+        try {
+          if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(texte).then(function () { resolve(true); }, repli);
+          else repli();
+        } catch (e) { repli(); }
+      });
+    }
+    function boutonCopier(label, getTexte) {
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = 'lect-btn lect-btn-clair m1-btn'; b.textContent = label;
+      b.addEventListener('click', function () {
+        copierTexte(getTexte()).then(function (ok) {
+          b.textContent = ok ? T('copie') : label;
+          planifier(function () { b.textContent = label; }, 1800);
+        });
+      });
+      return b;
+    }
+    // Le Lecteur parle d'abord, avec « Suite » : l'écran est vidé pour qu'aucun exercice fini ne reste affiché pendant ce temps
+    async function lecteurAvant(texte) { vider(); consigne(''); await lecteurDit(texte); }
+
+    // Question à réponse écrite (dictée, image, défi). cfg : cle, type, question, attendus[], essais (2), phrase (dite si réussi),
+    // avant(zone) / apres(zone) : contenu avant / après le champ, coeur (cœur répété pendant la question), coeurFin (cœur à la réussite).
+    // Sans indice : après le dernier essai raté, la bonne réponse n'est PAS montrée ; la réponse est notée et on continue.
+    async function questionEcrite(cfg) {
+      vider();
+      zone.setAttribute('data-mode', 'epreuve'); zone.setAttribute('data-phrase', cfg.cle);
+      injecterStyle('m1-epreuve-style', EPREUVE_CSS);
+      if (cfg.avant) cfg.avant(zone);
+      const champ = nouveauChamp();
+      zone.appendChild(champ);
+      if (cfg.apres) cfg.apres(zone);
+      const essaisMax = cfg.essais || 2;
+      let essais = 0, termine = false, fini;
+      const promesse = new Promise(function (resolve) { fini = resolve; });
+      const bV = document.createElement('button');
+      bV.type = 'button'; bV.className = 'lect-btn m1-btn'; bV.textContent = T('valider');
+      actions.appendChild(bV);
+      if (cfg.coeur) {
+        (function tic() { if (termine || arrete) return; coeur(); planifier(tic, 4500); })();
+      }
+      function clore(statut, donne) {
+        termine = true; bV.disabled = true; champ.readOnly = true;
+        noter(cfg.cle, cfg.type, cfg.question, donne, statut, { attendu: cfg.attendus[0], essais: essais });
+      }
+      function verifier() {
+        if (termine) return;
+        const donne = champ.value.trim();
+        if (!normaliser(donne)) { secouer(champ); return; }      // champ vide : ne compte pas comme un essai
+        essais++;
+        const j = jugerReponse(donne, cfg.attendus);
+        if (j.statut !== 'non') {
+          clore(j.statut, donne);
+          champ.classList.remove('m1-ko'); champ.classList.add('m1-ok');
+          coupeManger();
+          if (cfg.phrase) direPhrase(cfg.phrase);
+          if (cfg.coeurFin) coeur();
+          const presque = j.statut === 'presque';
+          lecteurIndice(presque ? T(j.nature === 'accent' ? 'presqueAccent' : 'presqueApostrophe') : auHasard(T('quipOk')), presque ? 3600 : 2200);
+          finApresVoix(fini, presque ? 2600 : 1300);
+          return;
+        }
+        champ.classList.add('m1-ko');
+        if (essais >= essaisMax) {
+          clore('non', donne);
+          lecteurIndice(T('quipEchec'), 4500);
+          boutonAction(T('continuer')).then(fini);
+          return;
+        }
+        secouer(champ);
+        lecteurIndice(auHasard(T('quipErreur')), 3800);
+        try { champ.focus(); champ.select(); } catch (e) {}
+      }
+      bV.addEventListener('click', verifier);
+      champ.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); verifier(); } });
+      champ.addEventListener('input', function () { champ.classList.remove('m1-ko'); });
+      planifier(function () { try { champ.focus(); } catch (e) {} }, 250);
+      await promesse;
+    }
+
+    // Compréhension : trois champs, une seule tentative, aucune correction affichée (c'est noté, pas corrigé).
+    async function questionNourriture() {
+      vider();
+      zone.setAttribute('data-mode', 'epreuve'); zone.setAttribute('data-phrase', 'comp-nourriture');
+      injecterStyle('m1-epreuve-style', EPREUVE_CSS);
+      const rang = document.createElement('div');
+      rang.className = 'm1-triple';
+      const champs = [nouveauChamp(), nouveauChamp(), nouveauChamp()];
+      champs.forEach(function (c) { rang.appendChild(c); });
+      zone.appendChild(rang);
+      let termine = false, fini;
+      const promesse = new Promise(function (resolve) { fini = resolve; });
+      const bV = document.createElement('button');
+      bV.type = 'button'; bV.className = 'lect-btn m1-btn'; bV.textContent = T('valider');
+      actions.appendChild(bV);
+      function verifier() {
+        if (termine) return;
+        const donnes = champs.map(function (c) { return c.value.trim(); }).filter(function (v) { return normaliser(v); });
+        if (!donnes.length) { secouer(rang); return; }
+        termine = true; bV.disabled = true;
+        champs.forEach(function (c) { c.readOnly = true; });
+        const attendus = ['un sandwich', 'une poutine', 'une pizza'].map(normaliser);
+        const pris = [false, false, false], etat = donnes.map(function () { return null; });
+        donnes.forEach(function (d, i) {            // passe 1 : réponses exactes
+          const k = attendus.findIndex(function (a, j) { return !pris[j] && a === normaliser(d); });
+          if (k !== -1) { pris[k] = true; etat[i] = 'ok'; }
+        });
+        if (ACCENTS_TOLERES) donnes.forEach(function (d, i) {   // passe 2 : accents ou apostrophes seuls
+          if (etat[i]) return;
+          const k = attendus.findIndex(function (a, j) { return !pris[j] && proche(normaliser(d), a); });
+          if (k !== -1) { pris[k] = true; etat[i] = 'presque'; }
+        });
+        const bons = etat.filter(function (e) { return e; }).length, presques = etat.filter(function (e) { return e === 'presque'; }).length;
+        const statut = bons === 3 ? (presques ? 'presque' : 'ok') : (bons > 0 ? 'partiel' : 'non');
+        noter('comp-nourriture', 'comprehension', T('c_certif1'), donnes.join(' / '), statut, { attendu: 'un sandwich / une poutine / une pizza', bons: bons, total: 3 });
+        lecteurIndice(T('quipNote'), 4500);
+        boutonAction(T('continuer')).then(fini);
+      }
+      bV.addEventListener('click', verifier);
+      champs.forEach(function (c, i) {
+        c.addEventListener('keydown', function (e) {
+          if (e.key !== 'Enter') return;
+          e.preventDefault();
+          if (i < champs.length - 1) champs[i + 1].focus(); else verifier();
+        });
+      });
+      planifier(function () { try { champs[0].focus(); } catch (e) {} }, 250);
+      await promesse;
+    }
+
+    // Question personnelle : jamais notée automatiquement (un professeur peut la lire) ; bouton « Copier » (question + réponse).
+    async function questionLibre(cle, question) {
+      vider();
+      zone.setAttribute('data-mode', 'epreuve'); zone.setAttribute('data-phrase', cle);
+      injecterStyle('m1-epreuve-style', EPREUVE_CSS);
+      const ta = document.createElement('textarea');
+      ta.className = 'm1-champ-libre'; ta.rows = 3;
+      ta.setAttribute('autocomplete', 'off'); ta.setAttribute('autocapitalize', 'none'); ta.setAttribute('autocorrect', 'off'); ta.spellcheck = false;
+      zone.appendChild(ta);
+      let termine = false, fini;
+      const promesse = new Promise(function (resolve) { fini = resolve; });
+      const bV = document.createElement('button');
+      bV.type = 'button'; bV.className = 'lect-btn m1-btn'; bV.textContent = T('valider');
+      const bPasser = document.createElement('button');
+      bPasser.type = 'button'; bPasser.className = 'm1-lien'; bPasser.textContent = T('passer');
+      actions.appendChild(bV); actions.appendChild(bPasser);
+      function clore(passe) {
+        if (termine) return;
+        termine = true; ta.readOnly = true;
+        const rep = passe ? '' : ta.value.trim();
+        noter(cle, 'libre', question, rep, passe ? 'passe' : 'libre');
+        actions.innerHTML = '';
+        if (!passe) { lecteurIndice(T('quipLibre'), 3500); actions.appendChild(boutonCopier(T('copier'), function () { return question + '\n' + rep; })); }
+        boutonAction(T('continuer')).then(fini);
+      }
+      bV.addEventListener('click', function () { if (!ta.value.trim()) { secouer(ta); return; } clore(false); });
+      bPasser.addEventListener('click', function () { clore(true); });
+      planifier(function () { try { ta.focus(); } catch (e) {} }, 250);
+      await promesse;
+    }
+
+    // Récapitulatif final : les réponses écrites à la main (sans les notes), avec « Tout copier » pour un professeur.
+    function recapEpreuve() {
+      injecterStyle('m1-epreuve-style', EPREUVE_CSS);
+      zone.setAttribute('data-mode', 'epreuve');
+      const lignes = Object.keys(resultats).map(function (k) { return resultats[k]; })
+        .filter(function (r) { return r.type !== 'dictee' && r.type !== 'image' && r.reponse; });
+      if (!lignes.length) return;
+      const titre = document.createElement('p'); titre.className = 'm1-note-titre'; titre.textContent = T('recap_titre');
+      const liste = document.createElement('div'); liste.className = 'm1-recap';
+      lignes.forEach(function (r) {
+        const q = document.createElement('p'); q.className = 'm1-recap-q'; q.textContent = r.question;
+        const a = document.createElement('p'); a.className = 'm1-recap-r'; a.textContent = r.reponse;
+        liste.appendChild(q); liste.appendChild(a);
+      });
+      zone.appendChild(titre); zone.appendChild(liste);
+      actions.appendChild(boutonCopier(T('toutCopier'), function () {
+        return lignes.map(function (r) { return r.question + '\n' + r.reponse; }).join('\n\n');
+      }));
+    }
+
+    // Les segments du fragment 6
+    const LISTE_DICTEE = ['aime', 'j', 'je', 'film', 'jouer', 'joue', 'la', 'le', 'manger', 'mange', 'pizza', 'poutine', 'regarde', 'regarder', 'sandwich', 'tele', 'un', 'une'];
+    function segDictee(n, cle) {
+      return async function () {
+        etape(n); etal(null); montrer('bek-observe');
+        consigne(T('c_dictee'));
+        const phrase = PHRASES[cle];
+        reactiverSon();
+        const attente = questionEcrite({
+          cle: 'dictee-' + (n + 1), type: 'dictee', question: T('c_dictee'), attendus: [phrase.texte], phrase: phrase,
+          avant: function (z) { z.appendChild(creerEcoute(phrase)); },
+          apres: function (z) { z.appendChild(listeMots(LISTE_DICTEE)); }
+        });
+        animerBouche(phrase);                       // pose « écoute-moi » (ou celle de la phrase) : la bouche suit la voix
+        planifier(function () { direPhrase(phrase); }, 500);
+        await attente;
+        arreterBouche();
+      };
+    }
+    function segImage(n, cle, pose, phrase, attendus, cleConsigne, opts) {
+      opts = opts || {};
+      return async function () {
+        etape(n); etal(null); montrer(pose);
+        consigne(T(cleConsigne));
+        const arreter = opts.manger ? animerManger(opts.manger) : function () {};
+        await questionEcrite({ cle: 'image-' + cle, type: 'image', question: T(cleConsigne), attendus: attendus, phrase: phrase, coeur: !!opts.coeur });
+        arreter();
+      };
+    }
+    function segComprehension(n) {
+      return async function () {
+        etape(n); etal(null); montrer('bek-observe');
+        await lecteurAvant(T('lec_certif'));
+        consigne(T('c_certif1'));
+        await questionNourriture();
+      };
+    }
+    function segLibre(n) {
+      return async function () {
+        etape(n); etal(null); montrer('bek-observe');
+        lecteurIndice(T('lec_libre'), 7000);
+        consigne(T('c_libre'));
+        await questionLibre('libre-aimes', T('c_libre'));
+      };
+    }
+    function segDefi(n, num) {
+      return async function () {
+        etape(n); etal(null); montrer('bek-observe');
+        if (num === 1) await lecteurAvant(T('lec_defi'));
+        consigne(T(num === 1 ? 'c_defi1' : 'c_defi2'));
+        await questionEcrite({
+          cle: 'defi-' + num, type: 'defi', question: T(num === 1 ? 'c_defi1' : 'c_defi2'),
+          attendus: [num === 1 ? 'j’étudie' : 'j’aime étudier'], coeurFin: num === 2,
+          avant: num === 1 ? function (z) {
+            const v = document.createElement('div'); v.className = 'm1-defi-verbe';
+            v.innerHTML = '<strong>étudier</strong><span>' + echapper(T('sens_etudier')) + '</span>';
+            z.appendChild(v);
+          } : null
+        });
+      };
     }
 
     // Un segment « exercice audio » (le dernier de chaque fragment)
@@ -3349,6 +3792,13 @@
     }
     // Les 6 segments de chaque fragment (la réparation a son propre déroulé). Reprendre = commencer au segment n.
     function segmentsDuFragment() {
+      if (fragment === 6) return [
+        segDictee(0, 'pizzaune'), segDictee(1, 'regsandwichle'), segDictee(2, 'aimetele'), segDictee(3, 'aimemangerpoutine'),
+        segImage(4, 'poutine', 'bek-mange-poutine', PHRASES.poutine, ['Je mange une poutine.', 'Je mange la poutine.'], 'c_image', { manger: 'poutine' }),
+        segImage(5, 'tele', 'bek-regarde-film', PHRASES.aimetele, ['J’aime regarder la télé.'], 'c_aimeq', { coeur: true }),
+        segImage(6, 'jouer', 'bek-aime-jouer', PHRASES.aimejouer, ['J’aime jouer.'], 'c_aimeq', { coeur: true }),
+        segComprehension(7), segLibre(8), segDefi(9, 1), segDefi(10, 2)
+      ];
       if (fragment === 2) return [
         etapeArticles, etapePoutineLa, etapePizza,
         function () { return etapeNouveauConnu(3, 'sandwich'); },
@@ -3397,9 +3847,66 @@
       ];
     }
 
+    // ---------- 🆕 Scène d'abord, encadré ensuite ----------
+    function attenteOuClic(ms) {             // la scène dure ms, ou jusqu'à un clic / Entrée / Espace (hors boutons)
+      return new Promise(function (resolve) {
+        let fini = false;
+        function fin() { if (fini) return; fini = true; scene.removeEventListener('pointerdown', surClic); document.removeEventListener('keydown', surTouche); resolve(); }
+        function surClic(e) { if (e.target && e.target.closest && e.target.closest('button')) return; fin(); }
+        function surTouche(e) {
+          if (e.key !== 'Enter' && e.key !== ' ') return;
+          if (document.activeElement && document.activeElement.tagName === 'BUTTON') return;
+          e.preventDefault(); fin();
+        }
+        scene.addEventListener('pointerdown', surClic);
+        document.addEventListener('keydown', surTouche);
+        nettoyages.push(function () { document.removeEventListener('keydown', surTouche); });
+        planifier(fin, ms);
+      });
+    }
+    function reveler(arreterManger) {         // l'encadré se dévoile, Bek glisse à sa place
+      calqueBek.classList.remove('m1-bek-souffle');
+      arreterManger();
+      colGauche.classList.add('m1-glisse');
+      if (!reduit) { colBek.style.transition = 'transform 1.1s cubic-bezier(.3,.7,.2,1)'; colBek.style.transform = ''; }
+      colGauche.classList.remove('m1-cache');
+      planifier(function () {
+        colGauche.classList.remove('m1-glisse');
+        colBek.style.transition = ''; colBek.style.transform = ''; colBek.style.zIndex = '';
+      }, reduit ? 500 : 1500);
+    }
+    // cfg : { pose, manger (clé de la boucle « elle mange »), coeur } ; repos : on efface d'abord l'écran précédent (pendant qu'il est caché)
+    async function sceneDabord(cfg, repos) {
+      cfg = cfg || {};
+      let arreterManger = function () {};
+      try {
+        injecterStyle('m1-scene-seule-style', SCENE_CSS);
+        if (repos) { vider(); consigne(''); lecteurMasquer(); }
+        colGauche.classList.add('m1-cache');
+        if (!reduit) {
+          colBek.style.transition = 'none'; colBek.style.transform = '';
+          const rs = scene.getBoundingClientRect(), rb = colBek.getBoundingClientRect();
+          const dx = (rs.left + rs.width / 2) - (rb.left + rb.width / 2);
+          const dy = (rs.top + rs.height / 2) - (rb.top + rb.height / 2);
+          const echelle = rb.height > 0 ? Math.max(1, Math.min(1.12, (rs.height * 0.92) / rb.height)) : 1;
+          colBek.style.transform = 'translate(' + (isFinite(dx) ? dx.toFixed(1) : 0) + 'px,' + (isFinite(dy) ? dy.toFixed(1) : 0) + 'px) scale(' + echelle.toFixed(3) + ')';
+          colBek.style.zIndex = '4';
+          void colBek.offsetWidth;
+          calqueBek.classList.add('m1-bek-souffle');
+        }
+        montrer(cfg.pose || 'bek-observe');
+        const mange = !!(cfg.manger && bouclePrete(cfg.manger));
+        if (cfg.manger) arreterManger = animerManger(cfg.manger);
+        if (cfg.coeur) { planifier(coeur, 700); planifier(coeur, 2700); }
+        await attenteOuClic(reduit ? 1500 : (mange ? SCENE_DUREE_MANGER : SCENE_DUREE));
+      } catch (e) { console.warn('sequence-m1 : scène d’abord interrompue.', e); }
+      reveler(arreterManger);
+    }
+
     async function deroule() {
-      const depart = Math.max(0, Math.min(ETAPES_TOTAL - 1, Math.floor(Number(options.reprendreA) || 0)));
+      const depart = Math.max(0, Math.min(nbEtapes - 1, Math.floor(Number(options.reprendreA) || 0)));
       await attendre(options._retour ? 0 : 500);
+      if (sceneAuDepart) await sceneDabord(SCENES[fragment] && SCENES[fragment].intro);     // 🆕 Bek d'abord, l'encadré ensuite
       montrer('bek-observe');
       if (options._retour) {                 // 🆕 retour en arrière : pas d'introduction, on rejoue directement l'étape
         if (depart > 0) etape(depart);
@@ -3410,7 +3917,12 @@
       }
       if (fragment === 5) { await reparation(depart); return; }
       const segmentsF = segmentsDuFragment();
-      for (let i = depart; i < segmentsF.length; i++) { segCourant = i; ecrans = 0; majRetour(); await segmentsF[i](); }
+      const repos = SCENES[fragment] && SCENES[fragment].repos;
+      for (let i = depart; i < segmentsF.length; i++) {
+        segCourant = i; ecrans = 0; majRetour();
+        if (repos && repos.index === i && !options._retour) await sceneDabord(repos, true);     // 🆕 point de repos au milieu du fragment
+        await segmentsF[i]();
+      }
       await fin();
     }
 
@@ -3448,7 +3960,7 @@
     precharger(POSES, function (nom) { return sources[nom]; }).then(function (etat) {
       if (arrete) return;
       creerPoses(etat);
-      deroule().catch(function (e) { console.warn('sequence-m1 interrompue.', e); });
+      deroule().catch(function (e) { colGauche.classList.remove('m1-cache'); console.warn('sequence-m1 interrompue.', e); });
     });
 
     return {
@@ -3468,7 +3980,8 @@
   function demarrer(idConteneur, options, callbacks) {
     options = options || {};
     let courante = null, ferme = false;
-    function lancer(opts) { courante = demarrerScene(idConteneur, opts, callbacks); }
+    const partage = {};      // 🆕 fragment 6 : les résultats survivent au retour en arrière (la scène est reconstruite)
+    function lancer(opts) { courante = demarrerScene(idConteneur, Object.assign({}, opts, { _partage: partage }), callbacks); }
     function reculerVers(n) {
       if (ferme) return;
       if (courante) courante.arreter();
@@ -3478,6 +3991,6 @@
     return { arreter: function () { ferme = true; if (courante) courante.arreter(); } };
   }
 
-  try { console.info('sequence-m1 : v29 — étal dans la carte (fragments 2 et 3), en boucle sur la remarque'); } catch (e) {}
-  window.KebBekM1 = { demarrer: demarrer, MOTS_APPRIS: MOTS_APPRIS, MOTS_APPRIS_2: MOTS_APPRIS_2, MOTS_APPRIS_3: MOTS_APPRIS_3, MOTS_APPRIS_4: MOTS_APPRIS_4, MOTS_APPRIS_5: MOTS_APPRIS_5, REPARATION: REPARATION };
+  try { console.info('sequence-m1 : v31 — scène d’abord, encadré ensuite ; voix coupée à chaque écran, cœur sur « aime », fragment 6 (épreuve)'); } catch (e) {}
+  window.KebBekM1 = { demarrer: demarrer, MOTS_APPRIS_6: MOTS_APPRIS_6, MOTS_APPRIS: MOTS_APPRIS, MOTS_APPRIS_2: MOTS_APPRIS_2, MOTS_APPRIS_3: MOTS_APPRIS_3, MOTS_APPRIS_4: MOTS_APPRIS_4, MOTS_APPRIS_5: MOTS_APPRIS_5, REPARATION: REPARATION };
 })();

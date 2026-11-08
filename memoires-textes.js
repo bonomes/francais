@@ -27,7 +27,8 @@ window.KebBekMemoiresTextes = {
         f2: { titre: "The sandwich, the poutine", notions: ["“un” and “une”: something new", "“le” and “la”: the thing we’re talking about, already known", "Masculine: un → le. Feminine: une → la"] },
         f3: { titre: "I watch", notions: ["Another -er verb: regarder", "The object comes right after the verb, with no little word", "The verb chooses its object: regarder is not manger"] },
         f4: { titre: "I like", notions: ["“je” before a vowel becomes “j’”: j’aime", "After “aimer”, the verb stays in the infinitive: manger, regarder, jouer"] },
-        f5: { titre: "The repair", notions: ["Putting it all together, on your own: the four pieces reunited", "Six sentences to put back in place"] } } } }
+        f5: { titre: "The repair", notions: ["Putting it all together, on your own: the four pieces reunited", "Six sentences to put back in place"] },
+        f6: { titre: "The final test", notions: ["Writing what you hear, with no boxes and no hints", "Answering questions about pictures with “je”", "Remembering what you learned about Bek", "Challenge: conjugating “étudier” and saying “j’aime étudier”"] } } } }
   },
   es: {
     ui: { sousTitre: "Elige un recuerdo", commencer: "Empezar", continuer: "Continuar", fragmentSur: "Fragmento {k} de {n}", revoir: "Volver a ver",
@@ -132,7 +133,8 @@ window.KebBekMemoiresTextes = {
         f2: { titre: "サンドイッチと poutine", notions: ["«un» と «une»：新しいもの", "«le» と «la»：話題になっている、すでに知っているもの", "男性：un → le。女性：une → la"] },
         f3: { titre: "見る", notions: ["もうひとつの -er 動詞：regarder", "目的語は動詞のすぐあとに来る。小さな言葉は入らない", "動詞が目的語を選ぶ：regarder は manger ではない"] },
         f4: { titre: "好き", notions: ["母音の前で «je» は «j’» になる：j’aime", "«aimer» のあとの動詞は原形のまま：manger、regarder、jouer"] },
-        f5: { titre: "修復", notions: ["ひとりですべて組み合わせる：4つのかけらがそろう", "元の場所にもどす6つの文"] } } } }
+        f5: { titre: "修復", notions: ["ひとりですべて組み合わせる：4つのかけらがそろう", "元の場所にもどす6つの文"] },
+        f6: { titre: "総仕上げ", notions: ["聞こえたとおりに書く：マスもヒントもなし", "«je» を使って、絵についての質問に答える", "ベックについて学んだことを思い出す", "チャレンジ：étudier を活用して «j’aime étudier» と言う"] } } } }
   },
   ko: {
     ui: { sousTitre: "기억을 골라 보세요", commencer: "시작하기", continuer: "이어서 하기", fragmentSur: "조각 {k} / {n}", revoir: "다시 보기",

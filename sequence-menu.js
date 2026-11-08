@@ -9,6 +9,9 @@
    cherche un professeur ; te corriger poliment ; travailler en arrière-plan), puis
    la fenêtre de confirmation. Le gag du refus vaut pour les deux demandes.
 
+   🆕 (08-11-2026) Étape perdue ? Si kebbek_menu_etape manque (autre navigateur, données effacées), on cherche d'abord des traces de la
+   première mémoire (local, puis compte : chapitres 'menu_autorise' / 'm1') avant de rejouer le tutoriel : voir verifierVisiteFaite().
+
    🆕 (02-11-2026) Le menu complet n'arrive plus qu'APRÈS la première mémoire.
    Trois états, mémorisés dans kebbek_menu_etape :
      ''          première visite : tutoriel ci-dessous (étapes 1 à 4), qui se
@@ -1309,7 +1312,7 @@
     try { localStorage.setItem(CLE_AUTORISATION, accordee ? 'oui' : 'non'); } catch (e) {}
   }
 
-  function demarrerMenuSimple(idConteneur, options, callbacks) {
+  function demarrerMenuSimpleInterne(idConteneur, options, callbacks) {
     options = options || {};
     callbacks = callbacks || {};
     const conteneur = document.getElementById(idConteneur);
@@ -1645,7 +1648,7 @@
       apercu.classList.remove('mns-apercu-visible');
       await attendre(450);
       apercu.classList.add('mns-off');
-      if (persister) ecrireEtape('autorise');
+      if (persister) { ecrireEtape('autorise'); memoriserVisite(); }     // 🆕 aussi dans le compte : voir verifierVisiteFaite()
       attendreMemoire();
     }
     // Menu à une ligne : Mémoires pulse, elle seule est active.
@@ -1829,6 +1832,58 @@
         if (scene.parentNode) scene.parentNode.removeChild(scene);
       }
     };
+  }
+
+  // ---------- 🆕 (08-11-2026) La visite guidée est-elle DÉJÀ faite ? ----------
+  // Avant, l'étape (kebbek_menu_etape) n'existait que dans le localStorage de CE navigateur : navigateur différent, fenêtre privée,
+  // données du site effacées à la fermeture… et le Lecteur redemandait ses autorisations, même pour un compte déjà rendu dans la
+  // première mémoire. Maintenant, avant de décider de rejouer le tutoriel (étape absente, ni ?menu= ni options.visite) :
+  //   1. des traces locales de la première mémoire (position, fragments récupérés, mémoire terminée) prouvent que la visite est faite ;
+  //   2. sinon, le compte (ou l'invité) : progression_chapitres contient 'menu_autorise' (écrit à la fin du tutoriel et au lancement de
+  //      memoire-1.html) ou 'm1' (mémoire terminée). On attend au plus DELAI_VERIF ms ; sans réponse, on joue le tutoriel comme avant.
+  // Si la visite est faite : étape = 'autorise' (menu à une ligne ; l'annonce du Lecteur suit si la mémoire est terminée).
+  const CHAPITRE_VISITE = 'menu_autorise';     // chapitre_id texte libre dans progression_chapitres (même principe que 'm1')
+  const DELAI_VERIF = 2500;
+  function visiteUrlForcee() {
+    try { return ['annonce', 'reduit', 'complet'].indexOf(new URLSearchParams(window.location.search).get('menu') || '') !== -1; } catch (e) { return false; }
+  }
+  function indicesLocaux() {
+    try {
+      const cles = ['kebbek_m1_terminee', 'kebbek_m1_position', 'kebbek_m1_f1', 'kebbek_m1_f2', 'kebbek_m1_f3', 'kebbek_m1_f4', 'kebbek_m1_f5'];
+      for (let i = 0; i < cles.length; i++) if (localStorage.getItem(cles[i]) !== null) return true;
+      const positions = JSON.parse(localStorage.getItem('kebbek_position_lecon_invite') || '{}');
+      return !!(positions && positions[ID_PREMIERE_MEMOIRE]);
+    } catch (e) { return false; }
+  }
+  async function indicesCompte() {
+    const prog = window.KebBekProgression;
+    if (!prog || typeof prog.lireProgression !== 'function') return false;
+    const faites = (await prog.lireProgression()) || {};
+    return !!(faites[CHAPITRE_VISITE] || faites[ID_PREMIERE_MEMOIRE]);
+  }
+  function memoriserVisite() {
+    try {
+      const prog = window.KebBekProgression;
+      if (prog && typeof prog.marquerChapitreComplete === 'function') Promise.resolve(prog.marquerChapitreComplete(CHAPITRE_VISITE)).catch(function () {});
+    } catch (e) {}
+  }
+  function verifierVisiteFaite() {
+    return new Promise(function (resolve) {
+      const delai = setTimeout(resolve, DELAI_VERIF);
+      (async function () {
+        if (indicesLocaux() || await indicesCompte()) ecrireEtape('autorise');
+      })().catch(function (e) { console.warn('menu : vérification de la visite impossible, tutoriel joué.', e); })
+        .then(function () { clearTimeout(delai); resolve(); });
+    });
+  }
+  // Même signature qu'avant ; l'objet rendu fonctionne tout de suite (arreter() fonctionne aussi pendant la vérification).
+  function demarrerMenuSimple(idConteneur, options, callbacks) {
+    options = options || {};
+    let interne = null, arrete = false;
+    function lancer() { if (!arrete) interne = demarrerMenuSimpleInterne(idConteneur, options, callbacks); }
+    if (typeof options.visite !== 'boolean' && !visiteUrlForcee() && lireEtape() === '') verifierVisiteFaite().then(lancer, lancer);
+    else lancer();
+    return { arreter: function () { arrete = true; if (interne) interne.arreter(); } };
   }
 
   window.KebBekMenuSimple = { demarrerMenuSimple: demarrerMenuSimple, SOURCES_PAR_DEFAUT: SOURCES_PAR_DEFAUT };

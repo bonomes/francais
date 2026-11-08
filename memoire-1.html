@@ -29,19 +29,21 @@
   'use strict';
   // Progression : progression.js (compte ou invité). Les drapeaux locaux restent en filet de sécurité :
   // memoires.html et sequence-menu.js les lisent aussi, au cas où l'écriture dans le compte échouerait
-  // (vérifié côté Supabase le 03-11-2026 : chapitre_id et condition_id sont du texte libre, 'm1' et 'm1_f1'…'m1_f5' sont acceptés (m1_f5 = la réparation)).
+  // (vérifié côté Supabase le 03-11-2026 : chapitre_id et condition_id sont du texte libre, 'm1' et 'm1_f1'…'m1_f5' sont acceptés (m1_f5 = la réparation) ; 'm1_f6' (l'épreuve) suit le même principe : à confirmer).
   const CLE_M1_LOCAL = 'kebbek_m1_terminee';       // la MÉMOIRE est terminée
   const CLE_F1_LOCAL = 'kebbek_m1_f1';             // fragment 1 récupéré
   const CLE_F2_LOCAL = 'kebbek_m1_f2';             // fragment 2 récupéré (un/une, le/la)
   const CLE_F3_LOCAL = 'kebbek_m1_f3';             // fragment 3 récupéré (regarder)
   const CLE_F4_LOCAL = 'kebbek_m1_f4';             // fragment 4 récupéré (j'aime)
   const CLE_F5_LOCAL = 'kebbek_m1_f5';             // la RÉPARATION (fragment 5) terminée
+  const CLE_F6_LOCAL = 'kebbek_m1_f6';             // 🆕 l'ÉPREUVE (fragment 6) terminée : c'est elle qui termine la mémoire
+  const CLE_EPREUVE_LOCALE = 'kebbek_m1_epreuve';  // 🆕 résultats de l'épreuve : { date, resultats, bilan } (la dernière passation, sur cet appareil)
   const CLE_POSITION_LOCALE = 'kebbek_m1_position';  // 🆕 { fragment, segment } : où l'élève s'est arrêté (quitter et continuer plus tard)
   const prog = window.KebBekProgression || null;
   const params = new URLSearchParams(window.location.search);
   // 🆕 (07-11-2026) ?f=n&seul=1 : on RÉPÈTE un seul fragment (bouton « Répéter » de memoires.html). À la fin ou en quittant : retour à memoires.html.
   // Rien n'est modifié : ni les fragments récupérés, ni la mémoire terminée, ni la position gardée (« Continuer » reprend où l'élève en était).
-  const seul = params.get('seul') === '1' && /^[1-5]$/.test(params.get('f') || '');   // sans ?f= valide, « seul » est ignoré : la progression reste normale
+  const seul = params.get('seul') === '1' && /^[1-6]$/.test(params.get('f') || '');   // sans ?f= valide, « seul » est ignoré : la progression reste normale
   let instance = null;
 
   function marquer(cle) { try { localStorage.setItem(cle, '1'); } catch (e) {} }
@@ -78,20 +80,51 @@
     return null;
   }
 
-  // La mémoire est faite de fragments. Fragment 1 (manger) → 2 (un/une, le/la) → 3 (regarder) → 4 (j'aime) → 5 (la RÉPARATION) → mémoire terminée.
-  // Tant que la « réparation » (format sequence-memoire) n'existe pas, c'est la fin du dernier fragment (DERNIER = la réparation) qui termine la mémoire.
+  // La mémoire est faite de fragments. Fragment 1 (manger) → 2 (un/une, le/la) → 3 (regarder) → 4 (j'aime) → 5 (la RÉPARATION) → 6 (l'ÉPREUVE) → mémoire terminée.
+  // 🆕 (08-11-2026) C'est la fin du dernier fragment (DERNIER = l'épreuve) qui termine la mémoire. Pour revenir à « la réparation termine la mémoire » : DERNIER = 5.
   // ?f=1 à ?f=5 force un fragment (test). Sans paramètre : on reprend au premier fragment non récupéré
   // (tant que la mémoire n'est pas terminée).
   // ⚠️ progression.js ne relit pas les conditions : la reprise lit les drapeaux LOCAUX (donc par appareil).
-  const DERNIER = 5;
-  const CLES_LOCALES = { 1: CLE_F1_LOCAL, 2: CLE_F2_LOCAL, 3: CLE_F3_LOCAL, 4: CLE_F4_LOCAL, 5: CLE_F5_LOCAL };
+  const DERNIER = 6;
+  const CLES_LOCALES = { 1: CLE_F1_LOCAL, 2: CLE_F2_LOCAL, 3: CLE_F3_LOCAL, 4: CLE_F4_LOCAL, 5: CLE_F5_LOCAL, 6: CLE_F6_LOCAL };
+  // 🆕 L'ÉPREUVE (fragment 6). Le module ne stocke rien : il envoie chaque réponse (onResultat) puis { resultats, bilan } à la fin (onTermine).
+  // La page les garde sur l'appareil (CLE_EPREUVE_LOCALE). L'épreuve n'a pas de reprise en cours de route (elle recommence au début : les résultats
+  // seraient incomplets) et, en répétition (?seul=1), rien n'est gardé.
+  let resultatsEpreuve = [];
+  function gardeEpreuve(info) {
+    const dossier = {
+      date: new Date().toISOString(),
+      resultats: (info && info.resultats) || resultatsEpreuve,
+      bilan: (info && info.bilan) || null
+    };
+    try { localStorage.setItem(CLE_EPREUVE_LOCALE, JSON.stringify(dossier)); } catch (e) {}
+    // 🆕 (08-11-2026) Copie dans le compte, sans nouvelle table : la table positions_lecon (RPC enregistrer_position_lecon, vérifiée côté Supabase)
+    // sert de coffre sous le chapitre 'm1_epreuve' (etape 'resultats', 20 000 octets max). Invité : localStorage via progression.js, migré au compte
+    // avec le reste. Dernière passation seulement (elle remplace la précédente). Le texte libre de l'élève est tronqué si le dossier est trop gros.
+    // Best-effort : un échec ne bloque jamais la fin de la mémoire.
+    let corps = dossier;
+    try {
+      if (JSON.stringify(corps).length > 18000) {
+        corps = { date: dossier.date, bilan: dossier.bilan, resultats: dossier.resultats.map(function (r) {
+          const c = Object.assign({}, r);
+          if (typeof c.reponse === 'string' && c.reponse.length > 300) c.reponse = c.reponse.slice(0, 300) + '…';
+          return c;
+        }) };
+      }
+    } catch (e) {}
+    try { if (prog && prog.enregistrerPositionLecon) return Promise.resolve(prog.enregistrerPositionLecon('m1_epreuve', 'resultats', corps)).catch(function () { return false; }); } catch (e) {}
+    return Promise.resolve(false);
+  }
   function lancerFragment(n, reprendreA) {
     if (instance) { try { instance.arreter(); } catch (e) {} }
+    if (n === 6) resultatsEpreuve = [];
     instance = window.KebBekM1.demarrer('memoire', { fragment: n, suite: n < DERNIER, reprendreA: reprendreA || 0 }, {
-      onPosition: function (p) { if (!seul) ecrirePosition(p); },
-      onTermine: async function () {
+      onPosition: function (p) { if (!seul && p.fragment !== 6) ecrirePosition(p); },
+      onResultat: function (r) { if (n === 6 && !seul) resultatsEpreuve.push(r); },
+      onTermine: async function (info) {
         if (seul) { versMemoires(); return; }       // 🆕 répétition d'un seul fragment : on ne chaîne pas, on ne touche à rien
         effacerPosition();                        // le fragment est fini : le suivant recommence à son introduction
+        const ecrireEpreuve = (n === 6) ? gardeEpreuve(info) : Promise.resolve(false);
         if (n < DERNIER) {
           marquer(CLES_LOCALES[n]);
           enregistrer('marquerConditionComplete', 'm1_f' + n);
@@ -102,7 +135,7 @@
         marquer(CLE_M1_LOCAL);
         // on laisse 3 s au plus à l'écriture (compte) avant de quitter la page
         await Promise.race([
-          Promise.all([enregistrer('marquerConditionComplete', 'm1_f' + n), enregistrer('marquerChapitreComplete', 'm1')]),
+          Promise.all([enregistrer('marquerConditionComplete', 'm1_f' + n), enregistrer('marquerChapitreComplete', 'm1'), ecrireEpreuve]),
           new Promise(function (resolve) { setTimeout(resolve, 3000); })
         ]);
         versMemoires();
@@ -113,15 +146,18 @@
 
   async function lancer() {
     try { if (prog && prog.restaurerSessionEtProfil) await prog.restaurerSessionEtProfil(); } catch (e) { console.warn('Session indisponible.', e); }
+    // 🆕 Être arrivé ici prouve que la visite guidée du menu est faite : on le garde (appareil + compte), pour que sequence-menu.js ne la rejoue pas.
+    try { if (localStorage.getItem('kebbek_menu_etape') !== 'complet') localStorage.setItem('kebbek_menu_etape', 'autorise'); } catch (e) {}
+    enregistrer('marquerChapitreComplete', 'menu_autorise');
     const f = params.get('f');
     let debut = 1, reprendreA = 0;
-    if (f === '1' || f === '2' || f === '3' || f === '4' || f === '5') {
+    if (/^[1-6]$/.test(f || '')) {
       debut = Number(f);
-      reprendreA = Math.max(0, Math.min(5, Number(params.get('s')) || 0));      // test : ?f=3&s=4 reprend le fragment 3 au segment 4
+      reprendreA = Math.max(0, Math.min(debut === 6 ? 10 : 5, Number(params.get('s')) || 0));      // test : ?f=3&s=4 reprend le fragment 3 au segment 4
     } else if (!lu(CLE_M1_LOCAL)) {
       while (debut < DERNIER && lu(CLES_LOCALES[debut])) debut++;                // premier fragment non récupéré
       const pos = await lirePosition();                                          // …et, s'il était entamé, le segment où l'élève s'est arrêté
-      if (pos && pos.fragment === debut && pos.segment >= 1 && pos.segment <= 5) reprendreA = pos.segment;
+      if (pos && pos.fragment === debut && debut !== 6 && pos.segment >= 1 && pos.segment <= 5) reprendreA = pos.segment;   // (l'épreuve recommence au début)
     } else {
       effacerPosition();                                                         // mémoire terminée : on la rejoue depuis le début
     }

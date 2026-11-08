@@ -38,6 +38,11 @@
         courte. Migrer vers une table si/quand elle devient longue
         (30-40+ entrées).
 
+     5. 🆕 RÉSULTATS D'ÉPREUVE (08-11-2026) : chaque fiche du panier a un bouton « Résultats » qui lit la dernière passation de l'élève
+        (lire_epreuves_enseignant : l'élève doit être lié à ce compte enseignant, ce qui est le cas dès qu'il est dans le panier). On y voit le bilan,
+        chaque question avec la réponse donnée et son statut, les boutons « Copier » (question + réponse, ou tout) et un commentaire du professeur
+        (commenter_epreuve), gardé avec la passation et effacé si l'élève la refait. Les textes de l'élève sont toujours échappés avant affichage.
+
    Suppose window.KebBekProgression (progression.js) déjà chargé ET déjà
    authentifié comme compte enseignant reconnu (voir essayerModeProfesseur
    dans progression.js, appelé par menu-principal.js avant même d'afficher
@@ -54,6 +59,29 @@
   const SUCCES_DISPONIBLES = [
     { id: 'd1_clic_sandwich', nom: 'D1 — A trouvé le sandwich', piasses: 5, pointsBonis: 0 }
   ];
+
+  // 🆕 Épreuves lisibles par le professeur : id (resultats_epreuves.epreuve_id) → titre affiché
+  const EPREUVES = { m1_epreuve: 'Première mémoire \u2014 L\u2019\u00e9preuve' };
+  const STATUTS = {
+    ok: ['Correct', 'ok'], presque: ['Presque (accent ou apostrophe)', 'presque'], partiel: ['Partiel', 'presque'],
+    non: ['Incorrect', 'non'], libre: ['R\u00e9ponse libre', 'libre'], passe: ['Pass\u00e9e', 'non']
+  };
+  const TYPES = { dictee: 'Dict\u00e9e', image: 'Question sur image', comprehension: 'Compr\u00e9hension', libre: 'Question libre', defi: 'D\u00e9fi' };
+
+  // Tout texte venant d'un élève (prénom, réponses) passe par là avant d'entrer dans du HTML.
+  function echapper(t) {
+    return String(t == null ? '' : t).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; });
+  }
+  function texteAttendu(a) { return Array.isArray(a) ? a.join(' / ') : (a == null ? '' : String(a)); }
+  function copierTexte(texte) {
+    if (navigator.clipboard && navigator.clipboard.writeText) return navigator.clipboard.writeText(texte);
+    return new Promise(function (resolve, reject) {
+      const t = document.createElement('textarea');
+      t.value = texte; t.style.position = 'fixed'; t.style.opacity = '0';
+      document.body.appendChild(t); t.select();
+      try { document.execCommand('copy') ? resolve() : reject(new Error('copie refus\u00e9e')); } catch (e) { reject(e); } finally { document.body.removeChild(t); }
+    });
+  }
 
   // ---------- Rendu ----------
 
@@ -271,7 +299,7 @@
         item.innerHTML =
           '<input type="checkbox" id="' + idCase + '" class="kbp-choix-case" data-index="' + i + '">' +
           '<span class="kbp-choix-texte">' +
-            '<span class="kbp-choix-nom">' + (p.prenom || 'Sans pr\u00e9nom') + '</span>' +
+            '<span class="kbp-choix-nom">' + echapper(p.prenom || 'Sans pr\u00e9nom') + '</span>' +
             '<span class="kbp-choix-detail">cr\u00e9\u00e9 le ' + formaterDate(p.cree_le) + ' \u00b7 niveau ' + (p.niveau != null ? p.niveau : '\u2014') + '</span>' +
           '</span>';
         listeChoix.appendChild(item);
@@ -307,29 +335,142 @@
     // un bouton "Retirer" pour corriger une erreur de sélection sans
     // devoir tout recommencer — plusieurs cartes empilées si panier à
     // plusieurs profils, une seule sinon.
+    // 🆕 Résultats d'épreuve : cache par profil (lecture à la demande, jamais en tâche de fond) + profils dont le panneau est ouvert.
+    const epreuvesParEleve = {};     // id → { etat: 'chargement' | 'erreur' | 'ok', lignes: [...] }
+    const panneauxOuverts = {};      // id → true
+
+    function htmlEpreuve(el, ep) {
+      const titre = EPREUVES[ep.epreuve_id] || ep.epreuve_id;
+      const liste = Array.isArray(ep.resultats) ? ep.resultats : [];
+      const b = ep.bilan || {};
+      const puces = ['ok', 'presque', 'partiel', 'non', 'libre', 'passe'].filter(function (k) { return b[k]; }).map(function (k) {
+        return '<span class="kbp-puce kbp-puce-' + STATUTS[k][1] + '">' + b[k] + ' ' + echapper(STATUTS[k][0].split(' (')[0].toLowerCase()) + '</span>';
+      }).join('');
+      const questions = liste.map(function (r, i) {
+        const st = STATUTS[r.statut] || [r.statut || '?', 'libre'];
+        const attendu = (r.statut === 'non' || r.statut === 'partiel') && r.attendu ? '<p class="kbp-q-attendu">Attendu : ' + echapper(texteAttendu(r.attendu)) + '</p>' : '';
+        const essais = r.essais > 1 ? ' \u00b7 ' + r.essais + ' essais' : '';
+        return '<div class="kbp-question kbp-question-' + st[1] + '">' +
+          '<p class="kbp-q-entete"><span class="kbp-q-type">' + echapper(TYPES[r.type] || r.type || '') + '</span><span class="kbp-q-statut">' + echapper(st[0]) + echapper(essais) + '</span></p>' +
+          '<p class="kbp-q-texte">' + echapper(r.question) + '</p>' +
+          '<p class="kbp-q-reponse">' + (r.reponse ? echapper(r.reponse) : '<em>\u2014</em>') + '</p>' + attendu +
+          '<button type="button" class="kbp-bouton-copier" data-eleve-id="' + el.id + '" data-epreuve="' + echapper(ep.epreuve_id) + '" data-q="' + i + '">Copier</button>' +
+        '</div>';
+      }).join('');
+      return '<div class="kbp-epreuve" data-epreuve="' + echapper(ep.epreuve_id) + '">' +
+        '<p class="kbp-epreuve-titre">' + echapper(titre) + '</p>' +
+        '<p class="kbp-epreuve-meta">Termin\u00e9e le ' + formaterDate(ep.termine_le) + ' \u00b7 passation n\u00b0 ' + (ep.passations || 1) + '</p>' +
+        (puces ? '<div class="kbp-puces">' + puces + '</div>' : '') +
+        questions +
+        '<button type="button" class="kbp-bouton-copier kbp-copier-tout" data-eleve-id="' + el.id + '" data-epreuve="' + echapper(ep.epreuve_id) + '" data-q="tout">Tout copier</button>' +
+        '<label class="kbp-etiquette" for="kbpCom-' + el.id + '-' + echapper(ep.epreuve_id) + '">Commentaire du professeur</label>' +
+        '<textarea id="kbpCom-' + el.id + '-' + echapper(ep.epreuve_id) + '" class="kbp-champ kbp-champ-note kbp-commentaire" rows="2" maxlength="2000" data-eleve-id="' + el.id + '" data-epreuve="' + echapper(ep.epreuve_id) + '">' + echapper(ep.commentaire_prof || '') + '</textarea>' +
+        '<button type="button" class="kbp-bouton-action kbp-bouton-commenter" data-eleve-id="' + el.id + '" data-epreuve="' + echapper(ep.epreuve_id) + '">Enregistrer le commentaire</button>' +
+        '<p class="kbp-message kbp-message-com"></p>' +
+      '</div>';
+    }
+
+    function htmlResultats(el) {
+      if (!panneauxOuverts[el.id]) return '';
+      const c = epreuvesParEleve[el.id];
+      let corps;
+      if (!c || c.etat === 'chargement') corps = '<p class="kbp-message">Chargement\u2026</p>';
+      else if (c.etat === 'erreur') corps = '<p class="kbp-message kbp-message-erreur">Lecture impossible \u2014 r\u00e9essaie.</p>';
+      else if (c.lignes.length === 0) corps = '<p class="kbp-message">Aucune \u00e9preuve termin\u00e9e pour l\u2019instant.</p>';
+      else corps = c.lignes.map(function (ep) { return htmlEpreuve(el, ep); }).join('');
+      return '<div class="kbp-resultats">' + corps + '</div>';
+    }
+
     function rendreFichesEleves() {
       fichesEleves.innerHTML = eleveSelection.map(function (el) {
+        const nom = echapper(el.prenom || 'Sans pr\u00e9nom');
         return '<div class="kbp-fiche-eleve" data-eleve-id="' + el.id + '">' +
           '<div class="kbp-fiche-entete">' +
-            '<p class="kbp-fiche-nom">' + (el.prenom || 'Sans pr\u00e9nom') + '</p>' +
-            '<button type="button" class="kbp-fiche-retirer" data-eleve-id="' + el.id + '" aria-label="Retirer ' + (el.prenom || 'ce profil') + ' de la s\u00e9lection">&times;</button>' +
+            '<p class="kbp-fiche-nom">' + nom + '</p>' +
+            '<button type="button" class="kbp-fiche-retirer" data-eleve-id="' + el.id + '" aria-label="Retirer ' + nom + ' de la s\u00e9lection">&times;</button>' +
           '</div>' +
           '<p class="kbp-fiche-detail">Niveau ' + (el.niveau != null ? el.niveau : '\u2014') +
             ' \u00b7 ' + (el.piasses != null ? el.piasses : 0) + ' P$' +
             ' \u00b7 ' + (el.points_bonis != null ? el.points_bonis : 0) + ' PB</p>' +
+          '<button type="button" class="kbp-bouton-resultats" data-eleve-id="' + el.id + '" aria-expanded="' + (panneauxOuverts[el.id] ? 'true' : 'false') + '">' + (panneauxOuverts[el.id] ? 'Masquer les r\u00e9sultats' : 'R\u00e9sultats des \u00e9preuves') + '</button>' +
+          htmlResultats(el) +
         '</div>';
       }).join('');
+    }
+
+    async function chargerResultats(id) {
+      epreuvesParEleve[id] = { etat: 'chargement', lignes: [] };
+      rendreFichesEleves();
+      try {
+        const { data, error } = await client.rpc('lire_epreuves_enseignant', { p_eleve_id: id });
+        epreuvesParEleve[id] = error ? { etat: 'erreur', lignes: [] } : { etat: 'ok', lignes: data || [] };
+        if (error) console.warn('professeur.js : lecture des \u00e9preuves refus\u00e9e.', error);
+      } catch (e) {
+        console.warn('professeur.js : lecture des \u00e9preuves a \u00e9chou\u00e9.', e);
+        epreuvesParEleve[id] = { etat: 'erreur', lignes: [] };
+      }
+      rendreFichesEleves();
+    }
+
+    function texteQuestion(r) {
+      const st = (STATUTS[r.statut] || [r.statut || ''])[0];
+      return 'Question : ' + (r.question || '') + '\nR\u00e9ponse : ' + (r.reponse || '') + (r.statut && r.statut !== 'libre' ? '\n(' + st + ')' : '');
     }
 
     // Un seul écouteur délégué sur le conteneur des fiches plutôt qu'un
     // par bouton "Retirer" — rendreFichesEleves() réécrit tout le HTML
     // à chaque changement du panier (attribution, ajout), donc des
     // écouteurs individuels seraient reperdus à chaque rendu.
-    fichesEleves.addEventListener('click', function (e) {
+    fichesEleves.addEventListener('click', async function (e) {
+      // 🆕 bouton « Résultats des épreuves » (ouvre / referme, lit à la première ouverture)
+      const btnRes = e.target.closest('.kbp-bouton-resultats');
+      if (btnRes) {
+        const idR = btnRes.dataset.eleveId;
+        panneauxOuverts[idR] = !panneauxOuverts[idR];
+        if (panneauxOuverts[idR] && !epreuvesParEleve[idR]) { chargerResultats(idR); } else { rendreFichesEleves(); }
+        return;
+      }
+      // 🆕 « Copier » (une question) / « Tout copier »
+      const btnCopie = e.target.closest('.kbp-bouton-copier');
+      if (btnCopie) {
+        const c = epreuvesParEleve[btnCopie.dataset.eleveId];
+        const ep = c && c.lignes.find(function (x) { return x.epreuve_id === btnCopie.dataset.epreuve; });
+        if (!ep) return;
+        const liste = Array.isArray(ep.resultats) ? ep.resultats : [];
+        const eleve = eleveSelection.find(function (x) { return x.id === btnCopie.dataset.eleveId; });
+        const texte = btnCopie.dataset.q === 'tout'
+          ? (eleve && eleve.prenom ? eleve.prenom + ' \u2014 ' : '') + (EPREUVES[ep.epreuve_id] || ep.epreuve_id) + '\n\n' + liste.map(texteQuestion).join('\n\n')
+          : texteQuestion(liste[parseInt(btnCopie.dataset.q, 10)] || {});
+        const avant = btnCopie.textContent;
+        try { await copierTexte(texte); btnCopie.textContent = 'Copi\u00e9 \u2713'; } catch (err) { btnCopie.textContent = 'Copie impossible'; }
+        setTimeout(function () { btnCopie.textContent = avant; }, 1600);
+        return;
+      }
+      // 🆕 commentaire du professeur
+      const btnCom = e.target.closest('.kbp-bouton-commenter');
+      if (btnCom) {
+        const zone = btnCom.closest('.kbp-epreuve');
+        const champ = zone.querySelector('.kbp-commentaire');
+        const msg = zone.querySelector('.kbp-message-com');
+        btnCom.disabled = true; msg.className = 'kbp-message kbp-message-com'; msg.textContent = '';
+        try {
+          const { data, error } = await client.rpc('commenter_epreuve', { p_eleve_id: btnCom.dataset.eleveId, p_epreuve_id: btnCom.dataset.epreuve, p_commentaire: champ.value });
+          if (error || !data) { msg.textContent = 'Enregistrement impossible \u2014 r\u00e9essaie.'; msg.classList.add('kbp-message-erreur'); }
+          else {
+            const c = epreuvesParEleve[btnCom.dataset.eleveId];
+            const ep = c && c.lignes.find(function (x) { return x.epreuve_id === btnCom.dataset.epreuve; });
+            if (ep) ep.commentaire_prof = champ.value.trim() || null;
+            msg.textContent = 'Commentaire enregistr\u00e9 \u2713'; msg.classList.add('kbp-message-succes');
+          }
+        } catch (err) { msg.textContent = 'Enregistrement impossible \u2014 r\u00e9essaie.'; msg.classList.add('kbp-message-erreur'); }
+        btnCom.disabled = false;
+        return;
+      }
       const btn = e.target.closest('.kbp-fiche-retirer');
       if (!btn) return;
       const id = btn.dataset.eleveId;
       eleveSelection = eleveSelection.filter(function (el) { return el.id !== id; });
+      delete epreuvesParEleve[id]; delete panneauxOuverts[id];
       rendreFichesEleves();
       if (eleveSelection.length === 0) {
         sectionEleve.classList.add('kbp-section-cachee');

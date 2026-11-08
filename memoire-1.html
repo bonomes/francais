@@ -92,27 +92,26 @@
   // seraient incomplets) et, en répétition (?seul=1), rien n'est gardé.
   let resultatsEpreuve = [];
   function gardeEpreuve(info) {
+    // ⚠️ onTermine donne les résultats sous forme d'OBJET { cle: résultat } (dernière réponse par question, survit aux retours en arrière) ;
+    // on les range en LISTE (l'ordre d'arrivée des questions), la forme attendue par enregistrer_epreuve et par l'écran professeur.
+    const brut = (info && info.resultats) || resultatsEpreuve;
     const dossier = {
       date: new Date().toISOString(),
-      resultats: (info && info.resultats) || resultatsEpreuve,
+      resultats: Array.isArray(brut) ? brut : Object.keys(brut || {}).map(function (k) { return brut[k]; }),
       bilan: (info && info.bilan) || null
     };
     try { localStorage.setItem(CLE_EPREUVE_LOCALE, JSON.stringify(dossier)); } catch (e) {}
-    // 🆕 (08-11-2026) Copie dans le compte, sans nouvelle table : la table positions_lecon (RPC enregistrer_position_lecon, vérifiée côté Supabase)
-    // sert de coffre sous le chapitre 'm1_epreuve' (etape 'resultats', 20 000 octets max). Invité : localStorage via progression.js, migré au compte
-    // avec le reste. Dernière passation seulement (elle remplace la précédente). Le texte libre de l'élève est tronqué si le dossier est trop gros.
-    // Best-effort : un échec ne bloque jamais la fin de la mémoire.
-    let corps = dossier;
+    // 🆕 (08-11-2026) Copie dans le compte (table resultats_epreuves, RPC enregistrer_epreuve) : l'enseignant lié la lit depuis l'écran Mode professeur.
+    // Invité : localStorage, migré au compte à la création du profil. Dernière passation seulement. Best-effort : un échec ne bloque jamais la fin de la mémoire.
+    let liste = dossier.resultats;
     try {
-      if (JSON.stringify(corps).length > 18000) {
-        corps = { date: dossier.date, bilan: dossier.bilan, resultats: dossier.resultats.map(function (r) {
-          const c = Object.assign({}, r);
-          if (typeof c.reponse === 'string' && c.reponse.length > 300) c.reponse = c.reponse.slice(0, 300) + '…';
-          return c;
-        }) };
-      }
+      if (JSON.stringify(liste).length > 50000) liste = liste.map(function (r) {   // la RPC refuse > 60 000 octets : on tronque le texte libre
+        const c = Object.assign({}, r);
+        if (typeof c.reponse === 'string' && c.reponse.length > 300) c.reponse = c.reponse.slice(0, 300) + '…';
+        return c;
+      });
     } catch (e) {}
-    try { if (prog && prog.enregistrerPositionLecon) return Promise.resolve(prog.enregistrerPositionLecon('m1_epreuve', 'resultats', corps)).catch(function () { return false; }); } catch (e) {}
+    try { if (prog && prog.enregistrerEpreuve) return Promise.resolve(prog.enregistrerEpreuve('m1_epreuve', liste, dossier.bilan)).catch(function () { return false; }); } catch (e) {}
     return Promise.resolve(false);
   }
   function lancerFragment(n, reprendreA) {

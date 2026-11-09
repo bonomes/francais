@@ -228,12 +228,12 @@
 }
 
 /* ---------- 🆕 (08-11-2026) Choix de la langue (Paramètres → Langue) ---------- */
-.mns-carte-langue { width: min(92vw, 400px); }
+.mns-carte-langue { width: min(94vw, 520px); }
 .mns-grille-langues {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 8px;
-  max-height: 46dvh;
+  max-height: 58dvh;
   overflow-y: auto;
   margin-bottom: 16px;
   padding-right: 2px;
@@ -268,9 +268,10 @@
   position: absolute; inset: 0;
   display: flex; align-items: center; justify-content: center;
   padding: 4px; border-radius: inherit;
-  background: rgba(74, 59, 51, 0.94); color: #FFF5E8;
-  font-weight: 700; font-size: 0.6rem; line-height: 1.2; text-align: center;
+  background: rgb(74, 59, 51); color: #FFF5E8;
+  font-weight: 700; font-size: 0.64rem; line-height: 1.2; text-align: center;
   opacity: 0; pointer-events: none; transition: opacity 0.2s ease;
 }
 .mns-langue.mns-langue-erreur-active .mns-langue-erreur { opacity: 1; }
-@media (max-width: 460px) { .mns-grille-langues { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 520px) { .mns-grille-langues { grid-template-columns: repeat(3, 1fr); max-height: 52dvh; } }
+@media (max-width: 340px) { .mns-grille-langues { grid-template-columns: repeat(2, 1fr); } }

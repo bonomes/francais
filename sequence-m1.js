@@ -352,7 +352,17 @@
     // la carte « Remarque » : un → le, une → la (une paire par ligne : elles ne tiennent pas côte à côte)
     '.m1-paire.m1-paire-art{flex-direction:column;align-items:center;gap:6px}',
     '.m1-paire-art .m1-radical b{color:' + COULEUR_NOUVEAU + '}',
-    '.m1-paire-art .m1-radical i{background:' + FOND_CONNU + ';color:var(--brun-fonce,#4A3B33);box-shadow:inset 0 -3px 0 ' + COULEUR_CONNU + '}'
+    '.m1-paire-art .m1-radical i{background:' + FOND_CONNU + ';color:var(--brun-fonce,#4A3B33);box-shadow:inset 0 -3px 0 ' + COULEUR_CONNU + '}',
+    // 🆕 (08-11-2026) CARTE SUIVIE : pendant la boucle de la remarque, la ligne dont l'objet est à l'écran reste nette, les autres s'estompent ; dans la ligne,
+    // « un » est en valeur quand l'étal dit « un parmi plusieurs », « le » quand il dit « celui-là ». Même code couleur que l'étal.
+    '.m1-paire-suivi .m1-radical{opacity:.38;transition:opacity .5s ease,transform .5s ease}',
+    '.m1-paire-suivi .m1-radical.m1-radical-actif{opacity:1;transform:scale(1.05)}',
+    '.m1-paire-suivi .m1-radical b,.m1-paire-suivi .m1-radical i{display:inline-block;border-radius:8px;padding:0 .3em;transition:opacity .5s ease,background-color .5s ease,box-shadow .5s ease,transform .5s ease}',
+    '.m1-radical-actif[data-mode="nouveau"] b{background:rgba(' + RVB_NOUVEAU + ',.2);box-shadow:inset 0 -3px 0 ' + COULEUR_NOUVEAU + ';transform:scale(1.12)}',
+    '.m1-radical-actif[data-mode="nouveau"] i{opacity:.35}',
+    '.m1-radical-actif[data-mode="connu"] b{opacity:.35}',
+    '.m1-radical-actif[data-mode="connu"] i{transform:scale(1.12)}',
+    '@media (prefers-reduced-motion:reduce){.m1-paire-suivi .m1-radical,.m1-paire-suivi .m1-radical b,.m1-paire-suivi .m1-radical i{transition:none}}'
   ].join('\n');
   // 🆕 (08-11-2026) CASE FUSIONNÉE « j’aime » : l'élision s'écrit d'un seul tenant. Une seule case (écriture), deux étiquettes au-dessus (sujet | verbe) ;
   //   la bordure reprend les deux couleurs (celles des cases « sujet » et « verbe », lues dans la feuille de style).
@@ -456,14 +466,16 @@
     '.m1-recap{display:flex;flex-direction:column;gap:.5rem;max-height:16rem;overflow:auto;margin:.2rem 0 .6rem;text-align:left}',
     '.m1-recap-q{margin:0;font-size:.82rem;opacity:.7}.m1-recap-r{margin:0 0 .3rem;font-weight:700}'
   ].join('\n');
-  const ETAL_PAUSE = 3400;
+  const ETAL_PAUSE = 4200;      // 🆕 (08-11-2026) 3400 → 4200 : le balayage « un, un, un » (voir etalBalayage) prend ~2 s, il faut encore une vraie pause derrière
+  const ETAL_PAUSE_CONNU = 3200; // 🆕 durée de l'état « le / la » dans la boucle de la remarque
+  const ETAL_PAS = 650;         // 🆕 durée (ms) pendant laquelle chaque objet est « souligné » à son tour
   const ATTENTE_VOIX_MAX = 4500;    // 🆕 une phrase dite automatiquement attend la fin de la voix en cours, jusqu'à 4,5 s (avant : 1,5 s, ce qui coupait la fin des phrases longues)
   const FIN_VOIX_MARGE = 260;       // 🆕 respiration (ms) laissée après la fin d'une voix, avant la suivante ou avant de changer d'écran      // durée de l'état « un / une » avant le passage à « le / la » (ms)
   const ETAL_CSS = [
     '.m1-etal{position:relative;display:flex;align-items:center;justify-content:center;gap:1rem;width:max-content;max-width:100%;box-sizing:border-box;margin:0 auto .9rem;padding:.9rem 1.5rem;',
     'background:rgba(255,255,255,.95);border:2px solid var(--brun-fonce,#4A3B33);border-radius:22px;box-shadow:0 3px 0 0 var(--brun-fonce,#4A3B33);cursor:pointer;-webkit-tap-highlight-color:transparent}',
     '.m1-etal-objets{display:flex;align-items:center;gap:.8rem}',
-    '.m1-etal-objet{display:block;width:4.4rem;height:4.4rem;padding:.25rem;box-sizing:border-box;border-radius:1.2rem;box-shadow:0 0 0 3px transparent;',
+    '.m1-etal-objet{position:relative;display:block;width:4.4rem;height:4.4rem;padding:.25rem;box-sizing:border-box;border-radius:1.2rem;box-shadow:0 0 0 3px transparent;',
     'transition:opacity 1.1s ease,transform 1.3s cubic-bezier(.3,.7,.3,1),box-shadow 1.1s ease,background-color 1.1s ease;animation:m1-etal-pop .6s ease backwards}',
     '.m1-etal-objet:nth-child(2){animation-delay:.14s}.m1-etal-objet:nth-child(3){animation-delay:.28s}',
     '.m1-etal-objet svg{display:block;width:100%;height:100%}',
@@ -476,6 +488,17 @@
     // l'élève vient de placer un article dans la phrase : la pastille répond
     '.m1-etal-pulse .m1-etal-pastille{animation:m1-etal-pulse .6s ease}',
     '.m1-etal::after{content:"\\21BB";position:absolute;right:.45rem;top:.15rem;font-size:.8rem;line-height:1;color:var(--brun-fonce,#4A3B33);opacity:.35}',
+    // 🆕 (08-11-2026) SOULIGNEMENT : « un » = n'importe lequel des trois. Un trait ambre passe sous chaque objet à tour de rôle (balayage), puis les trois
+    // restent soulignés (« un parmi plusieurs »). « le » = UN SEUL, souligné en violet, les autres s'effacent.
+    '.m1-etal-objet::after{content:"";position:absolute;left:14%;right:14%;bottom:-.42rem;height:.3rem;border-radius:999px;background:' + COULEUR_NOUVEAU + ';transform:scaleX(0);transform-origin:left center;transition:transform .35s ease,background-color .6s ease}',
+    '.m1-etal-objets{padding-bottom:.4rem}',                                             // de la place sous les objets pour le trait
+    '.m1-etal-nouveau .m1-etal-objet::after{transform:scaleX(1)}',
+    '.m1-etal-connu .m1-etal-objet:first-child::after{transform:scaleX(1);background:' + COULEUR_CONNU + ';transition-delay:.45s}',
+    '.m1-etal-nouveau.m1-etal-balayage .m1-etal-objet{box-shadow:0 0 0 3px transparent;background:transparent;transition:transform .3s ease,box-shadow .3s ease,background-color .3s ease}',
+    '.m1-etal-nouveau.m1-etal-balayage .m1-etal-objet::after{transform:scaleX(0)}',
+    '.m1-etal-nouveau.m1-etal-balayage .m1-etal-objet.m1-etal-regard{transform:translateY(-3px) scale(1.12);box-shadow:0 0 0 3px rgba(' + RVB_NOUVEAU + ',.75),0 0 14px rgba(' + RVB_NOUVEAU + ',.45);background:rgba(' + RVB_NOUVEAU + ',.2)}',
+    '.m1-etal-nouveau.m1-etal-balayage .m1-etal-objet.m1-etal-regard::after{transform:scaleX(1)}',
+    '@media (prefers-reduced-motion:reduce){.m1-etal-objet::after{transition:none}}',
     '@keyframes m1-etal-pop{from{opacity:0;transform:translateY(.5rem) scale(.85)}to{opacity:1;transform:none}}',
     '@keyframes m1-etal-pulse{40%{transform:scale(1.35)}}',
     '@media (max-width:719px){.m1-etal{gap:.7rem;padding:.7rem 1rem}.m1-etal-objets{gap:.55rem}.m1-etal-objet{width:3.3rem;height:3.3rem}.m1-etal-pastille{font-size:1.15rem;min-width:2.7rem;padding:.1rem .8rem}}',
@@ -5264,32 +5287,41 @@
     // ---------- 🆕 L'étal : « un parmi plusieurs » (nouveau) → « celui-là » (connu) ----------
     // mode 'nouveau' : trois objets pareils, pastille pêche « un/une » ; mode 'connu' : un seul reste en valeur (halo bleu), pastille « le/la ».
     // Sans argument : on retire l'étal. Le même objet garde son élément d'un mode à l'autre : le passage s'anime.
-    let etalEl = null, minuteurEtal = null, etalEnBoucle = false;
+    let etalEl = null, minuteurEtal = null, etalEnBoucle = false, etalListe = null, etalEcoute = null;   // etalEcoute(objet, mode) : la carte « Remarque » qui suit l'étal
     function etal(objet, mode) {          // appel venu d'une étape : il arrête toute boucle en cours
       clearTimeout(minuteurEtal); etalEnBoucle = false;
       etalPoser(objet, mode);
     }
-    // 🆕 En boucle (carte « Remarque ») : « un » (pause) → « le » (pause) → « un »… jusqu'à ce que l'étape change. Sans animation : un seul passage.
-    function etalBoucle(objet) {
-      clearTimeout(minuteurEtal); etalEnBoucle = true;
-      etalPoser(objet, 'nouveau');
+    // 🆕 En boucle (carte « Remarque ») : pour chaque objet de la liste, « un » (balayage + pause) → « le » (pause), puis l'objet suivant (sandwich, puis poutine : une ligne
+    // de la carte chacun), et on recommence, jusqu'à ce que l'étape change. Sans animation : un seul passage, sur le premier objet.
+    let jetonBoucle = null;
+    function etalBoucle(objets) {
+      objets = Array.isArray(objets) ? objets : [objets];
+      clearTimeout(minuteurEtal); etalEnBoucle = true; etalListe = objets;
+      let pas = 0;
+      etalPoser(objets[0], 'nouveau');
       if (reduit) return;
-      const el = etalEl;
+      const jeton = jetonBoucle = {};
       (function tour() {
+        const attente = pas % 2 === 0 ? ETAL_PAUSE : ETAL_PAUSE_CONNU;     // « un » demande plus de temps : le balayage d'abord
         minuteurEtal = planifier(function () {
-          if (etalEl !== el || !etalEnBoucle) return;
-          etalPoser(objet, el.classList.contains('m1-etal-connu') ? 'nouveau' : 'connu');
+          if (jetonBoucle !== jeton || !etalEnBoucle) return;
+          pas = (pas + 1) % (objets.length * 2);
+          etalPoser(objets[pas >> 1], pas % 2 ? 'connu' : 'nouveau');
           tour();
-        }, ETAL_PAUSE);
+        }, attente);
       })();
     }
     function etalPoser(objet, mode) {
       if (!objet || !mode || !DESSINS[objet] || !ETAL_ART[objet]) {
-        clearTimeout(minuteurEtal); etalEnBoucle = false;
+        clearTimeout(minuteurEtal); etalEnBoucle = false; etalBalayageStop();
+        if (typeof etalEcoute === 'function') etalEcoute(null, null);
         if (etalEl && etalEl.parentNode) etalEl.parentNode.removeChild(etalEl);
         etalEl = null;
         return;
       }
+      // un second appel identique (même objet, même mode) ne doit pas interrompre un balayage en cours
+      if (!etalEl || etalEl.getAttribute('data-objet') !== objet || !etalEl.classList.contains(mode === 'connu' ? 'm1-etal-connu' : 'm1-etal-nouveau')) etalBalayageStop();
       injecterStyle('m1-etal-style', ETAL_CSS);
       if (!etalEl || etalEl.getAttribute('data-objet') !== objet || !etalEl.parentNode) {
         if (etalEl && etalEl.parentNode) etalEl.parentNode.removeChild(etalEl);
@@ -5305,13 +5337,14 @@
         //   « le / la » → « un parmi plusieurs », une pause, puis « celui-là » ; « un / une » → les trois objets réapparaissent ; en boucle → on repart
         el.addEventListener('click', function () {
           if (etalEl !== el) return;
-          if (etalEnBoucle) { etalBoucle(objet); return; }
+          if (etalEnBoucle) { etalBoucle(etalListe || objet); return; }
           clearTimeout(minuteurEtal);
           if (el.classList.contains('m1-etal-connu')) {
             etalPoser(objet, 'nouveau');
             minuteurEtal = planifier(function () { if (etalEl === el) etalPoser(objet, 'connu'); }, ETAL_PAUSE);
           } else {
             Array.prototype.forEach.call(el.querySelectorAll('.m1-etal-objet'), function (o) { o.style.animation = 'none'; void o.offsetWidth; o.style.animation = ''; });
+            if (!reduit) etalBalayage(el, 900);
           }
         });
         etalEl = el;
@@ -5321,6 +5354,36 @@
       etalEl.classList.toggle('m1-etal-connu', mode === 'connu');
       etalEl.querySelector('.m1-etal-pastille').textContent = ETAL_ART[objet][mode === 'connu' ? 1 : 0];
       if (avant && avant !== mode) etalSignal();        // le mot de la pastille change : elle pulse pour qu'on le remarque
+      // 🆕 « un » : on souligne les objets un par un (juste après leur apparition si l'étal vient d'être créé, tout de suite si on revient de « le »)
+      if (mode === 'nouveau' && avant !== 'nouveau' && !reduit) etalBalayage(etalEl, avant ? 150 : 900);
+      if (typeof etalEcoute === 'function') etalEcoute(objet, mode);
+    }
+    // 🆕 (08-11-2026) Balayage : chaque objet, à tour de rôle, est surélevé, entouré d'ambre et souligné, et la pastille « un/une » pulse à chaque fois.
+    // Après le dernier, les trois restent soulignés (état « nouveau » normal). Tout appel à etalPoser l'interrompt proprement.
+    let minuteursBalayage = [];
+    function etalBalayageStop() {
+      minuteursBalayage.forEach(clearTimeout); minuteursBalayage = [];
+      if (etalEl) {
+        etalEl.classList.remove('m1-etal-balayage');
+        Array.prototype.forEach.call(etalEl.querySelectorAll('.m1-etal-regard'), function (o) { o.classList.remove('m1-etal-regard'); });
+      }
+    }
+    function etalBalayage(el, delai) {
+      minuteursBalayage.forEach(clearTimeout); minuteursBalayage = [];
+      const objets = Array.prototype.slice.call(el.querySelectorAll('.m1-etal-objet'));
+      minuteursBalayage.push(planifier(function () { if (etalEl === el) el.classList.add('m1-etal-balayage'); }, Math.max(0, delai - 30)));
+      objets.forEach(function (o, i) {
+        minuteursBalayage.push(planifier(function () {
+          if (etalEl !== el) return;
+          objets.forEach(function (x) { x.classList.toggle('m1-etal-regard', x === o); });
+          etalSignal();
+        }, delai + i * ETAL_PAS));
+      });
+      minuteursBalayage.push(planifier(function () {
+        if (etalEl !== el) return;
+        objets.forEach(function (x) { x.classList.remove('m1-etal-regard'); });
+        el.classList.remove('m1-etal-balayage');
+      }, delai + objets.length * ETAL_PAS));
     }
     function etalSignal() {              // un article vient d'être posé dans la phrase : la pastille pulse
       if (!etalEl || reduit) return;
@@ -5335,8 +5398,22 @@
         const sp = document.createElement('span');
         sp.className = 'm1-radical';
         sp.innerHTML = '<b>' + echapper(p[0]) + '</b> ' + echapper(p[1]) + ' &rarr; <i>' + echapper(p[2]) + '</i> ' + echapper(p[1]);
+        sp.setAttribute('data-objet', p[1]);
         d.appendChild(sp);
       });
+      // 🆕 la carte suit l'étal (sauf mouvement réduit : tout reste net, rien ne s'estompe)
+      if (!reduit) {
+        etalEcoute = function (objet, mode) {
+          if (!d.isConnected) { etalEcoute = null; return; }
+          d.classList.toggle('m1-paire-suivi', !!objet);
+          Array.prototype.forEach.call(d.querySelectorAll('.m1-radical'), function (r) {
+            const actif = !!objet && r.getAttribute('data-objet') === objet;
+            r.classList.toggle('m1-radical-actif', actif);
+            if (actif) r.setAttribute('data-mode', mode); else r.removeAttribute('data-mode');
+          });
+        };
+        if (etalEl) etalEcoute(etalEl.getAttribute('data-objet'), etalEl.classList.contains('m1-etal-connu') ? 'connu' : 'nouveau');
+      }
       return d;
     }
     async function etapeArticles() {
@@ -5345,7 +5422,7 @@
       consigne(T('c_lire'));
       planifier(function () { lecteurIndice(T('quipLeSandwich'), 5500); }, 1500);
       await lecture(PHRASES.sandwichle, 'sandwichle');
-      etalBoucle('sandwich');                                        // la remarque : un parmi plusieurs… une vraie pause… celui-là… et on recommence
+      etalBoucle(['sandwich', 'poutine']);                           // la remarque : un parmi plusieurs… une vraie pause… celui-là… (sandwich, puis poutine : une ligne de la carte chacun) et on recommence
       await carte(T('noteL_titre'), T('noteL'), pairesArticles([['un', 'sandwich', 'le'], ['une', 'poutine', 'la']]));
     }
     async function etapePoutineLa() {

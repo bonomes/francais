@@ -700,6 +700,7 @@ header, .chemin { position: relative; z-index: 1; }
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape') fermer(); });
 
   // fond animé : lettres et accents qui dérivent, étoiles qui scintillent, étoile filante (un souhait)
+  let rafraichirMots = function () {};          // remplacé par le fond animé ci-dessous (relit la banque de mots)
   (function () {
     const f = document.getElementById('fondAnime');
     // Banque vide (ou pas encore chargée) : lettres et accents. Sinon : les VRAIS mots de l'élève.
@@ -736,12 +737,23 @@ header, .chemin { position: relative; z-index: 1; }
       }
     }
     remplir(null);
-    if (window.KebBekMots) {
-      window.KebBekMots.lire().then(function (mots) {
+    // 🆕 (09-11-2026) La banque se lit DEUX fois : tout de suite (copie locale), puis une fois la session restaurée (chargerProgression, plus bas) — avant, un
+    // seul appel partait au chargement, quand le compte n'était pas encore connecté : mots.js ne lisait alors que la copie locale, jamais les mots du compte.
+    // On ne redessine le fond que si la liste a changé (pas de saut visuel).
+    let signature = '';
+    function chargerMots() {
+      if (!window.KebBekMots) { console.warn('memoires : mots.js absent — pas de mots dans le fond.'); return Promise.resolve(); }
+      return window.KebBekMots.lire().then(function (mots) {
         if (demo === 'mots') mots = ['je', 'parle', 'parler', 'fran\u00e7ais'];
-        if (mots && mots.length) remplir(mots);
-      });
+        if (!mots || !mots.length) return;
+        const sig = mots.slice().sort().join('|');
+        if (sig === signature) return;
+        signature = sig;
+        remplir(mots);
+      }).catch(function (e) { console.warn('memoires : lecture des mots impossible.', e); });
     }
+    rafraichirMots = chargerMots;
+    chargerMots();
     for (let k = 0; k < 14; k++) {
       const e = document.createElement('u');
       e.style.setProperty('--x', Math.round(alea(2, 96)) + '%');
@@ -758,7 +770,7 @@ header, .chemin { position: relative; z-index: 1; }
       f.appendChild(e);
     });
   })();
-  chargerProgression().then(rendre);
+  chargerProgression().then(rendre).then(function () { rafraichirMots(); });
 })();
 </script>
 </body>

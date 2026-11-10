@@ -122,6 +122,13 @@
   color: var(--brun-fonce, var(--brun));
   text-align: center;
   padding: 0 4px;
+  /* 🆕 (09-11-2026) Si la salutation passe sur deux lignes, le prénom (avec « さん！ » ou « ! ») reste d'un bloc (voir .kbm-prenom) — pas de text-wrap: balance :
+     il coupait « こんにちは » en plein milieu pour égaliser les lignes. */
+}
+.kbm-prenom {
+  display: inline-block;     /* bloc insécable : il passe à la ligne en entier plutôt que d'être coupé… */
+  max-width: 100%;
+  overflow-wrap: anywhere;   /* …sauf un prénom plus large que la carte, qu'on laisse se couper plutôt que déborder */
 }
 
 .kbm-liste {

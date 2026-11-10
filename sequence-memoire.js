@@ -122,9 +122,27 @@
   // 🆕 (02-11-2026) Les premiers mots de la banque de l'élève (mots.js) : ceux de cette mémoire.
   // Écrits tels qu'on les lit dans une phrase (minuscules, accent) ; memoires.html les fait flotter.
   const MOTS_APPRIS = ['je', 'parle', 'fran\u00e7ais'];
+  // 🆕 (09-11-2026) Filet : si mots.js n'est pas chargé sur la page hôte, on écrit quand même dans la copie locale de la banque (même clé 'kebbek_mots_invite',
+  // même format : tableau de mots sans doublon) — memoires.html la relit. Avant, rien ne se passait et rien ne le disait.
+  function enregistrerMotsSecours(mots) {
+    try {
+      const cle = 'kebbek_mots_invite';
+      let liste = [];
+      try { liste = JSON.parse(localStorage.getItem(cle) || '[]'); } catch (e) { liste = []; }
+      if (!Array.isArray(liste)) liste = [];
+      const vus = {};
+      liste.forEach(function (m) { vus[String(m).toLocaleLowerCase()] = true; });
+      (mots || []).forEach(function (m) { const k = String(m).toLocaleLowerCase(); if (m && !vus[k]) { vus[k] = true; liste.push(m); } });
+      localStorage.setItem(cle, JSON.stringify(liste));
+    } catch (e) { console.warn('Copie de secours des mots impossible.', e); }
+  }
   function enregistrerMots() {
     const banque = window.KebBekMots;
-    if (!banque || typeof banque.ajouter !== 'function') return;     // sans mots.js : la mémoire se joue quand même
+    if (!banque || typeof banque.ajouter !== 'function') {            // sans mots.js : la mémoire se joue quand même, mais on le dit
+      console.warn('sequence-memoire : mots.js n\'est pas chargé sur cette page — mots gardés dans la copie locale seulement (pas dans le compte).');
+      enregistrerMotsSecours(MOTS_APPRIS);
+      return;
+    }
     try {
       const p = banque.ajouter(MOTS_APPRIS);                         // pas de await : la sortie du souvenir n'attend pas
       if (p && typeof p.catch === 'function') p.catch(function (e) { console.warn('Enregistrement des mots impossible.', e); });

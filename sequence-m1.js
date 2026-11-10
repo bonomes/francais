@@ -5870,6 +5870,20 @@
       await fin();
     }
 
+  // 🆕 (09-11-2026) Filet : si mots.js n'est pas chargé sur la page hôte, on écrit quand même dans la copie locale de la banque (même clé 'kebbek_mots_invite',
+  // même format : tableau de mots sans doublon) — memoires.html la relit. Avant, rien ne se passait et rien ne le disait.
+  function enregistrerMotsSecours(mots) {
+    try {
+      const cle = 'kebbek_mots_invite';
+      let liste = [];
+      try { liste = JSON.parse(localStorage.getItem(cle) || '[]'); } catch (e) { liste = []; }
+      if (!Array.isArray(liste)) liste = [];
+      const vus = {};
+      liste.forEach(function (m) { vus[String(m).toLocaleLowerCase()] = true; });
+      (mots || []).forEach(function (m) { const k = String(m).toLocaleLowerCase(); if (m && !vus[k]) { vus[k] = true; liste.push(m); } });
+      localStorage.setItem(cle, JSON.stringify(liste));
+    } catch (e) { console.warn('Copie de secours des mots impossible.', e); }
+  }
     async function fin() {
       if (arrete) return;
       finie = true; majRetour(); etal(null);
@@ -5877,7 +5891,12 @@
       montrer('bek-heureuse-ferme');
       try {
         const banque = window.KebBekMots;
-        if (banque && typeof banque.ajouter === 'function' && MOTS_DU_FRAGMENT.length) {
+        if (!banque || typeof banque.ajouter !== 'function') {
+          if (MOTS_DU_FRAGMENT.length) {
+            console.warn('sequence-m1 : mots.js n\'est pas chargé sur cette page — mots gardés dans la copie locale seulement (pas dans le compte).');
+            enregistrerMotsSecours(MOTS_DU_FRAGMENT);
+          }
+        } else if (MOTS_DU_FRAGMENT.length) {
           const p = banque.ajouter(MOTS_DU_FRAGMENT);       // pas de await : la sortie ne dépend pas du réseau
           if (p && typeof p.catch === 'function') p.catch(function (e) { console.warn('sequence-m1 : mots non enregistrés.', e); });
         }

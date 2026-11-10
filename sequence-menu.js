@@ -1294,6 +1294,15 @@
     if (options && options.langue) return options.langue;
     try { return localStorage.getItem(CLE_LANGUE) || 'fr'; } catch (e) { return 'fr'; }
   }
+  // 🆕 (09-11-2026) Salutation : le prénom et ce qui le colle (« さん！ », « ! », « ， ») forment un bloc insécable, pour qu'un nom ne soit jamais coupé de sa
+  // marque de politesse (« Raphaël / さん！ » sur deux lignes). Le texte du dictionnaire n'est pas modifié ; {prenom} est repéré dans le modèle.
+  function salutationHtml(modele, prenom) {
+    return String(modele).split(/(\{prenom\}(?:\s[!?])?\S*)/).map(function (morceau) {
+      return morceau.indexOf('{prenom}') === 0
+        ? '<span class="kbm-prenom">' + echapper(morceau.replace('{prenom}', prenom)) + '</span>'
+        : echapper(morceau);
+    }).join('');
+  }
   function echapper(texte) {
     return String(texte).replace(/[&<>"]/g, function (c) {
       return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
@@ -1429,7 +1438,7 @@
           '<div class="mns-menu' + (jouerTutoriel ? ' mns-off' : ' mns-menu-visible') + '">' +
             '<div class="kbm-carte mns-carte-menu">' +
               '<div class="kbm-salutation"' + (rtl ? ' dir="rtl"' : '') + '>' +
-                echapper(prenom ? T('salutation').replace('{prenom}', prenom) : T('salutationInvite')) +
+                (prenom ? salutationHtml(T('salutation'), prenom) : echapper(T('salutationInvite'))) +
               '</div>' +
               '<div class="kbm-liste">' + lignesHtml + '</div>' +
             '</div>' +

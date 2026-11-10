@@ -143,6 +143,12 @@
       à sequence-m1.css). Un clic, Entrée ou Espace passent la scène ; durées SCENE_DUREE / SCENE_DUREE_MANGER ; mouvement réduit : fondu seulement ;
       aucune scène au retour en arrière (flèche) ni à la reprise au milieu d'un fragment.
      Un « ' » ou un « ’ » tapé sont équivalents ; « jaime » ou « j aime » donnent « Presque ! N'oublie pas l'apostrophe. »
+   🆕 (09-11-2026) v32 :
+     • BANDE DE MOTS : au tout premier niveau (BANDE_FRAGMENTS = [1]), la phrase entière à écrire de mémoire a, sous le champ, un bouton replié « Voir les mots »
+       qui déplie les mots de la phrase DANS LE DÉSORDRE (jamais dans l'ordre) ; un clic sur un mot le fait entendre sans l'insérer. Après une erreur, le bouton se
+       met à battre doucement. options2.bande: true / false de ecrire() force ou retire la bande pour un exercice précis.
+     • POINTS DE REPOS : SCENES[n].repos peut être une liste (fragment 1 : avant les images ET avant l'exercice d'écoute, c'est-à-dire après l'écriture de mémoire).
+     • Pas de scène d'ouverture à la reprise (reprendreA) ni au retour en arrière — la console le dit maintenant ; options.scenes: true la force (test, « refaire »).
    onTermine({ mots, fragments }) : fragments = numéro du fragment terminé.
 
    🆕 (08-11-2026) v30 :
@@ -366,6 +372,28 @@
   ].join('\n');
   // 🆕 (08-11-2026) CASE FUSIONNÉE « j’aime » : l'élision s'écrit d'un seul tenant. Une seule case (écriture), deux étiquettes au-dessus (sujet | verbe) ;
   //   la bordure reprend les deux couleurs (celles des cases « sujet » et « verbe », lues dans la feuille de style).
+  // 🆕 (09-11-2026) BANDE DE MOTS (fragment 1) : sous le champ où l'on écrit la phrase de mémoire, un petit bouton « Voir les mots » déplie une bande
+  // avec les mots de la phrase DANS LE DÉSORDRE (jamais dans l'ordre : l'élève doit encore construire). Replié par défaut ; un clic sur un mot le fait entendre.
+  const BANDE_CSS = [
+    '.m1-bande{display:flex;flex-direction:column;align-items:center;gap:.45rem;margin:.55rem 0 0}',
+    '.m1-bande-btn{display:inline-flex;align-items:center;gap:.4rem;font:inherit;font-weight:700;font-size:.82rem;color:var(--brun-clair,#8A7364);background:transparent;border:1.5px dashed var(--peche,#F0A98B);border-radius:999px;padding:.3rem .8rem;cursor:pointer;transition:background .15s ease,color .15s ease,transform .18s cubic-bezier(.34,1.6,.4,1)}',
+    '.m1-bande-btn:hover{background:var(--peche-pale,rgba(240,169,139,.16));color:var(--brun-fonce,#4A3B33)}',
+    '.m1-bande-btn:active{transform:scale(.96)}',
+    '.m1-bande-btn:focus-visible{outline:3px solid var(--peche-fonce,#E08867);outline-offset:2px}',
+    '.m1-bande-btn:disabled{opacity:.45;cursor:default}',
+    '.m1-bande-btn svg{width:1.05rem;height:1.05rem;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;transition:transform .3s ease}',
+    '.m1-bande-ouverte .m1-bande-btn svg{transform:rotate(180deg)}',
+    '.m1-bande-piste{max-height:0;opacity:0;overflow:hidden;visibility:hidden;transition:max-height .4s ease,opacity .3s ease,visibility 0s linear .4s}',
+    '.m1-bande-ouverte .m1-bande-piste{max-height:9rem;opacity:1;visibility:visible;transition:max-height .4s ease,opacity .3s ease}',
+    '.m1-bande-mots{display:flex;flex-wrap:wrap;justify-content:center;gap:.4rem;padding:.55rem .7rem;background:var(--peche-pale,rgba(240,169,139,.16));border-radius:14px}',
+    '.m1-bande-mot{font:inherit;font-weight:700;font-size:.95rem;color:var(--brun-fonce,#4A3B33);background:#FFFFFF;border:1.5px solid var(--peche,#F0A98B);border-radius:999px;padding:.2rem .8rem;cursor:pointer;box-shadow:0 2px 0 0 var(--peche,#F0A98B);transition:transform .12s ease,box-shadow .12s ease}',
+    '.m1-bande-mot:active{transform:translateY(2px);box-shadow:none}',
+    '.m1-bande-mot:focus-visible{outline:3px solid var(--peche-fonce,#E08867);outline-offset:2px}',
+    '.m1-bande-appel{animation:m1-bande-appel 1s ease-in-out 2}',
+    '@keyframes m1-bande-appel{0%,100%{transform:scale(1)}50%{transform:scale(1.08);background:var(--peche-pale,rgba(240,169,139,.16))}}',
+    '@media (prefers-reduced-motion:reduce){.m1-bande-btn svg,.m1-bande-piste,.m1-bande-ouverte .m1-bande-piste{transition:none}.m1-bande-appel{animation:none}}'
+  ].join('\n');
+  const BANDE_FRAGMENTS = [1];      // fragments où écrire une phrase entière propose la bande de mots (le tout premier niveau)
   const FUSION_CSS = [
     '.m1-groupe.m1-groupe-fusion{align-items:stretch}',
     '.m1-groupe-fusion .m1-fusion-etiq{display:flex;width:100%}',
@@ -434,7 +462,8 @@
   ].join('\n');
   const SCENE_DUREE = 3000, SCENE_DUREE_MANGER = 4300;     // ms : de quoi voir une bouchée et quelques mastications
   const SCENES = {                                         // intro : au début du fragment ; repos : avant le segment « index » (milieu du fragment)
-    1: { intro: { pose: 'bek-mange-sandwich', manger: 'sandwich' }, repos: { index: 3, pose: 'bek-mange-sandwich', manger: 'sandwich' } },
+    // 🆕 repos peut être une liste : fragment 1 = après les phrases (avant les images) et après l'écriture de mémoire (avant l'exercice d'écoute)
+    1: { intro: { pose: 'bek-mange-sandwich', manger: 'sandwich' }, repos: [{ index: 3, pose: 'bek-mange-sandwich', manger: 'sandwich' }, { index: 5, pose: 'bek-mange-poutine', manger: 'poutine' }] },
     2: { intro: { pose: 'bek-mange-poutine', manger: 'poutine' },  repos: { index: 3, pose: 'bek-mange-sandwich', manger: 'sandwich' } },
     3: { intro: { pose: 'bek-regarde-film' },                     repos: { index: 3, pose: 'bek-regarde-poutine' } },
     4: { intro: { pose: 'bek-mange-poutine', manger: 'poutine', coeur: true }, repos: { index: 3, pose: 'bek-aime-jouer', coeur: true } },
@@ -517,7 +546,7 @@
       c_ecrire: 'Écris la phrase *en français*.',
       c_image: 'Tu es Bek. Que *fais-tu* maintenant ?',
       c_audio: '*Écoute*, puis *choisis* les bons mots.',
-      reecouter: 'Réécouter', sans_son: 'Je n’entends rien', construire_vide: 'Touche les mots pour construire ta phrase.',
+      reecouter: 'Réécouter', bande_voir: 'Voir les mots', bande_cacher: 'Cacher les mots', bande_ordre: 'Les mots de la phrase, dans le désordre', sans_son: 'Je n’entends rien', construire_vide: 'Touche les mots pour construire ta phrase.',
       role_s: 'sujet', role_v: 'verbe', role_o: 'objet', genre_m: 'masculin', genre_f: 'féminin',
       noteE_titre: 'Remarque', noteE: 'Avec « je », les verbes en -er se terminent par -e. On n’entend pas ce -e.',
       tr_mange: '', tr_sandwich: '', tr_poutine: '', tr_parle: '',
@@ -643,7 +672,7 @@
       c_ecrire: 'Write the sentence *in French*.',
       c_image: 'You are Bek. What are you *doing* now?',
       c_audio: '*Listen*, then *pick* the right words.',
-      reecouter: 'Listen again', sans_son: 'I can’t hear anything', construire_vide: 'Tap the words to build your sentence.',
+      reecouter: 'Listen again', bande_voir: 'Show the words', bande_cacher: 'Hide the words', bande_ordre: 'The words of the sentence, in random order', sans_son: 'I can’t hear anything', construire_vide: 'Tap the words to build your sentence.',
       role_s: 'subject', role_v: 'verb', role_o: 'object', genre_m: 'masculine', genre_f: 'feminine',
       noteE_titre: 'Note', noteE: 'After “je”, verbs ending in -er end in -e. You don’t hear that -e.',
       tr_mange: 'I eat.', tr_sandwich: 'I eat a sandwich.', tr_poutine: 'I eat a poutine.', tr_parle: 'I speak French.',
@@ -776,7 +805,7 @@
       c_image: 'Eres Bek. ¿Qué haces ahora?',
       c_audio: 'Escucha y elige las palabras correctas.',
       reecouter: 'Volver a escuchar',
-      sans_son: 'No oigo nada',
+      bande_voir: 'Ver las palabras', bande_cacher: 'Ocultar las palabras', sans_son: 'No oigo nada',
       construire_vide: 'Toca las palabras para construir tu frase.',
       role_s: 'sujeto',
       role_v: 'verbo',
@@ -962,7 +991,7 @@
       c_image: 'Sei Bek. Che cosa fai adesso?',
       c_audio: 'Ascolta, poi scegli le parole giuste.',
       reecouter: 'Riascolta',
-      sans_son: 'Non sento niente',
+      bande_voir: 'Mostra le parole', bande_cacher: 'Nascondi le parole', sans_son: 'Non sento niente',
       construire_vide: 'Tocca le parole per costruire la tua frase.',
       role_s: 'soggetto',
       role_v: 'verbo',
@@ -1148,7 +1177,7 @@
       c_image: 'Você é a Bek. O que você está fazendo agora?',
       c_audio: 'Escute e escolha as palavras certas.',
       reecouter: 'Ouvir de novo',
-      sans_son: 'Não estou ouvindo nada',
+      bande_voir: 'Ver as palavras', bande_cacher: 'Esconder as palavras', sans_son: 'Não estou ouvindo nada',
       construire_vide: 'Toque nas palavras para montar a sua frase.',
       role_s: 'sujeito',
       role_v: 'verbo',
@@ -1334,7 +1363,7 @@
       c_image: 'Ets la Bek. Què fas ara?',
       c_audio: 'Escolta i tria les paraules correctes.',
       reecouter: 'Torna a escoltar',
-      sans_son: 'No sento res',
+      bande_voir: 'Veure les paraules', bande_cacher: 'Amagar les paraules', sans_son: 'No sento res',
       construire_vide: 'Toca les paraules per construir la teva frase.',
       role_s: 'subjecte',
       role_v: 'verb',
@@ -1520,7 +1549,7 @@
       c_image: 'Vi estas Bek. Kion vi faras nun?',
       c_audio: 'Aŭskultu, poste elektu la ĝustajn vortojn.',
       reecouter: 'Aŭskulti denove',
-      sans_son: 'Mi nenion aŭdas',
+      bande_voir: 'Montri la vortojn', bande_cacher: 'Kaŝi la vortojn', sans_son: 'Mi nenion aŭdas',
       construire_vide: 'Tuŝu la vortojn por konstrui vian frazon.',
       role_s: 'subjekto',
       role_v: 'verbo',
@@ -1706,7 +1735,7 @@
       c_image: '你是 Bek。你现在在做什么？',
       c_audio: '先听，再选出正确的词。',
       reecouter: '再听一遍',
-      sans_son: '我听不到声音',
+      bande_voir: '看看单词', bande_cacher: '隐藏单词', sans_son: '我听不到声音',
       construire_vide: '点一点下面的词，组成你的句子。',
       role_s: '主语',
       role_v: '动词',
@@ -1892,7 +1921,7 @@
       c_image: 'あなたはBekです。今、何を*していますか*？',
       c_audio: '*聞いて*から、正しい言葉を*選び*ましょう。',
       reecouter: 'もう一度聞く',
-      sans_son: '音が聞こえません',
+      bande_voir: '単語を見る', bande_cacher: '単語をかくす', sans_son: '音が聞こえません',
       construire_vide: '言葉に触って、文を組み立てましょう。',
       role_s: '主語',
       role_v: '動詞',
@@ -2065,7 +2094,7 @@
       c_image: '너는 Bek이에요. 지금 뭘 하고 있나요?',
       c_audio: '듣고 나서 알맞은 단어를 골라 보세요.',
       reecouter: '다시 듣기',
-      sans_son: '아무 소리도 안 들려요',
+      bande_voir: '단어 보기', bande_cacher: '단어 숨기기', sans_son: '아무 소리도 안 들려요',
       construire_vide: '단어를 눌러서 문장을 만들어 보세요.',
       role_s: '주어',
       role_v: '동사',
@@ -2251,7 +2280,7 @@
       c_image: 'Bạn là Bek. Bây giờ bạn đang làm gì?',
       c_audio: 'Nghe rồi chọn đúng các từ.',
       reecouter: 'Nghe lại',
-      sans_son: 'Mình không nghe thấy gì',
+      bande_voir: 'Xem các từ', bande_cacher: 'Ẩn các từ', sans_son: 'Mình không nghe thấy gì',
       construire_vide: 'Chạm vào các từ để ghép thành câu của bạn.',
       role_s: 'chủ ngữ',
       role_v: 'động từ',
@@ -2437,7 +2466,7 @@
       c_image: 'Ou se Bek. Kisa w ap fè kounye a?',
       c_audio: 'Koute, apre sa chwazi bon mo yo.',
       reecouter: 'Koute ankò',
-      sans_son: 'Mwen pa tande anyen',
+      bande_voir: 'Gade mo yo', bande_cacher: 'Kache mo yo', sans_son: 'Mwen pa tande anyen',
       construire_vide: 'Manyen mo yo pou konstwi fraz ou.',
       role_s: 'sijè',
       role_v: 'vèb',
@@ -2623,7 +2652,7 @@
       c_image: 'Ikaw si Bek. Ano ang ginagawa mo ngayon?',
       c_audio: 'Making ka, tapos piliin ang tamang mga salita.',
       reecouter: 'Pakinggan ulit',
-      sans_son: 'Wala akong marinig',
+      bande_voir: 'Tingnan ang mga salita', bande_cacher: 'Itago ang mga salita', sans_son: 'Wala akong marinig',
       construire_vide: 'Pindutin ang mga salita para buuin ang pangungusap mo.',
       role_s: 'simuno',
       role_v: 'pandiwa',
@@ -2809,7 +2838,7 @@
       c_image: 'Kamu adalah Bek. Apa yang kamu lakukan sekarang?',
       c_audio: 'Dengarkan, lalu pilih kata yang tepat.',
       reecouter: 'Dengarkan lagi',
-      sans_son: 'Aku tidak mendengar apa-apa',
+      bande_voir: 'Lihat kata-kata', bande_cacher: 'Sembunyikan kata-kata', sans_son: 'Aku tidak mendengar apa-apa',
       construire_vide: 'Sentuh kata-katanya untuk menyusun kalimatmu.',
       role_s: 'subjek',
       role_v: 'verba',
@@ -2995,7 +3024,7 @@
       c_image: 'Jij bent Bek. Wat doe je nu?',
       c_audio: 'Luister en kies de juiste woorden.',
       reecouter: 'Opnieuw luisteren',
-      sans_son: 'Ik hoor niets',
+      bande_voir: 'Toon de woorden', bande_cacher: 'Verberg de woorden', sans_son: 'Ik hoor niets',
       construire_vide: 'Tik op de woorden om je zin te maken.',
       role_s: 'onderwerp',
       role_v: 'werkwoord',
@@ -3181,7 +3210,7 @@
       c_image: 'Du bist Bek. Was machst du gerade?',
       c_audio: 'Hör zu und wähle dann die richtigen Wörter.',
       reecouter: 'Nochmal anhören',
-      sans_son: 'Ich höre nichts',
+      bande_voir: 'Wörter anzeigen', bande_cacher: 'Wörter ausblenden', sans_son: 'Ich höre nichts',
       construire_vide: 'Tippe auf die Wörter, um deinen Satz zu bauen.',
       role_s: 'Subjekt',
       role_v: 'Verb',
@@ -3367,7 +3396,7 @@
       c_image: 'تو Bek هستی. الان چه‌کار می‌کنی؟',
       c_audio: 'گوش بده، بعد کلمه‌های درست را انتخاب کن.',
       reecouter: 'دوباره گوش بده',
-      sans_son: 'چیزی نمی‌شنوم',
+      bande_voir: 'دیدن واژه‌ها', bande_cacher: 'پنهان کردن واژه‌ها', sans_son: 'چیزی نمی‌شنوم',
       construire_vide: 'روی کلمه‌ها بزن تا جمله‌ات را بسازی.',
       role_s: 'نهاد',
       role_v: 'فعل',
@@ -3553,7 +3582,7 @@
       c_image: 'Du är Bek. Vad gör du nu?',
       c_audio: 'Lyssna och välj sedan rätt ord.',
       reecouter: 'Lyssna igen',
-      sans_son: 'Jag hör ingenting',
+      bande_voir: 'Visa orden', bande_cacher: 'Dölj orden', sans_son: 'Jag hör ingenting',
       construire_vide: 'Tryck på orden för att bygga din mening.',
       role_s: 'subjekt',
       role_v: 'verb',
@@ -3739,7 +3768,7 @@
       c_image: 'Du er Bek. Hva gjør du nå?',
       c_audio: 'Lytt, og velg så de riktige ordene.',
       reecouter: 'Lytt igjen',
-      sans_son: 'Jeg hører ingenting',
+      bande_voir: 'Vis ordene', bande_cacher: 'Skjul ordene', sans_son: 'Jeg hører ingenting',
       construire_vide: 'Trykk på ordene for å bygge setningen din.',
       role_s: 'subjekt',
       role_v: 'verb',
@@ -3925,7 +3954,7 @@
       c_image: 'Ты — Bek. Что ты делаешь сейчас?',
       c_audio: 'Послушай и выбери правильные слова.',
       reecouter: 'Послушать ещё раз',
-      sans_son: 'Я ничего не слышу',
+      bande_voir: 'Показать слова', bande_cacher: 'Скрыть слова', sans_son: 'Я ничего не слышу',
       construire_vide: 'Нажимай на слова, чтобы составить своё предложение.',
       role_s: 'подлежащее',
       role_v: 'глагол',
@@ -4223,7 +4252,9 @@
     const boutonSon = q('.m1-son');
     const boutonRetour = q('.m1-retour');
     const colGauche = q('.m1-col-gauche'), calqueBek = q('.m1-bek');
-    const sceneAuDepart = !options._retour && !(Number(options.reprendreA) > 0);     // 🆕 scène d'abord : pas au retour en arrière ni à la reprise
+    // 🆕 options.scenes === true force la scène d'ouverture même à la reprise (test, ou « refaire » un fragment : le Lecteur dit alors « reprise »)
+    const sceneAuDepart = !options._retour && (!(Number(options.reprendreA) > 0) || options.scenes === true);
+    if (!sceneAuDepart) console.info('sequence-m1 : pas de scène d’ouverture (' + (options._retour ? 'retour en arrière' : 'reprise à l’étape ' + options.reprendreA) + '). options.scenes: true la force.');     // 🆕 scène d'abord : pas au retour en arrière ni à la reprise
     if (sceneAuDepart) { injecterStyle('m1-scene-seule-style', SCENE_CSS); colGauche.classList.add('m1-cache'); }
 
     // ---------- Voix : audio/fr/<id>.mp3 ou .wav, sinon la synthèse du navigateur ----------
@@ -4955,13 +4986,64 @@
       saisieFermer();
     }
 
+    // ---------- 🆕 Bande de mots (voir BANDE_CSS) ----------
+    function creerBande(phrase, champ) {
+      injecterStyle('m1-bande-style', BANDE_CSS);
+      const el = document.createElement('div'); el.className = 'm1-bande';
+      const idPiste = 'm1-bande-' + Math.random().toString(36).slice(2, 8);
+      const bouton = document.createElement('button');
+      bouton.type = 'button'; bouton.className = 'm1-bande-btn';
+      bouton.setAttribute('aria-expanded', 'false'); bouton.setAttribute('aria-controls', idPiste);
+      bouton.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg><span></span>';
+      const texte = bouton.querySelector('span'); texte.textContent = T('bande_voir');
+      const piste = document.createElement('div'); piste.className = 'm1-bande-piste'; piste.id = idPiste;
+      piste.setAttribute('role', 'group'); piste.setAttribute('aria-label', T('bande_ordre'));
+      const mots = document.createElement('div'); mots.className = 'm1-bande-mots';
+      piste.appendChild(mots);
+      // les mots de la phrase, sans doublon, JAMAIS dans l'ordre de la phrase
+      const ids = phrase.mots.filter(function (id, i, a) { return a.indexOf(id) === i; });
+      let ordre = melanger(ids.slice());
+      for (let essai = 0; essai < 8 && ids.length > 1 && ordre.join('|') === ids.join('|'); essai++) ordre = melanger(ids.slice());
+      if (ids.length > 1 && ordre.join('|') === ids.join('|')) ordre = ids.slice().reverse();
+      const puces = ordre.map(function (id) {
+        const b = document.createElement('button');
+        b.type = 'button'; b.className = 'm1-bande-mot'; b.textContent = AFFICHE[id] || id; b.tabIndex = -1;
+        b.addEventListener('pointerdown', function (e) { e.preventDefault(); });          // le champ garde le focus (le clavier reste là)
+        b.addEventListener('click', function () { try { direMot(id); } catch (e) {} });     // entendre le mot ; il n'est pas inséré
+        mots.appendChild(b);
+        return b;
+      });
+      let ouverte = false, minuteur = null;
+      function regler(v) {
+        ouverte = v;
+        el.classList.toggle('m1-bande-ouverte', ouverte);
+        bouton.setAttribute('aria-expanded', ouverte ? 'true' : 'false');
+        texte.textContent = T(ouverte ? 'bande_cacher' : 'bande_voir');
+        puces.forEach(function (b) { b.tabIndex = ouverte ? 0 : -1; });
+        bouton.classList.remove('m1-bande-appel');
+      }
+      bouton.addEventListener('pointerdown', function (e) { e.preventDefault(); });
+      bouton.addEventListener('click', function () { regler(!ouverte); try { champ.focus({ preventScroll: true }); } catch (e) {} });
+      el.appendChild(bouton); el.appendChild(piste);
+      return {
+        el: el,
+        inviter: function () {                 // après une erreur : le bouton se met à battre doucement, deux fois (jamais si la bande est ouverte)
+          if (ouverte || bouton.disabled) return;
+          bouton.classList.remove('m1-bande-appel'); void bouton.offsetWidth; bouton.classList.add('m1-bande-appel');
+          clearTimeout(minuteur); minuteur = planifier(function () { bouton.classList.remove('m1-bande-appel'); }, 2300);
+        },
+        fermer: function () { clearTimeout(minuteur); regler(false); bouton.disabled = true; }
+      };
+    }
+
     // ---------- 3. Écriture : quelques mots (cloze) ou la phrase entière ----------
-    async function ecrire(phrase, cle, manquants, sansTraduction) {
+    async function ecrire(phrase, cle, manquants, sansTraduction, options2) {
+      options2 = options2 || {};
       vider();
       zone.setAttribute('data-mode', 'ecrire'); zone.setAttribute('data-phrase', cle);
       const cloze = !!manquants;
       const champs = [];
-      let champPhrase = null;
+      let champPhrase = null, bande = null;
       if (!sansTraduction) { const tr = ligneTraduction(phrase); if (tr) zone.appendChild(tr); }
       // 🆕 « j’ » + verbe, tous deux à écrire : UNE seule case (« j’aime »), avec les deux étiquettes sujet | verbe
       const kF = cloze ? phrase.mots.findIndex(function (id, i) { return id === 'j' && manquants.indexOf(i) !== -1 && manquants.indexOf(i + 1) !== -1; }) : -1;
@@ -5012,6 +5094,8 @@
         champPhrase.className = 'm1-champ m1-champ-phrase';
         champPhrase.setAttribute('autocomplete', 'off'); champPhrase.setAttribute('autocapitalize', 'sentences'); champPhrase.setAttribute('autocorrect', 'off'); champPhrase.spellcheck = false;
         zone.appendChild(champPhrase);
+        // 🆕 phrase entière à écrire au tout premier niveau : les mots sont consultables (désordonnés) dans une bande repliée
+        if (options2.bande !== false && (options2.bande === true || BANDE_FRAGMENTS.indexOf(fragment) !== -1)) { bande = creerBande(phrase, champPhrase); zone.appendChild(bande.el); }
       }
       const indice = document.createElement('p');
       indice.className = 'm1-sens';
@@ -5027,6 +5111,7 @@
       function termineBien() {
         termine = true;
         bValider.disabled = true;
+        if (bande) bande.fermer();
         coupeManger();
         direPhrase(phrase);
         lecteurIndice(auHasard(T('quipOk')), 2200);
@@ -5059,12 +5144,14 @@
         erreurs++;
         secouer(cloze ? champs[0].parentNode : champPhrase);
         lecteurIndice(auHasard(T('quipErreur')), 4200);
+        if (bande) bande.inviter();      // 🆕 « Voir les mots » se met à battre : de l'aide est là, sans qu'on la force
         if (erreurs === 2) {             // indice : les premières lettres
           indice.textContent = phrase.mots.map(function (id) { return AFFICHE[id].charAt(0) + '…'; }).join(' ');
         }
         if (erreurs >= 3) {              // la réponse apparaît ; on ne bloque pas l'élève
           termine = true;
           bValider.disabled = true;
+          if (bande) bande.fermer();
           if (cloze) champs.forEach(function (c) { c.value = texteAttendu(c); c.classList.add('m1-ok'); c.classList.remove('m1-ko'); });
           else { champPhrase.value = phrase.texte; champPhrase.classList.add('m1-ok'); champPhrase.classList.remove('m1-ko'); }
           lecteurIndice(T('quipReponse'), 4200);
@@ -6391,10 +6478,11 @@
       }
       if (fragment === 5) { await reparation(depart); return; }
       const segmentsF = segmentsDuFragment();
-      const repos = SCENES[fragment] && SCENES[fragment].repos;
+      const reposListe = [].concat((SCENES[fragment] && SCENES[fragment].repos) || []);
       for (let i = depart; i < segmentsF.length; i++) {
         segCourant = i; ecrans = 0; majRetour();
-        if (repos && repos.index === i && !options._retour) await sceneDabord(repos, true);     // 🆕 point de repos au milieu du fragment
+        const repos = reposListe.filter(function (r) { return r.index === i; })[0];
+        if (repos && !options._retour) await sceneDabord(repos, true);     // 🆕 point de repos au milieu du fragment
         await segmentsF[i]();
       }
       await fin();
@@ -6465,6 +6553,6 @@
     return { arreter: function () { ferme = true; if (courante) courante.arreter(); } };
   }
 
-  try { console.info('sequence-m1 : v31 — scène d’abord, encadré ensuite ; voix coupée à chaque écran, cœur sur « aime », fragment 6 (épreuve)'); } catch (e) {}
+  try { console.info('sequence-m1 : v32 — bande de mots (fragment 1), repos multiples ; scène d’abord, encadré ensuite ; voix coupée à chaque écran, cœur sur « aime », fragment 6 (épreuve)'); } catch (e) {}
   window.KebBekM1 = { demarrer: demarrer, MOTS_APPRIS_6: MOTS_APPRIS_6, MOTS_APPRIS: MOTS_APPRIS, MOTS_APPRIS_2: MOTS_APPRIS_2, MOTS_APPRIS_3: MOTS_APPRIS_3, MOTS_APPRIS_4: MOTS_APPRIS_4, MOTS_APPRIS_5: MOTS_APPRIS_5, REPARATION: REPARATION };
 })();

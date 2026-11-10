@@ -128,8 +128,8 @@
         Pas d'introduction au retour (option interne _retour). demarrer() reconstruit la scène à l'étape voulue (reprendreA) : la poignée rendue
         à la page hôte reste valable. Textes : retour_etape. Style : RETOUR_CSS (injecté). Pas de flèche au fragment 5 (réparation).
    🆕 (08-11-2026) ÉTAL REVU (fragment 2) : il quitte les pieds de Bek et s'affiche dans la carte de leçon, juste au-dessus de la zone d'exercice,
-      avec de plus gros dessins. Il n'existe plus de mode « sous les pieds de Bek ». « un / une » : les trois objets ; pause (ETAL_PAUSE) ; les deux
-      autres s'estompent, le restant grossit avec un halo violet : « le / la ». Sur la carte « Remarque » l'animation tourne en boucle ; ailleurs elle
+      avec de plus gros dessins. Il n'existe plus de mode « sous les pieds de Bek ». « un / une » : UN SEUL objet (v33) ; pause (ETAL_PAUSE) ; les deux
+      autres apparaissent, s'estompent, et celui du milieu grossit avec un halo violet : « le / la » (v33). Sur la carte « Remarque » l'animation tourne en boucle ; ailleurs elle
       joue au changement d'état. Un clic rejoue (↻) ; la pastille pulse quand son mot change ou quand l'élève pose un article dans la phrase.
       Sandwich redessiné (pain de mie et garniture en couches : plus de ressemblance avec un hamburger). Version : 29 (voir console). Exercices d'écoute : « J'aime manger la poutine » reprend les images où elle mange la poutine, « J'aime manger » un aliment en alternance ; « joue » ajouté au choix de « Je joue. » (et la banque contient toujours tous les mots de la phrase). Astuces du Lecteur : plus longues (selon le texte), pause au survol, et l'icône reste cliquable pour les revoir. Voix : plus de fin de phrase coupée (attente 4,5 s + respiration). Lecture : seuls les mots nouveaux sont à toucher (✦), les mots touchés sont marqués (✓). Écriture « j’aime » : une seule case, deux étiquettes (sujet | verbe). L'étal est aussi dans le fragment 3 (un film ; une → la poutine ; un → le sandwich).
    🆕 (08-11-2026) SAISIE AU CLAVIER dans « ordre » et « construire » (reprise de sequence-memoire) : taper la lettre d'un mot le pose dès qu'il est
@@ -149,6 +149,39 @@
        met à battre doucement. options2.bande: true / false de ecrire() force ou retire la bande pour un exercice précis.
      • POINTS DE REPOS : SCENES[n].repos peut être une liste (fragment 1 : avant les images ET avant l'exercice d'écoute, c'est-à-dire après l'écriture de mémoire).
      • Pas de scène d'ouverture à la reprise (reprendreA) ni au retour en arrière — la console le dit maintenant ; options.scenes: true la force (test, « refaire »).
+   🆕 (09-11-2026) v33 — L'ÉTAL, « UN » CONTRE « LE » (fragments 2 et 3, carte « Remarque ») :
+     • « un / une » : UN SEUL objet visible (centré, cerclé d'ambre), pastille ambre. « le / la » : les TROIS objets sont là, celui du milieu seul est en valeur
+       (halo violet, plus gros), les deux autres s'estompent ; pastille violette. C'est le même objet qui reste d'un état à l'autre : « un sandwich » devient
+       « le sandwich » (celui qu'on regardait déjà). Les cases 1 et 3 se replient en largeur (0) en mode « un » et se déploient en mode « le ».
+     • Le balayage et le soulignement sous chaque objet (v31-v32) disparaissent : etalBalayage, etalBalayageStop, ETAL_PAS et leur CSS sont retirés.
+     • Boucle de la remarque : « un » ETAL_PAUSE = 3,2 s, « le » ETAL_PAUSE_CONNU = 4 s. Un clic sur l'étal rejoue (le → un → le) ; mouvement réduit : pas d'animation.
+   🆕 (09-11-2026) v34 — VOIX D'OUVERTURE DES EXERCICES D'ÉCOUTE (« parfois, l'audio de l'exercice suivant n'embarque pas ») :
+     • Une voix lancée au début d'un écran (exercice d'écoute, dictée, réparation) part tout de suite (direAuDebut) et seulement si l'écran n'a pas changé (ecranId).
+       Avant, elle était mise en file derrière une voix éventuellement « fantôme » (attente jusqu'à 4,5 s, annulable par n'importe quel appel).
+     • La file d'attente ne touche plus à jetonVoix : avant, une phrase mise en file faisait abandonner en silence la voix en cours de chargement (essai .mp3 → repli .wav).
+     • Un refus du navigateur (NotAllowedError) ou une interruption (AbortError) ne marque plus le fichier comme « introuvable » : avant, tout le reste de la session passait
+       à la voix de synthèse pour cette phrase, même avec « Réécouter ».
+     • Si la voix d'une phrase ne démarre pas (lecture refusée, ou aucun son 2,5 s après la demande), le bouton « Réécouter » clignote trois fois, et la console dit pourquoi
+       (« sequence-m1 : la voix de la phrase n'a pas démarré — … »). Le clignotement s'arrête dès qu'une voix repart.
+   🆕 (10-11-2026) v35 — ÉCRIRE AU CLAVIER DANS LES FRAGMENTS 2 À 4 (avant : seulement au fragment 1 pour « ce qu'on voit » et « ce qu'on entend »). Aucune étape ajoutée :
+     la barre de progression et les reprises sauvegardées restent identiques.
+     • Écoute écrite (ecrireAudio) : le DERNIER élément de l'étape d'écoute est à écrire (sans traduction, bande « Voir les mots » repliée) : fragment 2 « Je mange la pizza. »,
+       fragment 3 « Je mange la poutine. », fragment 4 « Je joue. ». Consigne c_ecoute_ecris (1re phrase de c_dictee, dans les 20 langues).
+     • Voir → écrire : fragment 2, étape 4 (la poutine : « une » en cases, puis « la » écrit) ; fragment 3, étape 4 (« Je mange le sandwich. »).
+     • BANDE_FRAGMENTS = [1, 2, 3, 4] : toute phrase entière à écrire propose la bande de mots repliée. Fragment 6 : inchangé (sa propre liste).
+   🆕 (10-11-2026) v36 — SIX NOUVELLES PHRASES, RAPPELS, FIN DU VERBE :
+     • Six phrases (voix bek_<id>_01.mp3, dans audio/fr/) : « Je regarde le film. », « Je regarde une pizza. », « Je regarde la pizza. », « J'aime manger un sandwich. »,
+       « J'aime manger la pizza. », « J'aime regarder un film. ». Aucun mot nouveau. Clés tr_… et consignes dans les 20 langues (relecture native à faire).
+     • RÉPARTITION. Fragment 3 : « le film » à l'étape 2 (un → le, comme la poutine à l'étape suivante) ; « Je regarde une pizza. » (cases) et « Je regarde la pizza. » (écrit) apparaissent
+       POUR LA PREMIÈRE FOIS dans l'exercice d'écoute final. Fragment 4 : « J'aime manger la pizza. » à l'étape 2 (fin du verbe) ; « J'aime manger un sandwich. » (cases) et
+       « J'aime regarder un film. » (écrit) apparaissent pour la première fois dans l'exercice d'écoute final.
+     • RAPPELS (rappel() : une phrase déjà vue, à construire de mémoire, au début de l'étape 0, sans étape ajoutée) : fragment 2 « Je mange un sandwich. » (fragment 1) ;
+       fragment 3 « Je mange la pizza. » (fragment 2) ; fragment 4 « Je regarde le film. » (fragment 3). Consigne c_rappel.
+     • FIN DU VERBE (ecrireFin() : « Je regard_ un film. », « J'aime mang_ la pizza. »). On n'écrit que la terminaison (« e », ou « er » à l'infinitif) ; tout le reste est donné.
+       Fragment 3, étape 3 (« Je regard_ un film. ») ; fragment 4, étape 2 (« J'aime mang_ la pizza. »). Consigne c_finale ; trois erreurs : la réponse apparaît.
+     • Nouvelle pose à produire : « Bek regarde une pizza » (bek-regarde-pizza, bek-pizza-regarde-ouverte). Sans les images : pose « observe » + vignette dessinée de la pizza.
+     • Exercices d'écoute finaux : fragment 3 = « film » (rappel), « Je regarde une pizza. », écrit « Je regarde la pizza. » ; fragment 4 = « J'aime manger un sandwich. », « J'aime jouer. »,
+       écrit « J'aime regarder un film. ». (« Je mange la poutine » et « Je joue » écrits de la v35 sont retirés : déjà pratiqués à l'étape précédente.)
    onTermine({ mots, fragments }) : fragments = numéro du fragment terminé.
 
    🆕 (08-11-2026) v30 :
@@ -219,6 +252,9 @@
     'bek-mange-pizza':      'images/m1/bek_mange-pizza_01-01.webp',                    // 🆕 la pose principale : grand sourire
     'bek-pizza-repos':      'images/m1/bek_mange-pizza_bouche-fermee_01-01.webp',      // 🆕 au repos : sourire bouche fermée
     'bek-pizza-ouverte':    'images/m1/bek_mange-pizza_bouche-ouverte_01-01.webp',     // 🆕 en parlant : bouche ouverte
+    // 🎨 v36 (à produire) : Bek REGARDE une pizza sans la manger (curieuse, calme). Tant que les images manquent : pose « observe » + vignette dessinée de la pizza.
+    'bek-regarde-pizza':    'images/m1/bek_regarde-pizza_01-01.webp',                    // 🆕 repos : bouche fermée
+    'bek-pizza-regarde-ouverte': 'images/m1/bek_regarde-pizza_bouche-ouverte_01-01.webp', // 🆕 en parlant : bouche ouverte
     // 🎨 fragment 4 (livrées) : Bek tient une poupée (une fille ailée, salopette : on n'en dit pas plus). Repos = bouche fermée ; bouche ouverte
     // pendant la voix ; puis cinq mouvements avec la poupée (le nom dit « haut » pour tous : c'est seulement la suite, de 01-01 à 01-05).
     'bek-aime-jouer':       'images/m1/bek_aime-jouer_01-01.webp',                              // 🆕 repos : bouche fermée
@@ -254,14 +290,15 @@
   const POSE_OUVERTE = { 'bek-mange-sandwich': 'bek-sandwich-ouverte', 'bek-mange-poutine': 'bek-poutine-ouverte',
                          'bek-regarde-film': 'bek-film-ouverte', 'bek-regarde-sandwich': 'bek-sandwich-regarde-ouverte',
                          'bek-regarde-poutine': 'bek-poutine-regarde-ouverte',
+                         'bek-regarde-pizza': 'bek-pizza-regarde-ouverte',
                          'bek-aime-jouer': 'bek-jouer-ouverte' };
   const POSE_DE_REPLI = { 'bek-mange-sandwich': 'bek-heureuse-ferme', 'bek-mange-poutine': 'bek-observe',
                           'bek-regarde-film': 'bek-concentree', 'bek-regarde-sandwich': 'bek-observe', 'bek-regarde-poutine': 'bek-observe',
-                          'bek-mange-pizza': 'bek-observe',
+                          'bek-mange-pizza': 'bek-observe', 'bek-regarde-pizza': 'bek-observe',
                           'bek-aime-jouer': 'bek-observe', 'bek-ecoute': 'bek-observe' };
   const VIGNETTE_DE = { 'bek-mange-sandwich': 'sandwich', 'bek-mange-poutine': 'poutine',
                         'bek-regarde-film': 'film', 'bek-regarde-sandwich': 'sandwich', 'bek-regarde-poutine': 'poutine',
-                        'bek-mange-pizza': 'pizza',
+                        'bek-mange-pizza': 'pizza', 'bek-regarde-pizza': 'pizza',
                         'bek-aime-jouer': 'jeu' };
   const POSES = Object.keys(SOURCES_PAR_DEFAUT);
 
@@ -298,7 +335,15 @@
     aimejouer:   { mots: ['j', 'aime', 'jouer'],                      texte: 'J’aime jouer.',                  audio: 'jaime-jouer',                 tr: 'tr_aimejouer' },
     aimeregpoutine:    { mots: ['j', 'aime', 'regarder', 'la', 'poutine'], texte: 'J’aime regarder la poutine.', audio: 'jaime-regarder-la-poutine', tr: 'tr_aimeregpoutine' },
     aimepizza:   { mots: ['j', 'aime', 'la', 'pizza'],                texte: 'J’aime la pizza.',             audio: 'jaime-la-pizza',            tr: 'tr_aimepizza' },
-    aimemangerpoutine: { mots: ['j', 'aime', 'manger', 'la', 'poutine'],   texte: 'J’aime manger la poutine.',   audio: 'jaime-manger-la-poutine',   tr: 'tr_aimemangerpoutine' }
+    aimemangerpoutine: { mots: ['j', 'aime', 'manger', 'la', 'poutine'],   texte: 'J’aime manger la poutine.',   audio: 'jaime-manger-la-poutine',   tr: 'tr_aimemangerpoutine' },
+    // 🆕 (10-11-2026) v36 : six nouvelles phrases (voix bek_<audio>_01.mp3). Répartition : fragment 3 = regfilmle (étape 2), regpizzaune et regpizzala (exercice d'écoute final) ;
+    //   fragment 4 = aimemangerpizza (fin du verbe, étape 2), aimemangersandwich et aimeregfilm (exercice d'écoute final). Aucun mot nouveau : tout vient des fragments 1 à 4.
+    regfilmle:          { mots: ['je', 'regarde', 'le', 'film'],                  texte: 'Je regarde le film.',            audio: 'je-regarde-le-film',        tr: 'tr_regfilmle' },
+    regpizzaune:        { mots: ['je', 'regarde', 'une', 'pizza'],                texte: 'Je regarde une pizza.',          audio: 'je-regarde-une-pizza',      tr: 'tr_regpizzaune' },
+    regpizzala:         { mots: ['je', 'regarde', 'la', 'pizza'],                 texte: 'Je regarde la pizza.',           audio: 'je-regarde-la-pizza',       tr: 'tr_regpizzala' },
+    aimemangersandwich: { mots: ['j', 'aime', 'manger', 'un', 'sandwich'],        texte: 'J’aime manger un sandwich.',     audio: 'jaime-manger-un-sandwich',  tr: 'tr_aimemangersandwich' },
+    aimemangerpizza:    { mots: ['j', 'aime', 'manger', 'la', 'pizza'],           texte: 'J’aime manger la pizza.',        audio: 'jaime-manger-la-pizza',     tr: 'tr_aimemangerpizza' },
+    aimeregfilm:        { mots: ['j', 'aime', 'regarder', 'un', 'film'],          texte: 'J’aime regarder un film.',       audio: 'jaime-regarder-un-film',    tr: 'tr_aimeregfilm' }
   };
   const BANQUE_LIBRE = ['je', 'mange', 'parle', 'un', 'une', 'sandwich', 'poutine', 'francais'];
   const BANQUE_2 = ['je', 'mange', 'un', 'une', 'le', 'la', 'sandwich', 'poutine', 'pizza'];   // fragment 2 : un/une, le/la
@@ -393,7 +438,7 @@
     '@keyframes m1-bande-appel{0%,100%{transform:scale(1)}50%{transform:scale(1.08);background:var(--peche-pale,rgba(240,169,139,.16))}}',
     '@media (prefers-reduced-motion:reduce){.m1-bande-btn svg,.m1-bande-piste,.m1-bande-ouverte .m1-bande-piste{transition:none}.m1-bande-appel{animation:none}}'
   ].join('\n');
-  const BANDE_FRAGMENTS = [1];      // fragments où écrire une phrase entière propose la bande de mots (le tout premier niveau)
+  const BANDE_FRAGMENTS = [1, 2, 3, 4];      // fragments où écrire une phrase entière propose la bande de mots (le tout premier niveau)
   const FUSION_CSS = [
     '.m1-groupe.m1-groupe-fusion{align-items:stretch}',
     '.m1-groupe-fusion .m1-fusion-etiq{display:flex;width:100%}',
@@ -495,43 +540,39 @@
     '.m1-recap{display:flex;flex-direction:column;gap:.5rem;max-height:16rem;overflow:auto;margin:.2rem 0 .6rem;text-align:left}',
     '.m1-recap-q{margin:0;font-size:.82rem;opacity:.7}.m1-recap-r{margin:0 0 .3rem;font-weight:700}'
   ].join('\n');
-  const ETAL_PAUSE = 4200;      // 🆕 (08-11-2026) 3400 → 4200 : le balayage « un, un, un » (voir etalBalayage) prend ~2 s, il faut encore une vraie pause derrière
-  const ETAL_PAUSE_CONNU = 3200; // 🆕 durée de l'état « le / la » dans la boucle de la remarque
-  const ETAL_PAS = 650;         // 🆕 durée (ms) pendant laquelle chaque objet est « souligné » à son tour
+  const ETAL_PAUSE = 3200;      // 🆕 (09-11-2026) durée de l'état « un / une » (UN seul objet) dans la boucle de la remarque et au clic (le balayage a disparu : 4200 → 3200)
+  const ETAL_PAUSE_CONNU = 4000; // 🆕 durée de l'état « le / la » dans la boucle : les deux autres objets apparaissent (≈ 1 s), puis il faut le temps de voir lequel est choisi
   const ATTENTE_VOIX_MAX = 4500;    // 🆕 une phrase dite automatiquement attend la fin de la voix en cours, jusqu'à 4,5 s (avant : 1,5 s, ce qui coupait la fin des phrases longues)
   const FIN_VOIX_MARGE = 260;       // 🆕 respiration (ms) laissée après la fin d'une voix, avant la suivante ou avant de changer d'écran      // durée de l'état « un / une » avant le passage à « le / la » (ms)
   const ETAL_CSS = [
     '.m1-etal{position:relative;display:flex;align-items:center;justify-content:center;gap:1rem;width:max-content;max-width:100%;box-sizing:border-box;margin:0 auto .9rem;padding:.9rem 1.5rem;',
     'background:rgba(255,255,255,.95);border:2px solid var(--brun-fonce,#4A3B33);border-radius:22px;box-shadow:0 3px 0 0 var(--brun-fonce,#4A3B33);cursor:pointer;-webkit-tap-highlight-color:transparent}',
-    '.m1-etal-objets{display:flex;align-items:center;gap:.8rem}',
-    '.m1-etal-objet{position:relative;display:block;width:4.4rem;height:4.4rem;padding:.25rem;box-sizing:border-box;border-radius:1.2rem;box-shadow:0 0 0 3px transparent;',
-    'transition:opacity 1.1s ease,transform 1.3s cubic-bezier(.3,.7,.3,1),box-shadow 1.1s ease,background-color 1.1s ease;animation:m1-etal-pop .6s ease backwards}',
-    '.m1-etal-objet:nth-child(2){animation-delay:.14s}.m1-etal-objet:nth-child(3){animation-delay:.28s}',
+    // 🆕 (09-11-2026) « un » = UN SEUL objet (celui du milieu, cerclé d'ambre) ; « le » = les TROIS sont là, celui du milieu seul est en valeur (halo violet), les deux autres
+    // s'estompent. C'est le même objet qui reste : « un sandwich » → « le sandwich » (celui qu'on regardait déjà). Les cases 1 et 3 se replient (largeur 0) en mode « un ».
+    '.m1-etal-objets{--m1-o:4.4rem;--m1-m:.4rem;display:flex;align-items:center;justify-content:center}',
+    '.m1-etal-objet{position:relative;display:block;flex:none;width:var(--m1-o);height:var(--m1-o);margin:0 var(--m1-m);padding:.25rem;box-sizing:border-box;border-radius:1.2rem;box-shadow:0 0 0 3px transparent;',
+    'transition:opacity .9s ease,transform 1s cubic-bezier(.3,.7,.3,1),box-shadow .9s ease,background-color .9s ease,width .85s cubic-bezier(.3,.7,.3,1),margin .85s cubic-bezier(.3,.7,.3,1),padding .85s ease;animation:m1-etal-pop .6s ease backwards}',
+    '.m1-etal-objet:nth-child(2){animation-delay:.14s}.m1-etal-objet:nth-child(3){animation-delay:.28s}.m1-etal-nouveau .m1-etal-objet:nth-child(2){animation-delay:0s}',
     '.m1-etal-objet svg{display:block;width:100%;height:100%}',
-    '.m1-etal-nouveau .m1-etal-objet{box-shadow:0 0 0 3px rgba(' + RVB_NOUVEAU + ',.45);background:rgba(' + RVB_NOUVEAU + ',.14)}',
-    '.m1-etal-connu .m1-etal-objet{opacity:.18;transform:scale(.78)}',
-    '.m1-etal-connu .m1-etal-objet:first-child{transition-delay:.45s;opacity:1;transform:scale(1.18);box-shadow:0 0 0 4px ' + COULEUR_CONNU + ',0 0 18px rgba(' + RVB_CONNU + ',.55);background:rgba(' + RVB_CONNU + ',.18)}',
+    '.m1-etal-nouveau .m1-etal-objet:nth-child(odd){width:0;margin:0;padding:0;opacity:0;transform:scale(.4);overflow:hidden;box-shadow:0 0 0 0 transparent;pointer-events:none}',
+    '.m1-etal-nouveau .m1-etal-objet:nth-child(2){box-shadow:0 0 0 3px rgba(' + RVB_NOUVEAU + ',.6);background:rgba(' + RVB_NOUVEAU + ',.16)}',
+    '.m1-etal-connu .m1-etal-objet{opacity:.22;transform:scale(.82)}',
+    '.m1-etal-connu .m1-etal-objet:nth-child(2){transition-delay:0s,.55s,.55s,.55s;opacity:1;transform:scale(1.14);box-shadow:0 0 0 4px ' + COULEUR_CONNU + ',0 0 18px rgba(' + RVB_CONNU + ',.55);background:rgba(' + RVB_CONNU + ',.18)}',
     '.m1-etal-pastille{min-width:3.4rem;text-align:center;padding:.15rem 1rem;border-radius:999px;color:#fff;font-weight:800;font-size:1.5rem;box-shadow:0 3px 0 0 var(--brun-fonce,#4A3B33);transition:background-color .6s ease}',
     '.m1-etal-nouveau .m1-etal-pastille{background:' + COULEUR_NOUVEAU + '}',
     '.m1-etal-connu .m1-etal-pastille{background:' + COULEUR_CONNU + '}',
     // l'élève vient de placer un article dans la phrase : la pastille répond
     '.m1-etal-pulse .m1-etal-pastille{animation:m1-etal-pulse .6s ease}',
     '.m1-etal::after{content:"\\21BB";position:absolute;right:.45rem;top:.15rem;font-size:.8rem;line-height:1;color:var(--brun-fonce,#4A3B33);opacity:.35}',
-    // 🆕 (08-11-2026) SOULIGNEMENT : « un » = n'importe lequel des trois. Un trait ambre passe sous chaque objet à tour de rôle (balayage), puis les trois
-    // restent soulignés (« un parmi plusieurs »). « le » = UN SEUL, souligné en violet, les autres s'effacent.
-    '.m1-etal-objet::after{content:"";position:absolute;left:14%;right:14%;bottom:-.42rem;height:.3rem;border-radius:999px;background:' + COULEUR_NOUVEAU + ';transform:scaleX(0);transform-origin:left center;transition:transform .35s ease,background-color .6s ease}',
-    '.m1-etal-objets{padding-bottom:.4rem}',                                             // de la place sous les objets pour le trait
-    '.m1-etal-nouveau .m1-etal-objet::after{transform:scaleX(1)}',
-    '.m1-etal-connu .m1-etal-objet:first-child::after{transform:scaleX(1);background:' + COULEUR_CONNU + ';transition-delay:.45s}',
-    '.m1-etal-nouveau.m1-etal-balayage .m1-etal-objet{box-shadow:0 0 0 3px transparent;background:transparent;transition:transform .3s ease,box-shadow .3s ease,background-color .3s ease}',
-    '.m1-etal-nouveau.m1-etal-balayage .m1-etal-objet::after{transform:scaleX(0)}',
-    '.m1-etal-nouveau.m1-etal-balayage .m1-etal-objet.m1-etal-regard{transform:translateY(-3px) scale(1.12);box-shadow:0 0 0 3px rgba(' + RVB_NOUVEAU + ',.75),0 0 14px rgba(' + RVB_NOUVEAU + ',.45);background:rgba(' + RVB_NOUVEAU + ',.2)}',
-    '.m1-etal-nouveau.m1-etal-balayage .m1-etal-objet.m1-etal-regard::after{transform:scaleX(1)}',
-    '@media (prefers-reduced-motion:reduce){.m1-etal-objet::after{transition:none}}',
     '@keyframes m1-etal-pop{from{opacity:0;transform:translateY(.5rem) scale(.85)}to{opacity:1;transform:none}}',
     '@keyframes m1-etal-pulse{40%{transform:scale(1.35)}}',
-    '@media (max-width:719px){.m1-etal{gap:.7rem;padding:.7rem 1rem}.m1-etal-objets{gap:.55rem}.m1-etal-objet{width:3.3rem;height:3.3rem}.m1-etal-pastille{font-size:1.15rem;min-width:2.7rem;padding:.1rem .8rem}}',
+    '@media (max-width:719px){.m1-etal{gap:.7rem;padding:.7rem 1rem}.m1-etal-objets{--m1-o:3.3rem;--m1-m:.3rem}.m1-etal-pastille{font-size:1.15rem;min-width:2.7rem;padding:.1rem .8rem}}',
     '@media (prefers-reduced-motion:reduce){.m1-etal-objet,.m1-etal-pastille{transition:none;animation:none}.m1-etal-pulse .m1-etal-pastille{animation:none}}'
+  ].join('\n');
+  const SILENCE_CSS = [      // 🆕 v34 : le bouton « Réécouter » clignote quand la voix d'une phrase n'a pas démarré
+    '.m1-haut-parleur.m1-silence{animation:m1-silence 1s ease-in-out 3}',
+    '@keyframes m1-silence{0%,100%{transform:scale(1);box-shadow:0 0 0 0 rgba(' + RVB_NOUVEAU + ',0)}50%{transform:scale(1.07);box-shadow:0 0 0 7px rgba(' + RVB_NOUVEAU + ',.55)}}',
+    '@media (prefers-reduced-motion:reduce){.m1-haut-parleur.m1-silence{animation:none;outline:3px solid ' + COULEUR_NOUVEAU + ';outline-offset:3px}}'
   ].join('\n');
   const BANQUE_4 = ['j', 'je', 'aime', 'manger', 'mange', 'regarder', 'regarde', 'jouer', 'joue', 'la', 'poutine', 'tele'];   // fragment 4 : j'aime (je, mange, regarde = pièges) (pas « parle », pas « français »)
 
@@ -603,6 +644,9 @@
       intro6: 'Dernier morceau du souvenir. Cette fois, personne ne te tient la main. Il y a des choses que seul un humain peut faire\u00a0: écouter, écrire, se rappeler. Il faut s’y habituer. Ce n’est pas ici que ça compte… mais ce que tu écris sera noté.',
       fin6: 'Dernier morceau récupéré. Le souvenir est entier. Ce que tu as écrit est gardé. Pour la suite… on verra.',
       c_dictee: '*Écoute*, puis *écris ce que tu entends*. La liste de mots est une aide : tu ne peux pas la *toucher*.',
+      c_ecoute_ecris: '*Écoute*, puis *écris ce que tu entends*.',
+      c_rappel: 'Tu as déjà vu cette phrase. *Construis-la* de mémoire.', c_finale: 'Complète la *fin* du verbe.',
+      tr_regfilmle: '', tr_regpizzaune: '', tr_regpizzala: '', tr_aimemangersandwich: '', tr_aimemangerpizza: '', tr_aimeregfilm: '',
       liste_mots: 'Mots à ta disposition',
       c_aimeq: 'Tu es Bek. Qu’est-ce que tu *aimes* faire ? Écris une phrase *complète*.',
       lec_certif: 'Maintenant, des questions sur Bek. Pour y répondre, il faut te rappeler ce que tu as appris d’elle. Rien à choisir\u00a0: écris-le toi-même. Je vérifie ta réponse, et elle est gardée. Tu peux te tromper. Mais ça pourrait avoir des conséquences plus tard.',
@@ -729,6 +773,9 @@
       intro6: 'Last piece of the memory. This time, nobody is holding your hand. Some things only a human can do: listen, write, remember. You need to get used to that. It doesn’t count here… but what you write will be recorded.',
       fin6: 'Last piece recovered. The memory is whole. What you wrote is kept. As for what comes next… we’ll see.',
       c_dictee: '*Listen*, then *write what you hear*. The word list is a help: you can’t *tap* it.',
+      c_ecoute_ecris: '*Listen*, then *write what you hear*.',
+      c_rappel: 'You have already seen this sentence. *Build it* from memory.', c_finale: 'Complete the *end* of the verb.',
+      tr_regfilmle: 'I watch the movie.', tr_regpizzaune: 'I watch a pizza.', tr_regpizzala: 'I watch the pizza.', tr_aimemangersandwich: 'I like eating a sandwich.', tr_aimemangerpizza: 'I like eating the pizza.', tr_aimeregfilm: 'I like watching a movie.',
       liste_mots: 'Words you can use',
       c_aimeq: 'You are Bek. What do you *like* doing? Write a *full sentence*.',
       lec_certif: 'Now, questions about Bek. To answer them, you have to remember what you learned about her. Nothing to pick from: write it yourself. I’ll check your answer, and it will be kept. You may get it wrong. But it could have consequences later.',
@@ -881,6 +928,9 @@
       intro6: 'Último fragmento del recuerdo. Esta vez nadie te lleva de la mano. Hay cosas que solo un humano puede hacer: escuchar, escribir, recordar. Tienes que acostumbrarte. Aquí no cuenta… pero lo que escribas quedará registrado.',
       fin6: 'Último fragmento recuperado. El recuerdo está completo. Lo que escribiste se guarda. En cuanto a lo que viene después… ya veremos.',
       c_dictee: '*Escucha* y luego *escribe lo que oyes*. La lista de palabras es una ayuda: no se puede *tocar*.',
+      c_ecoute_ecris: '*Escucha* y luego *escribe lo que oyes*.',
+      c_rappel: 'Ya has visto esta frase. *Constrúyela* de memoria.', c_finale: 'Completa el *final* del verbo.',
+      tr_regfilmle: 'Yo veo la película.', tr_regpizzaune: 'Yo miro una pizza.', tr_regpizzala: 'Yo miro la pizza.', tr_aimemangersandwich: 'Me gusta comer un sándwich.', tr_aimemangerpizza: 'Me gusta comer la pizza.', tr_aimeregfilm: 'Me gusta ver una película.',
       liste_mots: 'Palabras que puedes usar',
       c_aimeq: 'Eres Bek. ¿Qué te *gusta* hacer? Escribe una *frase completa*.',
       lec_certif: 'Ahora, preguntas sobre Bek. Para responderlas tienes que recordar lo que has aprendido sobre ella. No hay nada entre lo que elegir: escríbelo tú. Comprobaré tu respuesta y se guardará. Puedes equivocarte. Pero podría tener consecuencias más adelante.',
@@ -1067,6 +1117,9 @@
       intro6: 'Ultimo frammento del ricordo. Stavolta nessuno ti tiene per mano. Alcune cose può farle solo un essere umano: ascoltare, scrivere, ricordare. Devi abituartici. Qui non conta… ma quello che scrivi verrà registrato.',
       fin6: 'Ultimo frammento recuperato. Il ricordo è intero. Quello che hai scritto viene conservato. Quanto a ciò che viene dopo… vedremo.',
       c_dictee: '*Ascolta*, poi *scrivi quello che senti*. L’elenco di parole è un aiuto: non si può *toccare*.',
+      c_ecoute_ecris: '*Ascolta*, poi *scrivi quello che senti*.',
+      c_rappel: 'Hai già visto questa frase. *Costruiscila* a memoria.', c_finale: 'Completa la *fine* del verbo.',
+      tr_regfilmle: 'Io guardo il film.', tr_regpizzaune: 'Io guardo una pizza.', tr_regpizzala: 'Io guardo la pizza.', tr_aimemangersandwich: 'Mi piace mangiare un panino.', tr_aimemangerpizza: 'Mi piace mangiare la pizza.', tr_aimeregfilm: 'Mi piace guardare un film.',
       liste_mots: 'Parole che puoi usare',
       c_aimeq: 'Sei Bek. Che cosa ti *piace* fare? Scrivi una *frase completa*.',
       lec_certif: 'Ora, domande su Bek. Per rispondere devi ricordare ciò che hai imparato su di lei. Niente da scegliere: scrivi tu. Controllerò la tua risposta e verrà conservata. Puoi sbagliare. Ma potrebbe avere conseguenze più avanti.',
@@ -1253,6 +1306,9 @@
       intro6: 'Último fragmento da lembrança. Desta vez, ninguém lhe dá a mão. Há coisas que só um humano pode fazer: ouvir, escrever, lembrar-se. Tem de se habituar. Aqui não conta… mas o que escrever fica registado.',
       fin6: 'Último fragmento recuperado. A lembrança está inteira. O que escreveu fica guardado. Quanto ao que vem a seguir… logo se vê.',
       c_dictee: '*Oiça* e depois *escreva o que ouviu*. A lista de palavras é uma ajuda: não se pode *tocar* nela.',
+      c_ecoute_ecris: '*Oiça* e depois *escreva o que ouviu*.',
+      c_rappel: 'Esta frase já apareceu. *Construa-a* de memória.', c_finale: 'Complete o *final* do verbo.',
+      tr_regfilmle: 'Eu vejo o filme.', tr_regpizzaune: 'Eu olho para uma pizza.', tr_regpizzala: 'Eu olho para a pizza.', tr_aimemangersandwich: 'Eu gosto de comer um sanduíche.', tr_aimemangerpizza: 'Eu gosto de comer a pizza.', tr_aimeregfilm: 'Eu gosto de ver um filme.',
       liste_mots: 'Palavras que pode usar',
       c_aimeq: 'Você é a Bek. O que é que *gosta* de fazer? Escreva uma *frase completa*.',
       lec_certif: 'Agora, perguntas sobre a Bek. Para responder, tem de se lembrar do que aprendeu sobre ela. Não há nada para escolher: escreva você. Vou verificar a sua resposta, e ela será guardada. Pode enganar-se. Mas pode ter consequências mais tarde.',
@@ -1439,6 +1495,9 @@
       intro6: 'Últim fragment del record. Aquesta vegada ningú no et dona la mà. Hi ha coses que només un humà pot fer: escoltar, escriure, recordar. T’hi has d’acostumar. Aquí no compta… però el que escriguis quedarà registrat.',
       fin6: 'Últim fragment recuperat. El record està sencer. El que has escrit es guarda. Pel que fa al que ve després… ja ho veurem.',
       c_dictee: '*Escolta* i després *escriu el que sents*. La llista de paraules és una ajuda: no es pot *tocar*.',
+      c_ecoute_ecris: '*Escolta* i després *escriu el que sents*.',
+      c_rappel: 'Ja has vist aquesta frase. *Construeix-la* de memòria.', c_finale: 'Completa el *final* del verb.',
+      tr_regfilmle: 'Jo veig la pel·lícula.', tr_regpizzaune: 'Jo miro una pizza.', tr_regpizzala: 'Jo miro la pizza.', tr_aimemangersandwich: 'M’agrada menjar un entrepà.', tr_aimemangerpizza: 'M’agrada menjar la pizza.', tr_aimeregfilm: 'M’agrada veure una pel·lícula.',
       liste_mots: 'Paraules que pots fer servir',
       c_aimeq: 'Ets la Bek. Què t’agrada *fer*? Escriu una *frase completa*.',
       lec_certif: 'Ara, preguntes sobre la Bek. Per respondre-les, has de recordar el que has après sobre ella. No hi ha res per triar: escriu-ho tu. Comprovaré la teva resposta i es guardarà. Et pots equivocar. Però podria tenir conseqüències més endavant.',
@@ -1625,6 +1684,9 @@
       intro6: 'Lasta peco de la memoraĵo. Ĉi-foje neniu tenas vian manon. Kelkajn aferojn povas fari nur homo: aŭskulti, skribi, memori. Vi devas alkutimiĝi. Ĉi tie tio ne kalkuliĝas… sed tion, kion vi skribos, oni registros.',
       fin6: 'Lasta peco rehavita. La memoraĵo estas tuta. Tio, kion vi skribis, estas konservita. Kaj kio sekvas… ni vidos.',
       c_dictee: '*Aŭskultu*, poste *skribu tion, kion vi aŭdas*. La vortlisto estas helpo: oni ne povas *tuŝi* ĝin.',
+      c_ecoute_ecris: '*Aŭskultu*, poste *skribu tion, kion vi aŭdas*.',
+      c_rappel: 'Vi jam vidis ĉi tiun frazon. *Konstruu ĝin* el memoro.', c_finale: 'Kompletigu la *finaĵon* de la verbo.',
+      tr_regfilmle: 'Mi rigardas la filmon.', tr_regpizzaune: 'Mi rigardas picon.', tr_regpizzala: 'Mi rigardas la picon.', tr_aimemangersandwich: 'Mi ŝatas manĝi sandviĉon.', tr_aimemangerpizza: 'Mi ŝatas manĝi la picon.', tr_aimeregfilm: 'Mi ŝatas rigardi filmon.',
       liste_mots: 'Vortoj uzeblaj',
       c_aimeq: 'Vi estas Bek. Kion vi ŝatas *fari*? Skribu *plenan frazon*.',
       lec_certif: 'Nun, demandoj pri Bek. Por respondi, vi devas memori tion, kion vi lernis pri ŝi. Nenio por elekti: skribu mem. Mi kontrolos vian respondon, kaj ĝi estos konservita. Vi povas erari. Sed tio povus havi sekvojn poste.',
@@ -1811,6 +1873,9 @@
       intro6: '记忆的最后一个片段。这一次，没有人牵着你的手。有些事只有人能做：听、写、记。你得习惯。在这里它不计分……但你写下的内容会被记录下来。',
       fin6: '最后一个片段已找回。记忆完整了。你写的内容已保存。至于接下来会怎样……再看吧。',
       c_dictee: '*听*，然后*写下你听到的*。词表是个帮助：它*不能点*。',
+      c_ecoute_ecris: '*听*，然后*写下你听到的*。',
+      c_rappel: '这个句子你见过。请*凭记忆*把它拼出来。', c_finale: '补全动词的*结尾*。',
+      tr_regfilmle: '我看那部电影。', tr_regpizzaune: '我看着一个披萨。', tr_regpizzala: '我看着那个披萨。', tr_aimemangersandwich: '我喜欢吃一个三明治。', tr_aimemangerpizza: '我喜欢吃那个披萨。', tr_aimeregfilm: '我喜欢看一部电影。',
       liste_mots: '可以用的词',
       c_aimeq: '你是 Bek。你*喜欢*做什么？请写一个*完整的句子*。',
       lec_certif: '现在，问几个关于 Bek 的问题。要回答，你得想起你学过的关于她的内容。没有选项：要自己写。我会检查你的答案，而且它会被保存。你可能会答错。但以后也许会有后果。',
@@ -2049,6 +2114,9 @@
       intro6: '記憶の最後のかけらです。今回は、だれも手を引いてくれません。人間にしかできないことがあります。聞くこと、書くこと、思い出すこと。それに慣れる必要があります。ここで成績が決まるわけではありません……が、あなたが書いたものは記録されます。',
       fin6: '最後のかけらを取り戻しました。記憶はひとつにそろいました。あなたが書いたものは保存されています。この先のことは……そのうち、わかるでしょう。',
       c_dictee: '*聞いて*、聞こえたとおりに*書き*ましょう。単語リストはヒントです。*触る*ことはできません。',
+      c_ecoute_ecris: '*聞いて*、聞こえたとおりに*書き*ましょう。',
+      c_rappel: 'この文は前に見ました。*思い出して*組み立てましょう。', c_finale: '動詞の*語尾*を書きましょう。',
+      tr_regfilmle: '私はその映画を見ます。', tr_regpizzaune: '私はピザを見ます。', tr_regpizzala: '私はそのピザを見ます。', tr_aimemangersandwich: 'サンドイッチを食べるのが好きです。', tr_aimemangerpizza: 'そのピザを食べるのが好きです。', tr_aimeregfilm: '映画を見るのが好きです。',
       liste_mots: '使える単語',
       c_aimeq: 'あなたはBekです。何をするのが*好き*ですか？*完全な文*で書きましょう。',
       lec_certif: 'ここからは、Bekについての質問です。答えるには、彼女について学んだことを思い出す必要があります。選ぶものはありません。自分で書いてください。答えは私が確認し、記録されます。間違えてもかまいません。でも、あとで影響が出るかもしれません。',
@@ -2170,6 +2238,9 @@
       intro6: '기억의 마지막 조각이에요. 이번에는 아무도 손을 잡아 주지 않아요. 사람만 할 수 있는 일이 있어요: 듣고, 쓰고, 기억하는 것. 익숙해져야 해요. 여기서는 점수에 들어가지 않아요… 하지만 쓴 내용은 기록돼요.',
       fin6: '마지막 조각을 되찾았어요. 기억이 온전해졌어요. 쓴 내용은 저장돼요. 그다음 일은… 두고 봐요.',
       c_dictee: '*듣고*, *들은 것을 써 보세요*. 단어 목록은 도움이에요: *누를 수는* 없어요.',
+      c_ecoute_ecris: '*듣고*, *들은 것을 써 보세요*.',
+      c_rappel: '이 문장은 이미 봤어요. *기억을 떠올려* 만들어 보세요.', c_finale: '동사의 *끝부분*을 완성하세요.',
+      tr_regfilmle: '나는 그 영화를 봐요.', tr_regpizzaune: '나는 피자를 바라봐요.', tr_regpizzala: '나는 그 피자를 바라봐요.', tr_aimemangersandwich: '나는 샌드위치 먹는 것을 좋아해요.', tr_aimemangerpizza: '나는 그 피자 먹는 것을 좋아해요.', tr_aimeregfilm: '나는 영화 보는 것을 좋아해요.',
       liste_mots: '쓸 수 있는 단어',
       c_aimeq: '너는 Bek이에요. 무엇을 하는 게 *좋아요*? *완전한 문장*으로 써 보세요.',
       lec_certif: '이제 Bek에 대한 질문이에요. 대답하려면 그녀에 대해 배운 것을 기억해야 해요. 고를 것은 없어요: 직접 써 보세요. 답을 확인할 거고, 답은 저장돼요. 틀릴 수도 있어요. 하지만 나중에 영향이 있을지도 몰라요.',
@@ -2356,6 +2427,9 @@
       intro6: 'Mảnh cuối cùng của ký ức. Lần này không ai cầm tay bạn. Có những việc chỉ con người làm được: nghe, viết, nhớ. Bạn phải làm quen. Ở đây việc này không tính điểm… nhưng những gì bạn viết sẽ được ghi lại.',
       fin6: 'Đã tìm lại mảnh cuối cùng. Ký ức đã trọn vẹn. Những gì bạn viết được lưu lại. Còn chuyện tiếp theo… rồi sẽ thấy.',
       c_dictee: '*Nghe*, rồi *viết những gì bạn nghe được*. Danh sách từ là một sự hỗ trợ: bạn không thể *chạm* vào nó.',
+      c_ecoute_ecris: '*Nghe*, rồi *viết những gì bạn nghe được*.',
+      c_rappel: 'Bạn đã thấy câu này rồi. Hãy *ghép lại* từ trí nhớ.', c_finale: 'Hãy hoàn thành *phần cuối* của động từ.',
+      tr_regfilmle: 'Mình xem bộ phim đó.', tr_regpizzaune: 'Mình nhìn một cái pizza.', tr_regpizzala: 'Mình nhìn cái pizza đó.', tr_aimemangersandwich: 'Mình thích ăn một cái sandwich.', tr_aimemangerpizza: 'Mình thích ăn cái pizza đó.', tr_aimeregfilm: 'Mình thích xem một bộ phim.',
       liste_mots: 'Những từ bạn có thể dùng',
       c_aimeq: 'Bạn là Bek. Bạn *thích* làm gì? Hãy viết một *câu đầy đủ*.',
       lec_certif: 'Bây giờ là những câu hỏi về Bek. Để trả lời, bạn phải nhớ những gì đã học về cô ấy. Không có gì để chọn: hãy tự viết. Mình sẽ kiểm tra câu trả lời của bạn và nó sẽ được lưu lại. Bạn có thể sai. Nhưng sau này có thể có hậu quả.',
@@ -2542,6 +2616,9 @@
       intro6: 'Dènye moso souvni a. Fwa sa a, pa gen pesonn k ap kenbe men w. Gen bagay sèlman yon moun ka fè: koute, ekri, sonje. Fò w abitye ak sa. Isit la, sa pa konte… men sa w ekri a ap anrejistre.',
       fin6: 'Dènye moso a jwenn. Souvni a konplè. Sa w ekri a sove. Pou sa k ap vini apre a… n ap wè.',
       c_dictee: '*Koute*, answit *ekri sa w tande a*. Lis mo a se yon èd: ou pa ka *manyen* li.',
+      c_ecoute_ecris: '*Koute*, answit *ekri sa w tande a*.',
+      c_rappel: 'Ou deja wè fraz sa a. *Konstwi l* de memwa.', c_finale: 'Konplete *bout* vèb la.',
+      tr_regfilmle: 'Mwen gade fim nan.', tr_regpizzaune: 'Mwen gade yon pitza.', tr_regpizzala: 'Mwen gade pitza a.', tr_aimemangersandwich: 'Mwen renmen manje yon sandwich.', tr_aimemangerpizza: 'Mwen renmen manje pitza a.', tr_aimeregfilm: 'Mwen renmen gade yon fim.',
       liste_mots: 'Mo ou ka itilize',
       c_aimeq: 'Ou se Bek. Kisa ou *renmen* fè? Ekri yon *fraz konplè*.',
       lec_certif: 'Kounye a, kesyon sou Bek. Pou reponn yo, fò w sonje sa w te aprann sou li. Pa gen anyen pou chwazi: ekri l poukont ou. Mwen pral tcheke repons ou a, epi l ap sove. Ou ka fè erè. Men sa ka gen konsekans pita.',
@@ -2728,6 +2805,9 @@
       intro6: 'Huling piraso ng alaala. Sa pagkakataong ito, walang aakay sa iyo. May mga bagay na tao lang ang kayang gawin: making, sumulat, tumandaan. Kailangan mong masanay. Hindi ito binibilang dito… pero itatala ang isusulat mo.',
       fin6: 'Nabawi na ang huling piraso. Buo na ang alaala. Itinatago ang isinulat mo. Tungkol sa susunod… makikita natin.',
       c_dictee: '*Making*, tapos *isulat ang naririnig mo*. Tulong ang listahan ng mga salita: hindi mo ito maaaring *pindutin*.',
+      c_ecoute_ecris: '*Making*, tapos *isulat ang naririnig mo*.',
+      c_rappel: 'Nakita mo na ang pangungusap na ito. *Buuin ito* mula sa alaala.', c_finale: 'Kumpletuhin ang *dulo* ng pandiwa.',
+      tr_regfilmle: 'Pinapanood ko ang pelikula.', tr_regpizzaune: 'Tumitingin ako sa isang pizza.', tr_regpizzala: 'Tinitingnan ko ang pizza.', tr_aimemangersandwich: 'Gusto kong kumain ng sandwich.', tr_aimemangerpizza: 'Gusto kong kainin ang pizza.', tr_aimeregfilm: 'Gusto kong manood ng pelikula.',
       liste_mots: 'Mga salitang magagamit mo',
       c_aimeq: 'Ikaw si Bek. Ano ang *gusto* mong gawin? Magsulat ng *buong pangungusap*.',
       lec_certif: 'Ngayon, mga tanong tungkol kay Bek. Para sagutin ang mga ito, kailangan mong alalahanin ang natutunan mo tungkol sa kaniya. Walang pagpipilian: ikaw mismo ang magsulat. Susuriin ko ang sagot mo, at ito ay itatago. Puwede kang magkamali. Pero maaaring may mga epekto ito sa susunod.',
@@ -2914,6 +2994,9 @@
       intro6: 'Potongan terakhir dari ingatan. Kali ini tidak ada yang menuntunmu. Ada hal yang hanya bisa dilakukan manusia: mendengar, menulis, mengingat. Kamu harus membiasakan diri. Di sini hal ini tidak dihitung… tapi apa yang kamu tulis akan dicatat.',
       fin6: 'Potongan terakhir telah ditemukan. Ingatannya utuh. Apa yang kamu tulis tersimpan. Soal apa yang terjadi selanjutnya… kita lihat saja.',
       c_dictee: '*Dengarkan*, lalu *tulis apa yang kamu dengar*. Daftar kata adalah bantuan: kamu tidak bisa *menyentuhnya*.',
+      c_ecoute_ecris: '*Dengarkan*, lalu *tulis apa yang kamu dengar*.',
+      c_rappel: 'Kamu sudah pernah melihat kalimat ini. *Susunlah* dari ingatan.', c_finale: 'Lengkapi *akhiran* kata kerjanya.',
+      tr_regfilmle: 'Aku menonton film itu.', tr_regpizzaune: 'Aku melihat sebuah pizza.', tr_regpizzala: 'Aku melihat pizza itu.', tr_aimemangersandwich: 'Aku suka makan sebuah sandwich.', tr_aimemangerpizza: 'Aku suka makan pizza itu.', tr_aimeregfilm: 'Aku suka menonton sebuah film.',
       liste_mots: 'Kata yang boleh kamu pakai',
       c_aimeq: 'Kamu adalah Bek. Apa yang *kamu suka* lakukan? Tulis sebuah *kalimat lengkap*.',
       lec_certif: 'Sekarang, pertanyaan tentang Bek. Untuk menjawabnya, kamu harus mengingat apa yang sudah kamu pelajari tentang dia. Tidak ada pilihan: tulis sendiri. Aku akan memeriksa jawabanmu, dan jawaban itu akan disimpan. Kamu bisa salah. Tapi itu mungkin berakibat nanti.',
@@ -3100,6 +3183,9 @@
       intro6: 'Het laatste stukje van de herinnering. Deze keer houdt niemand je hand vast. Sommige dingen kan alleen een mens: luisteren, schrijven, onthouden. Daar moet je aan wennen. Hier telt het niet mee… maar wat je schrijft, wordt vastgelegd.',
       fin6: 'Laatste stukje teruggevonden. De herinnering is heel. Wat je schreef, wordt bewaard. En wat er daarna komt… dat zien we dan wel.',
       c_dictee: '*Luister*, en *schrijf op wat je hoort*. De woordenlijst is een hulpmiddel: je kunt er niet op *tikken*.',
+      c_ecoute_ecris: '*Luister*, en *schrijf op wat je hoort*.',
+      c_rappel: 'Je hebt deze zin al gezien. *Bouw hem* uit je hoofd.', c_finale: 'Maak het *einde* van het werkwoord af.',
+      tr_regfilmle: 'Ik kijk naar de film.', tr_regpizzaune: 'Ik kijk naar een pizza.', tr_regpizzala: 'Ik kijk naar de pizza.', tr_aimemangersandwich: 'Ik eet graag een sandwich.', tr_aimemangerpizza: 'Ik eet graag de pizza.', tr_aimeregfilm: 'Ik kijk graag naar een film.',
       liste_mots: 'Woorden die je mag gebruiken',
       c_aimeq: 'Je bent Bek. Wat doe je *graag*? Schrijf een *volledige zin*.',
       lec_certif: 'Nu vragen over Bek. Om ze te beantwoorden, moet je onthouden wat je over haar hebt geleerd. Er valt niets te kiezen: schrijf het zelf. Ik controleer je antwoord, en het wordt bewaard. Je kunt het fout hebben. Maar dat kan later gevolgen hebben.',
@@ -3286,6 +3372,9 @@
       intro6: 'Das letzte Stück der Erinnerung. Diesmal hält dich niemand an der Hand. Manches kann nur ein Mensch: zuhören, schreiben, sich erinnern. Daran musst du dich gewöhnen. Hier zählt es nicht … aber was du schreibst, wird aufgezeichnet.',
       fin6: 'Letztes Stück wiedergefunden. Die Erinnerung ist vollständig. Was du geschrieben hast, wird gespeichert. Was danach kommt … sehen wir dann.',
       c_dictee: '*Hör zu*, dann *schreib auf, was du hörst*. Die Wortliste ist eine Hilfe: Du kannst sie nicht *antippen*.',
+      c_ecoute_ecris: '*Hör zu*, dann *schreib auf, was du hörst*.',
+      c_rappel: 'Diesen Satz hast du schon gesehen. *Bau ihn* aus dem Gedächtnis.', c_finale: 'Ergänze das *Ende* des Verbs.',
+      tr_regfilmle: 'Ich schaue den Film an.', tr_regpizzaune: 'Ich schaue eine Pizza an.', tr_regpizzala: 'Ich schaue die Pizza an.', tr_aimemangersandwich: 'Ich esse gern ein Sandwich.', tr_aimemangerpizza: 'Ich esse gern die Pizza.', tr_aimeregfilm: 'Ich schaue gern einen Film.',
       liste_mots: 'Wörter, die du benutzen darfst',
       c_aimeq: 'Du bist Bek. Was machst du *gern*? Schreibe einen *ganzen Satz*.',
       lec_certif: 'Jetzt Fragen zu Bek. Um sie zu beantworten, musst du dich an das erinnern, was du über sie gelernt hast. Es gibt nichts zum Auswählen: Schreib es selbst. Ich prüfe deine Antwort, und sie wird gespeichert. Du kannst dich irren. Aber das könnte später Folgen haben.',
@@ -3472,6 +3561,9 @@
       intro6: 'آخرین تکهٔ خاطره. این بار کسی دستت را نمی‌گیرد. کارهایی هست که فقط یک انسان از پسشان برمی‌آید: گوش دادن، نوشتن، به یاد آوردن. باید به این عادت کنی. اینجا حساب نمی‌شود… اما آنچه می‌نویسی ثبت می‌شود.',
       fin6: 'آخرین تکه پیدا شد. خاطره کامل است. آنچه نوشتی ذخیره می‌شود. اما آنچه بعد از این می‌آید… خواهیم دید.',
       c_dictee: '*گوش کن* و بعد *آنچه می‌شنوی را بنویس*. فهرست کلمه‌ها یک کمک است: نمی‌توانی *لمسش* کنی.',
+      c_ecoute_ecris: '*گوش کن* و بعد *آنچه می‌شنوی را بنویس*.',
+      c_rappel: 'این جمله را قبلاً دیده‌ای. *آن را از حافظه بساز*.', c_finale: '*پایان* فعل را کامل کن.',
+      tr_regfilmle: 'من آن فیلم را تماشا می‌کنم.', tr_regpizzaune: 'من به یک پیتزا نگاه می‌کنم.', tr_regpizzala: 'من به آن پیتزا نگاه می‌کنم.', tr_aimemangersandwich: 'من خوردن یک ساندویچ را دوست دارم.', tr_aimemangerpizza: 'من خوردن آن پیتزا را دوست دارم.', tr_aimeregfilm: 'من تماشای یک فیلم را دوست دارم.',
       liste_mots: 'کلمه‌هایی که می‌توانی استفاده کنی',
       c_aimeq: 'تو Bek هستی. چه کاری *دوست داری* بکنی؟ یک *جملهٔ کامل* بنویس.',
       lec_certif: 'حالا چند پرسش دربارهٔ Bek. برای پاسخ دادن باید آنچه را دربارهٔ او یاد گرفته‌ای به یاد بیاوری. چیزی برای انتخاب کردن نیست: خودت بنویس. پاسخت را بررسی می‌کنم و ذخیره می‌شود. ممکن است اشتباه کنی. اما شاید بعداً پیامدهایی داشته باشد.',
@@ -3658,6 +3750,9 @@
       intro6: 'Sista biten av minnet. Den här gången håller ingen dig i handen. Vissa saker kan bara en människa göra: lyssna, skriva, minnas. Du måste vänja dig. Här räknas det inte… men det du skriver sparas.',
       fin6: 'Sista biten återfunnen. Minnet är helt. Det du skrev sparas. Vad som kommer sedan… får vi se.',
       c_dictee: '*Lyssna*, och *skriv det du hör*. Ordlistan är ett stöd: du kan inte *trycka* på den.',
+      c_ecoute_ecris: '*Lyssna*, och *skriv det du hör*.',
+      c_rappel: 'Du har redan sett den här meningen. *Bygg den* från minnet.', c_finale: 'Fyll i *slutet* på verbet.',
+      tr_regfilmle: 'Jag tittar på filmen.', tr_regpizzaune: 'Jag tittar på en pizza.', tr_regpizzala: 'Jag tittar på pizzan.', tr_aimemangersandwich: 'Jag gillar att äta en macka.', tr_aimemangerpizza: 'Jag gillar att äta pizzan.', tr_aimeregfilm: 'Jag gillar att titta på en film.',
       liste_mots: 'Ord du kan använda',
       c_aimeq: 'Du är Bek. Vad gillar du att *göra*? Skriv en *hel mening*.',
       lec_certif: 'Nu kommer frågor om Bek. För att svara måste du minnas vad du har lärt dig om henne. Det finns inget att välja mellan: skriv själv. Jag kontrollerar ditt svar, och det sparas. Du kan ha fel. Men det kan få konsekvenser senare.',
@@ -3844,6 +3939,9 @@
       intro6: 'Det siste stykket av minnet. Denne gangen holder ingen deg i hånden. Noe kan bare et menneske gjøre: lytte, skrive, huske. Du må venne deg til det. Her teller det ikke … men det du skriver, blir registrert.',
       fin6: 'Siste stykke funnet. Minnet er helt. Det du skrev, blir lagret. Hva som kommer etterpå … får vi se.',
       c_dictee: '*Lytt*, og *skriv det du hører*. Ordlisten er en hjelp: du kan ikke *trykke* på den.',
+      c_ecoute_ecris: '*Lytt*, og *skriv det du hører*.',
+      c_rappel: 'Du har allerede sett denne setningen. *Bygg den* fra hukommelsen.', c_finale: 'Fullfør *slutten* av verbet.',
+      tr_regfilmle: 'Jeg ser på filmen.', tr_regpizzaune: 'Jeg ser på en pizza.', tr_regpizzala: 'Jeg ser på pizzaen.', tr_aimemangersandwich: 'Jeg liker å spise en sandwich.', tr_aimemangerpizza: 'Jeg liker å spise pizzaen.', tr_aimeregfilm: 'Jeg liker å se på en film.',
       liste_mots: 'Ord du kan bruke',
       c_aimeq: 'Du er Bek. Hva liker du å *gjøre*? Skriv en *hel setning*.',
       lec_certif: 'Nå kommer spørsmål om Bek. For å svare må du huske det du har lært om henne. Det er ingenting å velge mellom: skriv selv. Jeg sjekker svaret ditt, og det blir lagret. Du kan ta feil. Men det kan få konsekvenser senere.',
@@ -4030,6 +4128,9 @@
       intro6: 'Последний фрагмент воспоминания. На этот раз тебя никто не ведёт за руку. Кое-что может сделать только человек: слушать, писать, помнить. К этому надо привыкнуть. Здесь это не засчитывается… но то, что ты напишешь, будет записано.',
       fin6: 'Последний фрагмент найден. Воспоминание целое. То, что ты написал(а), сохранено. А что будет дальше… посмотрим.',
       c_dictee: '*Слушай*, а потом *пиши то, что слышишь*. Список слов — это подсказка: на него *нельзя нажимать*.',
+      c_ecoute_ecris: '*Слушай*, а потом *пиши то, что слышишь*.',
+      c_rappel: 'Это предложение уже встречалось. *Составь его* по памяти.', c_finale: 'Допиши *окончание* глагола.',
+      tr_regfilmle: 'Я смотрю этот фильм.', tr_regpizzaune: 'Я смотрю на пиццу.', tr_regpizzala: 'Я смотрю на эту пиццу.', tr_aimemangersandwich: 'Я люблю есть сэндвич.', tr_aimemangerpizza: 'Я люблю есть эту пиццу.', tr_aimeregfilm: 'Я люблю смотреть фильм.',
       liste_mots: 'Слова, которые можно использовать',
       c_aimeq: 'Ты — Bek. Что ты *любишь* делать? Напиши *полное предложение*.',
       lec_certif: 'Теперь вопросы о Bek. Чтобы ответить, нужно вспомнить то, что ты узнал(а) о ней. Выбирать не из чего: пиши сам(а). Я проверю твой ответ, и он будет сохранён. Ты можешь ошибиться. Но у этого могут быть последствия позже.',
@@ -4313,7 +4414,8 @@
     // 🆕 (08-11-2026) Deux trous faisaient croire à « silence » alors qu'une voix allait partir : une phrase mise en file (elle attend la fin de la voix
     //   en cours) et la synthèse, qui démarre ~70 ms après l'appel. La fin d'étape changeait alors d'écran, et la voix tombait sur le suivant.
     //   voixReelle() = ce qu'on entend ; voixActive() = ce qu'on entend OU ce qui va partir.
-    let fileJeton = 0, synthProgrammee = false;
+    let fileJeton = 0, compteurFile = 0, synthProgrammee = false;     // 🆕 (09-11-2026) v34 : compteurFile = identité d'une phrase mise en file (elle ne touche plus à jetonVoix)
+    let ecranId = 0;                       // 🆕 v34 : change à chaque nouvel écran (vider) ; une voix « de début d'écran » programmée pour un écran déjà quitté ne part plus
     function voixReelle() {
       if (voixAudio && !voixAudio.ended) return true;
       try { return !!(window.speechSynthesis && window.speechSynthesis.speaking); } catch (e) { return false; }
@@ -4346,17 +4448,20 @@
       if (!son.actif || arrete) return;
       if (apres && voixActive()) {
         // on prend la place dans la file : un appel plus récent annule celui-ci
-        const mon = ++jetonVoix, t0 = Date.now();
-        fileJeton = mon;                     // 🆕 la phrase en attente compte comme « voix active » pour la fin d'étape
+        // 🆕 v34 : la file a son propre compteur. Avant, elle faisait ++jetonVoix : la voix en cours de CHARGEMENT (essai .mp3 → repli .wav → synthèse) voyait son jeton
+        //   changer et abandonnait en silence. fileJeton = 0 (couperVoix) ou une file plus récente annule celle-ci.
+        const moi = ++compteurFile, t0 = Date.now();
+        fileJeton = moi;                     // 🆕 la phrase en attente compte comme « voix active » pour la fin d'étape
         (function boucle() {
-          if (arrete || mon !== jetonVoix) return;
+          if (arrete || fileJeton !== moi) return;
           if (voixReelle() && Date.now() - t0 < ATTENTE_VOIX_MAX) { setTimeout(boucle, 40); return; }
           // 🆕 une courte respiration après la fin de la voix précédente : sa dernière syllabe (« télé ») n'est plus écrasée par la suivante
-          setTimeout(function () { if (arrete || mon !== jetonVoix) return; dire(id, texte, v, false); }, FIN_VOIX_MARGE);
+          setTimeout(function () { if (arrete || fileJeton !== moi) return; dire(id, texte, v, false); }, FIN_VOIX_MARGE);
         })();
         return;
       }
       couperVoix();
+      Array.prototype.forEach.call(zone.querySelectorAll('.m1-silence'), function (b) { b.classList.remove('m1-silence'); });   // 🆕 v34
       if (v && v.coeur) coeur();             // 🆕 la voix démarre vraiment ici (pas pendant l'attente en file)
       const mon = jetonVoix;
       const fichier = nomAudio(id, v);
@@ -4366,15 +4471,29 @@
       function essayer(i) {
         if (mon !== jetonVoix || arrete) return;
         if (i >= formats.length) { dispoAudio[fichier] = false; synthese(texte); return; }
-        let passe = false;
+        let passe = false, demarre = false;
         function suivant() { if (passe) return; passe = true; essayer(i + 1); }
         try {
           const a = new Audio(dossier + fichier + '.' + formats[i]);
           voixAudio = a;
           a.addEventListener('ended', function () { if (voixAudio === a) voixAudio = null; }, { once: true });
           a.addEventListener('error', function () { if (voixAudio === a) voixAudio = null; suivant(); }, { once: true });   // 🆕 fichier absent : la voix n'est pas « en cours »
+          // 🆕 v34 : une PHRASE qui n'a pas démarré 2,5 s après sa demande (réseau lent, lecture refusée) : le bouton « Réécouter » clignote, pour qu'on ne prenne pas
+          //   le silence pour la voix de l'exercice précédent.
+          let veille = null;
+          a.addEventListener('playing', function () { demarre = true; if (veille) clearTimeout(veille); }, { once: true });
+          if (v && v.phrase) veille = setTimeout(function () { if (!demarre && mon === jetonVoix && !arrete) signalerSilence('aucun son 2,5 s après la demande (' + fichier + ')'); }, 2500);
           const lecture = a.play();
-          if (lecture && lecture.then) lecture.then(function () { dispoAudio[fichier] = formats[i]; }).catch(function () { if (voixAudio === a) voixAudio = null; if (!dispoAudio[fichier]) suivant(); });
+          if (lecture && lecture.then) lecture.then(function () { dispoAudio[fichier] = formats[i]; }).catch(function (e) {
+            if (voixAudio === a) voixAudio = null;
+            if (veille) clearTimeout(veille);
+            // 🆕 v34 : seul un fichier introuvable / illisible fait passer au format suivant puis à la synthèse. Avant, un refus du navigateur (NotAllowedError) ou une
+            //   interruption (AbortError) faisait aussi tomber en « pas de fichier » : dispoAudio[fichier] = false, donc voix de synthèse pour tout le reste de la session.
+            const nom = e && e.name;
+            if (nom === 'NotAllowedError') { passe = true; signalerSilence('lecture refusée par le navigateur (' + fichier + ')'); return; }
+            if (nom === 'AbortError') return;
+            if (!dispoAudio[fichier]) suivant();
+          });
         } catch (e) { suivant(); }
       }
       essayer(0);
@@ -4393,9 +4512,22 @@
     }
     const direMot = function (id) { dire(id, AFFICHE[id], id === 'aime' ? { coeur: true } : undefined); };
     const direPhrase = function (ph, tout_de_suite) {
-      dire(ph.audio, ph.texte, { voix: ph.voix, version: ph.version, coeur: (ph.mots || []).indexOf('aime') !== -1 }, !tout_de_suite);
+      dire(ph.audio, ph.texte, { voix: ph.voix, version: ph.version, coeur: (ph.mots || []).indexOf('aime') !== -1, phrase: true }, !tout_de_suite);
       bekParle();
     };
+    // 🆕 (09-11-2026) v34 — VOIX DE DÉBUT D'ÉCRAN (exercices d'écoute, dictées, réparation) : elle part tout de suite (le nouvel écran vient déjà de couper toute voix :
+    //   inutile de la mettre en file derrière une voix « fantôme ») et seulement si l'écran n'a pas changé entre-temps.
+    function direAuDebut(ph, ms, aussi) {
+      const ecran = ecranId;
+      planifier(function () { if (ecran !== ecranId) return; direPhrase(ph, true); if (aussi) aussi(); }, ms);
+    }
+    // Le bouton « Réécouter » clignote (trois fois) quand la voix d'une phrase n'a pas pu démarrer ; il s'arrête dès qu'une voix repart. Le message de la console dit pourquoi.
+    function signalerSilence(raison) {
+      if (arrete) return;
+      try { console.warn('sequence-m1 : la voix de la phrase n’a pas démarré — ' + raison + '. Le bouton « Réécouter » clignote.'); } catch (e) {}
+      injecterStyle('m1-silence-style', SILENCE_CSS);
+      Array.prototype.forEach.call(zone.querySelectorAll('.m1-haut-parleur'), function (b) { b.classList.remove('m1-silence'); void b.offsetWidth; b.classList.add('m1-silence'); });
+    }
 
     // ---------- Bek : poses, avec repli tant qu'une image manque ----------
     const poses = {}, manquantes = {};
@@ -4534,6 +4666,11 @@
       const mots = (ph && ph.mots) || [];
       return (mots.indexOf('regarde') !== -1 || mots.indexOf('regarder') !== -1) && mots.indexOf('poutine') !== -1;
     }
+    // 🆕 v36 « Je regarde une pizza. », « Je regarde la pizza. » : Bek tient sa pizza sans la manger (repos / parle, comme le sandwich regardé)
+    function estRegardePizza(ph) {
+      const mots = (ph && ph.mots) || [];
+      return (mots.indexOf('regarde') !== -1 || mots.indexOf('regarder') !== -1) && mots.indexOf('pizza') !== -1;
+    }
     // une bouchée puis la mastication ; s'arrête si une voix repart (Réécouter) ; renvoie true si elle est allée au bout
     async function mangerUneFois(m, jeton) {
       montrer(m.bouchee, true); await pause(m.msBouchee);
@@ -4598,9 +4735,10 @@
       const film = !mange && !pizza && estFilm(phrase) && !!(poses['bek-regarde-film'] && poses['bek-film-ouverte']);   // 🆕 elle regarde l'écran et dit la phrase
       const regSand = !mange && !pizza && !film && estRegardeSandwich(phrase) && !!(poses['bek-regarde-sandwich'] && poses['bek-sandwich-regarde-ouverte']);   // 🆕 elle regarde son sandwich et dit la phrase
       const regPout = !mange && !pizza && !film && !regSand && estRegardePoutine(phrase) && !!(poses['bek-regarde-poutine'] && poses['bek-poutine-regarde-ouverte']);   // 🆕 elle regarde sa poutine et dit la phrase
-      const jou = !mange && !pizza && !film && !regSand && !regPout && estJouer(phrase) && !!(poses[JOUER.base] && poses[JOUER.ouverte]);   // 🆕 elle tient sa poupée, dit la phrase, puis joue
-      const base = mange ? m.base : (pizza ? 'bek-pizza-repos' : (film ? 'bek-regarde-film' : (regSand ? 'bek-regarde-sandwich' : (regPout ? 'bek-regarde-poutine' : (jou ? JOUER.base : 'bek-ecoute')))));
-      const ouv = mange ? m.ouverte : (pizza ? 'bek-pizza-ouverte' : (film ? 'bek-film-ouverte' : (regSand ? 'bek-sandwich-regarde-ouverte' : (regPout ? 'bek-poutine-regarde-ouverte' : (jou ? JOUER.ouverte : 'bek-ecoute-ouverte')))));
+      const regPiz = !mange && !pizza && !film && !regSand && !regPout && estRegardePizza(phrase) && !!(poses['bek-regarde-pizza'] && poses['bek-pizza-regarde-ouverte']);   // 🆕 v36 : elle regarde sa pizza et dit la phrase
+      const jou = !mange && !pizza && !film && !regSand && !regPout && !regPiz && estJouer(phrase) && !!(poses[JOUER.base] && poses[JOUER.ouverte]);   // 🆕 elle tient sa poupée, dit la phrase, puis joue
+      const base = mange ? m.base : (pizza ? 'bek-pizza-repos' : (film ? 'bek-regarde-film' : (regSand ? 'bek-regarde-sandwich' : (regPout ? 'bek-regarde-poutine' : (regPiz ? 'bek-regarde-pizza' : (jou ? JOUER.base : 'bek-ecoute'))))));
+      const ouv = mange ? m.ouverte : (pizza ? 'bek-pizza-ouverte' : (film ? 'bek-film-ouverte' : (regSand ? 'bek-sandwich-regarde-ouverte' : (regPout ? 'bek-poutine-regarde-ouverte' : (regPiz ? 'bek-pizza-regarde-ouverte' : (jou ? JOUER.ouverte : 'bek-ecoute-ouverte'))))));
       if (!poses[base]) return;
       const jeton = ++jetonBouche;
       boucheActive = true;
@@ -4768,7 +4906,7 @@
       const cible = (ecrans > 1 || segCourant === 0) ? segCourant : segCourant - 1;
       if (typeof options._reculer === 'function') options._reculer(cible);
     }
-    function vider() { ecrans++; majRetour(); couperVoix(); saisieFermer(); zone.innerHTML = ''; actions.innerHTML = ''; zone.removeAttribute('data-mode'); zone.removeAttribute('data-phrase'); }
+    function vider() { ecrans++; ecranId++; majRetour(); couperVoix(); saisieFermer(); zone.innerHTML = ''; actions.innerHTML = ''; zone.removeAttribute('data-mode'); zone.removeAttribute('data-phrase'); }
     function etape(n) {
       if (arrete) return;   // 🆕 une ancienne scène (après un retour en arrière) ne doit plus rien signaler
       oublierAstuce();       // 🆕 l'astuce de l'étape précédente n'est plus rappelable
@@ -5162,7 +5300,7 @@
       }
       bValider.addEventListener('click', verifier);
       zone.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); verifier(); } });
-      zone.insertBefore(creerEcoute(phrase), zone.firstChild);
+      if (!options2.sansEcoute) zone.insertBefore(creerEcoute(phrase), zone.firstChild);     // 🆕 v35 : l'exercice d'écoute écrit a déjà son propre bouton
       const premier = cloze ? champs[0] : champPhrase;
       planifier(function () { try { premier.focus(); } catch (e) {} }, 200);
       await promesse;
@@ -5348,7 +5486,8 @@
     // ---------- Exercice audio : écoute avant de construire ----------
     // (surcharge de construire pour l'étape 6 : bouton « écouter » + texte révélable)
     const construireSimple = construire;
-    async function construireAudio(phrase, cle) {
+    // 🆕 v35 : l'entête de l'exercice d'écoute (bouton « Réécouter » + « Je n'entends rien », texte révélable) sert aussi à l'écoute écrite (ecrireAudio)
+    function enteteAudio(phrase) {
       const entete = document.createElement('div');
       entete.className = 'm1-ecoute';
       const bEcoute = document.createElement('button');
@@ -5362,24 +5501,112 @@
       texteRevele.textContent = phrase.texte;
       lienTexte.addEventListener('click', function () { texteRevele.classList.remove('m1-off'); lecteurIndice(T('quipSansSon'), 3500); });
       entete.appendChild(bEcoute); entete.appendChild(lienTexte); entete.appendChild(texteRevele);
+      return entete;
+    }
+    async function construireAudio(phrase, cle) {
+      const entete = enteteAudio(phrase);
       const attente = construireSimple(phrase, cle, { direAuClic: false, sansEcoute: true });
       zone.insertBefore(entete, zone.firstChild);     // construire() vient de remplir la zone (synchrone jusqu'au premier await)
       reactiverSon();                       // 🆕 l'écoute est le but de l'exercice : le son est rallumé si l'élève l'avait coupé ailleurs
       animerBouche(phrase);                 // 🆕 pose neutre « écoute-moi » (bouche mobile pendant la voix) ; « Je mange… » : elle tient l'aliment, parle, puis mange ; pizza, film, télé : elle garde sa pose et parle
-      planifier(function () { direPhrase(phrase); }, 400);
+      direAuDebut(phrase, 400);
+      await attente;
+      arreterBouche();
+    }
+    // 🆕 (10-11-2026) v35 — ÉCOUTE ÉCRITE : on entend la phrase et on l'ÉCRIT au clavier (sans la traduction), avec la bande de mots repliée « Voir les mots ».
+    //   Même entête et même voix d'ouverture que construireAudio ; la phrase entière est à écrire (accents et majuscules : mêmes règles que partout).
+    async function ecrireAudio(phrase, cle) {
+      const entete = enteteAudio(phrase);
+      const attente = ecrire(phrase, cle, null, true, { bande: true, sansEcoute: true });
+      zone.insertBefore(entete, zone.firstChild);
+      reactiverSon();
+      animerBouche(phrase);
+      direAuDebut(phrase, 400);
       await attente;
       arreterBouche();
     }
 
+    // 🆕 (10-11-2026) v36 — RAPPEL : une phrase DÉJÀ VUE dans un fragment précédent, à reconstruire de mémoire, au début de l'étape 0 (aucune étape ajoutée).
+    async function rappel(cle, pose, banque) {
+      etal(null);
+      montrer(pose || 'bek-observe');
+      consigne(T('c_rappel'));
+      await construire(PHRASES[cle], 'rappel-' + cle, banque ? { banque: banque } : undefined);
+    }
+    // 🆕 (10-11-2026) v36 — LA FIN DU VERBE : « Je regard_ un film. », « J'aime mang_ la pizza. » L'élève écrit seulement la terminaison :
+    // « e » pour « regarde » / « mange » / « joue », « er » pour l'infinitif (« manger »). Tout le reste de la phrase est donné.
+    const FINALE_CSS = [
+      '.m1-fin{display:inline-flex;align-items:center;gap:.15rem}',
+      '.m1-fin-radical{font-weight:700;font-size:1.05rem;color:var(--brun-fonce,#4A3B33);padding:.35rem 0 .35rem .2rem}',
+      '.m1-fin .m1-champ{width:3.4rem;min-width:0;text-align:center;box-sizing:border-box}'
+    ].join('\n');
+    async function ecrireFin(phrase, cle, idVerbe) {
+      vider();
+      zone.setAttribute('data-mode', 'finale'); zone.setAttribute('data-phrase', cle);
+      injecterStyle('m1-finale-style', FINALE_CSS);
+      const verbe = AFFICHE[idVerbe];
+      const fin = /er$/.test(verbe) ? 'er' : 'e';                 // mange → e ; manger → er
+      const radical = verbe.slice(0, verbe.length - fin.length);    // mang / regard / jou
+      const tr = ligneTraduction(phrase); if (tr) zone.appendChild(tr);
+      let champ = null;
+      const ligne = ligneGroupes(phrase, function (id) {
+        if (id !== idVerbe) { const t = tuile(id, 'm1-tuile-donnee'); t.disabled = true; return t; }
+        const bloc = document.createElement('span');
+        bloc.className = 'm1-fin';
+        const r = document.createElement('span');
+        r.className = 'm1-fin-radical'; r.textContent = radical;
+        champ = document.createElement('input');
+        champ.type = 'text'; champ.className = 'm1-champ m1-role-' + ROLE[id];
+        champ.setAttribute('autocomplete', 'off'); champ.setAttribute('autocapitalize', 'none'); champ.setAttribute('autocorrect', 'off'); champ.spellcheck = false;
+        champ.setAttribute('aria-label', T('c_finale')); champ.maxLength = 4; champ.size = 3;
+        bloc.appendChild(r); bloc.appendChild(champ);
+        return bloc;
+      });
+      zone.appendChild(ligne);
+      zone.insertBefore(creerEcoute(phrase), zone.firstChild);
+      let fini;
+      const promesse = new Promise(function (resolve) { fini = resolve; });
+      const bValider = document.createElement('button');
+      bValider.type = 'button'; bValider.className = 'lect-btn m1-btn'; bValider.textContent = T('valider');
+      actions.appendChild(bValider);
+      let erreurs = 0, termine = false;
+      function verifier() {
+        if (termine) return;
+        const bon = normaliser(champ.value) === fin;
+        champ.classList.toggle('m1-ok', bon); champ.classList.toggle('m1-ko', !bon);
+        if (bon) {
+          termine = true; bValider.disabled = true; champ.readOnly = true;
+          direPhrase(phrase);
+          lecteurIndice(auHasard(T('quipOk')), 2200);
+          finApresVoix(fini, 1300);
+          return;
+        }
+        erreurs++;
+        secouer(champ.parentNode);
+        lecteurIndice(auHasard(T('quipErreur')), 4200);
+        if (erreurs >= 3) {                  // la réponse apparaît ; on ne bloque pas l'élève
+          termine = true; bValider.disabled = true; champ.readOnly = true;
+          champ.value = fin; champ.classList.add('m1-ok'); champ.classList.remove('m1-ko');
+          lecteurIndice(T('quipReponse'), 4200);
+          direPhrase(phrase);
+          boutonAction(T('continuer')).then(fini);
+        }
+      }
+      bValider.addEventListener('click', verifier);
+      zone.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); verifier(); } });
+      planifier(function () { try { champ.focus(); } catch (e) {} }, 200);
+      await promesse;
+    }
+
     // ---------- 🆕 L'étal : « un parmi plusieurs » (nouveau) → « celui-là » (connu) ----------
-    // mode 'nouveau' : trois objets pareils, pastille pêche « un/une » ; mode 'connu' : un seul reste en valeur (halo bleu), pastille « le/la ».
+    // 🆕 (09-11-2026) mode 'nouveau' : UN SEUL objet visible, pastille ambre « un/une » ; mode 'connu' : les trois sont là, celui du milieu seul est en valeur (halo violet), pastille « le/la ».
     // Sans argument : on retire l'étal. Le même objet garde son élément d'un mode à l'autre : le passage s'anime.
     let etalEl = null, minuteurEtal = null, etalEnBoucle = false, etalListe = null, etalEcoute = null;   // etalEcoute(objet, mode) : la carte « Remarque » qui suit l'étal
     function etal(objet, mode) {          // appel venu d'une étape : il arrête toute boucle en cours
       clearTimeout(minuteurEtal); etalEnBoucle = false;
       etalPoser(objet, mode);
     }
-    // 🆕 En boucle (carte « Remarque ») : pour chaque objet de la liste, « un » (balayage + pause) → « le » (pause), puis l'objet suivant (sandwich, puis poutine : une ligne
+    // 🆕 En boucle (carte « Remarque ») : pour chaque objet de la liste, « un » (un seul objet + pause) → « le » (les trois, un en valeur + pause), puis l'objet suivant (sandwich, puis poutine : une ligne
     // de la carte chacun), et on recommence, jusqu'à ce que l'étape change. Sans animation : un seul passage, sur le premier objet.
     let jetonBoucle = null;
     function etalBoucle(objets) {
@@ -5390,7 +5617,7 @@
       if (reduit) return;
       const jeton = jetonBoucle = {};
       (function tour() {
-        const attente = pas % 2 === 0 ? ETAL_PAUSE : ETAL_PAUSE_CONNU;     // « un » demande plus de temps : le balayage d'abord
+        const attente = pas % 2 === 0 ? ETAL_PAUSE : ETAL_PAUSE_CONNU;     // « le » dure un peu plus : il faut voir apparaître les deux autres, puis lequel est choisi
         minuteurEtal = planifier(function () {
           if (jetonBoucle !== jeton || !etalEnBoucle) return;
           pas = (pas + 1) % (objets.length * 2);
@@ -5401,14 +5628,12 @@
     }
     function etalPoser(objet, mode) {
       if (!objet || !mode || !DESSINS[objet] || !ETAL_ART[objet]) {
-        clearTimeout(minuteurEtal); etalEnBoucle = false; etalBalayageStop();
+        clearTimeout(minuteurEtal); etalEnBoucle = false;
         if (typeof etalEcoute === 'function') etalEcoute(null, null);
         if (etalEl && etalEl.parentNode) etalEl.parentNode.removeChild(etalEl);
         etalEl = null;
         return;
       }
-      // un second appel identique (même objet, même mode) ne doit pas interrompre un balayage en cours
-      if (!etalEl || etalEl.getAttribute('data-objet') !== objet || !etalEl.classList.contains(mode === 'connu' ? 'm1-etal-connu' : 'm1-etal-nouveau')) etalBalayageStop();
       injecterStyle('m1-etal-style', ETAL_CSS);
       if (!etalEl || etalEl.getAttribute('data-objet') !== objet || !etalEl.parentNode) {
         if (etalEl && etalEl.parentNode) etalEl.parentNode.removeChild(etalEl);
@@ -5421,7 +5646,7 @@
         el.innerHTML = h + '</div><span class="m1-etal-pastille"></span>';
         zone.parentNode.insertBefore(el, zone);        // toujours dans la carte, au-dessus de la phrase (jamais sous les pieds de Bek)
         // un clic rejoue, puis l'étal revient à l'état où il était (il doit toujours dire la même chose que la phrase) :
-        //   « le / la » → « un parmi plusieurs », une pause, puis « celui-là » ; « un / une » → les trois objets réapparaissent ; en boucle → on repart
+        //   « le / la » → « un » (un seul objet), une pause, puis « celui-là » (les trois, un en valeur) ; « un / une » → l'objet réapparaît ; en boucle → on repart
         el.addEventListener('click', function () {
           if (etalEl !== el) return;
           if (etalEnBoucle) { etalBoucle(etalListe || objet); return; }
@@ -5431,7 +5656,7 @@
             minuteurEtal = planifier(function () { if (etalEl === el) etalPoser(objet, 'connu'); }, ETAL_PAUSE);
           } else {
             Array.prototype.forEach.call(el.querySelectorAll('.m1-etal-objet'), function (o) { o.style.animation = 'none'; void o.offsetWidth; o.style.animation = ''; });
-            if (!reduit) etalBalayage(el, 900);
+            etalSignal();
           }
         });
         etalEl = el;
@@ -5441,36 +5666,7 @@
       etalEl.classList.toggle('m1-etal-connu', mode === 'connu');
       etalEl.querySelector('.m1-etal-pastille').textContent = ETAL_ART[objet][mode === 'connu' ? 1 : 0];
       if (avant && avant !== mode) etalSignal();        // le mot de la pastille change : elle pulse pour qu'on le remarque
-      // 🆕 « un » : on souligne les objets un par un (juste après leur apparition si l'étal vient d'être créé, tout de suite si on revient de « le »)
-      if (mode === 'nouveau' && avant !== 'nouveau' && !reduit) etalBalayage(etalEl, avant ? 150 : 900);
       if (typeof etalEcoute === 'function') etalEcoute(objet, mode);
-    }
-    // 🆕 (08-11-2026) Balayage : chaque objet, à tour de rôle, est surélevé, entouré d'ambre et souligné, et la pastille « un/une » pulse à chaque fois.
-    // Après le dernier, les trois restent soulignés (état « nouveau » normal). Tout appel à etalPoser l'interrompt proprement.
-    let minuteursBalayage = [];
-    function etalBalayageStop() {
-      minuteursBalayage.forEach(clearTimeout); minuteursBalayage = [];
-      if (etalEl) {
-        etalEl.classList.remove('m1-etal-balayage');
-        Array.prototype.forEach.call(etalEl.querySelectorAll('.m1-etal-regard'), function (o) { o.classList.remove('m1-etal-regard'); });
-      }
-    }
-    function etalBalayage(el, delai) {
-      minuteursBalayage.forEach(clearTimeout); minuteursBalayage = [];
-      const objets = Array.prototype.slice.call(el.querySelectorAll('.m1-etal-objet'));
-      minuteursBalayage.push(planifier(function () { if (etalEl === el) el.classList.add('m1-etal-balayage'); }, Math.max(0, delai - 30)));
-      objets.forEach(function (o, i) {
-        minuteursBalayage.push(planifier(function () {
-          if (etalEl !== el) return;
-          objets.forEach(function (x) { x.classList.toggle('m1-etal-regard', x === o); });
-          etalSignal();
-        }, delai + i * ETAL_PAS));
-      });
-      minuteursBalayage.push(planifier(function () {
-        if (etalEl !== el) return;
-        objets.forEach(function (x) { x.classList.remove('m1-etal-regard'); });
-        el.classList.remove('m1-etal-balayage');
-      }, delai + objets.length * ETAL_PAS));
     }
     function etalSignal() {              // un article vient d'être posé dans la phrase : la pastille pulse
       if (!etalEl || reduit) return;
@@ -5505,6 +5701,7 @@
     }
     async function etapeArticles() {
       etape(0); montrer('bek-mange-sandwich');
+      await rappel('sandwich', 'bek-mange-sandwich', BANQUE_2);      // 🆕 v36 : rappel du fragment 1, avant « le sandwich »
       etal('sandwich', 'connu');
       consigne(T('c_lire'));
       planifier(function () { lecteurIndice(T('quipLeSandwich'), 5500); }, 1500);
@@ -5551,7 +5748,9 @@
       consigne(T('c_connu'));
       planifier(function () { lecteurIndice(T('quipConnu'), 5000); }, 800);
       const arreter = animerManger(objet);
-      await construire(connu, 'connu-' + objet, { banque: BANQUE_2 });
+      // 🆕 v35 : la poutine (2e objet) : la phrase « le / la » est ÉCRITE au clavier (bande de mots repliée) ; le sandwich reste en cases
+      if (objet === 'poutine') { consigne(T('c_ecrire')); await ecrire(connu, 'connu-' + objet, null, true, { bande: true }); }
+      else await construire(connu, 'connu-' + objet, { banque: BANQUE_2 });
       arreter();
       await bekDit(objet, 1500);
     }
@@ -5559,6 +5758,8 @@
     // ---------- 🆕 Fragment 3 (anciennement 2) : « regarder » ----------
     async function etapeRegarde() {
       etape(0); montrer('bek-observe');
+      await rappel('pizzala', 'bek-mange-pizza', BANQUE_3);          // 🆕 v36 : rappel du fragment 2 (« Je mange la pizza. »), juste avant « Je regarde. »
+      montrer('bek-observe');
       consigne(T('c_mange'));
       await lecture(PHRASES.regarde, 'regarde');
       await carte(T('noteR_titre'), T('noteR'), pairesE([['regard', 'e'], ['mang', 'e']]));
@@ -5575,7 +5776,15 @@
       await ordre(ph, cle, cle === 'film' ? ['une', 'mange'] : ['un']);
       consigne(cle === 'film' ? T('c_ecrire_part') : T('c_ecrire'));
       await ecrire(ph, cle, cle === 'film' ? [1, 3] : null);
-      if (cle === 'film') { etal(null); await carte(T('cult_titre'), T('cult_film')); }
+      if (cle === 'film') {             // 🆕 v36 : le même film, maintenant connu : « le » (comme pour la poutine à l'étape suivante)
+        etal('film', 'connu');
+        planifier(function () { lecteurIndice(T('quipConnu'), 5000); }, 600);
+        consigne(T('c_ordre'));
+        await ordre(PHRASES.regfilmle, 'regfilmle', ['la', 'une']);
+        consigne(T('c_ecrire_part'));
+        await ecrire(PHRASES.regfilmle, 'regfilmle', [2]);            // on écrit l'article
+        etal(null); await carte(T('cult_titre'), T('cult_film'));
+      }
       if (cle === 'regpoutine') {       // 🆕 la même poutine, maintenant connue : « la »
         etal('poutine', 'connu');       // 🆕 l'étal : « une parmi plusieurs » → « celle-là »
         planifier(function () { lecteurIndice(T('quipRegPoutineLa'), 5500); }, 600);
@@ -5588,6 +5797,10 @@
     // Même objet, deux verbes : Bek REGARDE le sandwich, puis elle le MANGE. Le verbe change tout.
     async function etapeContraste3() {
       etape(3);
+      // 🆕 v36 : la FIN DU VERBE (« Je regard_ un film. ») : un autre type d'exercice, avant le contraste regarder / manger
+      montrer('bek-regarde-film'); etal('film', 'nouveau');
+      consigne(T('c_finale'));
+      await ecrireFin(PHRASES.film, 'fin-film', 'regarde');
       montrer('bek-regarde-sandwich');
       etal('sandwich', 'nouveau');                                      // 🆕 un sandwich : nouveau
       consigne(T('c_image'));
@@ -5605,7 +5818,7 @@
       etal('sandwich', 'connu');                                        // 🆕 le sandwich qu'elle regardait : connu
       consigne(T('c_image'));
       const arreter = animerManger('sandwich');
-      await construire(PHRASES.sandwichle, 'image-sandwich-2', { banque: BANQUE_3 });   // 🆕 le sandwich qu'elle regardait
+      await ecrire(PHRASES.sandwichle, 'image-sandwich-2', null, true, { bande: true });   // 🆕 v35 : écrit au clavier (bande de mots repliée) ; le sandwich qu'elle regardait
       arreter();
       await bekDit('sandwich', 1500);
     }
@@ -5943,7 +6156,7 @@
           document.addEventListener('keydown', surFrappe);
           nettoyages.push(function () { document.removeEventListener('keydown', surFrappe); });
           dessiner();
-          planifier(function () { direPhrase(ph); }, 500);
+          direAuDebut(ph, 500);
         });
       }
 
@@ -6296,7 +6509,7 @@
           apres: function (z) { z.appendChild(listeMots(LISTE_DICTEE)); }
         });
         animerBouche(phrase);                       // pose « écoute-moi » (ou celle de la phrase) : la bouche suit la voix
-        planifier(function () { direPhrase(phrase); }, 500);
+        direAuDebut(phrase, 500);
         await attente;
         arreterBouche();
       };
@@ -6345,10 +6558,11 @@
     }
 
     // Un segment « exercice audio » (le dernier de chaque fragment)
-    function segAudio(cles) {
+    function segAudio(cles, ecrit) {       // 🆕 v35 : ecrit = clé d'une dernière phrase à ÉCRIRE au clavier après celles à construire
       return async function () {
         etape(5); etal(null); montrer('bek-observe'); consigne(T('c_audio'));
         for (const cle of cles) await construireAudio(PHRASES[cle], 'audio-' + cle);
+        if (ecrit) { consigne(T('c_ecoute_ecris')); await ecrireAudio(PHRASES[ecrit], 'audio-ecrit-' + ecrit); }
       };
     }
     // Les 6 segments de chaque fragment (la réparation a son propre déroulé). Reprendre = commencer au segment n.
@@ -6364,20 +6578,30 @@
         etapeArticles, etapePoutineLa, etapePizza,
         function () { return etapeNouveauConnu(3, 'sandwich'); },
         function () { return etapeNouveauConnu(4, 'poutine'); },
-        segAudio(['sandwichle', 'poutinela', 'pizzala'])
+        segAudio(['sandwichle', 'poutinela'], 'pizzala')
       ];
       if (fragment === 3) return [
         etapeRegarde,
         function () { return etapeRegardePhrase('film', 1); },
         function () { return etapeRegardePhrase('regpoutine', 2); },
         etapeContraste3, etapeContraste4,
-        segAudio(['film', 'regsandwichle', 'poutinela'])    // un film, le sandwich (regarder), la poutine (rappel de « manger »)
+        segAudio(['film', 'regpizzaune'], 'regpizzala')     // 🆕 v36 : un film (rappel), puis deux situations NOUVELLES : « une pizza » (cases), « la pizza » (écrit)
       ];
       if (fragment === 4) return [
-        function () { return segmentAime(0, 'aimepoutine', 'bek-mange-poutine', ['je'], [0, 1], 'quipAimePoutine',
-          { avant: true, titre: 'noteJ_titre', texte: 'noteJ', visuel: pairesElision }); },
-        function () { return segmentAime(1, 'aimemanger', 'bek-mange-sandwich', ['mange'], [2], 'quipAimeManger',
-          { avant: true, titre: 'noteI_titre', texte: 'noteI', visuel: pairesInfinitif }); },
+        async function () {
+          etape(0);
+          await rappel('regfilmle', 'bek-regarde-film', ['je', 'regarde', 'mange', 'le', 'la', 'un', 'film', 'sandwich']);    // 🆕 v36 : rappel du fragment 3, avant « J'aime… »
+          await segmentAime(0, 'aimepoutine', 'bek-mange-poutine', ['je'], [0, 1], 'quipAimePoutine',
+            { avant: true, titre: 'noteJ_titre', texte: 'noteJ', visuel: pairesElision });
+        },
+        async function () {
+          await segmentAime(1, 'aimemanger', 'bek-mange-sandwich', ['mange'], [2], 'quipAimeManger',
+            { avant: true, titre: 'noteI_titre', texte: 'noteI', visuel: pairesInfinitif });
+          // 🆕 v36 : la FIN DU VERBE, juste après la carte de l'infinitif : « J'aime mang_ la pizza. » (« er »)
+          montrer('bek-mange-pizza');
+          consigne(T('c_finale'));
+          await ecrireFin(PHRASES.aimemangerpizza, 'fin-aimemangerpizza', 'manger');
+        },
         function () { return segmentAime(2, 'aimetele', 'bek-regarde-film', ['regarde'], null, null,
           { avant: false, titre: 'cult_titre', texte: 'cult_tele' }); },
         async function () {
@@ -6396,7 +6620,7 @@
           montrer('bek-mange-poutine');
           await construireAudio(PHRASES.aimemangerpoutine, 'audio-aimemangerpoutine');
         },
-        segAudio(['aimemanger', 'aimejouer', 'jejoue'])
+        segAudio(['aimemangersandwich', 'aimejouer'], 'aimeregfilm')     // 🆕 v36 : « J'aime manger un sandwich. » (nouveau), « J'aime jouer. » (rappel), puis « J'aime regarder un film. » écrit (nouveau)
       ];
       return [                                              // fragment 1
         etapeMange,
@@ -6553,6 +6777,6 @@
     return { arreter: function () { ferme = true; if (courante) courante.arreter(); } };
   }
 
-  try { console.info('sequence-m1 : v32 — bande de mots (fragment 1), repos multiples ; scène d’abord, encadré ensuite ; voix coupée à chaque écran, cœur sur « aime », fragment 6 (épreuve)'); } catch (e) {}
+  try { console.info('sequence-m1 : v36 — six phrases (regarder / j’aime), rappels, fin du verbe ; v35 — écrire au clavier ce qu’on voit et ce qu’on entend (fragments 2 à 4) ; v34 : voix d’ouverture des exercices d’écoute fiabilisée ; v33 : étal « un » (un seul objet) / « le » (trois, un en valeur) ; v32 : bande de mots (fragment 1), repos multiples ; scène d’abord, encadré ensuite ; voix coupée à chaque écran, cœur sur « aime », fragment 6 (épreuve)'); } catch (e) {}
   window.KebBekM1 = { demarrer: demarrer, MOTS_APPRIS_6: MOTS_APPRIS_6, MOTS_APPRIS: MOTS_APPRIS, MOTS_APPRIS_2: MOTS_APPRIS_2, MOTS_APPRIS_3: MOTS_APPRIS_3, MOTS_APPRIS_4: MOTS_APPRIS_4, MOTS_APPRIS_5: MOTS_APPRIS_5, REPARATION: REPARATION };
 })();
